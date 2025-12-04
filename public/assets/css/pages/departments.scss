@@ -1,0 +1,254 @@
+*{
+    font-family: 'nunito', sans-serif !important;
+}
+.main-sec {
+    padding: 0;
+
+    .sec-wrapper {
+        padding-top: 219px;
+        padding-bottom: clamp(60px, 10vw, 120px);
+        position: relative;
+
+        .objects {
+            position: absolute;
+            bottom: 10px;
+            right: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 1;
+
+            .obj {
+                background-color: var(--primary);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                width: 48px;
+                height: 48px;
+                border-radius: 12px;
+            }
+        }
+
+        .topbar {
+            background-color: white;
+            padding: 15px 24px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            gap: 24px;
+
+            .main-title {
+                font-family: 'nunito-sb';
+            }
+
+            .right {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                flex: 1;
+
+                select {
+                    border-radius: 6px;
+                    border: 1px solid #6A6A6A;
+                    outline: none;
+                    height: 40px;
+                    padding: 0 12px;
+                    width: 100%;
+                }
+
+                .icon {
+                    width: 40px;
+                    min-width: 40px;
+                    height: 40px;
+                    border-radius: 12px;
+                    background-color: var(--primary);
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+
+                    img {
+                        filter: brightness(0) invert(1);
+                    }
+                }
+
+                .sort-btn {
+                    display: flex;
+                    align-items: center;
+                    border-radius: 12px;
+                    gap: 8px;
+                    padding: 8px 16px;
+                    background-color: var(--primary);
+                    color: white;
+                    white-space: nowrap;
+                }
+            }
+        }
+
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin: 18px 0;
+            flex-wrap: wrap;
+
+            li {
+                font-family: 'nunito-bold';
+                color: #A4A5A5;
+
+                a {
+                    font-family: 'nunito-bold';
+                    font-weight: 700;
+                    color: var(--primary);
+                }
+            }
+        }
+
+        .buttons {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+
+            &:last-child {
+                margin-bottom: 0;
+            }
+
+            .department-btn {
+                border: 1px solid #D8D8D8;
+                border-radius: 12px;
+                background-color: white;
+                color: var(--primary);
+                font-family: 'nunito-bold';
+                padding: 12px;
+            }
+        }
+
+        .tabs {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            border-radius: 12px;
+            border: 2px solid #061F42;
+            width: fit-content;
+            overflow: hidden;
+            flex-wrap: wrap;
+
+            .tab-btn {
+                padding: 12px 32px;
+                background: transparent;
+                cursor: pointer;
+                transition: 0.3s;
+                border: none;
+                font-size: clamp(16px, 2vw, 20px);
+                font-family: 'nunito-bold';
+                font-weight: 700;
+
+                &:hover {
+                    background-color: var(--primary);
+                    color: white;
+                }
+
+                &.active {
+                    background: var(--primary);
+                    color: #fff;
+                }
+            }
+        }
+
+        .tab-content {
+            display: none;
+
+            .title {
+                font-size: clamp(20px, 2vw, 24px);
+                font-family: 'nunito-bold';
+                font-weight: 900;
+            }
+
+            &.active {
+                display: block;
+            }
+        }
+
+        .team-slider {
+            padding: 0 86px;
+
+            .slider-item {
+                margin: 6px;
+            }
+            .slick-prev,
+            .slick-next {
+                width: 48px;
+                height: 48px;
+                border-radius: 50%;
+                background: transparent;
+                border: 1.5px solid #131927;
+                display: flex !important;
+                justify-content: center;
+                align-items: center;
+                z-index: 5;
+                cursor: pointer;
+                transition: 0.25s ease;
+                outline: none;
+                background: url('./../../img/icons/team-arrow.svg') center/ 14px 16px no-repeat;
+
+                &::before {
+                    display: none;
+                }
+            }
+            .slick-prev {
+                left: 16px;
+            }
+
+            .slick-next {
+                right: 16px;
+                transform: rotate(180deg);
+            }
+
+        }
+
+    }
+}
+
+@media (max-width:992px) {
+    .main-sec {
+
+        .sec-wrapper {
+            padding-top: 106px;
+
+            .objects {
+                display: none;
+            }
+
+            .topbar {
+                flex-direction: column;
+                gap: 12px;
+                align-items: start;
+
+                .right {
+                    flex-direction: column;
+                    gap: 8px;
+                    align-items: start;
+                    width: 100%;
+                }
+            }
+
+            .buttons {
+                .department-btn {
+                    padding: 8px;
+                }
+            }
+
+            .tabs {
+
+            .tab-btn {
+                padding: 10px 22px;
+            }
+        }
+
+            .team-slider{
+                padding: 0;
+            }
+        }
+    }
+}

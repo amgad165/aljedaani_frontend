@@ -1,0 +1,449 @@
+/* Modern Navbar Styles - Topbar Override to match Figma */
+.header .topbar {
+  background: #F9F9F9;
+  padding: 8px 0;
+}
+
+.header .topbar .container {
+  max-width: 100%;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.header .topbar .topbar-wrapper {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  height: 32px;
+  /* Match header-wrapper padding for alignment */
+  width: 100%;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding-left: 160px;
+  padding-right: 160px;
+  box-sizing: content-box;
+}
+
+@media (max-width: 1400px) {
+  .header .topbar .topbar-wrapper {
+    max-width: 1120px;
+    padding-left: 80px;
+    padding-right: 80px;
+  }
+}
+
+@media (max-width: 1200px) {
+  .header .topbar .topbar-wrapper {
+    max-width: 960px;
+    padding-left: 40px;
+    padding-right: 40px;
+  }
+}
+
+@media (max-width: 992px) {
+  .header .topbar .topbar-wrapper {
+    max-width: 720px;
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .header .topbar .topbar-wrapper {
+    max-width: 540px;
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+}
+
+@media (max-width: 576px) {
+  .header .topbar .topbar-wrapper {
+    max-width: 100%;
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+}
+
+/* Left panel - Arabic button + social icons */
+.header .topbar .topbar-wrapper .social {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  width: auto;
+  height: 32px;
+}
+
+.header .topbar .topbar-wrapper .social a.ge-ss-tv {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 8px 12px;
+  width: 79px;
+  height: 32px;
+  border-radius: 8px;
+  font-family: 'GE SS TV', sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 16px;
+  color: #063069;
+  text-decoration: none;
+}
+
+.header .topbar .topbar-wrapper .social .icons-wrapper {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  height: 32px;
+}
+
+.header .topbar .topbar-wrapper .social .icons-wrapper a {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 4px;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+}
+
+/* Right panel - action icons + book appointment */
+.header .topbar .topbar-wrapper .buttons {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 24px;
+  margin: 0;
+  width: auto;
+  height: 32px;
+}
+
+.header .topbar .topbar-wrapper .buttons > a:not(.btn) {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 4px;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+}
+
+.header .topbar .topbar-wrapper .buttons .btn-primary {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 8px 12px;
+  width: 158px;
+  height: 32px;
+  background: #061F42;
+  border-radius: 8px;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 16px;
+  color: #FFFFFF;
+  text-decoration: none;
+}
+
+/* ===== HEADER WRAPPER - Figma Exact Match ===== */
+.header .header-wrapper {
+  height: 117px;
+  padding: 4px 160px;
+  box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.25);
+  border-radius: 0px 0px 1000px 0px;
+}
+
+/* Logo + Search bar row */
+.header .header-wrapper .middle-header .middle-header-wrapper {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0px;
+  gap: 12px;
+  height: 73px;
+}
+
+/* Logo */
+.header .header-wrapper .middle-header .middle-header-wrapper .logo {
+  flex: none;
+  flex-grow: 0;
+}
+
+.header .header-wrapper .middle-header .middle-header-wrapper .logo img {
+  height: 57px;
+}
+
+/* Frame 38 - Right side buttons */
+.header .header-wrapper .middle-header .middle-header-wrapper .button-wrapper {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 0px;
+  gap: 24px;
+  height: 40px;
+}
+
+/* Search Input - Input-Dynamic */
+.header .header-wrapper .middle-header .middle-header-wrapper .button-wrapper > a:first-child {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  width: 40px;
+  height: 40px;
+  background: #F9FAFB;
+  border: 1px solid #A4A5A5;
+  border-radius: 8px;
+}
+
+/* Frame 40 - Scan wrapper */
+.header .header-wrapper .middle-header .middle-header-wrapper .button-wrapper .scan-wrapper {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 0px;
+  gap: 16px;
+  height: 36px;
+}
+
+.header .header-wrapper .middle-header .middle-header-wrapper .button-wrapper .scan-wrapper a:first-child {
+  font-family: 'Nunito', sans-serif;
+  font-style: normal;
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 20px;
+  color: #00ABDA;
+  text-decoration: none;
+}
+
+.header .header-wrapper .middle-header .middle-header-wrapper .button-wrapper .scan-wrapper a:first-child .text-secondary {
+  color: #00ABDA !important;
+}
+
+/* Offers Button */
+.header .header-wrapper .middle-header .middle-header-wrapper .button-wrapper .btn-linear {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 8px 12px;
+  height: 32px;
+  background: linear-gradient(90deg, #15C9FA 0%, #15C8F9 0.01%, #119FC6 46.15%, #0C7794 100%);
+  border-radius: 8px;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 16px;
+  color: #FFFFFF;
+  text-decoration: none;
+  gap: 8px;
+}
+
+/* Smooth transitions for mobile menu */
+@media (max-width: 1024px) {
+  .mobile-menu {
+    transition: max-height 0.3s ease-in-out;
+  }
+}
+
+/* Logo hover effect */
+.navbar-logo {
+  transition: transform 0.2s ease;
+}
+
+.navbar-logo:hover {
+  transform: scale(1.05);
+}
+
+/* Navigation link hover effects */
+.nav-link {
+  position: relative;
+  transition: color 0.2s ease;
+}
+
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background-color: #15C9FA;
+  transition: width 0.3s ease;
+}
+
+.nav-link:hover::after {
+  width: 100%;
+}
+
+/* QR Scan box */
+.qr-scan-box {
+  background-color: #F0FBFC;
+  border-radius: 0.5rem;
+  padding: 0.5rem 1rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.qr-scan-box:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(21, 201, 250, 0.15);
+}
+
+/* Offers button gradient */
+.offers-btn {
+  background: linear-gradient(90deg, #15C9FA 0%, #8FF5F7 100%);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.offers-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(21, 201, 250, 0.3);
+}
+
+/* Mobile menu animations */
+.mobile-menu-enter {
+  max-height: 0;
+  overflow: hidden;
+}
+
+.mobile-menu-enter-active {
+  max-height: 1000px;
+  transition: max-height 0.3s ease-in;
+}
+
+.mobile-menu-exit {
+  max-height: 1000px;
+}
+
+.mobile-menu-exit-active {
+  max-height: 0;
+  transition: max-height 0.3s ease-out;
+  overflow: hidden;
+}
+
+/* Hamburger animation */
+.hamburger span {
+  display: block;
+  width: 100%;
+  height: 2px;
+  background-color: #061F42;
+  transition: all 0.3s ease;
+}
+
+/* Hero Section Form - Match Figma Design */
+.hero-sec .hero-wrapper .form {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  align-content: flex-start !important;
+  padding: 12px !important;
+  gap: 8px !important;
+  width: 780px !important;
+  height: 64px !important;
+  background: rgba(0, 0, 0, 0.001) !important;
+  border-radius: 12px !important;
+  backdrop-filter: blur(15px) !important;
+}
+
+.hero-sec .hero-wrapper .form .input-wrapper {
+  flex: 1;
+  min-width: 0;
+}
+
+.hero-sec .hero-wrapper .form .input-wrapper select {
+  width: 100% !important;
+  max-width: 100% !important;
+  height: 40px !important;
+  padding: 8px 12px !important;
+  font-size: 14px !important;
+  border-radius: 8px !important;
+  border: 1px solid white !important;
+  background-color: transparent !important;
+  color: white !important;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none'%3E%3Cpath d='M2.5 4.5L6 8L9.5 4.5' stroke='white' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 12px center !important;
+  background-size: 12px !important;
+}
+
+.hero-sec .hero-wrapper .form .input-wrapper select:focus {
+  border-color: #15C9FA !important;
+  outline: none !important;
+}
+
+.hero-sec .hero-wrapper .form .input-wrapper select option {
+  background-color: #061F42;
+  color: white;
+  padding: 12px;
+}
+
+.hero-sec .hero-wrapper .form .icon {
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 12px !important;
+  background-color: #061F42 !important;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.hero-sec .hero-wrapper .form .icon:hover {
+  background-color: #15C9FA !important;
+  transform: scale(1.05);
+}
+
+.hero-sec .hero-wrapper .form .icon img {
+  width: 24px;
+  height: 24px;
+  filter: brightness(0) invert(1);
+}
+
+@media (max-width: 1200px) {
+  .hero-sec .hero-wrapper .form {
+    width: 680px !important;
+  }
+}
+
+@media (max-width: 992px) {
+  .hero-sec .hero-wrapper .form {
+    width: 100% !important;
+    max-width: 580px !important;
+    height: auto !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .hero-sec .hero-wrapper .form {
+    flex-direction: column !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    gap: 8px !important;
+  }
+  .hero-sec .hero-wrapper .form .input-wrapper {
+    width: 100%;
+  }
+  .hero-sec .hero-wrapper .form .input-wrapper select {
+    width: 100% !important;
+  }
+  .hero-sec .hero-wrapper .form .icon {
+    width: 100% !important;
+    height: 40px !important;
+  }
+}

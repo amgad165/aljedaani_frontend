@@ -1,0 +1,194 @@
+.main-sec {
+    .sec-wrapper {
+        .breadcrumb {
+            margin-top: 24px;
+            margin-bottom: 24px;
+        }
+
+        .main-tab {
+            margin-bottom: 24px !important;
+            border-bottom: none !important;
+            padding-bottom: 0 !important;
+
+            .tabs {
+                border: none;
+                border-radius: unset;
+                margin-bottom: 0;
+
+                .tab-btn {
+                    border-radius: 12px 12px 0 0;
+                    background-color: #E6E6E6;
+                    color: #A4A5A5;
+                    padding: 10px 18px;
+
+                    &.active {
+                        background-color: white;
+                        color: var(--primary);
+                    }
+                }
+            }
+
+            .tab-content {
+                .tab-card {
+                    background-color: #FCFCFC;
+                    padding: 24px;
+                    border-radius: 0 12px 12px 12px;
+                    box-shadow: 0px 4px 5px 0px #00000025;
+
+                    .description {
+                        font-size: clamp(16px, 2vw, 20px);
+                        color: var(--primary);
+                        padding-bottom: 12px;
+                        border-bottom: 1px solid #E9E9E9;
+                        margin-bottom: 36px;
+                        font-family: 'inter', sans-serif !important;
+                    }
+
+                    .title {
+                        color: var(--primary);
+                        font-weight: 700;
+                        display: block;
+                        text-align: center;
+                        margin-bottom: 24px;
+                    }
+
+                    .card-inner {
+                        background-color: #BDF1FF;
+                        border-radius: 12px;
+                        padding: 16px;
+
+                        span {
+                            font-size: clamp(20px, 1.6vw, 24px);
+                            font-family: 'nunito', sans-serif;
+                            font-weight: 700;
+                            display: block;
+                            text-align: center;
+                            font-style: oblique;
+                        }
+                    }
+
+                    .tab-list-card{
+                        background-color: #BDF1FF;
+                        padding: 8px;
+                        border-radius: 12px;
+                        display: flex;
+                        flex-direction: column;
+                        gap: 8px;
+
+                        li{
+                            a{
+                                background-color: white;
+                                border: 1px solid #D8D8D8;
+                                padding: 12px;
+                                border-radius: 12px;
+                                display: block;
+                                text-align: center;
+                                font-family: 'nunito', sans-serif;
+                                font-weight: 600;
+                            }
+                        }
+                    }
+
+                    .content-wrapper{
+                        .content-list{
+                            display: flex;
+                            flex-direction: column;
+                            gap: 4px;
+
+                            li{
+                                position: relative;
+                                padding-left: 22px;
+                                color: var(--primary);
+                                font-weight: 600 !important;
+
+                                &::before{
+                                    content: '';
+                                    position: absolute;
+                                    left: 0;
+                                    top: 2px;
+                                    background-color: var(--primary);
+                                    border-radius: 50%;
+                                    width: 12px;
+                                    height: 12px;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+.team-sec {
+    .team-card {
+        .detail {
+            .button {
+                .sec-badge {
+                    &.location {
+                        display: inline-flex;
+                        align-items: center;
+                        justify-content: center;
+                        margin: 0 auto;
+                        gap: 6px;
+                        padding: 4px 6px;
+                        border: 1px solid #D9D9D9;
+                        border-radius: 24px;
+                        background: transparent;
+                        color: #6A6A6A;
+                        text-decoration: none;
+                        max-width: fit-content;
+                        font-size: 12px;
+
+                        img {
+                            flex: 0 0 auto;
+                            width: 16px;
+                            height: 16px;
+                            display: block;
+                        }
+
+                        span {
+                            min-width: 0;
+                            overflow: hidden;
+                            white-space: nowrap;
+                            text-overflow: ellipsis;
+                            display: inline-block;
+                            font-family: 'nunito', sans-serif !important;
+                            color: #6A6A6A;
+                            font-weight: 600;
+                        }
+
+                        // responsive tweak (choti screen par aur jaldi truncate ho)
+                        @media (max-width: 480px) {
+                            max-width: 150px;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+.fs-20 {
+    font-size: clamp(16px, 1.6vw, 20px);
+}
+
+@media (min-width:992px) {
+    .order-lg-1 {
+        order: 1 !important;
+    }
+
+    .order-lg-2 {
+        order: 2 !important;
+    }
+}
+
+@media (max-width:992px) {
+    .order-lg-1 {
+        order: unset !important;
+    }
+
+    .order-lg-2 {
+        order: unset !important;
+    }
+}

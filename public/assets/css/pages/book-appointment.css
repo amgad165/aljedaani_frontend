@@ -1,0 +1,515 @@
+.main-sec {
+  padding-top: 225px;
+}
+.main-sec .main-title {
+  font-size: clamp(24px, 2.4vw, 32px);
+  font-weight: 800;
+  margin-bottom: 24px;
+}
+.main-sec .main-card {
+  background-color: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0px 4px 5px 0px rgba(0, 0, 0, 0.1450980392);
+}
+.main-sec .main-card #card-title {
+  color: #0155CB;
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 24px;
+  text-align: center;
+}
+.main-sec .main-card #msform {
+  text-align: center;
+  position: relative;
+  max-width: 612px;
+  margin: 0 auto;
+  margin-top: 20px;
+  /* Custom styles to override Flatpickr classes with higher specificity */
+}
+.main-sec .main-card #msform .upload-wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1.3px solid #A4A5A5;
+  border-radius: 12px;
+  padding: 12px;
+  width: 100%;
+  margin-bottom: 16px;
+  flex-direction: column;
+  gap: 4px;
+}
+.main-sec .main-card #msform .upload-wrapper .address {
+  padding: 0;
+  border: none;
+  margin-bottom: 0;
+}
+.main-sec .main-card #msform .upload-wrapper1 {
+  flex-direction: row;
+  gap: 12px;
+  height: 90px;
+}
+.main-sec .main-card #msform .upload-wrapper1 .fieldlabel {
+  font-weight: 700;
+  color: var(--primary);
+}
+.main-sec .main-card #msform .upload-wrapper1 .fieldchecks {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.main-sec .main-card #msform .upload-wrapper1 .fieldchecks .checkbox {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #131927;
+}
+.main-sec .main-card #msform .upload-wrapper1 .fieldchecks .checkbox input {
+  margin-bottom: 0;
+  margin-top: 0;
+  width: 12px;
+  height: 12px;
+}
+.main-sec .main-card #msform .upload-label {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--primary);
+}
+.main-sec .main-card #msform .upload-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 18px;
+  background: transparent;
+  border: 1px solid var(--primary);
+  border-radius: 8px;
+  cursor: pointer;
+}
+.main-sec .main-card #msform .upload-btn label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--primary);
+}
+.main-sec .main-card #msform fieldset {
+  background: white;
+  border: 0 none;
+  border-radius: 0.5rem;
+  box-sizing: border-box;
+  width: 100%;
+  margin: 0;
+  padding-bottom: 20px;
+  position: relative;
+}
+.main-sec .main-card #msform fieldset:not(:first-of-type) {
+  display: none;
+}
+.main-sec .main-card #msform fieldset .form-card {
+  text-align: left;
+}
+.main-sec .main-card #msform .flatpickr-calendar {
+  margin: 0 auto;
+  margin-bottom: 16px;
+  max-width: 308px;
+  width: 100%;
+}
+.main-sec .main-card #msform .flatpickr-monthDropdown-months {
+  padding: 0 !important;
+  background-color: transparent !important;
+  border: none !important;
+  font-size: 16px !important;
+  color: var(--primary) !important;
+  font-weight: 700 !important;
+}
+.main-sec .main-card #msform .flatpickr-prev-month svg {
+  width: 10px !important;
+}
+.main-sec .main-card #msform .flatpickr-next-month svg {
+  width: 10px !important;
+}
+.main-sec .main-card #msform .custom-calendar .custom-flatpickr-calendar {
+  background: #fff;
+  border: none;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+  margin: 0 auto;
+}
+.main-sec .main-card #msform .custom-calendar .custom-flatpickr-day {
+  color: #333;
+  border-radius: 5px;
+}
+.main-sec .main-card #msform .custom-calendar .custom-flatpickr-day:hover {
+  background: #e9ecef;
+}
+.main-sec .main-card #msform .custom-calendar .custom-flatpickr-day.selected {
+  background: #007bff;
+  color: white;
+}
+.main-sec .main-card #msform .custom-calendar .custom-flatpickr-month {
+  background: #f8f9fa;
+  padding: 10px;
+}
+.main-sec .main-card #msform .custom-calendar .custom-flatpickr-weekdays {
+  font-weight: bold;
+}
+.main-sec .main-card #msform input,
+.main-sec .main-card #msform textarea,
+.main-sec .main-card #msform select {
+  padding: 12px;
+  border: 1.5px solid #A4A5A5;
+  border-radius: 12px;
+  margin-bottom: 12px;
+  margin-top: 2px;
+  width: 100%;
+  color: #9EA2AE;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 1px;
+}
+.main-sec .main-card #msform input::-moz-placeholder, .main-sec .main-card #msform textarea::-moz-placeholder, .main-sec .main-card #msform select::-moz-placeholder {
+  color: #9EA2AE;
+}
+.main-sec .main-card #msform input::placeholder,
+.main-sec .main-card #msform textarea::placeholder,
+.main-sec .main-card #msform select::placeholder {
+  color: #9EA2AE;
+}
+.main-sec .main-card #msform input:focus,
+.main-sec .main-card #msform textarea:focus,
+.main-sec .main-card #msform select:focus {
+  box-shadow: none !important;
+  border: 1px solid #0155CB;
+  outline-width: 0;
+}
+.main-sec .main-card #msform .select1 {
+  border: 1px solid #43B75D;
+  transition: all 0.3s ease;
+}
+.main-sec .main-card #msform .select1:focus, .main-sec .main-card #msform .select1:hover {
+  border-color: #376DB7;
+}
+.main-sec .main-card #msform .summary {
+  background-color: #F8F8F8;
+  border-radius: 12px;
+  width: 100%;
+  padding: 16px;
+}
+.main-sec .main-card #msform .summary .title {
+  color: var(--primary);
+  font-weight: 700;
+}
+.main-sec .main-card #msform .location {
+  border: 1px solid #D9D9D9;
+  width: -moz-fit-content;
+  width: fit-content;
+  height: -moz-fit-content;
+  height: fit-content;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 24px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #6A6A6A;
+  background-color: white;
+}
+.main-sec .main-card #msform .custom-btn {
+  background-color: #A7FAFC;
+  padding: 4px 8px;
+  border-radius: 24px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--primary);
+  height: -moz-fit-content;
+  height: fit-content;
+  width: -moz-fit-content;
+  width: fit-content;
+}
+.main-sec .main-card #msform .action-button {
+  width: -moz-fit-content;
+  width: fit-content;
+  background: var(--primary);
+  font-weight: 600;
+  font-size: 14px;
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+  padding: 8px 16px;
+  float: right;
+  margin-bottom: 0;
+  margin-left: 4px;
+}
+.main-sec .main-card #msform .action-button:hover, .main-sec .main-card #msform .action-button:focus {
+  background-color: #0155CB;
+}
+.main-sec .main-card #msform .action-button-previous {
+  width: 100px;
+  background: transparent;
+  border: 1px solid var(--primary);
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--primary);
+  border-radius: 8px;
+  cursor: pointer;
+  padding: 8px 16px;
+  padding-left: 28px;
+  float: right;
+  margin-bottom: 0;
+  margin-right: 4px;
+  background: url("./../../img/icons/back-icon.svg") left/12px 12px no-repeat;
+  background-position: 14px center !important;
+}
+.main-sec .main-card .card {
+  z-index: 0;
+  border: none;
+  position: relative;
+}
+.main-sec .main-card .fs-title {
+  font-size: 25px;
+  color: #0155CB;
+  margin-bottom: 15px;
+  font-weight: normal;
+  text-align: left;
+}
+.main-sec .main-card .purple-text {
+  color: #0155CB;
+  font-weight: normal;
+}
+.main-sec .main-card .steps {
+  font-size: 25px;
+  color: gray;
+  margin-bottom: 10px;
+  font-weight: normal;
+  text-align: right;
+}
+.main-sec .main-card .fieldlabels {
+  color: var(--primary);
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.main-sec .main-card #progressbar {
+  margin-bottom: 20px;
+  overflow: hidden;
+  color: lightgrey;
+  counter-reset: step;
+}
+.main-sec .main-card #progressbar li {
+  list-style-type: none;
+  font-size: 15px;
+  width: 25%;
+  float: left;
+  position: relative;
+  font-weight: 400;
+  text-align: center;
+  /* Purple Dot inside Active or Completed Step */
+}
+.main-sec .main-card #progressbar li:before {
+  content: "";
+  width: 40px;
+  height: 40px;
+  border: 2px solid lightgray;
+  border-radius: 50%;
+  display: block;
+  margin: 0 auto 10px auto;
+  position: relative;
+  background: white;
+  z-index: 1;
+}
+.main-sec .main-card #progressbar li:after {
+  content: "";
+  width: 100%;
+  height: 2px;
+  background: lightgray;
+  position: absolute;
+  left: -50%;
+  top: 20px;
+  z-index: 0;
+}
+.main-sec .main-card #progressbar li:first-child:after {
+  content: none;
+}
+.main-sec .main-card #progressbar li.active:before {
+  border-color: #0155CB;
+}
+.main-sec .main-card #progressbar li.active::after {
+  background: #0155CB;
+}
+.main-sec .main-card #progressbar li.completed:before {
+  border-color: #0155CB;
+}
+.main-sec .main-card #progressbar li.completed:after {
+  background: #0155CB;
+}
+.main-sec .main-card #progressbar li.active:before, .main-sec .main-card #progressbar li.completed:before {
+  content: "";
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid #0155CB;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* inner purple dot */
+  box-shadow: inset 0 0 0 10px white;
+}
+.main-sec .main-card #progressbar li.active:before {
+  background-image: radial-gradient(circle, #0155CB 6px, transparent 6px);
+  background-repeat: no-repeat;
+  background-position: center;
+}
+.main-sec .main-card #progressbar li.completed:before {
+  background-image: radial-gradient(circle, #0155CB 6px, transparent 6px);
+  background-repeat: no-repeat;
+  background-position: center;
+}
+.main-sec .main-card .progress {
+  height: 20px;
+}
+.main-sec .main-card .progress .progress-bar {
+  background-color: #0155CB;
+}
+.main-sec .main-card .fit-image {
+  width: 100%;
+  -o-object-fit: cover;
+     object-fit: cover;
+}
+.main-sec .checkout-card {
+  background-color: #F8F8F8;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.main-sec .checkout-card .top-card {
+  border-radius: 12px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border: 1px solid #A4A5A5;
+}
+.main-sec .checkout-card .top-card .card-title {
+  color: var(--primary);
+  font-weight: 700;
+  margin-bottom: 0;
+  text-align: center;
+}
+.main-sec .checkout-card .top-card .description {
+  color: var(--primary);
+  font-size: 12px;
+  font-weight: 600;
+}
+.main-sec .checkout-card .middle-card {
+  background-color: #C9F3FF;
+  padding: 8px;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.main-sec .checkout-card .middle-card .card-title {
+  color: var(--primary);
+  font-weight: 700;
+  margin-bottom: 0;
+  text-align: center;
+}
+.main-sec .checkout-card .custom-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.main-sec .checkout-card .card-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: white;
+  padding: 8px 12px;
+  border-radius: 8px;
+  width: 100%;
+}
+.main-sec .checkout-card .radio-text {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.main-sec .checkout-card .form-check-label {
+  color: #131927;
+  font-size: 14px;
+  font-weight: 600;
+}
+.main-sec .checkout-card .form-check-input {
+  width: 18px !important;
+  height: 18px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border-color: #1F57A4 !important;
+}
+.main-sec .checkout-card .form-check-input:checked {
+  background-color: #1F57A4;
+}
+.main-sec .custom-main-card {
+  background-color: white;
+  border-radius: 8px;
+  padding: 12px;
+  align-items: start;
+}
+.main-sec .custom-main-card .toggle-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.main-sec .custom-main-card .toggle-btn {
+  display: block;
+  width: 60px;
+  height: 30px;
+  background: #ddd;
+  border-radius: 30px;
+  position: relative;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+.main-sec .custom-main-card .toggle-btn::after {
+  content: "";
+  width: 24px;
+  height: 24px;
+  background: #fff;
+  border-radius: 50%;
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+.main-sec .custom-main-card #toggle:checked + .toggle-btn {
+  background: var(--primary);
+}
+.main-sec .custom-main-card #toggle:checked + .toggle-btn::after {
+  left: calc(100% - 24px - 3px);
+}
+.main-sec .custom-main-card .toggle-text {
+  font-weight: 600;
+  color: var(--primary);
+}
+
+@media (max-width: 992px) {
+  .main-sec {
+    padding-top: 115px;
+  }
+}
+@media (max-width: 767px) {
+  .upload-wrapper1 {
+    height: -moz-fit-content !important;
+    height: fit-content !important;
+  }
+  .opacity-label {
+    display: none !important;
+  }
+}
+@media (max-width: 576px) {
+  .upload-wrapper {
+    flex-wrap: wrap;
+  }
+}/*# sourceMappingURL=book-appointment.css.map */

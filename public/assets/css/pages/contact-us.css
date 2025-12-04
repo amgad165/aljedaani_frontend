@@ -1,0 +1,170 @@
+.hero-sec {
+  padding-top: 202px;
+}
+.hero-sec .title {
+  font-size: clamp(20px, 2vw, 24px);
+}
+.hero-sec .contact-card-wrapper {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+.hero-sec .contact-card-wrapper .contact-card {
+  width: 100%;
+  height: 259px;
+  border-radius: 12px;
+  border: 2px solid white;
+  background: center/cover no-repeat;
+  overflow: hidden;
+}
+.hero-sec .contact-card-wrapper .contact-card:hover .card-main {
+  margin-top: 0;
+}
+.hero-sec .contact-card-wrapper .contact-card .card-main {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 12px;
+  margin-top: 200px;
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+  transition: all 0.3s ease;
+}
+.hero-sec .contact-card-wrapper .contact-card .card-main::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(79, 79, 79, 0.6588235294);
+  z-index: -1;
+}
+.hero-sec .contact-card-wrapper .contact-card .card-main .card-top {
+  color: white;
+  font-size: clamp(20px, 2vw, 24px);
+  font-family: "nunito-bold";
+}
+.hero-sec .contact-card-wrapper .contact-card .card-main .card-bottom .buttons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.hero-sec .contact-card-wrapper .contact-card .card-main .card-bottom .buttons .btn {
+  background-color: var(--secondary);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  padding: 4px 8px;
+  font-size: 10px;
+  color: white;
+  font-family: "nunito-sb";
+  border-radius: 8px;
+}
+.hero-sec .contact-card-wrapper .contact-card .card-main .card-bottom .description {
+  font-family: "varela-round";
+  color: white;
+  font-size: 16px;
+}
+.hero-sec .form-wrapper {
+  margin-top: 24px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+.hero-sec .form-wrapper label {
+  font-family: "nunito-bold";
+  color: var(--primary);
+  margin-bottom: 8px;
+}
+.hero-sec .form-wrapper .form-control {
+  border-radius: 12px;
+  border: 1.5px solid #A4A5A5;
+  background-color: transparent;
+  color: var(--primary);
+  margin-bottom: 10px;
+  padding: 12px;
+  height: 40px;
+}
+.hero-sec .form-wrapper .form-control::placeholder {
+  color: #9EA2AE;
+}
+.hero-sec .form-wrapper .form-control:last-child {
+  margin-bottom: 0;
+}
+.hero-sec .form-wrapper .form-control:focus, .hero-sec .form-wrapper .form-control:active {
+  outline: none;
+  box-shadow: none;
+  /* Agar shadow bhi remove karni ho */
+}
+.hero-sec .form-wrapper textarea {
+  border-radius: 12px;
+  border: 1.5px solid #A4A5A5;
+  background-color: transparent;
+  color: var(--primary);
+  width: 100%;
+  padding: 12px;
+  height: 167px;
+  resize: vertical;
+  margin-bottom: 10px;
+}
+.hero-sec .form-wrapper textarea:focus, .hero-sec .form-wrapper textarea:active {
+  outline: none;
+  box-shadow: none;
+  /* Agar shadow bhi remove karni ho */
+}
+.hero-sec .form-wrapper .submit {
+  background-color: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-family: "nunito-sb";
+}
+.hero-sec .form-wrapper .objects {
+  position: absolute;
+  top: 50%;
+  right: 15px;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 1;
+}
+.hero-sec .form-wrapper .objects .obj {
+  background-color: var(--primary);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+}
+
+@media (max-width: 992px) {
+  .main-sec {
+    padding-top: 106px;
+  }
+  .main-sec .contact-card-wrapper {
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .main-sec .form-wrapper {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .main-sec .form-wrapper .objects {
+    display: none;
+  }
+}
+@media (max-width: 768px) {
+  .main-sec .contact-card-wrapper {
+    grid-template-columns: 1fr;
+  }
+}
+
+/*# sourceMappingURL=contact-us.css.map */

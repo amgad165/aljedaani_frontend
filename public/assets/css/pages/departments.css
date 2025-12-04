@@ -1,0 +1,214 @@
+* {
+  font-family: "nunito", sans-serif !important;
+}
+
+.main-sec {
+  padding: 0;
+}
+.main-sec .sec-wrapper {
+  padding-top: 219px;
+  padding-bottom: clamp(60px, 10vw, 120px);
+  position: relative;
+}
+.main-sec .sec-wrapper .objects {
+  position: absolute;
+  bottom: 10px;
+  right: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 1;
+}
+.main-sec .sec-wrapper .objects .obj {
+  background-color: var(--primary);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+}
+.main-sec .sec-wrapper .topbar {
+  background-color: white;
+  padding: 15px 24px;
+  border-radius: 15px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+.main-sec .sec-wrapper .topbar .main-title {
+  font-family: "nunito-sb";
+}
+.main-sec .sec-wrapper .topbar .right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+.main-sec .sec-wrapper .topbar .right select {
+  border-radius: 6px;
+  border: 1px solid #6A6A6A;
+  outline: none;
+  height: 40px;
+  padding: 0 12px;
+  width: 100%;
+}
+.main-sec .sec-wrapper .topbar .right .icon {
+  width: 40px;
+  min-width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background-color: var(--primary);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.main-sec .sec-wrapper .topbar .right .icon img {
+  filter: brightness(0) invert(1);
+}
+.main-sec .sec-wrapper .topbar .right .sort-btn {
+  display: flex;
+  align-items: center;
+  border-radius: 12px;
+  gap: 8px;
+  padding: 8px 16px;
+  background-color: var(--primary);
+  color: white;
+  white-space: nowrap;
+}
+.main-sec .sec-wrapper .breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 18px 0;
+  flex-wrap: wrap;
+}
+.main-sec .sec-wrapper .breadcrumb li {
+  font-family: "nunito-bold";
+  color: #A4A5A5;
+}
+.main-sec .sec-wrapper .breadcrumb li a {
+  font-family: "nunito-bold";
+  font-weight: 700;
+  color: var(--primary);
+}
+.main-sec .sec-wrapper .buttons {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+.main-sec .sec-wrapper .buttons:last-child {
+  margin-bottom: 0;
+}
+.main-sec .sec-wrapper .buttons .department-btn {
+  border: 1px solid #D8D8D8;
+  border-radius: 12px;
+  background-color: white;
+  color: var(--primary);
+  font-family: "nunito-bold";
+  padding: 12px;
+}
+.main-sec .sec-wrapper .tabs {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+  border-radius: 12px;
+  border: 2px solid #061F42;
+  width: -moz-fit-content;
+  width: fit-content;
+  overflow: hidden;
+  flex-wrap: wrap;
+}
+.main-sec .sec-wrapper .tabs .tab-btn {
+  padding: 12px 32px;
+  background: transparent;
+  cursor: pointer;
+  transition: 0.3s;
+  border: none;
+  font-size: clamp(16px, 2vw, 20px);
+  font-family: "nunito-bold";
+  font-weight: 700;
+}
+.main-sec .sec-wrapper .tabs .tab-btn:hover {
+  background-color: var(--primary);
+  color: white;
+}
+.main-sec .sec-wrapper .tabs .tab-btn.active {
+  background: var(--primary);
+  color: #fff;
+}
+.main-sec .sec-wrapper .tab-content {
+  display: none;
+}
+.main-sec .sec-wrapper .tab-content .title {
+  font-size: clamp(20px, 2vw, 24px);
+  font-family: "nunito-bold";
+  font-weight: 900;
+}
+.main-sec .sec-wrapper .tab-content.active {
+  display: block;
+}
+.main-sec .sec-wrapper .team-slider {
+  padding: 0 86px;
+}
+.main-sec .sec-wrapper .team-slider .slider-item {
+  margin: 6px;
+}
+.main-sec .sec-wrapper .team-slider .slick-prev,
+.main-sec .sec-wrapper .team-slider .slick-next {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: transparent;
+  border: 1.5px solid #131927;
+  display: flex !important;
+  justify-content: center;
+  align-items: center;
+  z-index: 5;
+  cursor: pointer;
+  transition: 0.25s ease;
+  outline: none;
+  background: url("./../../img/icons/team-arrow.svg") center/14px 16px no-repeat;
+}
+.main-sec .sec-wrapper .team-slider .slick-prev::before,
+.main-sec .sec-wrapper .team-slider .slick-next::before {
+  display: none;
+}
+.main-sec .sec-wrapper .team-slider .slick-prev {
+  left: 16px;
+}
+.main-sec .sec-wrapper .team-slider .slick-next {
+  right: 16px;
+  transform: rotate(180deg);
+}
+
+@media (max-width: 992px) {
+  .main-sec .sec-wrapper {
+    padding-top: 106px;
+  }
+  .main-sec .sec-wrapper .objects {
+    display: none;
+  }
+  .main-sec .sec-wrapper .topbar {
+    flex-direction: column;
+    gap: 12px;
+    align-items: start;
+  }
+  .main-sec .sec-wrapper .topbar .right {
+    flex-direction: column;
+    gap: 8px;
+    align-items: start;
+    width: 100%;
+  }
+  .main-sec .sec-wrapper .buttons .department-btn {
+    padding: 8px;
+  }
+  .main-sec .sec-wrapper .tabs .tab-btn {
+    padding: 10px 22px;
+  }
+  .main-sec .sec-wrapper .team-slider {
+    padding: 0;
+  }
+}/*# sourceMappingURL=departments.css.map */
