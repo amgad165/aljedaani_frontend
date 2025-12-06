@@ -3,6 +3,8 @@ import { useAuth } from '../hooks/useAuth';
 import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import CustomSelect from '../components/CustomSelect';
+import InlineDateTimePicker from '../components/InlineDateTimePicker';
 
 // Step types
 type StepStatus = 'completed' | 'current' | 'upcoming';
@@ -33,7 +35,6 @@ interface ProfileData {
   nationalId: string;
   address: string;
   email: string;
-  mobileNumber: string;
   password: string;
   confirmPassword: string;
 }
@@ -48,8 +49,6 @@ const InputField = ({
   required = false,
   hasDropdown = false,
   options = [],
-  hasIcon = false,
-  iconType = '',
 }: {
   label: string;
   placeholder: string;
@@ -61,63 +60,38 @@ const InputField = ({
   options?: { value: string; label: string }[];
   hasIcon?: boolean;
   iconType?: string;
-}) => (
-  <div style={{
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'flex-start',
-    gap: '8px',
-    width: '100%',
-  }}>
-    <label style={{
-      fontFamily: 'Nunito, sans-serif',
-      fontWeight: 700,
-      fontSize: '16px',
-      lineHeight: '24px',
-      color: '#061F42',
+}) => {
+  // For dropdown fields, use CustomSelect component
+  if (hasDropdown) {
+    return (
+      <CustomSelect
+        label={label}
+        placeholder={placeholder}
+        value={value}
+        onChange={onChange}
+        options={options}
+        required={required}
+      />
+    );
+  }
+
+  return (
+    <div style={{
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'flex-start',
+      gap: '8px',
+      width: '100%',
     }}>
-      {label}{required && '*'}
-    </label>
-    {hasDropdown ? (
-      <div style={{
-        boxSizing: 'border-box',
-        display: 'flex',
-        alignItems: 'center',
-        padding: '8px 12px',
-        gap: '12px',
-        width: '100%',
-        height: '40px',
-        border: '1.5px solid #A4A5A5',
-        borderRadius: '8px',
-        position: 'relative',
+      <label style={{
+        fontFamily: 'Nunito, sans-serif',
+        fontWeight: 700,
+        fontSize: '16px',
+        lineHeight: '24px',
+        color: '#061F42',
       }}>
-        <select
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          style={{
-            flex: 1,
-            border: 'none',
-            outline: 'none',
-            fontFamily: 'Nunito, sans-serif',
-            fontWeight: 500,
-            fontSize: '14px',
-            lineHeight: '16px',
-            color: value ? '#061F42' : '#9EA2AE',
-            background: 'transparent',
-            appearance: 'none',
-            cursor: 'pointer',
-          }}
-        >
-          <option value="" disabled>{placeholder}</option>
-          {options.map((opt) => (
-            <option key={opt.value} value={opt.value}>{opt.label}</option>
-          ))}
-        </select>
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-          <path d="M6 9L12 15L18 9" stroke="#D1D1D6" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-        </svg>
-      </div>
-    ) : (
+        {label}{required && '*'}
+      </label>
       <div style={{
         boxSizing: 'border-box',
         display: 'flex',
@@ -125,10 +99,21 @@ const InputField = ({
         padding: '12px',
         gap: '12px',
         width: '100%',
-        height: type === 'textarea' ? '72px' : '40px',
-        border: '1.5px solid #A4A5A5',
-        borderRadius: '12px',
-      }}>
+        height: type === 'textarea' ? '72px' : '44px',
+        border: '1.5px solid #D1D5DB',
+        borderRadius: '10px',
+        background: '#FFFFFF',
+        transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
+      }}
+      onFocus={(e) => {
+        e.currentTarget.style.borderColor = '#0155CB';
+        e.currentTarget.style.boxShadow = '0 0 0 3px rgba(1, 85, 203, 0.1)';
+      }}
+      onBlur={(e) => {
+        e.currentTarget.style.borderColor = '#D1D5DB';
+        e.currentTarget.style.boxShadow = 'none';
+      }}
+      >
         {type === 'textarea' ? (
           <textarea
             value={value}
@@ -145,6 +130,7 @@ const InputField = ({
               color: '#061F42',
               resize: 'none',
               height: '100%',
+              background: 'transparent',
             }}
           />
         ) : (
@@ -162,21 +148,15 @@ const InputField = ({
               fontSize: '14px',
               lineHeight: '16px',
               color: '#061F42',
+              background: 'transparent',
+              width: '100%',
             }}
           />
         )}
-        {hasIcon && iconType === 'calendar' && (
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-            <path d="M8 2V5" stroke="#A4A5A5" strokeWidth="1.5" strokeLinecap="round"/>
-            <path d="M16 2V5" stroke="#A4A5A5" strokeWidth="1.5" strokeLinecap="round"/>
-            <path d="M3 8H21" stroke="#A4A5A5" strokeWidth="1.5" strokeLinecap="round"/>
-            <rect x="3" y="4" width="18" height="18" rx="2" stroke="#A4A5A5" strokeWidth="1.5"/>
-          </svg>
-        )}
       </div>
-    )}
-  </div>
-);
+    </div>
+  );
+};
 
 const BookAppointmentPage = () => {
   const { isAuthenticated, user, register, clearError } = useAuth();
@@ -210,7 +190,6 @@ const BookAppointmentPage = () => {
     nationalId: '',
     address: '',
     email: '',
-    mobileNumber: '',
     password: '',
     confirmPassword: '',
   });
@@ -249,11 +228,6 @@ const BookAppointmentPage = () => {
       alert('Please enter the OTP code');
       return;
     }
-    // OTP verification successful - pass mobile number to profile
-    setProfileData(prev => ({
-      ...prev,
-      mobileNumber: verificationData.mobileNumber,
-    }));
     setCurrentStep(2);
   };
 
@@ -308,7 +282,7 @@ const BookAppointmentPage = () => {
         medical_record_number: profileData.medicalRecordNumber || undefined,
         national_id: profileData.nationalId || undefined,
         address: profileData.address || undefined,
-        phone: profileData.mobileNumber,
+        phone: verificationData.mobileNumber,
         profile_photo: profileData.profilePhoto || undefined,
       });
       
@@ -623,46 +597,123 @@ const BookAppointmentPage = () => {
             boxSizing: 'border-box',
             display: 'flex',
             alignItems: 'center',
-            padding: '12px',
-            gap: '12px',
+            padding: '16px',
+            gap: '16px',
             width: '100%',
-            background: '#F9F9F9',
-            border: '1.3px solid #A4A5A5',
+            background: '#F9FAFB',
+            border: '1.5px solid #E5E7EB',
             borderRadius: '12px',
+            transition: 'border-color 0.2s ease',
           }}>
-            <span style={{
-              flex: 1,
-              fontFamily: 'Nunito, sans-serif',
-              fontWeight: 700,
-              fontSize: '16px',
-              color: '#061F42',
+            {/* Profile Photo Preview */}
+            <div style={{
+              width: '72px',
+              height: '72px',
+              borderRadius: '50%',
+              background: profileData.profilePhoto 
+                ? `url(${URL.createObjectURL(profileData.profilePhoto)}) center/cover no-repeat`
+                : 'linear-gradient(135deg, #E0E7FF 0%, #C7D2FE 100%)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              border: '3px solid #FFFFFF',
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+              flexShrink: 0,
+              overflow: 'hidden',
             }}>
-              Upload profile photo
-            </span>
+              {!profileData.profilePhoto && (
+                <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                  <path d="M16 16C19.3137 16 22 13.3137 22 10C22 6.68629 19.3137 4 16 4C12.6863 4 10 6.68629 10 10C10 13.3137 12.6863 16 16 16Z" stroke="#9CA3AF" strokeWidth="2"/>
+                  <path d="M28 28C28 23.5817 22.6274 20 16 20C9.37258 20 4 23.5817 4 28" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round"/>
+                </svg>
+              )}
+            </div>
+            
+            {/* Upload Info */}
+            <div style={{ flex: 1 }}>
+              <span style={{
+                fontFamily: 'Nunito, sans-serif',
+                fontWeight: 700,
+                fontSize: '16px',
+                color: '#061F42',
+                display: 'block',
+                marginBottom: '4px',
+              }}>
+                {profileData.profilePhoto ? profileData.profilePhoto.name : 'Upload profile photo'}
+              </span>
+              <span style={{
+                fontFamily: 'Nunito, sans-serif',
+                fontWeight: 400,
+                fontSize: '12px',
+                color: '#6B7280',
+              }}>
+                {profileData.profilePhoto 
+                  ? `${(profileData.profilePhoto.size / 1024).toFixed(1)} KB`
+                  : 'JPEG, PNG or GIF (max 2MB)'}
+              </span>
+            </div>
+            
+            {/* Remove Button */}
+            {profileData.profilePhoto && (
+              <button
+                onClick={() => handleInputChange('profilePhoto', null)}
+                style={{
+                  padding: '8px',
+                  background: '#FEE2E2',
+                  border: 'none',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'background 0.2s ease',
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.background = '#FECACA'}
+                onMouseLeave={(e) => e.currentTarget.style.background = '#FEE2E2'}
+              >
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                  <path d="M15 5L5 15M5 5L15 15" stroke="#EF4444" strokeWidth="2" strokeLinecap="round"/>
+                </svg>
+              </button>
+            )}
+            
+            {/* Upload Button */}
             <label style={{
               boxSizing: 'border-box',
               display: 'flex',
               justifyContent: 'center',
               alignItems: 'center',
-              padding: '8px 12px',
+              padding: '10px 16px',
               gap: '8px',
-              background: '#FFFFFF',
-              border: '1px solid #061F42',
+              background: profileData.profilePhoto ? '#F3F4F6' : '#061F42',
+              border: profileData.profilePhoto ? '1px solid #D1D5DB' : 'none',
               borderRadius: '8px',
               cursor: 'pointer',
-            }}>
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                <path d="M12 16V8" stroke="#061F42" strokeWidth="1.5" strokeLinecap="round"/>
-                <path d="M9 11L12 8L15 11" stroke="#061F42" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M4 17V18C4 19.1046 4.89543 20 6 20H18C19.1046 20 20 19.1046 20 18V17" stroke="#061F42" strokeWidth="1.5" strokeLinecap="round"/>
+              transition: 'all 0.2s ease',
+            }}
+            onMouseEnter={(e) => {
+              if (profileData.profilePhoto) {
+                e.currentTarget.style.background = '#E5E7EB';
+              } else {
+                e.currentTarget.style.background = '#0155CB';
+              }
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = profileData.profilePhoto ? '#F3F4F6' : '#061F42';
+            }}
+            >
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path d="M10 13V4" stroke={profileData.profilePhoto ? '#374151' : 'white'} strokeWidth="1.5" strokeLinecap="round"/>
+                <path d="M7 7L10 4L13 7" stroke={profileData.profilePhoto ? '#374151' : 'white'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M3 14V15C3 15.5523 3.44772 16 4 16H16C16.5523 16 17 15.5523 17 15V14" stroke={profileData.profilePhoto ? '#374151' : 'white'} strokeWidth="1.5" strokeLinecap="round"/>
               </svg>
               <span style={{
                 fontFamily: 'Nunito, sans-serif',
                 fontWeight: 600,
                 fontSize: '14px',
-                color: '#061F42',
+                color: profileData.profilePhoto ? '#374151' : '#FFFFFF',
               }}>
-                Upload
+                {profileData.profilePhoto ? 'Change' : 'Upload'}
               </span>
               <input
                 type="file"
@@ -805,8 +856,6 @@ const BookAppointmentPage = () => {
                 value={profileData.dateOfBirth}
                 onChange={(value) => handleInputChange('dateOfBirth', value)}
                 type="date"
-                hasIcon
-                iconType="calendar"
                 required
               />
               <InputField
@@ -851,7 +900,7 @@ const BookAppointmentPage = () => {
             background: '#E9E9E9',
           }} />
           
-          {/* Email and Mobile Row */}
+          {/* Email Row */}
           <div style={{
             display: 'flex',
             gap: '24px',
@@ -867,16 +916,7 @@ const BookAppointmentPage = () => {
                 required
               />
             </div>
-            <div style={{ flex: 1 }}>
-              <InputField
-                label="Mobile Number"
-                placeholder="Type your mobile number"
-                value={profileData.mobileNumber || verificationData.mobileNumber}
-                onChange={(value) => handleInputChange('mobileNumber', value)}
-                type="tel"
-                required
-              />
-            </div>
+            <div style={{ flex: 1 }} />
           </div>
           
           {/* Password Row */}
@@ -1034,10 +1074,10 @@ const BookAppointmentPage = () => {
           <div style={{
             display: 'flex',
             flexDirection: 'column',
-            alignItems: 'flex-start',
+            alignItems: 'center',
             gap: '16px',
-            width: '612px',
-            minWidth: '612px',
+            width: '100%',
+            maxWidth: '612px',
           }}>
             {/* Three Dropdowns Row */}
             <div style={{
@@ -1048,156 +1088,54 @@ const BookAppointmentPage = () => {
               width: '100%',
             }}>
               {/* Select Branch */}
-              <div style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'flex-start',
-                gap: '8px',
-                flex: 1,
-              }}>
-                <div style={{
-                  boxSizing: 'border-box',
-                  display: 'flex',
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  padding: '8px 12px',
-                  gap: '12px',
-                  width: '100%',
-                  height: '40px',
-                  border: '1.5px solid #A4A5A5',
-                  borderRadius: '8px',
-                  cursor: 'pointer',
-                }}>
-                  <select
-                    value={doctorSelection.branch}
-                    onChange={(e) => setDoctorSelection(prev => ({ ...prev, branch: e.target.value }))}
-                    style={{
-                      flex: 1,
-                      border: 'none',
-                      outline: 'none',
-                      background: 'transparent',
-                      fontFamily: 'Nunito, sans-serif',
-                      fontWeight: 500,
-                      fontSize: '14px',
-                      lineHeight: '16px',
-                      color: doctorSelection.branch ? '#061F42' : '#9EA2AE',
-                      cursor: 'pointer',
-                      appearance: 'none',
-                    }}
-                  >
-                    <option value="" disabled>Select Branch</option>
-                    <option value="jeddah">Jeddah Branch</option>
-                    <option value="riyadh">Riyadh Branch</option>
-                    <option value="dammam">Dammam Branch</option>
-                  </select>
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                    <path d="M6 9L12 15L18 9" stroke="#D1D1D6" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                </div>
+              <div style={{ flex: 1 }}>
+                <CustomSelect
+                  placeholder="Select Branch"
+                  value={doctorSelection.branch}
+                  onChange={(value) => setDoctorSelection(prev => ({ ...prev, branch: value }))}
+                  options={[
+                    { value: 'jeddah', label: 'Jeddah Branch' },
+                    { value: 'riyadh', label: 'Riyadh Branch' },
+                    { value: 'dammam', label: 'Dammam Branch' },
+                  ]}
+                  searchable={false}
+                />
               </div>
               
               {/* Select Specialty */}
-              <div style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'flex-start',
-                gap: '8px',
-                flex: 1,
-              }}>
-                <div style={{
-                  boxSizing: 'border-box',
-                  display: 'flex',
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  padding: '8px 12px',
-                  gap: '12px',
-                  width: '100%',
-                  height: '40px',
-                  border: '1.5px solid #A4A5A5',
-                  borderRadius: '8px',
-                  cursor: 'pointer',
-                }}>
-                  <select
-                    value={doctorSelection.specialty}
-                    onChange={(e) => setDoctorSelection(prev => ({ ...prev, specialty: e.target.value }))}
-                    style={{
-                      flex: 1,
-                      border: 'none',
-                      outline: 'none',
-                      background: 'transparent',
-                      fontFamily: 'Nunito, sans-serif',
-                      fontWeight: 500,
-                      fontSize: '14px',
-                      lineHeight: '16px',
-                      color: doctorSelection.specialty ? '#061F42' : '#9EA2AE',
-                      cursor: 'pointer',
-                      appearance: 'none',
-                    }}
-                  >
-                    <option value="" disabled>Select Specialty</option>
-                    <option value="cardiology">Cardiology</option>
-                    <option value="dermatology">Dermatology</option>
-                    <option value="pediatrics">Pediatrics</option>
-                    <option value="orthopedics">Orthopedics</option>
-                    <option value="gynecology">Gynecology</option>
-                  </select>
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                    <path d="M6 9L12 15L18 9" stroke="#D1D1D6" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                </div>
+              <div style={{ flex: 1 }}>
+                <CustomSelect
+                  placeholder="Select Specialty"
+                  value={doctorSelection.specialty}
+                  onChange={(value) => setDoctorSelection(prev => ({ ...prev, specialty: value }))}
+                  options={[
+                    { value: 'cardiology', label: 'Cardiology' },
+                    { value: 'dermatology', label: 'Dermatology' },
+                    { value: 'pediatrics', label: 'Pediatrics' },
+                    { value: 'orthopedics', label: 'Orthopedics' },
+                    { value: 'gynecology', label: 'Gynecology' },
+                  ]}
+                  searchable={false}
+                />
               </div>
               
               {/* Select Doctor */}
-              <div style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'flex-start',
-                gap: '8px',
-                flex: 1,
-              }}>
-                <div style={{
-                  boxSizing: 'border-box',
-                  display: 'flex',
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  padding: '8px 12px',
-                  gap: '12px',
-                  width: '100%',
-                  height: '40px',
-                  border: '1.5px solid #A4A5A5',
-                  borderRadius: '8px',
-                  cursor: 'pointer',
-                }}>
-                  <select
-                    value={doctorSelection.doctor}
-                    onChange={(e) => setDoctorSelection(prev => ({ ...prev, doctor: e.target.value }))}
-                    style={{
-                      flex: 1,
-                      border: 'none',
-                      outline: 'none',
-                      background: 'transparent',
-                      fontFamily: 'Nunito, sans-serif',
-                      fontWeight: 500,
-                      fontSize: '14px',
-                      lineHeight: '16px',
-                      color: doctorSelection.doctor ? '#061F42' : '#9EA2AE',
-                      cursor: 'pointer',
-                      appearance: 'none',
-                    }}
-                  >
-                    <option value="" disabled>Select Doctor</option>
-                    <option value="dr-ahmad">Dr. Ahmad</option>
-                    <option value="dr-sarah">Dr. Sarah</option>
-                    <option value="dr-mohammed">Dr. Mohammed</option>
-                  </select>
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                    <path d="M6 9L12 15L18 9" stroke="#D1D1D6" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                </div>
+              <div style={{ flex: 1 }}>
+                <CustomSelect
+                  placeholder="Select Doctor"
+                  value={doctorSelection.doctor}
+                  onChange={(value) => setDoctorSelection(prev => ({ ...prev, doctor: value }))}
+                  options={[
+                    { value: 'dr-ahmad', label: 'Dr. Ahmad' },
+                    { value: 'dr-sarah', label: 'Dr. Sarah' },
+                    { value: 'dr-mohammed', label: 'Dr. Mohammed' },
+                  ]}
+                  searchable={false}
+                />
               </div>
             </div>
             
-            {/* Search and Date/Time Row */}
+            {/* Search Row */}
             <div style={{
               display: 'flex',
               flexDirection: 'row',
@@ -1248,46 +1186,30 @@ const BookAppointmentPage = () => {
                   </svg>
                 </div>
               </div>
-              
-              {/* Date/Time Button */}
-              <button
-                onClick={() => {
-                  // TODO: Open date/time picker
-                  const dateTime = prompt('Enter date and time (e.g., 2025-12-10 10:00)');
-                  if (dateTime) {
-                    setDoctorSelection(prev => ({ ...prev, dateTime }));
-                  }
-                }}
-                style={{
-                  display: 'flex',
-                  flexDirection: 'row',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  padding: '8px 12px',
-                  width: '175px',
-                  height: '40px',
-                  background: 'transparent',
-                  border: 'none',
-                  borderRadius: '8px',
-                  cursor: 'pointer',
-                }}
-              >
-                <span style={{
-                  fontFamily: 'Nunito, sans-serif',
-                  fontWeight: 600,
-                  fontSize: '14px',
-                  lineHeight: '16px',
-                  color: doctorSelection.dateTime ? '#061F42' : '#9EA2AE',
-                }}>
-                  {doctorSelection.dateTime || 'Select Date/Time'}
-                </span>
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style={{ marginLeft: '8px' }}>
-                  <rect x="3" y="4" width="18" height="18" rx="2" stroke={doctorSelection.dateTime ? '#061F42' : '#9EA2AE'} strokeWidth="1.5"/>
-                  <path d="M3 10H21" stroke={doctorSelection.dateTime ? '#061F42' : '#9EA2AE'} strokeWidth="1.5"/>
-                  <path d="M8 2V6" stroke={doctorSelection.dateTime ? '#061F42' : '#9EA2AE'} strokeWidth="1.5" strokeLinecap="round"/>
-                  <path d="M16 2V6" stroke={doctorSelection.dateTime ? '#061F42' : '#9EA2AE'} strokeWidth="1.5" strokeLinecap="round"/>
-                </svg>
-              </button>
+            </div>
+            
+            {/* Date/Time Picker Section */}
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '16px',
+              width: '100%',
+              marginTop: '8px',
+            }}>
+              <span style={{
+                fontFamily: 'Nunito, sans-serif',
+                fontWeight: 600,
+                fontSize: '14px',
+                lineHeight: '20px',
+                color: '#061F42',
+              }}>
+                Select Date & Time for your appointment
+              </span>
+              <InlineDateTimePicker
+                value={doctorSelection.dateTime}
+                onChange={(value: string) => setDoctorSelection(prev => ({ ...prev, dateTime: value }))}
+              />
             </div>
             
             {/* Summary Section */}

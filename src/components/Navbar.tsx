@@ -93,9 +93,9 @@ const Navbar = () => {
               <a href="#">
                 <img src="/assets/img/icons/bell-notification.svg" className="d-block" width="24" height="24" alt="Bell Icon" />
               </a>
-              <a href="#">
+              <Link to="/profile">
                 <img src="/assets/img/icons/profile-circle.svg" className="d-block" width="24" height="24" alt="Profile Icon" />
-              </a>
+              </Link>
               {isAuthenticated && user ? (
                 <div className="relative group">
                   <button 

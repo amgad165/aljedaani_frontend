@@ -4,6 +4,7 @@ import { doctorsService, type Doctor, type PaginatedResponse } from '../services
 import { branchesService, type Branch } from '../services/branchesService';
 import { departmentsService, type Department } from '../services/departmentsService';
 import Navbar from '../components/Navbar';
+import CustomSelect from '../components/CustomSelect';
 
 interface DoctorCardProps {
   doctor: Doctor;
@@ -580,55 +581,37 @@ const DoctorsPage: React.FC = () => {
           alignItems: 'center',
           alignContent: 'flex-start',
           padding: '12px',
-          gap: '8px',
+          gap: '12px',
           background: 'rgba(0, 0, 0, 0.001)',
           borderRadius: '12px',
         }}>
           {/* Branch Filter */}
-          <select
-            value={selectedBranch}
-            onChange={(e) => handleBranchChange(e.target.value)}
-            style={{
-              boxSizing: 'border-box',
-              padding: '8px 12px',
-              height: '40px',
-              width: '161.33px',
-              border: '1.5px solid #DCDCDC',
-              borderRadius: '8px',
-              fontFamily: 'Nunito, sans-serif',
-              fontSize: '14px',
-              color: '#6A6A6A',
-              background: 'white',
-            }}
-          >
-            <option value="">Select Branch</option>
-            {branches.map(branch => (
-              <option key={branch.id} value={branch.id}>{branch.name}</option>
-            ))}
-          </select>
+          <div style={{ width: '180px' }}>
+            <CustomSelect
+              placeholder="Select Branch"
+              value={selectedBranch}
+              onChange={(value) => handleBranchChange(value)}
+              options={branches.map(branch => ({
+                value: String(branch.id),
+                label: branch.name
+              }))}
+              searchable={false}
+            />
+          </div>
 
           {/* Department Filter */}
-          <select
-            value={selectedDepartment}
-            onChange={(e) => handleDepartmentChange(e.target.value)}
-            style={{
-              boxSizing: 'border-box',
-              padding: '8px 12px',
-              height: '40px',
-              width: '161.33px',
-              border: '1.5px solid #DCDCDC',
-              borderRadius: '8px',
-              fontFamily: 'Nunito, sans-serif',
-              fontSize: '14px',
-              color: '#6A6A6A',
-              background: 'white',
-            }}
-          >
-            <option value="">Select Department</option>
-            {filteredDepartments.map(dept => (
-              <option key={dept.id} value={dept.id}>{dept.name}</option>
-            ))}
-          </select>
+          <div style={{ width: '180px' }}>
+            <CustomSelect
+              placeholder="Select Department"
+              value={selectedDepartment}
+              onChange={(value) => handleDepartmentChange(value)}
+              options={filteredDepartments.map(dept => ({
+                value: String(dept.id),
+                label: dept.name
+              }))}
+              searchable={false}
+            />
+          </div>
 
           {/* Sort Button */}
           <button style={{

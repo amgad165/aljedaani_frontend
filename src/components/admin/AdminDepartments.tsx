@@ -36,6 +36,9 @@ const AdminDepartments: React.FC = () => {
   const [deleting, setDeleting] = useState<number | null>(null);
   const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [iconFile, setIconFile] = useState<File | null>(null);
+  const [iconPreview, setIconPreview] = useState<string | null>(null);
+  const [uploadingIcon, setUploadingIcon] = useState(false);
 
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
 
@@ -72,6 +75,8 @@ const AdminDepartments: React.FC = () => {
     setModalMode('create');
     setSelectedDepartment(null);
     setFormData({ name: '', icon: '', description: '', is_active: true });
+    setIconFile(null);
+    setIconPreview(null);
     setShowModal(true);
   };
 
@@ -84,6 +89,8 @@ const AdminDepartments: React.FC = () => {
       description: dept.description || '',
       is_active: dept.is_active
     });
+    setIconFile(null);
+    setIconPreview(dept.icon || null);
     setShowModal(true);
   };
 
@@ -94,6 +101,20 @@ const AdminDepartments: React.FC = () => {
       'Accept': 'application/json',
       ...(token ? { 'Authorization': `Bearer ${token}` } : {})
     };
+  };
+
+  const handleIconFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setIconFile(file);
+      
+      // Show preview immediately
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setIconPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleDelete = async (id: number) => {
@@ -125,21 +146,31 @@ const AdminDepartments: React.FC = () => {
     setSaving(true);
 
     try {
-      const payload = {
-        name: formData.name,
-        icon: formData.icon || null,
-        description: formData.description || null,
-        is_active: formData.is_active
-      };
-
       const url = modalMode === 'create' 
         ? `${API_BASE_URL}/departments`
         : `${API_BASE_URL}/departments/${selectedDepartment?.id}`;
       
+      // Use FormData to send file directly (same as doctor upload)
+      const formDataToSend = new window.FormData();
+      formDataToSend.append('name', formData.name);
+      if (iconFile) {
+        formDataToSend.append('icon', iconFile);
+      }
+      if (formData.description) formDataToSend.append('description', formData.description);
+      formDataToSend.append('is_active', formData.is_active ? '1' : '0');
+      
+      if (modalMode === 'edit') {
+        formDataToSend.append('_method', 'PUT');
+      }
+      
+      const token = localStorage.getItem('auth_token');
       const response = await fetch(url, {
-        method: modalMode === 'create' ? 'POST' : 'PUT',
-        headers: getAuthHeaders(),
-        body: JSON.stringify(payload),
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+        body: formDataToSend,
       });
 
       const result = await response.json();
@@ -160,6 +191,7 @@ const AdminDepartments: React.FC = () => {
       setNotification({ type: 'error', message: 'Failed to save department' });
     } finally {
       setSaving(false);
+      setUploadingIcon(false);
     }
   };
 
@@ -291,7 +323,21 @@ const AdminDepartments: React.FC = () => {
                     <tr key={dept.id}>
                       <td style={tdStyle}>
                         <div style={deptInfoStyle}>
-                          <div style={iconBoxStyle}>{getIconEmoji(dept.icon)}</div>
+                          <div style={iconBoxStyle}>
+                            {dept.icon ? (
+                              <img
+                                src={dept.icon}
+                                alt={dept.name}
+                                style={{
+                                  width: '32px',
+                                  height: '32px',
+                                  objectFit: 'contain',
+                                }}
+                              />
+                            ) : (
+                              <span>🏥</span>
+                            )}
+                          </div>
                           <span style={deptNameStyle}>{dept.name}</span>
                         </div>
                       </td>
@@ -357,11 +403,56 @@ const AdminDepartments: React.FC = () => {
                     <input type="text" required value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} style={inputStyle} placeholder="e.g., Cardiology" />
                   </div>
                   <div style={formGroupStyle}>
-                    <label style={labelStyle}>Icon</label>
-                    <select value={formData.icon} onChange={(e) => setFormData({ ...formData, icon: e.target.value })} style={inputStyle}>
-                      <option value="">Select an icon</option>
-                      {iconOptions.map(opt => (<option key={opt.value} value={opt.value}>{opt.label}</option>))}
-                    </select>
+                    <label style={labelStyle}>Department Icon</label>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleIconFileChange}
+                        style={{
+                          padding: '10px',
+                          border: '1px solid #D1D5DB',
+                          borderRadius: '8px',
+                          fontSize: '14px',
+                          cursor: 'pointer',
+                        }}
+                      />
+                      {iconPreview && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                          <img
+                            src={iconPreview}
+                            alt="Icon preview"
+                            style={{
+                              width: '60px',
+                              height: '60px',
+                              objectFit: 'contain',
+                              border: '1px solid #D1D5DB',
+                              borderRadius: '8px',
+                              padding: '8px',
+                            }}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setIconFile(null);
+                              setIconPreview(null);
+                              setFormData({ ...formData, icon: '' });
+                            }}
+                            style={{
+                              padding: '6px 12px',
+                              background: '#EF4444',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '6px',
+                              fontSize: '12px',
+                              cursor: 'pointer',
+                            }}
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
                   <div style={formGroupStyle}>
                     <label style={labelStyle}>Description</label>
@@ -376,8 +467,13 @@ const AdminDepartments: React.FC = () => {
                 </div>
                 <div style={modalFooterStyle}>
                   <button type="button" onClick={() => setShowModal(false)} style={cancelButtonStyle}>Cancel</button>
-                  <button type="submit" disabled={saving} style={{ ...submitButtonStyle, opacity: saving ? 0.7 : 1 }}>
-                    {saving ? (
+                  <button type="submit" disabled={saving || uploadingIcon} style={{ ...submitButtonStyle, opacity: (saving || uploadingIcon) ? 0.7 : 1 }}>
+                    {uploadingIcon ? (
+                      <>
+                        <div style={loadingSpinnerStyle} />
+                        <span style={{ marginLeft: '8px' }}>Uploading Icon...</span>
+                      </>
+                    ) : saving ? (
                       <>
                         <div style={{ width: '20px', height: '20px', border: '2px solid white', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
                         Saving...

@@ -1,26 +1,35 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { departmentsService, type Department } from '../services/departmentsService';
+import { branchesService, type Branch } from '../services/branchesService';
 import Navbar from '../components/Navbar';
 
 const DepartmentsPage: React.FC = () => {
   const navigate = useNavigate();
   const [departments, setDepartments] = useState<Department[]>([]);
   const [filteredDepartments, setFilteredDepartments] = useState<Department[]>([]);
+  const [branches, setBranches] = useState<Branch[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedBranchId, setSelectedBranchId] = useState<number | null>(null);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   useEffect(() => {
-    const fetchDepartments = async () => {
+    const fetchData = async () => {
       try {
         setLoading(true);
-        const data = await departmentsService.getDepartments({
-          active: true,
-          with_doctors_count: true,
-        });
-        setDepartments(data);
-        setFilteredDepartments(data);
+        const [deptData, branchData] = await Promise.all([
+          departmentsService.getDepartments({
+            active: true,
+            with_doctors: true,
+          }),
+          branchesService.getBranches({
+            active: true,
+          })
+        ]);
+        setDepartments(deptData);
+        setFilteredDepartments(deptData);
+        setBranches(branchData);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred');
       } finally {
@@ -28,19 +37,21 @@ const DepartmentsPage: React.FC = () => {
       }
     };
 
-    fetchDepartments();
+    fetchData();
   }, []);
 
   useEffect(() => {
-    if (searchTerm.trim() === '') {
+    if (selectedBranchId === null) {
+      // Show all departments when "All Branches" is selected
       setFilteredDepartments(departments);
     } else {
+      // Filter departments that have at least one doctor in the selected branch
       const filtered = departments.filter(dept =>
-        dept.name.toLowerCase().includes(searchTerm.toLowerCase())
+        dept.doctors?.some(doctor => doctor.branch_id === selectedBranchId)
       );
       setFilteredDepartments(filtered);
     }
-  }, [searchTerm, departments]);
+  }, [selectedBranchId, departments]);
 
   if (loading) {
     return (
@@ -157,49 +168,79 @@ const DepartmentsPage: React.FC = () => {
           height: '64px',
           background: 'rgba(0, 0, 0, 0.001)',
           borderRadius: '12px',
+          flex: 'none',
+          order: 1,
+          flexGrow: 0,
         }}>
-          {/* Search Input */}
+          {/* Branch Filter Dropdown */}
           <div style={{
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'flex-start',
             padding: '0px',
             gap: '8px',
-            width: '548px',
+            width: '708px',
             height: '40px',
             borderRadius: '0px',
+            flex: 'none',
+            order: 0,
             flexGrow: 1,
+            position: 'relative',
           }}>
-            <div style={{
-              boxSizing: 'border-box',
-              display: 'flex',
-              flexDirection: 'row',
-              alignItems: 'center',
-              padding: '8px 12px',
-              gap: '12px',
-              width: '100%',
-              height: '40px',
-              border: '1.5px solid #DADADA',
-              borderRadius: '8px',
-            }}>
-              <input
-                type="text"
-                placeholder="Search all departments"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                style={{
-                  border: 'none',
-                  outline: 'none',
-                  background: 'transparent',
+            <div 
+              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              style={{
+                boxSizing: 'border-box',
+                display: 'flex',
+                flexDirection: 'row',
+                alignItems: 'center',
+                padding: '8px 12px',
+                gap: '12px',
+                width: '708px',
+                height: '40px',
+                border: '1.5px solid #DADADA',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                background: '#FFFFFF',
+                flex: 'none',
+                order: 1,
+                alignSelf: 'stretch',
+                flexGrow: 0,
+              }}
+            >
+              <div style={{
+                display: 'flex',
+                flexDirection: 'row',
+                alignItems: 'center',
+                padding: '0px',
+                gap: '12px',
+                width: '648px',
+                height: '16px',
+                flex: 'none',
+                order: 0,
+                flexGrow: 1,
+              }}>
+                <span style={{
+                  width: '648px',
+                  height: '16px',
                   fontFamily: 'Nunito, sans-serif',
                   fontStyle: 'normal',
                   fontWeight: 500,
                   fontSize: '14px',
                   lineHeight: '16px',
+                  display: 'flex',
+                  alignItems: 'center',
                   color: '#6A6A6A',
-                  width: '100%',
-                }}
-              />
+                  flex: 'none',
+                  order: 1,
+                  flexGrow: 1,
+                }}>
+                  {selectedBranchId === null 
+                    ? 'All Branches' 
+                    : branches.find(b => b.id === selectedBranchId)?.name || 'All Branches'
+                  }
+                </span>
+              </div>
               {/* Dropdown arrow */}
               <img
                 src="/assets/images/departments/nav-arrow-down.png"
@@ -208,37 +249,136 @@ const DepartmentsPage: React.FC = () => {
                   width: '24px',
                   height: '24px',
                   objectFit: 'contain',
+                  flex: 'none',
+                  order: 1,
+                  flexGrow: 0,
+                  transform: isDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                  transition: 'transform 0.3s ease',
                 }}
               />
             </div>
+            
+            {/* Dropdown Menu */}
+            {isDropdownOpen && (
+              <div style={{
+                position: 'absolute',
+                top: '44px',
+                left: 0,
+                width: '100%',
+                maxHeight: '300px',
+                overflowY: 'auto',
+                background: '#FFFFFF',
+                border: '1.5px solid #DADADA',
+                borderRadius: '8px',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+                zIndex: 1000,
+              }}>
+                <div
+                  onClick={() => {
+                    setSelectedBranchId(null);
+                    setIsDropdownOpen(false);
+                  }}
+                  style={{
+                    padding: '10px 12px',
+                    cursor: 'pointer',
+                    fontFamily: 'Nunito, sans-serif',
+                    fontSize: '14px',
+                    color: selectedBranchId === null ? '#00ABDA' : '#000000',
+                    fontWeight: selectedBranchId === null ? 600 : 500,
+                    background: selectedBranchId === null ? '#F0F9FF' : 'transparent',
+                  }}
+                  onMouseEnter={(e) => {
+                    if (selectedBranchId !== null) {
+                      (e.currentTarget as HTMLElement).style.background = '#F9FAFB';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (selectedBranchId !== null) {
+                      (e.currentTarget as HTMLElement).style.background = 'transparent';
+                    }
+                  }}
+                >
+                  All Branches
+                </div>
+                {branches.map(branch => (
+                  <div
+                    key={branch.id}
+                    onClick={() => {
+                      setSelectedBranchId(branch.id);
+                      setIsDropdownOpen(false);
+                    }}
+                    style={{
+                      padding: '10px 12px',
+                      cursor: 'pointer',
+                      fontFamily: 'Nunito, sans-serif',
+                      fontSize: '14px',
+                      color: selectedBranchId === branch.id ? '#00ABDA' : '#000000',
+                      fontWeight: selectedBranchId === branch.id ? 600 : 500,
+                      background: selectedBranchId === branch.id ? '#F0F9FF' : 'transparent',
+                    }}
+                    onMouseEnter={(e) => {
+                      if (selectedBranchId !== branch.id) {
+                        (e.currentTarget as HTMLElement).style.background = '#F9FAFB';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (selectedBranchId !== branch.id) {
+                        (e.currentTarget as HTMLElement).style.background = 'transparent';
+                      }
+                    }}
+                  >
+                    {branch.name}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Sort Button */}
-          <button style={{
+          <div style={{
             display: 'flex',
             flexDirection: 'row',
-            justifyContent: 'center',
-            alignItems: 'center',
-            padding: '12px 16px',
-            width: '200px',
+            alignItems: 'flex-start',
+            padding: '0px',
+            gap: '10px',
+            width: '40px',
             height: '40px',
-            background: '#061F42',
             borderRadius: '12px',
-            border: 'none',
-            cursor: 'pointer',
-            gap: '8px',
+            flex: 'none',
+            order: 1,
+            flexGrow: 0,
           }}>
-            <span style={{
-              fontFamily: 'Nunito, sans-serif',
-              fontStyle: 'normal',
-              fontWeight: 600,
-              fontSize: '20px',
-              lineHeight: '20px',
-              color: '#FFFFFF',
+            <button style={{
+              boxSizing: 'border-box',
+              display: 'flex',
+              flexDirection: 'row',
+              justifyContent: 'center',
+              alignItems: 'center',
+              padding: '0px',
+              width: '40px',
+              height: '40px',
+              background: '#FFFFFF',
+              border: '1px solid #061F42',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              flex: 'none',
+              order: 0,
+              flexGrow: 0,
             }}>
-              Sort By Name
-            </span>
-          </button>
+              <img
+                src="/assets/images/departments/sort.svg"
+                alt="Sort"
+                style={{
+                  width: '40px',
+                  height: '40px',
+                  objectFit: 'contain',
+                  flex: 'none',
+                  order: 2,
+                  flexGrow: 0,
+                }}
+              />
+            </button>
+          </div>
         </div>
       </div>
 
@@ -253,7 +393,12 @@ const DepartmentsPage: React.FC = () => {
         lineHeight: '40px',
       }}>
         <span style={{ color: '#A4A5A5' }}>Displaying results for </span>
-        <span style={{ color: '#061F42' }}>Departments &gt; Select Department &gt; All Branches</span>
+        <span style={{ color: '#061F42' }}>
+          Departments &gt; Select Department &gt; {selectedBranchId === null 
+            ? 'All Branches' 
+            : branches.find(b => b.id === selectedBranchId)?.name || 'All Branches'
+          }
+        </span>
       </div>
 
       {/* Section Title */}
@@ -274,7 +419,7 @@ const DepartmentsPage: React.FC = () => {
       {/* Departments Grid */}
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(270px, 1fr))',
+        gridTemplateColumns: 'repeat(3, 357.33px)',
         gap: '12px',
         width: '100%',
       }}>
@@ -285,77 +430,71 @@ const DepartmentsPage: React.FC = () => {
             style={{
               boxSizing: 'border-box',
               display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'center',
+              flexDirection: 'row',
               alignItems: 'center',
-              padding: '12px',
+              padding: '8px 16px',
               gap: '12px',
-              width: '270px',
-              minWidth: '270px',
-              height: '79.2px',
-              background:  '#FFFFFF',
-              border: '1px solid #D8D8D8',
-              borderRadius: '12px',
+              width: '357.33px',
+              height: '48px',
+              background: '#FFFFFF',
+              border: '1px solid #DADADA',
+              borderRadius: '8px',
               cursor: 'pointer',
               transition: 'all 0.3s ease',
             }}
             onMouseEnter={(e) => {
-           
-                (e.currentTarget as HTMLElement).style.background = '#DAF8FF';
-
+              (e.currentTarget as HTMLElement).style.background = '#DAF8FF';
             }}
             onMouseLeave={(e) => {
-      
-                (e.currentTarget as HTMLElement).style.background = '#FFFFFF';
-      
+              (e.currentTarget as HTMLElement).style.background = '#FFFFFF';
             }}
           >
-            {/* Department Content */}
+            {/* Icon Container */}
             <div style={{
               display: 'flex',
-              flexDirection: 'column',
+              flexDirection: 'row',
+              justifyContent: 'center',
               alignItems: 'center',
               padding: '0px',
-              width: '246px',
-              height: '55.2px',
+              width: '32px',
+              height: '32px',
+              background: '#E1F9FF',
+              borderRadius: '16777200px',
+              flex: 'none',
+              order: 0,
+              flexGrow: 0,
             }}>
-              <div style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                padding: '0px',
-                gap: '4px',
-                width: '246px',
-                height: '55.2px',
-              }}>
-                {/* Department Icon */}
-                <img 
-                  src="/assets/images/departments/icon.png" 
-                  alt="Department Icon" 
-                  style={{
-                    width: '31.2px',
-                    height: '31.2px',
-                    objectFit: 'contain',
-                  }} 
-                />
-
-                {/* Department Title */}
-                <h3 style={{
-                  width: '246px',
-                  height: '20px',
-                  fontFamily: 'Nunito, sans-serif',
-                  fontStyle: 'normal',
-                  fontWeight: 700,
-                  fontSize: '16px',
-                  lineHeight: '20px',
-                  textAlign: 'center',
-                  color: '#061F42',
-                  margin: 0,
-                }}>
-                  {department.name}
-                </h3>
-              </div>
+              {/* Department Icon */}
+              <img 
+                src={department.icon || '/assets/images/departments/icon.png'} 
+                alt={`${department.name} Icon`} 
+                style={{
+                  width: '18px',
+                  height: '18px',
+                  objectFit: 'contain',
+                  borderRadius: '0px',
+                  flex: 'none',
+                  order: 0,
+                  flexGrow: 0,
+                }} 
+              />
             </div>
+
+            {/* Department Title */}
+            <h3 style={{
+              fontFamily: 'Nunito, sans-serif',
+              fontStyle: 'normal',
+              fontWeight: 500,
+              fontSize: '14px',
+              lineHeight: '16px',
+              color: '#000000',
+              margin: 0,
+              flex: 'none',
+              order: 1,
+              flexGrow: 0,
+            }}>
+              {department.name}
+            </h3>
           </div>
         ))}
       </div>

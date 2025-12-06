@@ -37,6 +37,16 @@ export interface ServiceListItem {
   items?: string[];
 }
 
+// Sidebar item structure - each item has its own content
+export interface SidebarItem {
+  id: string;
+  title: string;
+  image?: string;
+  description?: string;
+  service_list?: ServiceListItem[];
+  sort_order?: number;
+}
+
 // Department Tab Content interface
 export interface DepartmentTabContent {
   id: number;
@@ -46,8 +56,8 @@ export interface DepartmentTabContent {
   main_description?: string;
   quote_text?: string;
   sub_sections?: SubSection[];
-  service_list?: ServiceListItem[];
-  sidebar_items?: string[];
+  service_list?: ServiceListItem[];  // Used for Overview tab
+  sidebar_items?: SidebarItem[];     // Changed from string[] to SidebarItem[]
   is_active: boolean;
   sort_order: number;
   created_at: string;

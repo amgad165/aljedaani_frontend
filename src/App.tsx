@@ -10,6 +10,7 @@ import DoctorsPage from './pages/DoctorsPage';
 import DoctorDetailsPage from './pages/DoctorDetailsPage';
 import BranchesPage from './pages/BranchesPage';
 import BookAppointmentPage from './pages/BookAppointmentPage';
+import ProfilePage from './pages/ProfilePage';
 // Admin Pages
 import AdminLogin from './components/admin/AdminLogin';
 import AdminDashboard from './components/admin/AdminDashboard';
@@ -31,6 +32,7 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignUpPage />} />
           <Route path="/book-appointment" element={<BookAppointmentPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
           <Route path="/departments" element={<DepartmentsPage />} />
           <Route path="/departments/:id" element={<DepartmentDetailsPage />} />
           <Route path="/doctors" element={<DoctorsPage />} />

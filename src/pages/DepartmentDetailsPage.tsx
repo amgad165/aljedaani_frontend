@@ -1,9 +1,95 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { departmentsService, type Department, type DepartmentTabContent, type Doctor } from '../services/departmentsService';
+import { departmentsService, type Department, type DepartmentTabContent, type Doctor, type SidebarItem } from '../services/departmentsService';
 import Navbar from '../components/Navbar';
 
 type TabType = 'overview' | 'doctors' | 'opd_services' | 'inpatient_services' | 'investigations' | 'success_stories';
+
+// CSS Keyframes for animations
+const animationStyles = `
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  
+  @keyframes fadeInUp {
+    from { 
+      opacity: 0; 
+      transform: translateY(20px); 
+    }
+    to { 
+      opacity: 1; 
+      transform: translateY(0); 
+    }
+  }
+  
+  @keyframes fadeInLeft {
+    from { 
+      opacity: 0; 
+      transform: translateX(-20px); 
+    }
+    to { 
+      opacity: 1; 
+      transform: translateX(0); 
+    }
+  }
+  
+  @keyframes fadeInRight {
+    from { 
+      opacity: 0; 
+      transform: translateX(20px); 
+    }
+    to { 
+      opacity: 1; 
+      transform: translateX(0); 
+    }
+  }
+  
+  @keyframes scaleIn {
+    from { 
+      opacity: 0; 
+      transform: scale(0.95); 
+    }
+    to { 
+      opacity: 1; 
+      transform: scale(1); 
+    }
+  }
+  
+  @keyframes slideDown {
+    from { 
+      opacity: 0; 
+      transform: translateY(-10px); 
+    }
+    to { 
+      opacity: 1; 
+      transform: translateY(0); 
+    }
+  }
+  
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+  }
+  
+  .tab-content-enter {
+    animation: fadeInUp 0.4s ease-out forwards;
+  }
+  
+  .sidebar-item-hover:hover {
+    transform: translateX(4px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .card-hover:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  }
+  
+  .image-zoom:hover img {
+    transform: scale(1.05);
+  }
+`;
 
 const DepartmentDetailsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -14,7 +100,13 @@ const DepartmentDetailsPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<TabType>('overview');
-  const [activeSidebarItem, setActiveSidebarItem] = useState<string>('Overview');
+  const [activeSidebarItem, setActiveSidebarItem] = useState<SidebarItem | null>(null);
+  
+  // Animation states
+  const [tabContentKey, setTabContentKey] = useState(0);
+  const [sidebarContentKey, setSidebarContentKey] = useState(0);
+  const [isTabTransitioning, setIsTabTransitioning] = useState(false);
+  const [isSidebarTransitioning, setIsSidebarTransitioning] = useState(false);
 
   const tabs: { key: TabType; label: string }[] = [
     { key: 'overview', label: 'Overview' },
@@ -24,6 +116,30 @@ const DepartmentDetailsPage: React.FC = () => {
     { key: 'investigations', label: 'Investigations' },
     { key: 'success_stories', label: 'Success Stories' },
   ];
+
+  // Handle tab change with animation
+  const handleTabChange = useCallback((newTab: TabType) => {
+    if (newTab === activeTab) return;
+    
+    setIsTabTransitioning(true);
+    setTimeout(() => {
+      setActiveTab(newTab);
+      setTabContentKey(prev => prev + 1);
+      setIsTabTransitioning(false);
+    }, 150);
+  }, [activeTab]);
+
+  // Handle sidebar item change with animation
+  const handleSidebarItemChange = useCallback((item: SidebarItem) => {
+    if (activeSidebarItem?.id === item.id) return;
+    
+    setIsSidebarTransitioning(true);
+    setTimeout(() => {
+      setActiveSidebarItem(item);
+      setSidebarContentKey(prev => prev + 1);
+      setIsSidebarTransitioning(false);
+    }, 150);
+  }, [activeSidebarItem]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -44,6 +160,12 @@ const DepartmentDetailsPage: React.FC = () => {
     fetchData();
   }, [id]);
 
+  // Reset sidebar item when tab changes
+  useEffect(() => {
+    setActiveSidebarItem(null);
+    setSidebarContentKey(prev => prev + 1);
+  }, [activeTab]);
+
   const getCurrentTabContent = (): DepartmentTabContent | undefined => {
     if (activeTab === 'doctors' || activeTab === 'success_stories') return undefined;
     return tabContents.find(tc => tc.tab_type === activeTab);
@@ -62,7 +184,7 @@ const DepartmentDetailsPage: React.FC = () => {
     }
   };
 
-  const renderDoctorCard = (doctor: Doctor) => {
+  const renderDoctorCard = (doctor: Doctor, index: number = 0) => {
     const statusStyle = getStatusStyle(doctor.status);
     return (
       <div
@@ -78,6 +200,19 @@ const DepartmentDetailsPage: React.FC = () => {
           background: '#FFFFFF',
           border: '1px solid #D8D8D8',
           borderRadius: '12px',
+          animation: `fadeInUp 0.4s ease-out ${index * 0.1}s both`,
+          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          cursor: 'pointer',
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = 'translateY(-8px)';
+          e.currentTarget.style.boxShadow = '0 12px 30px rgba(0, 0, 0, 0.12)';
+          e.currentTarget.style.borderColor = '#15C9FA';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = 'translateY(0)';
+          e.currentTarget.style.boxShadow = 'none';
+          e.currentTarget.style.borderColor = '#D8D8D8';
         }}
       >
         {/* Status Badge */}
@@ -116,7 +251,17 @@ const DepartmentDetailsPage: React.FC = () => {
           height: '116px',
           borderRadius: '50%',
           overflow: 'hidden',
-        }}>
+          transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = 'scale(1.08)';
+          e.currentTarget.style.boxShadow = '0 4px 15px rgba(21, 201, 250, 0.3)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = 'scale(1)';
+          e.currentTarget.style.boxShadow = 'none';
+        }}
+        >
           <img
             src={doctor.image_url || '/assets/images/general/person_template.png'}
             alt={doctor.name}
@@ -124,6 +269,7 @@ const DepartmentDetailsPage: React.FC = () => {
               width: '100%',
               height: '100%',
               objectFit: 'cover',
+              transition: 'transform 0.3s ease',
             }}
           />
         </div>
@@ -215,6 +361,19 @@ const DepartmentDetailsPage: React.FC = () => {
               fontWeight: 600,
               fontSize: '14px',
               cursor: doctor.status === 'busy' ? 'not-allowed' : 'pointer',
+              transition: 'all 0.2s ease',
+            }}
+            onMouseEnter={(e) => {
+              if (doctor.status !== 'busy') {
+                e.currentTarget.style.background = '#0A2D5C';
+                e.currentTarget.style.transform = 'scale(1.02)';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (doctor.status !== 'busy') {
+                e.currentTarget.style.background = '#061F42';
+                e.currentTarget.style.transform = 'scale(1)';
+              }
             }}
           >
             Book Now
@@ -233,6 +392,15 @@ const DepartmentDetailsPage: React.FC = () => {
               fontSize: '14px',
               textDecoration: 'none',
               textAlign: 'center',
+              transition: 'all 0.2s ease',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = '#0DB5E3';
+              e.currentTarget.style.transform = 'scale(1.02)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = '#15C9FA';
+              e.currentTarget.style.transform = 'scale(1)';
             }}
           >
             Learn More
@@ -242,8 +410,78 @@ const DepartmentDetailsPage: React.FC = () => {
     );
   };
 
-  const renderSidebar = (items: string[] | undefined) => {
-    if (!items || items.length === 0) return null;
+  // Helper to normalize sidebar items (handle both old string format and new object format)
+  // Adds "Overview" as the first item to show main tab content
+  const normalizeSidebarItems = (items: (string | SidebarItem)[] | undefined, includeOverview: boolean = false): SidebarItem[] => {
+    const result: SidebarItem[] = [];
+    
+    // Add Overview as first item if requested
+    if (includeOverview) {
+      result.push({ id: 'overview_main', title: 'Overview', sort_order: -1 });
+    }
+    
+    if (!items || items.length === 0) return result;
+    
+    // Handle if items is actually an object with numeric keys (corrupted data format)
+    if (!Array.isArray(items)) {
+      const itemsArray = Object.values(items).filter(
+        (v): v is string | SidebarItem => typeof v === 'string' || (typeof v === 'object' && v !== null && 'title' in v)
+      );
+      items = itemsArray;
+    }
+    
+    items.forEach((item, idx) => {
+      // Handle string format
+      if (typeof item === 'string') {
+        result.push({ id: `legacy_${idx}`, title: item, sort_order: idx });
+        return;
+      }
+      
+      // Handle array of characters (corrupted data)
+      if (Array.isArray(item)) {
+        const title = item.join('');
+        if (title.trim()) {
+          result.push({ id: `recovered_${idx}`, title, sort_order: idx });
+        }
+        return;
+      }
+      
+      // Handle object format
+      if (typeof item === 'object' && item !== null) {
+        // Check for corrupted data with numeric string keys
+        const hasNumericKeys = Object.keys(item).some(key => /^\d+$/.test(key));
+        
+        let title = item.title || '';
+        
+        // If no title but has numeric keys, reconstruct from those
+        if (!title && hasNumericKeys) {
+          const chars = Object.keys(item)
+            .filter(key => /^\d+$/.test(key))
+            .sort((a, b) => parseInt(a) - parseInt(b))
+            .map(key => (item as unknown as Record<string, string>)[key]);
+          title = chars.join('');
+        }
+        
+        if (title.trim()) {
+          const sidebarItem: SidebarItem = {
+            id: item.id || `item_${idx}`,
+            title: title,
+            image: item.image,
+            description: item.description,
+            service_list: Array.isArray(item.service_list) ? item.service_list : [],
+            sort_order: item.sort_order ?? idx
+          };
+          result.push(sidebarItem);
+        }
+      }
+    });
+    
+    return result;
+  };
+
+  const renderSidebar = (items: (string | SidebarItem)[] | undefined, includeOverview: boolean = false) => {
+    const normalizedItems = normalizeSidebarItems(items, includeOverview);
+    if (normalizedItems.length === 0) return null;
     
     return (
       <div style={{
@@ -257,37 +495,68 @@ const DepartmentDetailsPage: React.FC = () => {
         borderRadius: '12px',
         flexShrink: 0,
       }}>
-        {items.map((item, index) => (
-          <div
-            key={index}
-            onClick={() => setActiveSidebarItem(item)}
-            style={{
-              boxSizing: 'border-box',
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'center',
-              alignItems: 'center',
-              padding: '12px',
-              width: '271px',
-              height: '44px',
-              background: activeSidebarItem === item ? '#DAF8FF' : '#FFFFFF',
-              border: '1px solid #D8D8D8',
-              borderRadius: '12px',
-              cursor: 'pointer',
-            }}
-          >
-            <span style={{
-              fontFamily: 'Nunito, sans-serif',
-              fontWeight: 600,
-              fontSize: '16px',
-              lineHeight: '20px',
-              textAlign: 'center',
-              color: '#061F42',
-            }}>
-              {item}
-            </span>
-          </div>
-        ))}
+        {normalizedItems.map((item, index) => {
+          // Determine if this item is selected
+          let isSelected = false;
+          if (item.id === 'overview_main') {
+            // Overview is selected if nothing is selected or if activeSidebarItem is Overview
+            isSelected = !activeSidebarItem || activeSidebarItem.id === 'overview_main';
+          } else {
+            // For other items, compare by id
+            isSelected = activeSidebarItem?.id === item.id;
+          }
+          
+          return (
+            <div
+              key={item.id || `sidebar-${index}`}
+              onClick={() => handleSidebarItemChange(item)}
+              style={{
+                boxSizing: 'border-box',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                alignItems: 'center',
+                padding: '12px',
+                width: '271px',
+                height: '44px',
+                background: isSelected ? '#DAF8FF' : '#FFFFFF',
+                border: isSelected ? '2px solid #15C9FA' : '1px solid #D8D8D8',
+                borderRadius: '12px',
+                cursor: 'pointer',
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                transform: isSelected ? 'translateX(4px)' : 'translateX(0)',
+                boxShadow: isSelected ? '0 4px 12px rgba(21, 201, 250, 0.2)' : '0 1px 3px rgba(0, 0, 0, 0.05)',
+                animation: `fadeInLeft 0.3s ease-out ${index * 0.05}s both`,
+              }}
+              onMouseEnter={(e) => {
+                if (!isSelected) {
+                  e.currentTarget.style.transform = 'translateX(4px)';
+                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.1)';
+                  e.currentTarget.style.borderColor = '#15C9FA';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isSelected) {
+                  e.currentTarget.style.transform = 'translateX(0)';
+                  e.currentTarget.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.05)';
+                  e.currentTarget.style.borderColor = '#D8D8D8';
+                }
+              }}
+            >
+              <span style={{
+                fontFamily: 'Nunito, sans-serif',
+                fontWeight: isSelected ? 700 : 600,
+                fontSize: '16px',
+                lineHeight: '20px',
+                textAlign: 'center',
+                color: '#061F42',
+                transition: 'font-weight 0.2s ease',
+              }}>
+                {item.title}
+              </span>
+            </div>
+          );
+        })}
       </div>
     );
   };
@@ -311,6 +580,7 @@ const DepartmentDetailsPage: React.FC = () => {
         background: '#FCFCFC',
         boxShadow: '0px 4px 5px rgba(0, 0, 0, 0.25)',
         borderRadius: '0px 12px 12px 12px',
+        animation: 'fadeInUp 0.4s ease-out',
       }}>
         {/* Main Image */}
         {content.main_image && (
@@ -319,7 +589,17 @@ const DepartmentDetailsPage: React.FC = () => {
             height: '438px',
             borderRadius: '12px',
             overflow: 'hidden',
-          }}>
+            boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)',
+            transition: 'box-shadow 0.3s ease',
+            animation: 'fadeIn 0.5s ease-out',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.15)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.1)';
+          }}
+          >
             <img
               src={content.main_image}
               alt="Department"
@@ -327,6 +607,13 @@ const DepartmentDetailsPage: React.FC = () => {
                 width: '100%',
                 height: '100%',
                 objectFit: 'cover',
+                transition: 'transform 0.5s ease',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'scale(1.03)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'scale(1)';
               }}
             />
           </div>
@@ -340,6 +627,7 @@ const DepartmentDetailsPage: React.FC = () => {
             lineHeight: '120%',
             color: '#061F42',
             margin: 0,
+            animation: 'fadeInUp 0.4s ease-out 0.1s both',
           }}>
             {content.main_description}
           </p>
@@ -350,6 +638,7 @@ const DepartmentDetailsPage: React.FC = () => {
           width: '100%',
           height: '1px',
           background: '#E9E9E9',
+          animation: 'fadeIn 0.4s ease-out 0.2s both',
         }} />
 
         {/* Sub Sections */}
@@ -372,6 +661,7 @@ const DepartmentDetailsPage: React.FC = () => {
                 color: '#061F42',
                 margin: 0,
                 width: '100%',
+                animation: 'fadeInUp 0.4s ease-out 0.2s both',
               }}>
                 We offer a wide range of services, including:
               </h3>
@@ -386,6 +676,7 @@ const DepartmentDetailsPage: React.FC = () => {
                   alignItems: 'center',
                   gap: '24px',
                   width: '100%',
+                  animation: `${section.position === 'right' ? 'fadeInRight' : 'fadeInLeft'} 0.5s ease-out ${0.3 + index * 0.1}s both`,
                 }}
               >
                 {section.image && (
@@ -395,7 +686,22 @@ const DepartmentDetailsPage: React.FC = () => {
                     borderRadius: '12px',
                     overflow: 'hidden',
                     flexShrink: 0,
-                  }}>
+                    boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)',
+                    transition: 'all 0.3s ease',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.15)';
+                    e.currentTarget.style.transform = 'translateY(-4px)';
+                    const img = e.currentTarget.querySelector('img');
+                    if (img) img.style.transform = 'scale(1.05)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.1)';
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    const img = e.currentTarget.querySelector('img');
+                    if (img) img.style.transform = 'scale(1)';
+                  }}
+                  >
                     <img
                       src={section.image}
                       alt={section.title || ''}
@@ -403,6 +709,7 @@ const DepartmentDetailsPage: React.FC = () => {
                         width: '100%',
                         height: '100%',
                         objectFit: 'cover',
+                        transition: 'transform 0.5s ease',
                       }}
                     />
                   </div>
@@ -435,7 +742,18 @@ const DepartmentDetailsPage: React.FC = () => {
             background: '#BDF1FF',
             borderRadius: '12px',
             boxSizing: 'border-box',
-          }}>
+            animation: 'scaleIn 0.5s ease-out 0.4s both',
+            transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'scale(1.01)';
+            e.currentTarget.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.1)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'scale(1)';
+            e.currentTarget.style.boxShadow = 'none';
+          }}
+          >
             <p style={{
               fontFamily: 'Nunito, sans-serif',
               fontStyle: 'italic',
@@ -463,18 +781,52 @@ const DepartmentDetailsPage: React.FC = () => {
       );
     }
 
+    // Check if Overview (main content) is selected or no selection
+    const isOverviewSelected = !activeSidebarItem || activeSidebarItem.id === 'overview_main';
+    
+    // Find the actual sidebar item data from content.sidebar_items if it's a real item
+    // This handles the case where activeSidebarItem might be a normalized/reconstructed item
+    let actualSidebarItem: SidebarItem | undefined;
+    if (!isOverviewSelected && content.sidebar_items) {
+      const normalizedItems = normalizeSidebarItems(content.sidebar_items, false);
+      actualSidebarItem = normalizedItems.find(item => item.id === activeSidebarItem?.id);
+    }
+    
+    // Determine what content to display
+    let displayImage: string | undefined;
+    let displayDescription: string | undefined;
+    let displayServiceList: typeof content.service_list;
+    
+    if (isOverviewSelected) {
+      // Show main tab content
+      displayImage = content.main_image;
+      displayDescription = content.main_description;
+      displayServiceList = content.service_list;
+    } else if (actualSidebarItem) {
+      // Show selected sidebar item content (use item's own content, don't fall back to main)
+      displayImage = actualSidebarItem.image;
+      displayDescription = actualSidebarItem.description;
+      displayServiceList = actualSidebarItem.service_list;
+    } else {
+      // Fallback to main content if sidebar item not found
+      displayImage = content.main_image;
+      displayDescription = content.main_description;
+      displayServiceList = content.service_list;
+    }
+
     return (
       <div style={{
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'flex-start',
         padding: '24px',
-        gap: '12px',
+        gap: '24px',
         background: '#FCFCFC',
         boxShadow: '0px 4px 5px rgba(0, 0, 0, 0.25)',
         borderRadius: '0px 12px 12px 12px',
+        animation: 'fadeInUp 0.4s ease-out',
       }}>
-        {/* Content Row with Sidebar */}
+        {/* Top Row: Sidebar + Image */}
         <div style={{
           display: 'flex',
           flexDirection: 'row',
@@ -482,87 +834,129 @@ const DepartmentDetailsPage: React.FC = () => {
           gap: '16px',
           width: '100%',
         }}>
-          {/* Sidebar */}
-          {renderSidebar(content.sidebar_items)}
+          {/* Sidebar - with Overview as first item */}
+          {renderSidebar(content.sidebar_items, true)}
 
-          {/* Main Image */}
-          {content.main_image && (
-            <div style={{
+          {/* Image - takes remaining space with transition */}
+          <div 
+            key={sidebarContentKey}
+            style={{
               flex: 1,
-              height: '476px',
-              borderRadius: '12px',
-              overflow: 'hidden',
+              opacity: isSidebarTransitioning ? 0 : 1,
+              transform: isSidebarTransitioning ? 'translateX(20px)' : 'translateX(0)',
+              transition: 'opacity 0.3s ease, transform 0.3s ease',
+            }}
+          >
+            {displayImage && (
+              <div style={{
+                height: '400px',
+                borderRadius: '12px',
+                overflow: 'hidden',
+                boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)',
+                transition: 'box-shadow 0.3s ease',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.15)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.1)';
+              }}
+              >
+                <img
+                  src={displayImage}
+                  alt={isOverviewSelected ? 'Overview' : (activeSidebarItem?.title || 'Service')}
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                    transition: 'transform 0.5s ease',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'scale(1.03)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'scale(1)';
+                  }}
+                />
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Bottom Section: Description + Service List */}
+        <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          {/* Description */}
+          {displayDescription && (
+            <p style={{
+              fontFamily: 'Nunito, sans-serif',
+              fontWeight: 400,
+              fontSize: '16px',
+              lineHeight: '24px',
+              color: '#061F42',
+              margin: 0,
+              textAlign: 'left',
             }}>
-              <img
-                src={content.main_image}
-                alt="Service"
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'cover',
-                }}
-              />
+              {displayDescription}
+            </p>
+          )}
+
+          {/* Service List with Cyan Bullet Points */}
+          {displayServiceList && displayServiceList.length > 0 && (
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '20px',
+              width: '100%',
+            }}>
+              {displayServiceList.map((service, index) => (
+                <div key={index}>
+                  {service.title && (
+                    <h4 style={{
+                      fontFamily: 'Nunito, sans-serif',
+                      fontWeight: 700,
+                      fontSize: '16px',
+                      lineHeight: '20px',
+                      color: '#061F42',
+                      margin: '0 0 12px 0',
+                      textAlign: 'left',
+                    }}>
+                      {service.title}
+                    </h4>
+                  )}
+                  {service.items && service.items.length > 0 && (
+                    <ul style={{
+                      margin: 0,
+                      padding: 0,
+                      listStyle: 'none',
+                      fontFamily: 'Nunito, sans-serif',
+                      fontSize: '16px',
+                      lineHeight: '24px',
+                      color: '#061F42',
+                    }}>
+                      {service.items.map((item, itemIndex) => (
+                        <li key={itemIndex} style={{ 
+                          marginBottom: '8px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '10px',
+                        }}>
+                          <span style={{
+                            width: '6px',
+                            height: '6px',
+                            borderRadius: '50%',
+                            backgroundColor: '#061F42',
+                            flexShrink: 0,
+                          }} />
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              ))}
             </div>
           )}
         </div>
-
-        {/* Service List */}
-        {content.service_list && content.service_list.length > 0 && (
-          <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '16px',
-            width: '100%',
-            marginTop: '24px',
-          }}>
-            {/* Main Description */}
-            {content.main_description && (
-              <p style={{
-                fontFamily: 'Nunito, sans-serif',
-                fontWeight: 700,
-                fontSize: '16px',
-                lineHeight: '20px',
-                color: '#061F42',
-                margin: 0,
-              }}>
-                {content.main_description}
-              </p>
-            )}
-
-            {content.service_list.map((service, index) => (
-              <div key={index} style={{ marginBottom: '16px' }}>
-                {service.title && (
-                  <h4 style={{
-                    fontFamily: 'Nunito, sans-serif',
-                    fontWeight: 700,
-                    fontSize: '16px',
-                    lineHeight: '20px',
-                    color: '#061F42',
-                    margin: '0 0 8px 0',
-                  }}>
-                    {service.title}
-                  </h4>
-                )}
-                {service.items && service.items.length > 0 && (
-                  <ul style={{
-                    margin: 0,
-                    paddingLeft: '24px',
-                    fontFamily: 'Nunito, sans-serif',
-                    fontSize: '16px',
-                    lineHeight: '24px',
-                    color: '#061F42',
-                  }}>
-                    {service.items.map((item, itemIndex) => (
-                      <li key={itemIndex} style={{ marginBottom: '4px' }}>
-                        {item}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
       </div>
     );
   };
@@ -577,6 +971,7 @@ const DepartmentDetailsPage: React.FC = () => {
           background: '#FCFCFC',
           boxShadow: '0px 4px 5px rgba(0, 0, 0, 0.25)',
           borderRadius: '0px 12px 12px 12px',
+          animation: 'fadeInUp 0.4s ease-out',
         }}>
           No doctors available for this department.
         </div>
@@ -593,6 +988,7 @@ const DepartmentDetailsPage: React.FC = () => {
         background: '#FCFCFC',
         boxShadow: '0px 4px 5px rgba(0, 0, 0, 0.25)',
         borderRadius: '0px 12px 12px 12px',
+        animation: 'fadeInUp 0.4s ease-out',
       }}>
         <div style={{
           display: 'flex',
@@ -600,7 +996,7 @@ const DepartmentDetailsPage: React.FC = () => {
           gap: '16px',
           justifyContent: 'flex-start',
         }}>
-          {doctors.map(doctor => renderDoctorCard(doctor))}
+          {doctors.map((doctor, index) => renderDoctorCard(doctor, index))}
         </div>
         
         <Link
@@ -615,6 +1011,18 @@ const DepartmentDetailsPage: React.FC = () => {
             fontWeight: 600,
             fontSize: '16px',
             textDecoration: 'none',
+            transition: 'all 0.3s ease',
+            animation: 'fadeInUp 0.4s ease-out 0.3s both',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = '#0A2D5C';
+            e.currentTarget.style.transform = 'translateY(-2px)';
+            e.currentTarget.style.boxShadow = '0 4px 15px rgba(6, 31, 66, 0.3)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = '#061F42';
+            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.boxShadow = 'none';
           }}
         >
           View All Doctors
@@ -632,15 +1040,39 @@ const DepartmentDetailsPage: React.FC = () => {
         <Navbar />
         <div style={{
           display: 'flex',
+          flexDirection: 'column',
           justifyContent: 'center',
           alignItems: 'center',
           minHeight: '400px',
-          fontFamily: 'Nunito, sans-serif',
-          fontSize: '18px',
-          color: '#061F42',
+          gap: '16px',
         }}>
-          Loading department details...
+          {/* Animated loading spinner */}
+          <div style={{
+            width: '50px',
+            height: '50px',
+            border: '4px solid #E6E6E6',
+            borderTopColor: '#15C9FA',
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite',
+          }} />
+          <span style={{
+            fontFamily: 'Nunito, sans-serif',
+            fontSize: '18px',
+            color: '#061F42',
+            animation: 'fadeIn 0.5s ease-out',
+          }}>
+            Loading department details...
+          </span>
         </div>
+        <style>{`
+          @keyframes spin {
+            to { transform: rotate(360deg); }
+          }
+          @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+          }
+        `}</style>
       </div>
     );
   }
@@ -795,10 +1227,10 @@ const DepartmentDetailsPage: React.FC = () => {
               flexDirection: 'row',
               alignItems: 'flex-start',
             }}>
-              {tabs.map((tab) => (
+              {tabs.map((tab, index) => (
                 <button
                   key={tab.key}
-                  onClick={() => setActiveTab(tab.key)}
+                  onClick={() => handleTabChange(tab.key)}
                   style={{
                     display: 'flex',
                     flexDirection: 'row',
@@ -811,44 +1243,89 @@ const DepartmentDetailsPage: React.FC = () => {
                     borderRadius: '12px 12px 0px 0px',
                     border: 'none',
                     cursor: 'pointer',
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    transform: activeTab === tab.key ? 'translateY(-2px)' : 'translateY(0)',
+                    position: 'relative',
+                    zIndex: activeTab === tab.key ? 2 : 1,
+                    animation: `slideDown 0.3s ease-out ${index * 0.05}s both`,
+                  }}
+                  onMouseEnter={(e) => {
+                    if (activeTab !== tab.key) {
+                      e.currentTarget.style.background = '#F0F0F0';
+                      e.currentTarget.style.transform = 'translateY(-2px)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (activeTab !== tab.key) {
+                      e.currentTarget.style.background = '#E6E6E6';
+                      e.currentTarget.style.transform = 'translateY(0)';
+                    }
                   }}
                 >
                   <span style={{
                     fontFamily: 'Nunito, sans-serif',
-                    fontWeight: 600,
+                    fontWeight: activeTab === tab.key ? 700 : 600,
                     fontSize: '20px',
                     lineHeight: '20px',
                     color: activeTab === tab.key ? '#061F42' : '#A4A5A5',
                     whiteSpace: 'nowrap',
+                    transition: 'color 0.3s ease, font-weight 0.2s ease',
                   }}>
                     {tab.label}
                   </span>
+                  {/* Active indicator line */}
+                  {activeTab === tab.key && (
+                    <div style={{
+                      position: 'absolute',
+                      bottom: 0,
+                      left: '50%',
+                      transform: 'translateX(-50%)',
+                      width: '60%',
+                      height: '3px',
+                      background: 'linear-gradient(90deg, #15C9FA 0%, #0EA5E9 100%)',
+                      borderRadius: '3px 3px 0 0',
+                      animation: 'scaleIn 0.3s ease-out',
+                    }} />
+                  )}
                 </button>
               ))}
             </div>
 
-            {/* Tab Content */}
-            {activeTab === 'overview' && renderOverviewTab(currentContent)}
-            {activeTab === 'doctors' && renderDoctorsTab()}
-            {(activeTab === 'opd_services' || activeTab === 'inpatient_services' || activeTab === 'investigations') && 
-              renderServicesTab(currentContent)}
-            {activeTab === 'success_stories' && (
-              <div style={{
-                padding: '40px',
-                textAlign: 'center',
-                color: '#6A6A6A',
-                background: '#FCFCFC',
-                boxShadow: '0px 4px 5px rgba(0, 0, 0, 0.25)',
-                borderRadius: '0px 12px 12px 12px',
-              }}>
-                Success stories coming soon...
-              </div>
-            )}
+            {/* Tab Content with transition */}
+            <div 
+              key={tabContentKey}
+              style={{
+                opacity: isTabTransitioning ? 0 : 1,
+                transform: isTabTransitioning ? 'translateY(10px)' : 'translateY(0)',
+                transition: 'opacity 0.3s ease, transform 0.3s ease',
+              }}
+            >
+              {activeTab === 'overview' && renderOverviewTab(currentContent)}
+              {activeTab === 'doctors' && renderDoctorsTab()}
+              {(activeTab === 'opd_services' || activeTab === 'inpatient_services' || activeTab === 'investigations') && 
+                renderServicesTab(currentContent)}
+              {activeTab === 'success_stories' && (
+                <div style={{
+                  padding: '40px',
+                  textAlign: 'center',
+                  color: '#6A6A6A',
+                  background: '#FCFCFC',
+                  boxShadow: '0px 4px 5px rgba(0, 0, 0, 0.25)',
+                  borderRadius: '0px 12px 12px 12px',
+                  animation: 'fadeInUp 0.4s ease-out',
+                }}>
+                  Success stories coming soon...
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Our Doctors Section (shown at bottom when not on doctors tab) */}
           {activeTab !== 'doctors' && doctors.length > 0 && (
-            <div style={{ marginTop: '40px' }}>
+            <div style={{ 
+              marginTop: '40px',
+              animation: 'fadeInUp 0.5s ease-out 0.2s both',
+            }}>
               <h3 style={{
                 fontFamily: 'Nunito, sans-serif',
                 fontWeight: 600,
@@ -867,17 +1344,32 @@ const DepartmentDetailsPage: React.FC = () => {
                 gap: '16px',
               }}>
                 {/* Left Arrow */}
-                <button style={{
-                  width: '40px',
-                  height: '40px',
-                  borderRadius: '50%',
-                  border: '1px solid #D8D8D8',
-                  background: '#FFFFFF',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}>
+                <button 
+                  style={{
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: '50%',
+                    border: '1px solid #D8D8D8',
+                    background: '#FFFFFF',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'all 0.3s ease',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = '#061F42';
+                    e.currentTarget.style.color = '#FFFFFF';
+                    e.currentTarget.style.borderColor = '#061F42';
+                    e.currentTarget.style.transform = 'scale(1.1)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = '#FFFFFF';
+                    e.currentTarget.style.color = '#000000';
+                    e.currentTarget.style.borderColor = '#D8D8D8';
+                    e.currentTarget.style.transform = 'scale(1)';
+                  }}
+                >
                   ←
                 </button>
 
@@ -889,21 +1381,36 @@ const DepartmentDetailsPage: React.FC = () => {
                   overflow: 'hidden',
                   flex: 1,
                 }}>
-                  {doctors.slice(0, 3).map(doctor => renderDoctorCard(doctor))}
+                  {doctors.slice(0, 3).map((doctor, index) => renderDoctorCard(doctor, index))}
                 </div>
 
                 {/* Right Arrow */}
-                <button style={{
-                  width: '40px',
-                  height: '40px',
-                  borderRadius: '50%',
-                  border: '1px solid #D8D8D8',
-                  background: '#FFFFFF',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}>
+                <button 
+                  style={{
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: '50%',
+                    border: '1px solid #D8D8D8',
+                    background: '#FFFFFF',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'all 0.3s ease',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = '#061F42';
+                    e.currentTarget.style.color = '#FFFFFF';
+                    e.currentTarget.style.borderColor = '#061F42';
+                    e.currentTarget.style.transform = 'scale(1.1)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = '#FFFFFF';
+                    e.currentTarget.style.color = '#000000';
+                    e.currentTarget.style.borderColor = '#D8D8D8';
+                    e.currentTarget.style.transform = 'scale(1)';
+                  }}
+                >
                   →
                 </button>
               </div>
@@ -911,6 +1418,9 @@ const DepartmentDetailsPage: React.FC = () => {
           )}
         </div>
       </div>
+      
+      {/* Animation Styles */}
+      <style>{animationStyles}</style>
     </div>
   );
 };

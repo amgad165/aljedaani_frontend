@@ -7,10 +7,16 @@ interface User {
   id: number;
   name: string;
   email: string;
-  role: 'user' | 'admin' | 'doctor' | 'staff';
+  role: 'user' | 'admin' | 'doctor' | 'staff' | 'patient';
   phone?: string;
   date_of_birth?: string;
   gender?: string;
+  medical_record_number?: string;
+  national_id?: string;
+  marital_status?: string;
+  religion?: string;
+  address?: string;
+  profile_photo?: string;
 }
 
 interface AuthContextType {
@@ -22,6 +28,7 @@ interface AuthContextType {
   register: (data: RegisterData) => Promise<void>;
   logout: () => Promise<void>;
   clearError: () => void;
+  refreshUser: () => Promise<void>;
   isAuthenticated: boolean;
   isAdmin: boolean;
 }
@@ -132,6 +139,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setError(null);
   };
 
+  const refreshUser = async () => {
+    if (!token) return;
+    
+    try {
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
+      const response = await fetch(`${API_BASE_URL}/user`, {
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const updatedUser = data.user || data;
+        setUser(updatedUser);
+        localStorage.setItem('auth_user', JSON.stringify(updatedUser));
+      }
+    } catch (err) {
+      console.error('Error refreshing user:', err);
+    }
+  };
+
   const value: AuthContextType = {
     user,
     token,
@@ -141,6 +171,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     register,
     logout,
     clearError,
+    refreshUser,
     isAuthenticated: !!token && !!user,
     isAdmin: !!user && user.role === 'admin',
   };
