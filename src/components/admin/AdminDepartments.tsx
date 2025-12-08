@@ -200,22 +200,6 @@ const AdminDepartments: React.FC = () => {
     (dept.description?.toLowerCase().includes(searchQuery.toLowerCase()) || false)
   );
 
-  // Icon options for departments
-  const iconOptions = [
-    { value: 'heart', label: '❤️ Heart / Cardiology' },
-    { value: 'brain', label: '🧠 Brain / Neurology' },
-    { value: 'bone', label: '🦴 Bone / Orthopedics' },
-    { value: 'eye', label: '👁️ Eye / Ophthalmology' },
-    { value: 'tooth', label: '🦷 Tooth / Dentistry' },
-    { value: 'baby', label: '👶 Baby / Pediatrics' },
-    { value: 'pregnant', label: '🤰 Obstetrics & Gynecology' },
-    { value: 'lungs', label: '🫁 Lungs / Pulmonology' },
-    { value: 'kidney', label: '🫘 Kidney / Nephrology' },
-    { value: 'skin', label: '🧴 Skin / Dermatology' },
-    { value: 'ear', label: '👂 ENT' },
-    { value: 'health-shield', label: '🛡️ General Medicine' },
-  ];
-
   // Inline Styles
   const containerStyle: React.CSSProperties = { padding: '24px', fontFamily: "'Nunito', sans-serif" };
   const headerStyle: React.CSSProperties = { marginBottom: '24px' };
@@ -248,15 +232,6 @@ const AdminDepartments: React.FC = () => {
   const notificationStyle: React.CSSProperties = { position: 'fixed', top: '20px', right: '20px', padding: '16px 24px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '12px', boxShadow: '0 10px 40px rgba(0,0,0,0.2)', zIndex: 2000 };
   const emptyStateStyle: React.CSSProperties = { textAlign: 'center', padding: '60px 20px' };
   const loadingSpinnerStyle: React.CSSProperties = { width: '48px', height: '48px', border: '4px solid #E5E7EB', borderTopColor: '#15C9FA', borderRadius: '50%', animation: 'spin 1s linear infinite' };
-
-  const getIconEmoji = (icon: string | null) => {
-    const iconMap: Record<string, string> = {
-      'heart': '❤️', 'brain': '🧠', 'bone': '🦴', 'eye': '👁️', 'tooth': '🦷',
-      'baby': '👶', 'pregnant': '🤰', 'lungs': '🫁', 'kidney': '🫘', 'skin': '🧴',
-      'ear': '👂', 'health-shield': '🛡️'
-    };
-    return icon ? iconMap[icon] || '🏥' : '🏥';
-  };
 
   return (
     <AdminLayout>

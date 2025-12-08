@@ -19,6 +19,7 @@ import AdminDepartments from './components/admin/AdminDepartments';
 import AdminDoctors from './components/admin/AdminDoctors';
 import AdminTestimonials from './components/admin/AdminTestimonials';
 import AdminDepartmentTabs from './components/admin/AdminDepartmentTabs';
+import AdminOtpLogs from './components/admin/AdminOtpLogs';
 import ProtectedRoute from './components/admin/ProtectedRoute';
 import './App.css';
 
@@ -68,6 +69,11 @@ function App() {
           <Route path="/admin/testimonials" element={
             <ProtectedRoute>
               <AdminTestimonials />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/otp-logs" element={
+            <ProtectedRoute>
+              <AdminOtpLogs />
             </ProtectedRoute>
           } />
         </Routes>

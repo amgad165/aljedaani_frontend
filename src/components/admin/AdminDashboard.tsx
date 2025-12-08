@@ -254,7 +254,6 @@ const AdminDashboard: React.FC = () => {
       icon: 'users',
       link: '/admin',
       gradient: 'linear-gradient(243.25deg, rgba(184, 190, 239, 0.49) 2.76%, #1C33FD 98%)',
-    //   newCount: newUsersLabel
     },
     { 
       title: 'Reports', 
@@ -301,6 +300,14 @@ const AdminDashboard: React.FC = () => {
         return (
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2">
             <path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/>
+          </svg>
+        );
+      case 'otp':
+        return (
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0110 0v4"/>
+            <circle cx="12" cy="16" r="1" fill={color}/>
           </svg>
         );
       default:
@@ -421,7 +428,9 @@ const AdminDashboard: React.FC = () => {
                 {loading ? (
                   <div style={{ height: '44px', width: '80px', backgroundColor: 'rgba(255,255,255,0.3)', borderRadius: '8px' }} />
                 ) : (
-                  <p style={{ ...statValueStyle, color: '#FFFFFF' }}>{card.value.toLocaleString()}</p>
+                  <p style={{ ...statValueStyle, color: '#FFFFFF' }}>
+                    {typeof card.value === 'number' ? card.value.toLocaleString() : card.value}
+                  </p>
                 )}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '8px' }}>
                   <p style={{ ...statLabelStyle, color: '#FFFFFF' }}>{card.title}</p>
@@ -443,6 +452,7 @@ const AdminDashboard: React.FC = () => {
             { title: 'Add Department', link: '/admin/departments', color: '#7C69F2' },
             { title: 'Add Doctor', link: '/admin/doctors', color: '#3F752C' },
             { title: 'Add Testimonial', link: '/admin/testimonials', color: '#4F4F4F' },
+            { title: 'View OTP Logs', link: '/admin/otp-logs', color: '#10B981' },
           ].map((action) => (
             <Link
               key={action.title}

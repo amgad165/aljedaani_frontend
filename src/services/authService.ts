@@ -165,4 +165,59 @@ export const authService = {
       throw error;
     }
   },
+
+  /**
+   * Send OTP for registration
+   */
+  async sendRegistrationOtp(phone: string): Promise<{ message: string }> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/register/otp/send`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({ phone }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json() as ApiError;
+        throw error;
+      }
+
+      return await response.json();
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  /**
+   * Verify OTP for registration
+   */
+  async verifyRegistrationOtp(phone: string, otp: string): Promise<{ message: string; verified: boolean; verification_token?: string }> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/register/otp/verify`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({ phone, otp }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json() as ApiError;
+        throw error;
+      }
+
+      const data = await response.json();
+      // Backend returns 'success', frontend expects 'verified'
+      return {
+        ...data,
+        verified: data.success,
+      };
+    } catch (error) {
+      throw error;
+    }
+  },
 };

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
@@ -169,6 +169,7 @@ const BookAppointmentPage = () => {
     isAuthenticated && user ? 3 : 1
   );
   const [isOtpSent, setIsOtpSent] = useState(false);
+  const [resendCountdown, setResendCountdown] = useState(0);
   
   // Form data
   const [verificationData, setVerificationData] = useState<VerificationData>({
@@ -203,6 +204,14 @@ const BookAppointmentPage = () => {
     dateTime: '',
   });
 
+  // Countdown timer effect
+  useEffect(() => {
+    if (resendCountdown > 0) {
+      const timer = setTimeout(() => setResendCountdown(resendCountdown - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [resendCountdown]);
+
   // Steps configuration
   const getSteps = (): StepInfo[] => {
     return [
@@ -218,9 +227,43 @@ const BookAppointmentPage = () => {
       alert('Please enter your mobile number');
       return;
     }
-    // Simulate OTP send
-    setIsOtpSent(true);
-    alert('OTP sent to your mobile number!');
+
+    setIsSubmitting(true);
+    try {
+      const { authService } = await import('../services/authService');
+      await authService.sendRegistrationOtp(verificationData.mobileNumber);
+      setIsOtpSent(true);
+      setResendCountdown(30); // 30 second countdown
+      alert('OTP sent to your mobile number!');
+    } catch (err: unknown) {
+      if (typeof err === 'object' && err !== null && 'message' in err) {
+        alert((err as { message: string }).message);
+      } else {
+        alert('Failed to send OTP. Please try again.');
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleResendOtp = async () => {
+    if (resendCountdown > 0) return;
+    
+    setIsSubmitting(true);
+    try {
+      const { authService } = await import('../services/authService');
+      await authService.sendRegistrationOtp(verificationData.mobileNumber);
+      setResendCountdown(30); // Reset countdown
+      alert('OTP resent to your mobile number!');
+    } catch (err: unknown) {
+      if (typeof err === 'object' && err !== null && 'message' in err) {
+        alert((err as { message: string }).message);
+      } else {
+        alert('Failed to resend OTP. Please try again.');
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleVerifyOtp = async () => {
@@ -228,7 +271,29 @@ const BookAppointmentPage = () => {
       alert('Please enter the OTP code');
       return;
     }
-    setCurrentStep(2);
+
+    setIsSubmitting(true);
+    try {
+      const { authService } = await import('../services/authService');
+      const result = await authService.verifyRegistrationOtp(
+        verificationData.mobileNumber,
+        verificationData.otpCode
+      );
+      
+      if (result.verified) {
+        setCurrentStep(2);
+      } else {
+        alert('Invalid OTP. Please try again.');
+      }
+    } catch (err: unknown) {
+      if (typeof err === 'object' && err !== null && 'message' in err) {
+        alert((err as { message: string }).message);
+      } else {
+        alert('OTP verification failed. Please try again.');
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleProfileSubmit = async () => {
@@ -482,6 +547,43 @@ const BookAppointmentPage = () => {
               />
             )}
             
+            {/* Resend OTP link */}
+            {isOtpSent && (
+              <div style={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                gap: '4px',
+                marginTop: '8px',
+              }}>
+                <span style={{
+                  fontFamily: 'Nunito, sans-serif',
+                  fontWeight: 600,
+                  fontSize: '14px',
+                  color: '#A4A5A5',
+                }}>
+                  Didn't receive OTP?
+                </span>
+                <button
+                  onClick={handleResendOtp}
+                  disabled={resendCountdown > 0 || isSubmitting}
+                  style={{
+                    fontFamily: 'Nunito, sans-serif',
+                    fontWeight: 600,
+                    fontSize: '14px',
+                    color: resendCountdown > 0 ? '#A4A5A5' : '#0B67E7',
+                    textDecoration: 'underline',
+                    background: 'none',
+                    border: 'none',
+                    cursor: resendCountdown > 0 ? 'not-allowed' : 'pointer',
+                    padding: 0,
+                  }}
+                >
+                  {resendCountdown > 0 ? `Resend in ${resendCountdown}s` : 'Resend OTP'}
+                </button>
+              </div>
+            )}
+            
             {/* Already registered link */}
             <div style={{
               display: 'flex',
@@ -520,15 +622,16 @@ const BookAppointmentPage = () => {
             }}>
               <button
                 onClick={isOtpSent ? handleVerifyOtp : handleSendOtp}
+                disabled={isSubmitting}
                 style={{
                   display: 'flex',
                   justifyContent: 'center',
                   alignItems: 'center',
                   padding: '8px 12px',
-                  background: '#061F42',
+                  background: isSubmitting ? '#A4A5A5' : '#061F42',
                   borderRadius: '8px',
                   border: 'none',
-                  cursor: 'pointer',
+                  cursor: isSubmitting ? 'not-allowed' : 'pointer',
                 }}
               >
                 <span style={{
