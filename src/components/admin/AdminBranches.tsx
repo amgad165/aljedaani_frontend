@@ -21,6 +21,7 @@ interface Branch {
   email: string | null;
   latitude: number | null;
   longitude: number | null;
+  map_url: string | null;
   image_url: string | null;
   is_active: boolean;
   created_at: string;
@@ -37,6 +38,7 @@ interface FormData {
   email: string;
   latitude: string;
   longitude: string;
+  map_url: string;
   image_url: string;
   image_file: File | null;
   is_active: boolean;
@@ -79,6 +81,7 @@ const AdminBranches: React.FC = () => {
     email: '',
     latitude: '',
     longitude: '',
+    map_url: '',
     image_url: '',
     image_file: null,
     is_active: true
@@ -147,6 +150,7 @@ const AdminBranches: React.FC = () => {
       email: '',
       latitude: '',
       longitude: '',
+      map_url: '',
       image_url: '',
       image_file: null,
       is_active: true
@@ -167,6 +171,7 @@ const AdminBranches: React.FC = () => {
       email: branch.email || '',
       latitude: branch.latitude?.toString() || '',
       longitude: branch.longitude?.toString() || '',
+      map_url: branch.map_url || '',
       image_url: branch.image_url || '',
       image_file: null,
       is_active: branch.is_active
@@ -314,6 +319,7 @@ const AdminBranches: React.FC = () => {
       if (formData.email) formDataToSend.append('email', formData.email);
       if (formData.latitude) formDataToSend.append('latitude', formData.latitude);
       if (formData.longitude) formDataToSend.append('longitude', formData.longitude);
+      if (formData.map_url) formDataToSend.append('map_url', formData.map_url);
       formDataToSend.append('is_active', formData.is_active ? '1' : '0');
       
       // Handle image: new file takes priority, otherwise keep existing URL
@@ -488,7 +494,7 @@ const AdminBranches: React.FC = () => {
   );
 
   // Inline Styles
-  const containerStyle: React.CSSProperties = { padding: '24px', fontFamily: "'Nunito', sans-serif" };
+  const containerStyle: React.CSSProperties = { padding: '24px', fontFamily: "'Calibri', 'Segoe UI', sans-serif" };
   const headerStyle: React.CSSProperties = { marginBottom: '24px' };
   const headerTopStyle: React.CSSProperties = { display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', marginBottom: '24px' };
   const titleStyle: React.CSSProperties = { fontSize: '28px', fontWeight: 700, color: '#061F42', margin: 0 };
@@ -758,6 +764,11 @@ const AdminBranches: React.FC = () => {
                       <label style={labelStyle}>Longitude</label>
                       <input type="number" step="any" value={formData.longitude} onChange={(e) => setFormData({ ...formData, longitude: e.target.value })} style={inputStyle} placeholder="39.1728" />
                     </div>
+                  </div>
+                  
+                  <div style={formGroupStyle}>
+                    <label style={labelStyle}>Map URL</label>
+                    <input type="url" value={formData.map_url} onChange={(e) => setFormData({ ...formData, map_url: e.target.value })} style={inputStyle} placeholder="https://maps.google.com/..." />
                   </div>
                   
                   <div style={formGroupStyle}>

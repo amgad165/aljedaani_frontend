@@ -1,47 +1,63 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import AdminLayout from './AdminLayout';
 
-interface Testimonial {
+interface Doctor {
   id: number;
   name: string;
-  role: string | null;
+  specialization: string;
   image_url: string | null;
-  location: string | null;
-  experience: string | null;
-  review_title: string | null;
-  description: string | null;
+  branch_id: number;
+}
+
+interface Testimonial {
+  id: number;
+  doctor_id: number;
+  doctor?: Doctor;
+  name?: string;
+  role?: string | null;
+  testimonial_image?: string | null;
+  location?: string | null;
+  experience?: string | null;
+  review_title: string;
+  description: string;
+  full_story?: string;
   is_active: boolean;
   created_at: string;
   updated_at: string;
 }
 
 interface FormData {
-  name: string;
-  role: string;
-  image_url: string;
+  doctor_id: number;
+  name?: string;
+  role?: string;
+  testimonial_image?: string;
   image_file: File | null;
-  location: string;
-  experience: string;
+  location?: string;
+  experience?: string;
   review_title: string;
   description: string;
+  full_story: string;
   is_active: boolean;
 }
 
 const AdminTestimonials: React.FC = () => {
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
+  const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [modalMode, setModalMode] = useState<'create' | 'edit'>('create');
   const [selectedTestimonial, setSelectedTestimonial] = useState<Testimonial | null>(null);
   const [formData, setFormData] = useState<FormData>({
+    doctor_id: 0,
     name: '',
     role: '',
-    image_url: '',
+    testimonial_image: '',
     image_file: null,
     location: '',
     experience: '',
     review_title: '',
     description: '',
+    full_story: '',
     is_active: true
   });
   const [saving, setSaving] = useState(false);
@@ -73,9 +89,26 @@ const AdminTestimonials: React.FC = () => {
     }
   }, [API_BASE_URL]);
 
+  const fetchDoctors = useCallback(async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/doctors?active=true`);
+      const result = await response.json();
+      if (result.success && result.data) {
+        const doctorsArray = Array.isArray(result.data) ? result.data : (result.data.data || []);
+        setDoctors(doctorsArray);
+      } else {
+        setDoctors([]);
+      }
+    } catch (error) {
+      console.error('Error fetching doctors:', error);
+      setDoctors([]);
+    }
+  }, [API_BASE_URL]);
+
   useEffect(() => {
     fetchTestimonials();
-  }, [fetchTestimonials]);
+    fetchDoctors();
+  }, [fetchTestimonials, fetchDoctors]);
 
   useEffect(() => {
     if (notification) {
@@ -88,14 +121,16 @@ const AdminTestimonials: React.FC = () => {
     setModalMode('create');
     setSelectedTestimonial(null);
     setFormData({
+      doctor_id: 0,
       name: '',
       role: '',
-      image_url: '',
+      testimonial_image: '',
       image_file: null,
       location: '',
       experience: '',
       review_title: '',
       description: '',
+      full_story: '',
       is_active: true
     });
     setShowModal(true);
@@ -105,14 +140,16 @@ const AdminTestimonials: React.FC = () => {
     setModalMode('edit');
     setSelectedTestimonial(testimonial);
     setFormData({
-      name: testimonial.name,
+      doctor_id: testimonial.doctor_id || 0,
+      name: testimonial.name || '',
       role: testimonial.role || '',
-      image_url: testimonial.image_url || '',
+      testimonial_image: testimonial.testimonial_image || '',
       image_file: null,
       location: testimonial.location || '',
       experience: testimonial.experience || '',
       review_title: testimonial.review_title || '',
       description: testimonial.description || '',
+      full_story: testimonial.full_story || '',
       is_active: testimonial.is_active
     });
     setShowModal(true);
@@ -156,24 +193,44 @@ const AdminTestimonials: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate doctor selection
+    if (!formData.doctor_id) {
+      setNotification({ type: 'error', message: 'Please select a doctor' });
+      return;
+    }
+    
+    // Validate review title and description
+    if (!formData.review_title.trim()) {
+      setNotification({ type: 'error', message: 'Please enter a review title' });
+      return;
+    }
+    
+    if (!formData.description.trim()) {
+      setNotification({ type: 'error', message: 'Please enter a review description' });
+      return;
+    }
+    
     setSaving(true);
 
     try {
       // Use FormData for file upload support
       const formDataToSend = new window.FormData();
-      formDataToSend.append('name', formData.name);
+      formDataToSend.append('doctor_id', String(formData.doctor_id));
+      if (formData.name) formDataToSend.append('name', formData.name);
       if (formData.role) formDataToSend.append('role', formData.role);
       if (formData.location) formDataToSend.append('location', formData.location);
       if (formData.experience) formDataToSend.append('experience', formData.experience);
-      if (formData.review_title) formDataToSend.append('review_title', formData.review_title);
-      if (formData.description) formDataToSend.append('description', formData.description);
+      formDataToSend.append('review_title', formData.review_title);
+      formDataToSend.append('description', formData.description);
+      if (formData.full_story) formDataToSend.append('full_story', formData.full_story);
       formDataToSend.append('is_active', formData.is_active ? '1' : '0');
       
       // Add image file if selected
       if (formData.image_file) {
         formDataToSend.append('image', formData.image_file);
-      } else if (formData.image_url) {
-        formDataToSend.append('image_url', formData.image_url);
+      } else if (formData.testimonial_image) {
+        formDataToSend.append('testimonial_image', formData.testimonial_image);
       }
 
       // For PUT requests, Laravel needs _method field with FormData
@@ -213,13 +270,14 @@ const AdminTestimonials: React.FC = () => {
   };
 
   const filteredTestimonials = testimonials.filter(t =>
-    t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (t.doctor?.name.toLowerCase().includes(searchQuery.toLowerCase()) || false) ||
+    (t.name?.toLowerCase().includes(searchQuery.toLowerCase()) || false) ||
     (t.role?.toLowerCase().includes(searchQuery.toLowerCase()) || false) ||
     (t.review_title?.toLowerCase().includes(searchQuery.toLowerCase()) || false)
   );
 
   // Inline Styles
-  const containerStyle: React.CSSProperties = { padding: '24px', fontFamily: "'Nunito', sans-serif" };
+  const containerStyle: React.CSSProperties = { padding: '24px', fontFamily: "'Calibri', 'Segoe UI', sans-serif" };
   const headerStyle: React.CSSProperties = { marginBottom: '24px' };
   const headerTopStyle: React.CSSProperties = { display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', marginBottom: '24px' };
   const titleStyle: React.CSSProperties = { fontSize: '28px', fontWeight: 700, color: '#061F42', margin: 0 };
@@ -270,7 +328,7 @@ const AdminTestimonials: React.FC = () => {
           <div style={headerTopStyle}>
             <div>
               <h1 style={titleStyle}>Testimonials</h1>
-              <p style={subtitleStyle}>Manage patient testimonials and reviews</p>
+              <p style={subtitleStyle}>Manage doctor-linked success stories and testimonials</p>
             </div>
             <button style={addButtonStyle} onClick={handleCreate}>
               <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -308,21 +366,17 @@ const AdminTestimonials: React.FC = () => {
               <div key={testimonial.id} style={cardStyle}>
                 <div style={cardHeaderStyle}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                    {testimonial.image_url ? (
-                      <img src={testimonial.image_url} alt={testimonial.name} style={avatarStyle as React.CSSProperties} />
+                    {testimonial.doctor?.image_url ? (
+                      <img src={testimonial.doctor.image_url} alt={testimonial.doctor.name} style={avatarStyle as React.CSSProperties} />
                     ) : (
-                      <div style={avatarStyle}>{getInitials(testimonial.name)}</div>
+                      <div style={avatarStyle}>{getInitials(testimonial.doctor?.name || 'Doctor')}</div>
                     )}
                     <div style={{ flex: 1 }}>
-                      <h3 style={{ fontSize: '16px', fontWeight: 600, color: '#061F42', margin: 0 }}>{testimonial.name}</h3>
-                      {testimonial.role && <p style={{ fontSize: '14px', color: '#6B7280', margin: '4px 0 0' }}>{testimonial.role}</p>}
-                      {testimonial.location && (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '4px', color: '#9CA3AF', fontSize: '12px' }}>
-                          <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                          </svg>
-                          {testimonial.location}
+                      <h3 style={{ fontSize: '16px', fontWeight: 600, color: '#061F42', margin: 0 }}>Dr. {testimonial.doctor?.name}</h3>
+                      <p style={{ fontSize: '13px', color: '#15C9FA', fontWeight: 500, margin: '2px 0 0' }}>{testimonial.doctor?.specialization}</p>
+                      {testimonial.name && (
+                        <div style={{ marginTop: '6px', paddingTop: '6px', borderTop: '1px solid #E5E7EB' }}>
+                          <p style={{ fontSize: '12px', color: '#6B7280', margin: '0' }}>Patient: <strong>{testimonial.name}</strong></p>
                         </div>
                       )}
                     </div>
@@ -386,33 +440,121 @@ const AdminTestimonials: React.FC = () => {
               </div>
               <form onSubmit={handleSubmit}>
                 <div style={modalBodyStyle}>
-                  <div style={formRowStyle}>
-                    <div style={formGroupStyle}>
-                      <label style={labelStyle}>Name *</label>
-                      <input type="text" required value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} style={inputStyle} placeholder="e.g., John Doe" />
-                    </div>
-                    <div style={formGroupStyle}>
-                      <label style={labelStyle}>Role</label>
-                      <input type="text" value={formData.role} onChange={(e) => setFormData({ ...formData, role: e.target.value })} style={inputStyle} placeholder="e.g., Patient" />
-                    </div>
+                  {/* Doctor Selection - Primary Field */}
+                  <div style={formGroupStyle}>
+                    <label style={labelStyle}>Select Doctor *</label>
+                    <select 
+                      required 
+                      value={formData.doctor_id} 
+                      onChange={(e) => setFormData({ ...formData, doctor_id: parseInt(e.target.value) })} 
+                      style={{ ...inputStyle, backgroundColor: 'white' }}
+                    >
+                      <option value={0}>-- Choose a doctor --</option>
+                      {doctors.map(doctor => (
+                        <option key={doctor.id} value={doctor.id}>
+                          {doctor.name} - {doctor.specialization}
+                        </option>
+                      ))}
+                    </select>
+                    <p style={{ fontSize: '12px', color: '#6B7280', marginTop: '4px' }}>This is the primary doctor whose success story is being documented</p>
                   </div>
-                  <div style={formRowStyle}>
-                    <div style={formGroupStyle}>
-                      <label style={labelStyle}>Location</label>
-                      <input type="text" value={formData.location} onChange={(e) => setFormData({ ...formData, location: e.target.value })} style={inputStyle} placeholder="e.g., Jeddah, KSA" />
-                    </div>
-                    <div style={formGroupStyle}>
-                      <label style={labelStyle}>Experience</label>
-                      <input type="text" value={formData.experience} onChange={(e) => setFormData({ ...formData, experience: e.target.value })} style={inputStyle} placeholder="e.g., Cardiac surgery" />
-                    </div>
+
+                  {/* Review Title and Description - Core Testimonial Fields */}
+                  <div style={formGroupStyle}>
+                    <label style={labelStyle}>Review Title *</label>
+                    <input 
+                      type="text" 
+                      required
+                      value={formData.review_title} 
+                      onChange={(e) => setFormData({ ...formData, review_title: e.target.value })} 
+                      style={inputStyle} 
+                      placeholder="e.g., Excellent Care and Service" 
+                    />
                   </div>
                   <div style={formGroupStyle}>
-                    <label style={labelStyle}>Photo</label>
+                    <label style={labelStyle}>Review / Brief Description *</label>
+                    <textarea 
+                      required
+                      value={formData.description} 
+                      onChange={(e) => setFormData({ ...formData, description: e.target.value })} 
+                      style={textareaStyle} 
+                      placeholder="A brief review of the service or experience..." 
+                    />
+                    <p style={{ fontSize: '12px', color: '#6B7280', marginTop: '4px' }}>Brief summary (will appear on testimonial cards)</p>
+                  </div>
+
+                  {/* Full Story - Extended Narrative */}
+                  <div style={formGroupStyle}>
+                    <label style={labelStyle}>Full Story (Optional)</label>
+                    <textarea 
+                      value={formData.full_story} 
+                      onChange={(e) => setFormData({ ...formData, full_story: e.target.value })} 
+                      style={{ ...textareaStyle, minHeight: '120px' }}
+                      placeholder="The complete success story - detailed account of the treatment, outcomes, and personal journey. This appears on the detailed success story page."
+                    />
+                    <p style={{ fontSize: '12px', color: '#6B7280', marginTop: '4px' }}>Complete narrative of the success story (optional but recommended)</p>
+                  </div>
+
+                  {/* Patient Information - Optional Secondary Fields */}
+                  <div style={{ padding: '16px', backgroundColor: '#F9FAFB', borderRadius: '12px', marginBottom: '20px', borderLeft: '4px solid #15C9FA' }}>
+                    <p style={{ fontSize: '13px', fontWeight: 600, color: '#061F42', marginTop: 0, marginBottom: '12px' }}>
+                      Patient Information (Optional)
+                    </p>
+                    <div style={formRowStyle}>
+                      <div style={formGroupStyle}>
+                        <label style={labelStyle}>Patient Name</label>
+                        <input 
+                          type="text" 
+                          value={formData.name || ''} 
+                          onChange={(e) => setFormData({ ...formData, name: e.target.value })} 
+                          style={inputStyle} 
+                          placeholder="e.g., John Doe" 
+                        />
+                      </div>
+                      <div style={formGroupStyle}>
+                        <label style={labelStyle}>Patient Role</label>
+                        <input 
+                          type="text" 
+                          value={formData.role || ''} 
+                          onChange={(e) => setFormData({ ...formData, role: e.target.value })} 
+                          style={inputStyle} 
+                          placeholder="e.g., Patient, Family Member" 
+                        />
+                      </div>
+                    </div>
+                    <div style={formRowStyle}>
+                      <div style={formGroupStyle}>
+                        <label style={labelStyle}>Location</label>
+                        <input 
+                          type="text" 
+                          value={formData.location || ''} 
+                          onChange={(e) => setFormData({ ...formData, location: e.target.value })} 
+                          style={inputStyle} 
+                          placeholder="e.g., Jeddah, KSA" 
+                        />
+                      </div>
+                      <div style={formGroupStyle}>
+                        <label style={labelStyle}>Experience / Condition</label>
+                        <input 
+                          type="text" 
+                          value={formData.experience || ''} 
+                          onChange={(e) => setFormData({ ...formData, experience: e.target.value })} 
+                          style={inputStyle} 
+                          placeholder="e.g., Cardiac surgery, Pregnancy care" 
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Testimonial Photo */}
+                  <div style={formGroupStyle}>
+                    <label style={labelStyle}>Testimonial Photo (Optional)</label>
+                    <p style={{ fontSize: '12px', color: '#6B7280', marginTop: 0, marginBottom: '12px' }}>Photo of patient/situation (different from doctor profile image)</p>
                     <div style={{ border: '2px dashed #E5E7EB', borderRadius: '12px', padding: '16px', backgroundColor: '#FAFAFA' }}>
-                      {(formData.image_file || formData.image_url) ? (
+                      {(formData.image_file || formData.testimonial_image) ? (
                         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                           <img 
-                            src={formData.image_file ? URL.createObjectURL(formData.image_file) : formData.image_url} 
+                            src={formData.image_file ? URL.createObjectURL(formData.image_file) : formData.testimonial_image} 
                             alt="Preview" 
                             style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: '8px' }} 
                           />
@@ -422,7 +564,7 @@ const AdminTestimonials: React.FC = () => {
                             </p>
                             <button 
                               type="button" 
-                              onClick={() => setFormData({ ...formData, image_file: null, image_url: '' })}
+                              onClick={() => setFormData({ ...formData, image_file: null, testimonial_image: '' })}
                               style={{ marginTop: '8px', padding: '6px 12px', backgroundColor: '#FEE2E2', color: '#991B1B', border: 'none', borderRadius: '6px', fontSize: '12px', cursor: 'pointer' }}
                             >
                               Remove
@@ -441,7 +583,7 @@ const AdminTestimonials: React.FC = () => {
                             accept="image/jpeg,image/png,image/jpg,image/gif,image/webp"
                             onChange={(e) => {
                               const file = e.target.files?.[0];
-                              if (file) setFormData({ ...formData, image_file: file, image_url: '' });
+                              if (file) setFormData({ ...formData, image_file: file, testimonial_image: '' });
                             }}
                             style={{ display: 'none' }}
                           />
@@ -449,14 +591,8 @@ const AdminTestimonials: React.FC = () => {
                       )}
                     </div>
                   </div>
-                  <div style={formGroupStyle}>
-                    <label style={labelStyle}>Review Title</label>
-                    <input type="text" value={formData.review_title} onChange={(e) => setFormData({ ...formData, review_title: e.target.value })} style={inputStyle} placeholder="e.g., Excellent Care and Service" />
-                  </div>
-                  <div style={formGroupStyle}>
-                    <label style={labelStyle}>Description / Review</label>
-                    <textarea value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} style={textareaStyle} placeholder="The patient's testimonial..." />
-                  </div>
+
+                  {/* Status */}
                   <div style={formGroupStyle}>
                     <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
                       <input type="checkbox" checked={formData.is_active} onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })} style={{ width: '20px', height: '20px', marginRight: '8px' }} />

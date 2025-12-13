@@ -92,6 +92,8 @@ const AdminDoctors: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'basic' | 'services'>('basic');
   const [newOutpatientService, setNewOutpatientService] = useState<NewServiceForm>(initialServiceForm);
   const [newInpatientService, setNewInpatientService] = useState<NewServiceForm>(initialServiceForm);
+  const [editingOutpatientIndex, setEditingOutpatientIndex] = useState<number | null>(null);
+  const [editingInpatientIndex, setEditingInpatientIndex] = useState<number | null>(null);
   const [showUnsavedDialog, setShowUnsavedDialog] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
   const initialFormRef = useRef<string>('');
@@ -241,15 +243,39 @@ const AdminDoctors: React.FC = () => {
 
   const addOutpatientService = () => {
     if (newOutpatientService.title.trim()) {
-      setFormData(prev => ({
-        ...prev,
-        outpatient_services: [...prev.outpatient_services, {
-          title: newOutpatientService.title.trim(),
-          description: newOutpatientService.description.trim()
-        }]
-      }));
+      if (editingOutpatientIndex !== null) {
+        // Update existing service
+        setFormData(prev => {
+          const updated = [...prev.outpatient_services];
+          updated[editingOutpatientIndex] = {
+            title: newOutpatientService.title.trim(),
+            description: newOutpatientService.description.trim()
+          };
+          return { ...prev, outpatient_services: updated };
+        });
+        setEditingOutpatientIndex(null);
+      } else {
+        // Add new service
+        setFormData(prev => ({
+          ...prev,
+          outpatient_services: [...prev.outpatient_services, {
+            title: newOutpatientService.title.trim(),
+            description: newOutpatientService.description.trim()
+          }]
+        }));
+      }
       setNewOutpatientService(initialServiceForm);
     }
+  };
+
+  const editOutpatientService = (index: number) => {
+    setNewOutpatientService(formData.outpatient_services[index]);
+    setEditingOutpatientIndex(index);
+  };
+
+  const cancelEditOutpatient = () => {
+    setNewOutpatientService(initialServiceForm);
+    setEditingOutpatientIndex(null);
   };
 
   const removeOutpatientService = (index: number) => {
@@ -257,19 +283,46 @@ const AdminDoctors: React.FC = () => {
       ...prev,
       outpatient_services: prev.outpatient_services.filter((_, i) => i !== index)
     }));
+    if (editingOutpatientIndex === index) {
+      cancelEditOutpatient();
+    }
   };
 
   const addInpatientService = () => {
     if (newInpatientService.title.trim()) {
-      setFormData(prev => ({
-        ...prev,
-        inpatient_services: [...prev.inpatient_services, {
-          title: newInpatientService.title.trim(),
-          description: newInpatientService.description.trim()
-        }]
-      }));
+      if (editingInpatientIndex !== null) {
+        // Update existing service
+        setFormData(prev => {
+          const updated = [...prev.inpatient_services];
+          updated[editingInpatientIndex] = {
+            title: newInpatientService.title.trim(),
+            description: newInpatientService.description.trim()
+          };
+          return { ...prev, inpatient_services: updated };
+        });
+        setEditingInpatientIndex(null);
+      } else {
+        // Add new service
+        setFormData(prev => ({
+          ...prev,
+          inpatient_services: [...prev.inpatient_services, {
+            title: newInpatientService.title.trim(),
+            description: newInpatientService.description.trim()
+          }]
+        }));
+      }
       setNewInpatientService(initialServiceForm);
     }
+  };
+
+  const editInpatientService = (index: number) => {
+    setNewInpatientService(formData.inpatient_services[index]);
+    setEditingInpatientIndex(index);
+  };
+
+  const cancelEditInpatient = () => {
+    setNewInpatientService(initialServiceForm);
+    setEditingInpatientIndex(null);
   };
 
   const removeInpatientService = (index: number) => {
@@ -277,6 +330,9 @@ const AdminDoctors: React.FC = () => {
       ...prev,
       inpatient_services: prev.inpatient_services.filter((_, i) => i !== index)
     }));
+    if (editingInpatientIndex === index) {
+      cancelEditInpatient();
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -1242,12 +1298,12 @@ const AdminDoctors: React.FC = () => {
                 {/* Specialization */}
                 <div style={styles.formGroup}>
                   <label style={styles.label}>Specialization</label>
-                  <input
-                    type="text"
+                  <textarea
                     name="specialization"
                     value={formData.specialization}
                     onChange={handleInputChange}
-                    style={styles.input}
+                    style={styles.textarea}
+                    placeholder="Enter specialization details. Use line breaks for multiple items."
                   />
                 </div>
 
@@ -1315,8 +1371,21 @@ const AdminDoctors: React.FC = () => {
                       style={styles.addServiceButton}
                       disabled={!newOutpatientService.title.trim()}
                     >
-                      + Add Service
+                      {editingOutpatientIndex !== null ? '✓ Update Service' : '+ Add Service'}
                     </button>
+                    {editingOutpatientIndex !== null && (
+                      <button
+                        type="button"
+                        onClick={cancelEditOutpatient}
+                        style={{
+                          ...styles.addServiceButton,
+                          backgroundColor: '#6b7280',
+                          marginLeft: '8px',
+                        }}
+                      >
+                        Cancel
+                      </button>
+                    )}
                   </div>
                   {formData.outpatient_services.length > 0 ? (
                     <div style={styles.serviceList}>
@@ -1328,13 +1397,33 @@ const AdminDoctors: React.FC = () => {
                               <div style={{ fontSize: '13px', color: '#64748b' }}>{service.description}</div>
                             )}
                           </div>
-                          <button
-                            type="button"
-                            onClick={() => removeOutpatientService(index)}
-                            style={styles.removeServiceButton}
-                          >
-                            ✕
-                          </button>
+                          <div style={{ display: 'flex', gap: '8px' }}>
+                            <button
+                              type="button"
+                              onClick={() => editOutpatientService(index)}
+                              style={{
+                                background: 'none',
+                                border: 'none',
+                                color: '#0369a1',
+                                cursor: 'pointer',
+                                fontSize: '16px',
+                                padding: '4px 8px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                              }}
+                              title="Edit service"
+                            >
+                              ✎
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => removeOutpatientService(index)}
+                              style={styles.removeServiceButton}
+                            >
+                              ✕
+                            </button>
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -1374,8 +1463,21 @@ const AdminDoctors: React.FC = () => {
                       style={styles.addServiceButton}
                       disabled={!newInpatientService.title.trim()}
                     >
-                      + Add Service
+                      {editingInpatientIndex !== null ? '✓ Update Service' : '+ Add Service'}
                     </button>
+                    {editingInpatientIndex !== null && (
+                      <button
+                        type="button"
+                        onClick={cancelEditInpatient}
+                        style={{
+                          ...styles.addServiceButton,
+                          backgroundColor: '#6b7280',
+                          marginLeft: '8px',
+                        }}
+                      >
+                        Cancel
+                      </button>
+                    )}
                   </div>
                   {formData.inpatient_services.length > 0 ? (
                     <div style={styles.serviceList}>
@@ -1387,13 +1489,33 @@ const AdminDoctors: React.FC = () => {
                               <div style={{ fontSize: '13px', color: '#64748b' }}>{service.description}</div>
                             )}
                           </div>
-                          <button
-                            type="button"
-                            onClick={() => removeInpatientService(index)}
-                            style={styles.removeServiceButton}
-                          >
-                            ✕
-                          </button>
+                          <div style={{ display: 'flex', gap: '8px' }}>
+                            <button
+                              type="button"
+                              onClick={() => editInpatientService(index)}
+                              style={{
+                                background: 'none',
+                                border: 'none',
+                                color: '#0369a1',
+                                cursor: 'pointer',
+                                fontSize: '16px',
+                                padding: '4px 8px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                              }}
+                              title="Edit service"
+                            >
+                              ✎
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => removeInpatientService(index)}
+                              style={styles.removeServiceButton}
+                            >
+                              ✕
+                            </button>
+                          </div>
                         </div>
                       ))}
                     </div>

@@ -5,6 +5,8 @@ import { departmentsService, type Department } from '../services/departmentsServ
 import { doctorsService, type Doctor } from '../services/doctorsService';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import { CardSkeleton } from '../components/LoadingComponents';
+import { EASINGS } from '../utils/animations';
 
 // Doctor Card Component (reused from DoctorsPage)
 interface DoctorCardProps {
@@ -13,6 +15,8 @@ interface DoctorCardProps {
 }
 
 const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onLearnMore }) => {
+  const [isHovered, setIsHovered] = useState(false);
+  
   const getStatusStyle = (status: string) => {
     switch (status) {
       case 'available_today':
@@ -29,22 +33,29 @@ const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onLearnMore }) => {
   const statusStyle = getStatusStyle(doctor.status);
 
   return (
-    <div style={{
-      boxSizing: 'border-box',
-      display: 'flex',
-      flexDirection: 'column',
-      justifyContent: 'center',
-      alignItems: 'center',
-      padding: '10px',
-      gap: '12px',
-      width: '288px',
-      maxWidth: '300px',
-      height: '368px',
-      background: '#FFFFFF',
-      border: '1px solid #D8D8D8',
-      borderRadius: '12px',
-      flex: '0 0 auto',
-    }}>
+    <div 
+      style={{
+        boxSizing: 'border-box',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: '10px',
+        gap: '12px',
+        width: '288px',
+        maxWidth: '300px',
+        height: '368px',
+        background: '#FFFFFF',
+        border: '1px solid #D8D8D8',
+        borderRadius: '12px',
+        flex: '0 0 auto',
+        transition: `all 0.3s ${EASINGS.smooth}`,
+        transform: isHovered ? 'translateY(-4px)' : 'translateY(0)',
+        boxShadow: isHovered ? '0 8px 24px rgba(0, 171, 218, 0.2)' : 'none',
+      }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
       {/* Status Badge */}
       <div style={{
         display: 'flex',
@@ -573,7 +584,7 @@ const BranchesPage: React.FC = () => {
         // Get unique departments from doctors
         const deptIds = new Set(doctorsData.data.map(d => d.department_id));
         const allDepartments = await departmentsService.getDepartments({ active: true });
-        const branchDepartments = allDepartments.filter(d => deptIds.has(d.id));
+        const branchDepartments = allDepartments.departments.filter((d: Department) => deptIds.has(d.id));
         setDepartments(branchDepartments);
 
         // Update URL
@@ -602,12 +613,19 @@ const BranchesPage: React.FC = () => {
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
-          minHeight: '400px',
-          fontFamily: 'Nunito, sans-serif',
-          fontSize: '18px',
-          color: '#061F42',
+          padding: '170px 20px 20px 20px',
         }}>
-          Loading branches...
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(3, 1fr)',
+            gap: '24px',
+            maxWidth: '1200px',
+            width: '100%',
+          }}>
+            {[...Array(6)].map((_, index) => (
+              <CardSkeleton key={index} />
+            ))}
+          </div>
         </div>
       </div>
     );
@@ -717,7 +735,23 @@ const BranchesPage: React.FC = () => {
             lineHeight: '40px',
             color: '#A4A5A5',
           }}>
-            Displaying results for <span style={{ color: '#061F42' }}>Branches &gt; {selectedBranch?.name}</span>
+            Displaying results for{' '}
+            <span style={{ color: '#061F42' }}>
+              <span 
+                onClick={() => navigate('/branches')}
+                style={{
+                  cursor: 'pointer',
+                  textDecoration: 'underline',
+                  color: '#061F42',
+                  transition: 'color 0.2s',
+                }}
+                onMouseEnter={(e) => (e.currentTarget as HTMLElement).style.color = '#00ABDA'}
+                onMouseLeave={(e) => (e.currentTarget as HTMLElement).style.color = '#061F42'}
+              >
+                Branches
+              </span>
+              {selectedBranch && ` > ${selectedBranch.name}`}
+            </span>
           </span>
         </div>
 

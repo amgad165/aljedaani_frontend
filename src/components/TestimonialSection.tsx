@@ -55,13 +55,15 @@ const TestimonialSection = () => {
   }, [fetchTestimonials]);
 
   // Convert API data to component format
-  const allDoctors: DoctorCard[] = testimonials.map((testimonial) => ({
+  const allDoctors: DoctorCard[] = testimonials
+    .filter(testimonial => testimonial.doctor) // Only include testimonials with doctors
+    .map((testimonial) => ({
     id: testimonial.id,
-    title: testimonial.name,
-    subtitle: testimonial.role,
-    image: testimonial.image_url || '',
-    badge1: testimonial.location,
-    badge2: testimonial.experience,
+    title: `Dr. ${testimonial.doctor?.name || ''}`,
+    subtitle: testimonial.doctor?.specialization || '',
+    image: testimonial.doctor?.image_url || '',
+    badge1: testimonial.doctor?.branch?.name || '', // Branch name
+    badge2: testimonial.doctor?.department?.name || '', // Department name
     reviewTitle: testimonial.review_title,
     description: testimonial.description
   }));

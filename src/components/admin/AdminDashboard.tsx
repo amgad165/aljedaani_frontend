@@ -16,95 +16,21 @@ const AdminDashboard: React.FC = () => {
 
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
 
-  const getAuthHeaders = () => {
-    const token = localStorage.getItem('auth_token');
-    return {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-      ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-    };
-  };
-
   const fetchStats = useCallback(async () => {
     try {
-      const headers = getAuthHeaders();
-      const [deptRes, docRes, testRes, usersRes] = await Promise.all([
-        fetch(`${API_BASE_URL}/departments`),
-        fetch(`${API_BASE_URL}/doctors?per_page=1000`),
-        fetch(`${API_BASE_URL}/testimonials`),
-        fetch(`${API_BASE_URL}/users/count`, { headers })
-      ]);
+      // Single API call to get all dashboard stats
+      const response = await fetch(`${API_BASE_URL}/dashboard/stats`);
+      const data = await response.json();
 
-      const [deptData, docData, testData] = await Promise.all([
-        deptRes.json(),
-        docRes.json(),
-        testRes.json()
-      ]);
-
-      // Handle users separately to catch auth errors
-      let usersData = { success: false, data: { total: 0, new_this_month: 0 } };
-      if (usersRes.ok) {
-        usersData = await usersRes.json();
+      if (data.success && data.data) {
+        setStats({
+          departments: data.data.departments || 0,
+          doctors: data.data.doctors || 0,
+          testimonials: data.data.testimonials || 0,
+          users: data.data.users || 0,
+          newUsersThisMonth: data.data.newUsersThisMonth || 0,
+        });
       }
-
-      // Handle departments - returns { success: true, data: [...] }
-      const getDeptCount = () => {
-        if (deptData?.success && Array.isArray(deptData.data)) {
-          return deptData.data.length;
-        }
-        if (Array.isArray(deptData)) return deptData.length;
-        return 0;
-      };
-
-      // Handle doctors - returns paginated { success: true, data: { data: [...], total: X } }
-      const getDocCount = () => {
-        if (docData?.success && docData.data) {
-          // Check if it's paginated (has total)
-          if (docData.data.total !== undefined) {
-            return docData.data.total;
-          }
-          // Or if data.data is the array
-          if (Array.isArray(docData.data.data)) {
-            return docData.data.data.length;
-          }
-          // Or if data itself is the array
-          if (Array.isArray(docData.data)) {
-            return docData.data.length;
-          }
-        }
-        if (Array.isArray(docData)) return docData.length;
-        return 0;
-      };
-
-      // Handle testimonials - returns { status: 'success', data: [...] }
-      const getTestCount = () => {
-        if ((testData?.status === 'success' || testData?.success) && Array.isArray(testData.data)) {
-          return testData.data.length;
-        }
-        if (Array.isArray(testData)) return testData.length;
-        return 0;
-      };
-
-      // Handle users count - returns { success: true, data: { total: X, new_this_month: Y } }
-      const getUsersCount = () => {
-        if (usersData?.success && usersData.data) {
-          return {
-            total: usersData.data.total || 0,
-            newThisMonth: usersData.data.new_this_month || 0
-          };
-        }
-        return { total: 0, newThisMonth: 0 };
-      };
-
-      const usersCount = getUsersCount();
-
-      setStats({
-        departments: getDeptCount(),
-        doctors: getDocCount(),
-        testimonials: getTestCount(),
-        users: usersCount.total,
-        newUsersThisMonth: usersCount.newThisMonth
-      });
     } catch (error) {
       console.error('Error fetching stats:', error);
     } finally {
@@ -134,7 +60,7 @@ const AdminDashboard: React.FC = () => {
   // Styles
   const containerStyle: React.CSSProperties = {
     padding: '32px 40px',
-    fontFamily: "'Open Sans', 'Nunito', sans-serif",
+    fontFamily: "'Calibri', 'Segoe UI', sans-serif",
   };
 
   const sectionTitleStyle: React.CSSProperties = {
@@ -226,10 +152,10 @@ const AdminDashboard: React.FC = () => {
   
   const topRowCards = [
     { 
-      title: 'Total Users', 
+      title: 'Total Patients', 
       value: stats.users, 
       icon: 'users',
-      link: '/admin',
+      link: '/admin/patients',
       newCount: newUsersLabel
     },
     { 
@@ -270,6 +196,14 @@ const AdminDashboard: React.FC = () => {
       link: '/admin/testimonials',
       gradient: 'linear-gradient(242.76deg, #DCD3D3 2.79%, #4F4F4F 98.27%)',
     },
+    { 
+      title: 'HIS Patients', 
+      value: '-', 
+      icon: 'his',
+      link: '/admin/his-patients',
+      gradient: 'linear-gradient(242.76deg, #FFB84D 2.79%, #FF6B35 98.27%)',
+      iconColor: '#FFD700'
+    },
   ];
 
   const getIcon = (icon: string, white = false, accentColor?: string) => {
@@ -308,6 +242,15 @@ const AdminDashboard: React.FC = () => {
             <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
             <path d="M7 11V7a5 5 0 0110 0v4"/>
             <circle cx="12" cy="16" r="1" fill={color}/>
+          </svg>
+        );
+      case 'his':
+        return (
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2">
+            <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
+            <path d="M14 11h6M17 8v6" stroke={color} strokeWidth="2.5"/>
           </svg>
         );
       default:

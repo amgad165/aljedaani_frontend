@@ -1,11 +1,14 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { departmentsService, type Department, type DepartmentTabContent, type Doctor, type SidebarItem } from '../services/departmentsService';
+import { type Testimonial } from '../services/testimonialsService';
 import Navbar from '../components/Navbar';
+import { LoadingSpinner } from '../components/LoadingComponents';
+import { EASINGS } from '../utils/animations';
 
 type TabType = 'overview' | 'doctors' | 'opd_services' | 'inpatient_services' | 'investigations' | 'success_stories';
 
-// CSS Keyframes for animations
+// CSS Keyframes for animations - Using consistent timing from animations.ts
 const animationStyles = `
   @keyframes fadeIn {
     from { opacity: 0; }
@@ -73,17 +76,29 @@ const animationStyles = `
   }
   
   .tab-content-enter {
-    animation: fadeInUp 0.4s ease-out forwards;
+    animation: fadeInUp 0.4s ${EASINGS.smooth} forwards;
+  }
+  
+  .sidebar-item-hover {
+    transition: all 0.3s ${EASINGS.smooth};
   }
   
   .sidebar-item-hover:hover {
     transform: translateX(4px);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 8px rgba(0, 171, 218, 0.15);
+  }
+  
+  .card-hover {
+    transition: all 0.3s ${EASINGS.smooth};
   }
   
   .card-hover:hover {
     transform: translateY(-4px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 8px 25px rgba(0, 171, 218, 0.2);
+  }
+  
+  .image-zoom img {
+    transition: transform 0.5s ${EASINGS.smooth};
   }
   
   .image-zoom:hover img {
@@ -97,10 +112,13 @@ const DepartmentDetailsPage: React.FC = () => {
   const [department, setDepartment] = useState<Department | null>(null);
   const [tabContents, setTabContents] = useState<DepartmentTabContent[]>([]);
   const [doctors, setDoctors] = useState<Doctor[]>([]);
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<TabType>('overview');
   const [activeSidebarItem, setActiveSidebarItem] = useState<SidebarItem | null>(null);
+  const [selectedTestimonial, setSelectedTestimonial] = useState<Testimonial | null>(null);
+  const [isTestimonialTransitioning, setIsTestimonialTransitioning] = useState(false);
   
   // Animation states
   const [tabContentKey, setTabContentKey] = useState(0);
@@ -150,6 +168,15 @@ const DepartmentDetailsPage: React.FC = () => {
         setDepartment(data);
         setTabContents(data.tab_contents || []);
         setDoctors(data.doctors || []);
+        
+        // Fetch testimonials for this department using the new backend endpoint
+        try {
+          const departmentTestimonials = await departmentsService.getDepartmentTestimonials(parseInt(id));
+          setTestimonials(departmentTestimonials);
+        } catch (testimonialsError) {
+          console.error('Error fetching testimonials:', testimonialsError);
+          setTestimonials([]);
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred');
       } finally {
@@ -292,6 +319,8 @@ const DepartmentDetailsPage: React.FC = () => {
           fontSize: '12px',
           textAlign: 'center',
           color: '#061F42',
+          whiteSpace: 'pre-wrap',
+          wordWrap: 'break-word',
         }}>
           {doctor.specialization || 'Registrar'}
         </div>
@@ -411,12 +440,15 @@ const DepartmentDetailsPage: React.FC = () => {
   };
 
   // Helper to normalize sidebar items (handle both old string format and new object format)
-  // Adds "Overview" as the first item to show main tab content
-  const normalizeSidebarItems = (items: (string | SidebarItem)[] | undefined, includeOverview: boolean = false): SidebarItem[] => {
+  // For opd_services, inpatient_services, and investigations, Overview is now included in sidebar_items from backend
+  const normalizeSidebarItems = (items: (string | SidebarItem)[] | undefined, includeOverview: boolean = false, tabType?: string): SidebarItem[] => {
     const result: SidebarItem[] = [];
     
-    // Add Overview as first item if requested
-    if (includeOverview) {
+    // Check if this is a tab type where backend includes Overview in sidebar_items
+    const backendIncludesOverview = tabType && ['opd_services', 'inpatient_services', 'investigations'].includes(tabType);
+    
+    // Add Overview as first item if requested and not already included by backend
+    if (includeOverview && !backendIncludesOverview) {
       result.push({ id: 'overview_main', title: 'Overview', sort_order: -1 });
     }
     
@@ -479,8 +511,8 @@ const DepartmentDetailsPage: React.FC = () => {
     return result;
   };
 
-  const renderSidebar = (items: (string | SidebarItem)[] | undefined, includeOverview: boolean = false) => {
-    const normalizedItems = normalizeSidebarItems(items, includeOverview);
+  const renderSidebar = (items: (string | SidebarItem)[] | undefined, includeOverview: boolean = false, tabType?: string) => {
+    const normalizedItems = normalizeSidebarItems(items, includeOverview, tabType);
     if (normalizedItems.length === 0) return null;
     
     return (
@@ -498,9 +530,9 @@ const DepartmentDetailsPage: React.FC = () => {
         {normalizedItems.map((item, index) => {
           // Determine if this item is selected
           let isSelected = false;
-          if (item.id === 'overview_main') {
+          if (item.id === 'overview_main' || item.title === 'Overview') {
             // Overview is selected if nothing is selected or if activeSidebarItem is Overview
-            isSelected = !activeSidebarItem || activeSidebarItem.id === 'overview_main';
+            isSelected = !activeSidebarItem || activeSidebarItem.id === 'overview_main' || activeSidebarItem.title === 'Overview';
           } else {
             // For other items, compare by id
             isSelected = activeSidebarItem?.id === item.id;
@@ -623,7 +655,7 @@ const DepartmentDetailsPage: React.FC = () => {
         {content.main_description && (
           <p style={{
             fontFamily: 'Inter, sans-serif',
-            fontSize: '20px',
+            fontSize: '16px',
             lineHeight: '120%',
             color: '#061F42',
             margin: 0,
@@ -717,7 +749,7 @@ const DepartmentDetailsPage: React.FC = () => {
                 <div style={{
                   flex: 1,
                   fontFamily: 'Inter, sans-serif',
-                  fontSize: '20px',
+                  fontSize: '16px',
                   lineHeight: '120%',
                   color: '#061F42',
                 }}>
@@ -758,7 +790,7 @@ const DepartmentDetailsPage: React.FC = () => {
               fontFamily: 'Nunito, sans-serif',
               fontStyle: 'italic',
               fontWeight: 700,
-              fontSize: '24px',
+              fontSize: '20px',
               lineHeight: '38px',
               textAlign: 'center',
               color: '#061F42',
@@ -781,15 +813,22 @@ const DepartmentDetailsPage: React.FC = () => {
       );
     }
 
+    // Check if this is a tab type where backend includes Overview in sidebar_items
+    const backendIncludesOverview = ['opd_services', 'inpatient_services', 'investigations'].includes(content.tab_type);
+    
     // Check if Overview (main content) is selected or no selection
-    const isOverviewSelected = !activeSidebarItem || activeSidebarItem.id === 'overview_main';
+    const isOverviewSelected = !activeSidebarItem || activeSidebarItem.id === 'overview_main' || activeSidebarItem.title === 'Overview';
     
     // Find the actual sidebar item data from content.sidebar_items if it's a real item
     // This handles the case where activeSidebarItem might be a normalized/reconstructed item
     let actualSidebarItem: SidebarItem | undefined;
     if (!isOverviewSelected && content.sidebar_items) {
-      const normalizedItems = normalizeSidebarItems(content.sidebar_items, false);
+      const normalizedItems = normalizeSidebarItems(content.sidebar_items, false, content.tab_type);
       actualSidebarItem = normalizedItems.find(item => item.id === activeSidebarItem?.id);
+    } else if (isOverviewSelected && backendIncludesOverview && content.sidebar_items) {
+      // For special tab types, Overview data is in the first sidebar item
+      const normalizedItems = normalizeSidebarItems(content.sidebar_items, false, content.tab_type);
+      actualSidebarItem = normalizedItems.find(item => item.title === 'Overview');
     }
     
     // Determine what content to display
@@ -797,8 +836,13 @@ const DepartmentDetailsPage: React.FC = () => {
     let displayDescription: string | undefined;
     let displayServiceList: typeof content.service_list;
     
-    if (isOverviewSelected) {
-      // Show main tab content
+    if (isOverviewSelected && backendIncludesOverview && actualSidebarItem) {
+      // For special tab types, use the Overview sidebar item data
+      displayImage = actualSidebarItem.image;
+      displayDescription = actualSidebarItem.description;
+      displayServiceList = actualSidebarItem.service_list;
+    } else if (isOverviewSelected) {
+      // Show main tab content for other tab types
       displayImage = content.main_image;
       displayDescription = content.main_description;
       displayServiceList = content.service_list;
@@ -834,8 +878,8 @@ const DepartmentDetailsPage: React.FC = () => {
           gap: '16px',
           width: '100%',
         }}>
-          {/* Sidebar - with Overview as first item */}
-          {renderSidebar(content.sidebar_items, true)}
+          {/* Sidebar - with Overview as first item (or from backend for special tab types) */}
+          {renderSidebar(content.sidebar_items, true, content.tab_type)}
 
           {/* Image - takes remaining space with transition */}
           <div 
@@ -1031,6 +1075,778 @@ const DepartmentDetailsPage: React.FC = () => {
     );
   };
 
+  const renderTestimonialDetail = () => {
+    if (!selectedTestimonial || !selectedTestimonial.doctor) {
+      return null;
+    }
+
+    const testimonial = selectedTestimonial;
+    const doctor = testimonial.doctor;
+
+    return (
+      <div style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'flex-start',
+        padding: '24px',
+        gap: '12px',
+        background: '#FCFCFC',
+        boxShadow: '0px 4px 5px rgba(0, 0, 0, 0.25)',
+        borderRadius: '0px 12px 12px 12px',
+        animation: isTestimonialTransitioning ? 'none' : 'fadeInUp 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards',
+      }}>
+        {/* Back Button (Top Right) */}
+        <div style={{
+          display: 'flex',
+          justifyContent: 'flex-end',
+          width: '100%',
+          marginBottom: '12px'
+        }}>
+          <button
+            onClick={() => {
+              setIsTestimonialTransitioning(true);
+              setTimeout(() => {
+                setSelectedTestimonial(null);
+                setIsTestimonialTransitioning(false);
+              }, 150);
+            }}
+            style={{
+              display: 'flex',
+              flexDirection: 'row',
+              justifyContent: 'center',
+              alignItems: 'center',
+              padding: '8px 12px',
+              width: '95px',
+              height: '32px',
+              background: '#FFFFFF',
+              border: '1px solid #061F42',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontFamily: 'Nunito, sans-serif',
+              fontWeight: 600,
+              fontSize: '14px',
+              lineHeight: '16px',
+              color: '#061F42',
+              transition: 'all 0.3s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = '#F5F5F5';
+              e.currentTarget.style.transform = 'translateY(-2px)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = '#FFFFFF';
+              e.currentTarget.style.transform = 'translateY(0)';
+            }}
+          >
+            ← Back
+          </button>
+        </div>
+
+        {/* Main Content */}
+        <div style={{
+          display: 'flex',
+          flexDirection: 'row',
+          alignItems: 'flex-start',
+          padding: '24px',
+          gap: '12px',
+          width: '100%',
+          background: '#FFFFFF',
+          borderRadius: '12px',
+          minHeight: '600px'
+        }}>
+          {/* Left Side - Doctor Card */}
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            padding: '0px',
+            gap: '12px',
+            width: '280px',
+            flexShrink: 0
+          }}>
+            {/* Doctor Photo */}
+            <div style={{
+              width: '280px',
+              height: '362px',
+              borderRadius: '12px',
+              overflow: 'hidden',
+              background: '#F8F8F8'
+            }}>
+              <img
+                src={doctor?.image_url || '/assets/images/testimonials/person_template.png'}
+                alt={`Dr. ${doctor?.name}`}
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover'
+                }}
+              />
+            </div>
+
+            {/* Doctor Name and Specialty */}
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'flex-start',
+              padding: '0px',
+              width: '280px'
+            }}>
+              <h3 style={{
+                width: '280px',
+                fontFamily: 'Nunito, sans-serif',
+                fontStyle: 'normal',
+                fontWeight: 700,
+                fontSize: '20px',
+                lineHeight: '30px',
+                textAlign: 'center',
+                color: '#061F42',
+                margin: 0
+              }}>
+                Dr. {doctor?.name}
+              </h3>
+              <p style={{
+                width: '280px',
+                fontFamily: 'Varela Round, sans-serif',
+                fontStyle: 'normal',
+                fontWeight: 400,
+                fontSize: '12px',
+                lineHeight: '16px',
+                textAlign: 'center',
+                color: '#061F42',
+                margin: 0
+              }}>
+                {doctor?.specialization}
+              </p>
+            </div>
+
+            {/* Doctor Info Box */}
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'flex-start',
+              padding: '8px',
+              gap: '4px',
+              width: '280px',
+              background: '#F8F8F8',
+              borderRadius: '12px'
+            }}>
+              {/* Badges */}
+              <div style={{
+                display: 'flex',
+                flexDirection: 'row',
+                alignItems: 'flex-start',
+                padding: '0px',
+                gap: '4px',
+                width: '100%'
+              }}>
+                {/* Branch Badge */}
+                <div style={{
+                  display: 'flex',
+                  flexDirection: 'row',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  padding: '4px 8px',
+                  gap: '4px',
+                  background: '#FFFFFF',
+                  border: '1px solid #D9D9D9',
+                  borderRadius: '24px'
+                }}>
+                  <img
+                    src="/assets/images/testimonials/pin-alt.png"
+                    alt="location"
+                    style={{
+                      width: '16px',
+                      height: '16px'
+                    }}
+                  />
+                  <span style={{
+                    fontFamily: 'Nunito, sans-serif',
+                    fontStyle: 'normal',
+                    fontWeight: 600,
+                    fontSize: '12px',
+                    lineHeight: '16px',
+                    color: '#6A6A6A'
+                  }}>
+                    {doctor?.branch?.name}
+                  </span>
+                </div>
+
+                {/* Department Badge */}
+                <div style={{
+                  display: 'flex',
+                  flexDirection: 'row',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  padding: '4px 8px',
+                  gap: '4px',
+                  background: '#A7FAFC',
+                  borderRadius: '24px',
+                  flex: 1
+                }}>
+                  <span style={{
+                    fontFamily: 'Nunito, sans-serif',
+                    fontStyle: 'normal',
+                    fontWeight: 600,
+                    fontSize: '12px',
+                    lineHeight: '16px',
+                    color: '#061F42'
+                  }}>
+                    {doctor?.department?.name}
+                  </span>
+                </div>
+              </div>
+
+              {/* Experience/Details - Bullet Points */}
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'flex-start',
+                alignItems: 'flex-start',
+                padding: '4px 8px',
+                gap: '8px',
+                width: '100%'
+              }}>
+                {/* Experience Years */}
+                <div style={{
+                  display: 'flex',
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}>
+                  <span style={{
+                    width: '6px',
+                    height: '6px',
+                    background: '#061F42',
+                    borderRadius: '50%',
+                    flexShrink: 0
+                  }} />
+                  <span style={{
+                    fontFamily: 'Varela Round, sans-serif',
+                    fontStyle: 'normal',
+                    fontWeight: 400,
+                    fontSize: '12px',
+                    lineHeight: '16px',
+                    color: '#061F42'
+                  }}>
+                    {doctor?.experience_years ? `${doctor.experience_years} Years of Experience` : 'Experienced professional'}
+                  </span>
+                </div>
+
+                {/* Specialization */}
+                <div style={{
+                  display: 'flex',
+                  flexDirection: 'row',
+                  alignItems: 'flex-start',
+                  gap: '8px'
+                }}>
+                  <span style={{
+                    width: '6px',
+                    height: '6px',
+                    background: '#061F42',
+                    borderRadius: '50%',
+                    flexShrink: 0,
+                    marginTop: '4px'
+                  }} />
+                  <span style={{
+                    fontFamily: 'Varela Round, sans-serif',
+                    fontStyle: 'normal',
+                    fontWeight: 400,
+                    fontSize: '12px',
+                    lineHeight: '16px',
+                    color: '#061F42',
+                    maxWidth: '220px',
+                    wordWrap: 'break-word'
+                  }}>
+                    {doctor?.specialization || 'Healthcare Professional'}
+                  </span>
+                </div>
+
+                {/* Education */}
+                <div style={{
+                  display: 'flex',
+                  flexDirection: 'row',
+                  alignItems: 'flex-start',
+                  gap: '8px'
+                }}>
+                  <span style={{
+                    width: '6px',
+                    height: '6px',
+                    background: '#061F42',
+                    borderRadius: '50%',
+                    flexShrink: 0,
+                    marginTop: '4px'
+                  }} />
+                  <p style={{
+                    fontFamily: 'Varela Round, sans-serif',
+                    fontStyle: 'normal',
+                    fontWeight: 400,
+                    fontSize: '12px',
+                    lineHeight: '15px',
+                    color: '#061F42',
+                    margin: 0,
+                    maxWidth: '220px',
+                    maxHeight: '60px',
+                    overflowY: 'auto',
+                    wordWrap: 'break-word'
+                  }}>
+                    {doctor?.education || 'Not provided'}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Button */}
+            <button
+              style={{
+                display: 'flex',
+                flexDirection: 'row',
+                justifyContent: 'center',
+                alignItems: 'center',
+                padding: '8px 12px',
+                width: '280px',
+                height: '32px',
+                background: '#061F42',
+                borderRadius: '8px',
+                border: 'none',
+                cursor: 'pointer',
+                fontFamily: 'Nunito, sans-serif',
+                fontWeight: 600,
+                fontSize: '14px',
+                lineHeight: '16px',
+                color: '#FFFFFF',
+                transition: 'all 0.3s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = '#0A2D5C';
+                e.currentTarget.style.transform = 'translateY(-2px)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = '#061F42';
+                e.currentTarget.style.transform = 'translateY(0)';
+              }}
+            >
+              Book Now
+            </button>
+          </div>
+
+          {/* Right Side - Success Story */}
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'flex-start',
+            padding: '0px 16px',
+            gap: '16px',
+            flex: 1,
+            minHeight: '550px'
+          }}>
+            {/* Title - Directly Above Image */}
+            <h2 style={{
+              fontFamily: 'Nunito, sans-serif',
+              fontStyle: 'normal',
+              fontWeight: 700,
+              fontSize: '24px',
+              lineHeight: '38px',
+              color: '#061F42',
+              margin: 0,
+              width: '100%'
+            }}>
+              {testimonial.review_title}
+            </h2>
+
+            {/* Story Image */}
+            {testimonial.testimonial_image && (
+              <div style={{
+                width: '100%',
+                height: '438px',
+                borderRadius: '12px',
+                overflow: 'hidden',
+                background: '#F8F8F8'
+              }}>
+                <img
+                  src={testimonial.testimonial_image}
+                  alt={testimonial.review_title}
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover'
+                  }}
+                />
+              </div>
+            )}
+
+            {/* Full Story Text */}
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'flex-start',
+              padding: '0px',
+              gap: '12px',
+              flex: 1
+            }}>
+              <p style={{
+                fontFamily: 'Nunito, sans-serif',
+                fontStyle: 'normal',
+                fontWeight: 600,
+                fontSize: '16px',
+                lineHeight: '20px',
+                color: '#061F42',
+                margin: 0,
+                whiteSpace: 'pre-wrap',
+                wordWrap: 'break-word',
+                maxHeight: '500px',
+                overflowY: 'auto',
+                paddingRight: '12px'
+              }}>
+                {testimonial.full_story || testimonial.description}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderSuccessStoriesTab = () => {
+    if (testimonials.length === 0) {
+      return (
+        <div style={{
+          padding: '40px',
+          textAlign: 'center',
+          color: '#6A6A6A',
+          background: '#FCFCFC',
+          boxShadow: '0px 4px 5px rgba(0, 0, 0, 0.25)',
+          borderRadius: '0px 12px 12px 12px',
+          animation: 'fadeInUp 0.4s ease-out',
+        }}>
+          No success stories available yet.
+        </div>
+      );
+    }
+
+    return (
+      <div style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'flex-start',
+        padding: '24px',
+        gap: '24px',
+        background: '#FCFCFC',
+        boxShadow: '0px 4px 5px rgba(0, 0, 0, 0.25)',
+        borderRadius: '0px 12px 12px 12px',
+        animation: isTestimonialTransitioning ? 'fadeOut 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards' : 'fadeInUp 0.4s ease-out',
+      }}>
+        <div style={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          gap: '24px',
+          justifyContent: 'flex-start',
+        }}>
+          {testimonials.map((testimonial, index) => (
+            <div
+              key={testimonial.id}
+              style={{
+                boxSizing: 'border-box',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                alignItems: 'center',
+                padding: '12px',
+                gap: '12px',
+                width: '300px',
+                minWidth: '270px',
+                maxWidth: '300px',
+                height: '376px',
+                background: '#FFFFFF',
+                border: '1px solid #D8D8D8',
+                borderRadius: '12px',
+                flex: 1,
+                animation: `fadeInUp 0.4s ease-out ${index * 0.1}s both`,
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                cursor: 'pointer',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-4px)';
+                e.currentTarget.style.boxShadow = '0 8px 25px rgba(0, 171, 218, 0.2)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 0 0 transparent';
+              }}
+            >
+              {/* Doctor Image */}
+              <div
+                style={{
+                  width: '116px',
+                  height: '116px',
+                  borderRadius: '50%',
+                  overflow: 'hidden',
+                }}
+              >
+                <img
+                  src={testimonial.doctor?.image_url || '/assets/images/testimonials/person_template.png'}
+                  alt={`Dr. ${testimonial.doctor?.name}`}
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover'
+                  }}
+                />
+              </div>
+
+              {/* Doctor Info */}
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  padding: 0,
+                  width: '276px'
+                }}
+              >
+                <h3
+                  style={{
+                    width: '276px',
+                    fontFamily: 'Nunito, sans-serif',
+                    fontStyle: 'normal',
+                    fontWeight: 700,
+                    fontSize: '16px',
+                    lineHeight: '20px',
+                    textAlign: 'center',
+                    color: '#061F42',
+                    margin: 0,
+                    marginBottom: '4px'
+                  }}
+                >
+                  Dr. {testimonial.doctor?.name}
+                </h3>
+                <p
+                  style={{
+                    width: '276px',
+                    fontFamily: 'Varela Round, sans-serif',
+                    fontStyle: 'normal',
+                    fontWeight: 400,
+                    fontSize: '12px',
+                    lineHeight: '16px',
+                    textAlign: 'center',
+                    color: '#061F42',
+                    margin: 0
+                  }}
+                >
+                  {testimonial.doctor?.specialization}
+                </p>
+              </div>
+
+              {/* Badges Section */}
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'flex-start',
+                  padding: '8px',
+                  gap: '8px',
+                  width: '276px',
+                  background: '#F8F8F8',
+                  borderRadius: '12px'
+                }}
+              >
+                {/* Badge Row */}
+                <div
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'row',
+                    alignItems: 'flex-start',
+                    padding: 0,
+                    gap: '4px',
+                    width: '100%'
+                  }}
+                >
+                  {/* Branch Badge */}
+                  <div
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'row',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      padding: '4px 8px',
+                      gap: '4px',
+                      background: '#FFFFFF',
+                      border: '1px solid #D9D9D9',
+                      borderRadius: '24px',
+                      flex: 'none'
+                    }}
+                  >
+                    <img
+                      src="/assets/images/testimonials/pin-alt.png"
+                      alt="location"
+                      style={{
+                        width: '16px',
+                        height: '16px'
+                      }}
+                    />
+                    <span
+                      style={{
+                        fontFamily: 'Nunito, sans-serif',
+                        fontStyle: 'normal',
+                        fontWeight: 600,
+                        fontSize: '12px',
+                        lineHeight: '16px',
+                        color: '#6A6A6A'
+                      }}
+                    >
+                      {testimonial.doctor?.branch?.name}
+                    </span>
+                  </div>
+                  {/* Department Badge */}
+                  <div
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'row',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      padding: '4px 8px',
+                      gap: '4px',
+                      background: '#A7FAFC',
+                      borderRadius: '24px',
+                      flex: 1
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontFamily: 'Nunito, sans-serif',
+                        fontStyle: 'normal',
+                        fontWeight: 600,
+                        fontSize: '12px',
+                        lineHeight: '16px',
+                        color: '#061F42'
+                      }}
+                    >
+                      {testimonial.doctor?.department?.name}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Review Title */}
+                <h4
+                  style={{
+                    width: '260px',
+                    fontFamily: 'Nunito, sans-serif',
+                    fontStyle: 'normal',
+                    fontWeight: 700,
+                    fontSize: '16px',
+                    lineHeight: '20px',
+                    color: '#061F42',
+                    margin: 0,
+                    marginBottom: '8px'
+                  }}
+                >
+                  {testimonial.review_title}
+                </h4>
+
+                {/* Description */}
+                <p
+                  style={{
+                    width: '260px',
+                    fontFamily: 'Varela Round, sans-serif',
+                    fontStyle: 'normal',
+                    fontWeight: 400,
+                    fontSize: '12px',
+                    lineHeight: '16px',
+                    color: '#061F42',
+                    margin: 0
+                  }}
+                >
+                  {testimonial.description}
+                </p>
+              </div>
+
+              {/* Buttons */}
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'row',
+                  alignItems: 'flex-start',
+                  padding: 0,
+                  gap: '8px',
+                  width: '276px'
+                }}
+              >
+                <button
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'row',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    padding: '8px 12px',
+                    flex: 1,
+                    height: '32px',
+                    background: '#061F42',
+                    borderRadius: '8px',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontFamily: 'Nunito, sans-serif',
+                    fontWeight: 600,
+                    fontSize: '14px',
+                    lineHeight: '16px',
+                    color: '#FFFFFF',
+                    transition: 'all 0.3s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = '#0A2D5C';
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = '#061F42';
+                    e.currentTarget.style.transform = 'translateY(0)';
+                  }}
+                >
+                  Book Now
+                </button>
+                <button
+                  onClick={() => {
+                    setIsTestimonialTransitioning(true);
+                    setTimeout(() => {
+                      setSelectedTestimonial(testimonial);
+                      setIsTestimonialTransitioning(false);
+                    }, 150);
+                  }}
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'row',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    padding: '8px 12px',
+                    flex: 1,
+                    height: '32px',
+                    background: '#15C9FA',
+                    borderRadius: '8px',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontFamily: 'Nunito, sans-serif',
+                    fontWeight: 600,
+                    fontSize: '14px',
+                    lineHeight: '16px',
+                    color: '#FFFFFF',
+                    transition: 'all 0.3s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = '#0FA8D4';
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = '#15C9FA';
+                    e.currentTarget.style.transform = 'translateY(0)';
+                  }}
+                >
+                  Read More
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
   if (loading) {
     return (
       <div style={{
@@ -1038,41 +1854,7 @@ const DepartmentDetailsPage: React.FC = () => {
         background: '#C9F3FF',
       }}>
         <Navbar />
-        <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-          alignItems: 'center',
-          minHeight: '400px',
-          gap: '16px',
-        }}>
-          {/* Animated loading spinner */}
-          <div style={{
-            width: '50px',
-            height: '50px',
-            border: '4px solid #E6E6E6',
-            borderTopColor: '#15C9FA',
-            borderRadius: '50%',
-            animation: 'spin 1s linear infinite',
-          }} />
-          <span style={{
-            fontFamily: 'Nunito, sans-serif',
-            fontSize: '18px',
-            color: '#061F42',
-            animation: 'fadeIn 0.5s ease-out',
-          }}>
-            Loading department details...
-          </span>
-        </div>
-        <style>{`
-          @keyframes spin {
-            to { transform: rotate(360deg); }
-          }
-          @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-          }
-        `}</style>
+        <LoadingSpinner fullScreen />
       </div>
     );
   }
@@ -1137,7 +1919,7 @@ const DepartmentDetailsPage: React.FC = () => {
         display: 'flex',
         alignItems: 'flex-start',
         justifyContent: 'center',
-        padding: '200px 20px 40px 20px',
+        padding: '180px 20px 40px 20px',
       }}>
         <div style={{
           width: '100%',
@@ -1147,12 +1929,12 @@ const DepartmentDetailsPage: React.FC = () => {
           <div style={{
             display: 'flex',
             flexDirection: 'row',
-            justifyContent: 'space-between',
+            justifyContent: 'flex-start',
             alignItems: 'center',
             padding: '8px 24px',
             background: '#FFFFFF',
             borderRadius: '15px',
-            marginBottom: '16px',
+            marginBottom: '8px',
             height: '80px',
           }}>
             <h1 style={{
@@ -1165,27 +1947,6 @@ const DepartmentDetailsPage: React.FC = () => {
             }}>
               Departments
             </h1>
-
-            {/* Branch Filter Dropdown */}
-            <div style={{
-              display: 'flex',
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: '8px',
-            }}>
-              <select style={{
-                padding: '8px 16px',
-                border: '1.5px solid #DADADA',
-                borderRadius: '8px',
-                fontFamily: 'Nunito, sans-serif',
-                fontSize: '14px',
-                color: '#6A6A6A',
-                background: 'white',
-                minWidth: '200px',
-              }}>
-                <option>All Branches</option>
-              </select>
-            </div>
           </div>
 
           {/* Breadcrumb */}
@@ -1194,11 +1955,29 @@ const DepartmentDetailsPage: React.FC = () => {
             fontWeight: 600,
             fontSize: '16px',
             lineHeight: '40px',
-            marginBottom: '16px',
+            marginBottom: '8px',
           }}>
             <span style={{ color: '#A4A5A5' }}>Displaying results for </span>
             <span style={{ color: '#061F42' }}>
-              Departments &gt; {department.name} &gt; All Branches &gt; {tabs.find(t => t.key === activeTab)?.label}
+              <span 
+                onClick={() => navigate('/departments')}
+                style={{
+                  cursor: 'pointer',
+                  textDecoration: 'underline',
+                  color: '#061F42',
+                  transition: 'color 0.2s',
+                }}
+                onMouseEnter={(e) => (e.currentTarget as HTMLElement).style.color = '#00ABDA'}
+                onMouseLeave={(e) => (e.currentTarget as HTMLElement).style.color = '#061F42'}
+              >
+                Departments
+              </span>
+              {' > '}
+              <span style={{
+                color: '#061F42',
+              }}>
+                {department.name}
+              </span>
             </span>
           </div>
 
@@ -1304,19 +2083,7 @@ const DepartmentDetailsPage: React.FC = () => {
               {activeTab === 'doctors' && renderDoctorsTab()}
               {(activeTab === 'opd_services' || activeTab === 'inpatient_services' || activeTab === 'investigations') && 
                 renderServicesTab(currentContent)}
-              {activeTab === 'success_stories' && (
-                <div style={{
-                  padding: '40px',
-                  textAlign: 'center',
-                  color: '#6A6A6A',
-                  background: '#FCFCFC',
-                  boxShadow: '0px 4px 5px rgba(0, 0, 0, 0.25)',
-                  borderRadius: '0px 12px 12px 12px',
-                  animation: 'fadeInUp 0.4s ease-out',
-                }}>
-                  Success stories coming soon...
-                </div>
-              )}
+              {activeTab === 'success_stories' && (selectedTestimonial ? renderTestimonialDetail() : renderSuccessStoriesTab())}
             </div>
           </div>
 

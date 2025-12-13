@@ -4,6 +4,8 @@ import { doctorsService, type Doctor } from '../services/doctorsService';
 import type { ServiceItem } from '../services/departmentsService';
 import Navbar from '../components/Navbar';
 import DoctorFilters from '../components/DoctorFilters';
+import { LoadingSpinner } from '../components/LoadingComponents';
+import { EASINGS } from '../utils/animations';
 
 const DoctorDetailsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -117,17 +119,7 @@ const DoctorDetailsPage: React.FC = () => {
         background: '#C9F3FF',
       }}>
         <Navbar />
-        <div style={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          minHeight: '400px',
-          fontFamily: 'Nunito, sans-serif',
-          fontSize: '18px',
-          color: '#061F42',
-        }}>
-          Loading doctor details...
-        </div>
+        <LoadingSpinner fullScreen />
       </div>
     );
   }
@@ -196,7 +188,7 @@ const DoctorDetailsPage: React.FC = () => {
         display: 'flex',
         alignItems: 'flex-start',
         justifyContent: 'center',
-        padding: '200px 20px 40px 20px',
+        padding: '180px 20px 40px 20px',
       }}>
         <div style={{
           width: '100%',
@@ -207,7 +199,7 @@ const DoctorDetailsPage: React.FC = () => {
             showTitle={true}
             initialDepartmentId={doctor.department_id}
             initialBranchId={doctor.branch_id || undefined}
-            containerStyle={{ marginBottom: '24px' }}
+            containerStyle={{ marginBottom: '8px' }}
           />
 
           {/* Breadcrumb */}
@@ -216,11 +208,43 @@ const DoctorDetailsPage: React.FC = () => {
             fontWeight: 600,
             fontSize: '16px',
             lineHeight: '40px',
-            marginBottom: '16px',
+            marginBottom: '8px',
           }}>
             <span style={{ color: '#A4A5A5' }}>Displaying results for </span>
             <span style={{ color: '#061F42' }}>
-              Doctors &gt; {doctor.department?.name || 'Specialty'} &gt; {doctor.name}
+              <span 
+                onClick={() => navigate('/doctors')}
+                style={{
+                  cursor: 'pointer',
+                  textDecoration: 'underline',
+                  color: '#061F42',
+                  transition: 'color 0.2s',
+                }}
+                onMouseEnter={(e) => (e.currentTarget as HTMLElement).style.color = '#00ABDA'}
+                onMouseLeave={(e) => (e.currentTarget as HTMLElement).style.color = '#061F42'}
+              >
+                Doctors
+              </span>
+              {' > '}
+              <span 
+                onClick={() => navigate(`/doctors`)}
+                style={{
+                  cursor: 'pointer',
+                  textDecoration: 'underline',
+                  color: '#061F42',
+                  transition: 'color 0.2s',
+                }}
+                onMouseEnter={(e) => (e.currentTarget as HTMLElement).style.color = '#00ABDA'}
+                onMouseLeave={(e) => (e.currentTarget as HTMLElement).style.color = '#061F42'}
+              >
+                {doctor.department?.name || 'Specialty'}
+              </span>
+              {' > '}
+              <span style={{
+                color: '#061F42',
+              }}>
+                {doctor.name}
+              </span>
             </span>
           </div>
 
@@ -345,6 +369,8 @@ const DoctorDetailsPage: React.FC = () => {
                     lineHeight: '16px',
                     textAlign: 'center',
                     color: '#061F42',
+                    whiteSpace: 'pre-wrap' as const,
+                    wordWrap: 'break-word' as const,
                   }}>
                     {doctor.specialization || 'Registrar'}
                   </div>
@@ -471,14 +497,11 @@ const DoctorDetailsPage: React.FC = () => {
                         <li>{doctor.education}</li>
                       )}
                       {doctor.specialization && (
-                        <li>{doctor.specialization}</li>
+                        <li style={{ whiteSpace: 'pre-wrap' as const, wordWrap: 'break-word' as const }}>
+                          {doctor.specialization}
+                        </li>
                       )}
-                      {doctor.email && (
-                        <li>{doctor.email}</li>
-                      )}
-                      {doctor.phone && (
-                        <li>{doctor.phone}</li>
-                      )}
+   
                       {doctor.bio && (
                         <li>{doctor.bio}</li>
                       )}
@@ -565,6 +588,7 @@ const DoctorDetailsPage: React.FC = () => {
                       border: 'none',
                       cursor: 'pointer',
                       boxSizing: 'border-box',
+                      transition: `all 0.3s ${EASINGS.smooth}`,
                     }}
                   >
                     <span style={{
@@ -577,6 +601,7 @@ const DoctorDetailsPage: React.FC = () => {
                       alignItems: 'center',
                       textAlign: 'center',
                       color: activeTab === 'outpatient' ? '#061F42' : '#A4A5A5',
+                      transition: `color 0.3s ${EASINGS.smooth}`,
                     }}>
                       Outpatient Services
                     </span>
@@ -599,6 +624,7 @@ const DoctorDetailsPage: React.FC = () => {
                       border: 'none',
                       cursor: 'pointer',
                       boxSizing: 'border-box',
+                      transition: `all 0.3s ${EASINGS.smooth}`,
                     }}
                   >
                     <span style={{
@@ -611,6 +637,7 @@ const DoctorDetailsPage: React.FC = () => {
                       alignItems: 'center',
                       textAlign: 'center',
                       color: activeTab === 'inpatient' ? '#061F42' : '#A4A5A5',
+                      transition: `color 0.3s ${EASINGS.smooth}`,
                     }}>
                       Inpatient Services
                     </span>

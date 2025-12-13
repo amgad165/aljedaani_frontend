@@ -479,7 +479,7 @@ const AdminDepartmentTabs: React.FC = () => {
   };
 
   // Styles
-  const containerStyle: React.CSSProperties = { padding: '24px', fontFamily: "'Nunito', sans-serif" };
+  const containerStyle: React.CSSProperties = { padding: '24px', fontFamily: "'Calibri', 'Segoe UI', sans-serif" };
   const headerStyle: React.CSSProperties = { marginBottom: '24px' };
   const titleStyle: React.CSSProperties = { fontSize: '28px', fontWeight: 700, color: '#061F42', margin: 0 };
   const backButtonStyle: React.CSSProperties = { display: 'inline-flex', alignItems: 'center', gap: '8px', color: '#6B7280', fontSize: '14px', cursor: 'pointer', background: 'none', border: 'none', marginBottom: '16px' };

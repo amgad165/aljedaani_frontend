@@ -370,8 +370,8 @@ const DoctorFilters: React.FC<DoctorFiltersProps> = ({
       try {
         setLoadingDepartments(true);
         const data = await departmentsService.getDepartments({ active: true, with_doctors: true });
-        setDepartments(data);
-        setFilteredDepartments(data);
+        setDepartments(data.departments);
+        setFilteredDepartments(data.departments);
       } catch (error) {
         console.error('Failed to fetch departments:', error);
       } finally {

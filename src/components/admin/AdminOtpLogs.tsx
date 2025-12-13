@@ -173,7 +173,7 @@ const AdminOtpLogs: React.FC = () => {
   // Styles
   const containerStyle: React.CSSProperties = {
     padding: '32px 40px',
-    fontFamily: "'Open Sans', 'Nunito', sans-serif",
+    fontFamily: "'Calibri', 'Segoe UI', sans-serif",
   };
 
   const sectionTitleStyle: React.CSSProperties = {

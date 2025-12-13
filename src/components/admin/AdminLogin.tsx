@@ -34,7 +34,7 @@ const AdminLogin: React.FC = () => {
         alignItems: 'center',
         justifyContent: 'center',
         padding: '1rem',
-        fontFamily: "'Nunito', sans-serif"
+        fontFamily: "'Calibri', 'Segoe UI', sans-serif"
       }}
     >
       <div style={{ width: '100%', maxWidth: '440px' }}>

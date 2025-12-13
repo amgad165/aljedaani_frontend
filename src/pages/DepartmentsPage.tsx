@@ -1,57 +1,66 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { departmentsService, type Department } from '../services/departmentsService';
-import { branchesService, type Branch } from '../services/branchesService';
 import Navbar from '../components/Navbar';
+import { DepartmentCardSkeleton } from '../components/LoadingComponents';
+import { EASINGS, getStaggerDelay } from '../utils/animations';
 
 const DepartmentsPage: React.FC = () => {
   const navigate = useNavigate();
-  const [departments, setDepartments] = useState<Department[]>([]);
   const [filteredDepartments, setFilteredDepartments] = useState<Department[]>([]);
-  const [branches, setBranches] = useState<Branch[]>([]);
+  const [branches, setBranches] = useState<{ id: number; name: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedBranchId, setSelectedBranchId] = useState<number | null>(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const branchesInitialized = useRef(false);
+  const fetchInProgress = useRef(false);
 
   useEffect(() => {
+    // Prevent duplicate fetches
+    if (fetchInProgress.current) return;
+
     const fetchData = async () => {
       try {
+        fetchInProgress.current = true;
         setLoading(true);
-        const [deptData, branchData] = await Promise.all([
-          departmentsService.getDepartments({
-            active: true,
-            with_doctors: true,
-          }),
-          branchesService.getBranches({
-            active: true,
-          })
-        ]);
-        setDepartments(deptData);
-        setFilteredDepartments(deptData);
-        setBranches(branchData);
+        
+        // Fetch departments with branch filter
+        const params: {
+          active: boolean;
+          with_doctors: boolean;
+          with_branches?: boolean;
+          branch_id?: number;
+        } = {
+          active: true,
+          with_doctors: true,
+          with_branches: !branchesInitialized.current, // Only fetch branches once
+        };
+        
+        if (selectedBranchId !== null) {
+          params.branch_id = selectedBranchId;
+        }
+        
+        const result = await departmentsService.getDepartments(params);
+        setFilteredDepartments(result.departments);
+        
+        // Set branches only on first load
+        if (result.branches && !branchesInitialized.current) {
+          setBranches(result.branches);
+          branchesInitialized.current = true;
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred');
       } finally {
         setLoading(false);
+        fetchInProgress.current = false;
       }
     };
 
     fetchData();
-  }, []);
+  }, [selectedBranchId]);
 
-  useEffect(() => {
-    if (selectedBranchId === null) {
-      // Show all departments when "All Branches" is selected
-      setFilteredDepartments(departments);
-    } else {
-      // Filter departments that have at least one doctor in the selected branch
-      const filtered = departments.filter(dept =>
-        dept.doctors?.some(doctor => doctor.branch_id === selectedBranchId)
-      );
-      setFilteredDepartments(filtered);
-    }
-  }, [selectedBranchId, departments]);
+
 
   if (loading) {
     return (
@@ -62,15 +71,90 @@ const DepartmentsPage: React.FC = () => {
       }}>
         <Navbar />
         <div style={{
+          flex: 1,
           display: 'flex',
+          alignItems: 'flex-start',
           justifyContent: 'center',
-          alignItems: 'center',
-          minHeight: '400px',
-          fontFamily: 'Nunito, sans-serif',
-          fontSize: '18px',
-          color: '#061F42',
+            paddingTop: '170px',
+          
         }}>
-          Loading departments...
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '12px',
+            isolation: 'isolate',
+            position: 'relative',
+            width: '100%',
+            maxWidth: '1170px',
+            background: '#C9F3FF',
+            borderRadius: '15px',
+            padding: '24px',
+            paddingTop: '10px',
+          }}>
+            {/* Title Section Skeleton */}
+            <div style={{
+              display: 'flex',
+              flexDirection: 'row',
+              justifyContent: 'center',
+              alignItems: 'center',
+              padding: '8px 8px 8px 24px',
+              width: '1120px',
+              height: '80px',
+              background: '#FFFFFF',
+              borderRadius: '15px',
+              gap: '16px',
+            }}>
+              <div style={{
+                width: '200px',
+                height: '50px',
+                background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
+                backgroundSize: '200% 100%',
+                animation: 'shimmer 1.5s infinite',
+                borderRadius: '8px',
+              }} />
+            </div>
+
+            {/* Results Text Skeleton */}
+            <div style={{
+              width: '1120px',
+              height: '40px',
+            }}>
+              <div style={{
+                width: '300px',
+                height: '20px',
+                background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
+                backgroundSize: '200% 100%',
+                animation: 'shimmer 1.5s infinite',
+                borderRadius: '4px',
+                marginTop: '10px',
+              }} />
+            </div>
+
+            {/* Section Title Skeleton */}
+            <div style={{
+              width: '250px',
+              height: '40px',
+              background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
+              backgroundSize: '200% 100%',
+              animation: 'shimmer 1.5s infinite',
+              borderRadius: '8px',
+              marginBottom: '12px',
+              alignSelf: 'flex-start',
+            }} />
+
+            {/* Departments Grid Skeleton */}
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(3, 357.33px)',
+              gap: '12px',
+              width: '100%',
+            }}>
+              {[...Array(9)].map((_, index) => (
+                <DepartmentCardSkeleton key={index} />
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -112,7 +196,6 @@ const DepartmentsPage: React.FC = () => {
         display: 'flex',
         alignItems: 'flex-start',
         justifyContent: 'center',
-        padding: '20px',
         marginTop: '170px',
       }}>
         <div style={{
@@ -123,10 +206,11 @@ const DepartmentsPage: React.FC = () => {
           isolation: 'isolate',
           position: 'relative',
           width: '100%',
-          maxWidth: '1120px',
+          maxWidth: '1170px',
           background: '#C9F3FF',
           borderRadius: '15px',
           padding: '24px',
+          paddingTop: '10px',
         }}>
       {/* Title Section */}
       <div style={{
@@ -394,10 +478,22 @@ const DepartmentsPage: React.FC = () => {
       }}>
         <span style={{ color: '#A4A5A5' }}>Displaying results for </span>
         <span style={{ color: '#061F42' }}>
-          Departments &gt; Select Department &gt; {selectedBranchId === null 
-            ? 'All Branches' 
-            : branches.find(b => b.id === selectedBranchId)?.name || 'All Branches'
-          }
+          <span 
+            onClick={() => {
+              navigate('/departments');
+              setSelectedBranchId(null);
+            }}
+            style={{
+              cursor: 'pointer',
+              textDecoration: 'underline',
+              color: '#061F42',
+              transition: 'color 0.2s',
+            }}
+            onMouseEnter={(e) => (e.currentTarget as HTMLElement).style.color = '#00ABDA'}
+            onMouseLeave={(e) => (e.currentTarget as HTMLElement).style.color = '#061F42'}
+          >
+            Departments
+          </span>
         </span>
       </div>
 
@@ -423,7 +519,7 @@ const DepartmentsPage: React.FC = () => {
         gap: '12px',
         width: '100%',
       }}>
-        {filteredDepartments.map((department) => (
+        {filteredDepartments.map((department, index) => (
           <div
             key={department.id}
             onClick={() => navigate(`/departments/${department.id}`)}
@@ -440,13 +536,19 @@ const DepartmentsPage: React.FC = () => {
               border: '1px solid #DADADA',
               borderRadius: '8px',
               cursor: 'pointer',
-              transition: 'all 0.3s ease',
+              transition: `all 0.3s ${EASINGS.smooth}`,
+              opacity: 0,
+              animation: `fadeIn 0.4s ${EASINGS.smooth} ${getStaggerDelay(index, 50)}ms forwards`,
             }}
             onMouseEnter={(e) => {
               (e.currentTarget as HTMLElement).style.background = '#DAF8FF';
+              (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)';
+              (e.currentTarget as HTMLElement).style.boxShadow = '0 4px 12px rgba(0, 171, 218, 0.15)';
             }}
             onMouseLeave={(e) => {
               (e.currentTarget as HTMLElement).style.background = '#FFFFFF';
+              (e.currentTarget as HTMLElement).style.transform = 'translateY(0)';
+              (e.currentTarget as HTMLElement).style.boxShadow = 'none';
             }}
           >
             {/* Icon Container */}

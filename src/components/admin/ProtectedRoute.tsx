@@ -52,7 +52,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requireAdmin 
         alignItems: 'center',
         justifyContent: 'center',
         padding: '20px',
-        fontFamily: "'Nunito', sans-serif"
+        fontFamily: "'Calibri', 'Segoe UI', sans-serif"
       }}>
         <div style={{
           backgroundColor: 'white',

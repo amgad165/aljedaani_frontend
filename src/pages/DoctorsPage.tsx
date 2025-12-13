@@ -5,6 +5,8 @@ import { branchesService, type Branch } from '../services/branchesService';
 import { departmentsService, type Department } from '../services/departmentsService';
 import Navbar from '../components/Navbar';
 import CustomSelect from '../components/CustomSelect';
+import { DoctorCardSkeleton } from '../components/LoadingComponents';
+import { EASINGS, getStaggerDelay } from '../utils/animations';
 
 interface DoctorCardProps {
   doctor: Doctor;
@@ -12,6 +14,8 @@ interface DoctorCardProps {
 }
 
 const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onLearnMore }) => {
+  const [isHovered, setIsHovered] = useState(false);
+  
   const getStatusStyle = (status: string) => {
     switch (status) {
       case 'available_today':
@@ -28,21 +32,28 @@ const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onLearnMore }) => {
   const statusStyle = getStatusStyle(doctor.status);
 
   return (
-    <div style={{
-      boxSizing: 'border-box',
-      display: 'flex',
-      flexDirection: 'column',
-      justifyContent: 'center',
-      alignItems: 'center',
-      padding: '10px',
-      gap: '12px',
-      width: '271px',
-      maxWidth: '300px',
-      height: '368px',
-      background: '#FFFFFF',
-      border: '1px solid #D8D8D8',
-      borderRadius: '12px',
-    }}>
+    <div 
+      style={{
+        boxSizing: 'border-box',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: '10px',
+        gap: '12px',
+        width: '271px',
+        maxWidth: '300px',
+        height: '368px',
+        background: '#FFFFFF',
+        border: '1px solid #D8D8D8',
+        borderRadius: '12px',
+        transition: `all 0.3s ${EASINGS.smooth}`,
+        transform: isHovered ? 'translateY(-4px)' : 'translateY(0)',
+        boxShadow: isHovered ? '0 8px 24px rgba(0, 171, 218, 0.2)' : 'none',
+      }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
       {/* Status Badge */}
       <div style={{
         display: 'flex',
@@ -304,7 +315,21 @@ const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onLearnMore }) => {
           border: 'none',
           cursor: doctor.status === 'busy' ? 'not-allowed' : 'pointer',
           flex: 1,
-        }}>
+          transition: `all 0.3s ${EASINGS.smooth}`,
+        }}
+        onMouseEnter={(e) => {
+          if (doctor.status !== 'busy') {
+            (e.currentTarget as HTMLElement).style.background = '#00ABDA';
+            (e.currentTarget as HTMLElement).style.transform = 'scale(1.02)';
+          }
+        }}
+        onMouseLeave={(e) => {
+          if (doctor.status !== 'busy') {
+            (e.currentTarget as HTMLElement).style.background = '#061F42';
+            (e.currentTarget as HTMLElement).style.transform = 'scale(1)';
+          }
+        }}
+        >
           <span style={{
             fontFamily: 'Nunito, sans-serif',
             fontStyle: 'normal',
@@ -333,7 +358,17 @@ const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onLearnMore }) => {
             border: 'none',
             cursor: 'pointer',
             flex: 1,
-          }}>
+            transition: `all 0.3s ${EASINGS.smooth}`,
+          }}
+          onMouseEnter={(e) => {
+            (e.currentTarget as HTMLElement).style.background = '#00ABDA';
+            (e.currentTarget as HTMLElement).style.transform = 'scale(1.02)';
+          }}
+          onMouseLeave={(e) => {
+            (e.currentTarget as HTMLElement).style.background = '#15C9FA';
+            (e.currentTarget as HTMLElement).style.transform = 'scale(1)';
+          }}
+        >
           <span style={{
             fontFamily: 'Nunito, sans-serif',
             fontStyle: 'normal',
@@ -381,8 +416,8 @@ const DoctorsPage: React.FC = () => {
           departmentsService.getDepartments({ active: true }),
         ]);
         setBranches(branchesData);
-        setDepartments(departmentsData);
-        setFilteredDepartments(departmentsData);
+        setDepartments(departmentsData.departments);
+        setFilteredDepartments(departmentsData.departments);
       } catch (err) {
         console.error('Error loading filter data:', err);
       }
@@ -491,15 +526,54 @@ const DoctorsPage: React.FC = () => {
       }}>
         <Navbar />
         <div style={{
+          flex: 1,
           display: 'flex',
+          alignItems: 'flex-start',
           justifyContent: 'center',
-          alignItems: 'center',
-          minHeight: '400px',
-          fontFamily: 'Nunito, sans-serif',
-          fontSize: '18px',
-          color: '#061F42',
+          padding: '170px 20px 20px 20px',
         }}>
-          Loading doctors...
+          <div style={{
+            width: '100%',
+            maxWidth: '1170px',
+            padding: '12px',
+          }}>
+            {/* Title Section Skeleton */}
+            <div style={{
+              display: 'flex',
+              flexDirection: 'row',
+              justifyContent: 'center',
+              alignItems: 'center',
+              padding: '8px 8px 8px 24px',
+              width: '100%',
+              height: '80px',
+              background: '#FFFFFF',
+              borderRadius: '15px',
+              gap: '16px',
+              marginBottom: '12px',
+            }}>
+              <div style={{
+                width: '200px',
+                height: '50px',
+                background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
+                backgroundSize: '200% 100%',
+                animation: 'shimmer 1.5s infinite',
+                borderRadius: '8px',
+              }} />
+            </div>
+
+            {/* Doctors Grid Skeleton */}
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(4, 1fr)',
+              gap: '12px',
+              width: '100%',
+              justifyContent: 'center',
+            }}>
+              {[...Array(8)].map((_, index) => (
+                <DoctorCardSkeleton key={index} />
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -544,8 +618,8 @@ const DoctorsPage: React.FC = () => {
       }}>
         <div style={{
           width: '100%',
-          maxWidth: '1120px',
-          padding: '24px',
+          maxWidth: '1170px',
+          padding: '12px',
         }}>
       {/* Title Section */}
       <div style={{
@@ -558,7 +632,7 @@ const DoctorsPage: React.FC = () => {
         height: '80px',
         background: '#FFFFFF',
         borderRadius: '15px',
-        marginBottom: '24px',
+        marginBottom: '5px',
       }}>
         <h1 style={{
           fontFamily: 'Nunito, sans-serif',
@@ -660,15 +734,59 @@ const DoctorsPage: React.FC = () => {
         fontWeight: 400,
         fontSize: '16px',
         lineHeight: '40px',
-        marginBottom: '24px',
+        marginBottom: '10px',
       }}>
         <span style={{ color: '#A4A5A5' }}>Displaying results for </span>
         <span style={{ color: '#061F42' }}>
-          Doctors
-          {selectedBranch && branches.find(b => b.id === parseInt(selectedBranch)) && 
-            ` > ${branches.find(b => b.id === parseInt(selectedBranch))?.name}`}
-          {selectedDepartment && filteredDepartments.find(d => d.id === parseInt(selectedDepartment)) && 
-            ` > ${filteredDepartments.find(d => d.id === parseInt(selectedDepartment))?.name}`}
+          <span 
+            onClick={() => navigate('/doctors')}
+            style={{
+              cursor: 'pointer',
+              textDecoration: 'underline',
+              color: '#061F42',
+              transition: 'color 0.2s',
+            }}
+            onMouseEnter={(e) => (e.currentTarget as HTMLElement).style.color = '#00ABDA'}
+            onMouseLeave={(e) => (e.currentTarget as HTMLElement).style.color = '#061F42'}
+          >
+            Doctors
+          </span>
+          {selectedBranch && branches.find(b => b.id === parseInt(selectedBranch)) && (
+            <>
+              {' > '}
+              <span 
+                onClick={() => setSelectedBranch('')}
+                style={{
+                  cursor: 'pointer',
+                  textDecoration: 'underline',
+                  color: '#061F42',
+                  transition: 'color 0.2s',
+                }}
+                onMouseEnter={(e) => (e.currentTarget as HTMLElement).style.color = '#00ABDA'}
+                onMouseLeave={(e) => (e.currentTarget as HTMLElement).style.color = '#061F42'}
+              >
+                {branches.find(b => b.id === parseInt(selectedBranch))?.name}
+              </span>
+            </>
+          )}
+          {selectedDepartment && filteredDepartments.find(d => d.id === parseInt(selectedDepartment)) && (
+            <>
+              {' > '}
+              <span 
+                onClick={() => setSelectedDepartment('')}
+                style={{
+                  cursor: 'pointer',
+                  textDecoration: 'underline',
+                  color: '#061F42',
+                  transition: 'color 0.2s',
+                }}
+                onMouseEnter={(e) => (e.currentTarget as HTMLElement).style.color = '#00ABDA'}
+                onMouseLeave={(e) => (e.currentTarget as HTMLElement).style.color = '#061F42'}
+              >
+                {filteredDepartments.find(d => d.id === parseInt(selectedDepartment))?.name}
+              </span>
+            </>
+          )}
           {!selectedBranch && !selectedDepartment && ' > All'}
         </span>
       </div>
@@ -681,8 +799,16 @@ const DoctorsPage: React.FC = () => {
         width: '100%',
         justifyContent: 'center',
       }}>
-        {doctors?.data.map((doctor) => (
-          <DoctorCard key={doctor.id} doctor={doctor} onLearnMore={handleLearnMore} />
+        {doctors?.data.map((doctor, index) => (
+          <div
+            key={doctor.id}
+            style={{
+              opacity: 0,
+              animation: `fadeIn 0.5s ${EASINGS.smooth} ${getStaggerDelay(index, 80)}ms forwards`,
+            }}
+          >
+            <DoctorCard doctor={doctor} onLearnMore={handleLearnMore} />
+          </div>
         ))}
       </div>
 

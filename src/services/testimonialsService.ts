@@ -1,12 +1,17 @@
+import type { Doctor } from './doctorsService';
+
 interface Testimonial {
   id: number;
-  name: string;
-  role: string;
-  image_url: string | null;
-  location: string;
-  experience: string;
+  doctor_id: number;
+  doctor?: Doctor;
+  name?: string;
+  role?: string;
+  testimonial_image?: string | null;
+  location?: string;
+  experience?: string;
   review_title: string;
   description: string;
+  full_story?: string;
   is_active: boolean;
   created_at: string;
   updated_at: string;

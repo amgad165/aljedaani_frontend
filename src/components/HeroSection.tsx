@@ -34,8 +34,8 @@ const HeroSection = () => {
           departmentsService.getDepartments({ active: true }),
         ]);
         setBranches(branchesData);
-        setDepartments(departmentsData);
-        setFilteredDepartments(departmentsData);
+        setDepartments(departmentsData.departments);
+        setFilteredDepartments(departmentsData.departments);
       } catch (err) {
         console.error('Error loading filter data:', err);
       }

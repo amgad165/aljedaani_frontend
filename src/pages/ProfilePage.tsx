@@ -171,8 +171,10 @@ const ProfilePage = () => {
             flexDirection: 'row',
             alignItems: 'flex-start',
             padding: '0px',
-            width: '1036px',
+            width: '100%',
             height: '40px',
+            flexWrap: 'wrap',
+            gap: '4px',
           }}>
             {tabs.map((tab) => (
               <TabButton key={tab.id} tab={tab} isActive={activeTab === tab.id} />

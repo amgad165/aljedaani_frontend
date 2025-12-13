@@ -75,13 +75,13 @@ const Navbar = () => {
             <div className="social">
               <a href="#" className="ge-ss-tv text-primary-light">العربيه</a>
               <div className="icons-wrapper">
-                <a href="#">
+                <a href="https://www.facebook.com/share/1YnpkJ88z5/?mibextid=wwXIfr" target="_blank" rel="noopener noreferrer" title="Follow us on Facebook">
                   <img src="/assets/img/icons/Facebook.svg" className="d-block" width="24" height="24" alt="Facebook Icon" />
                 </a>
-                <a href="#">
+                <a href="https://www.instagram.com/jedaanihospitals?igsh=bjhqdmVxaDYyMDI5" target="_blank" rel="noopener noreferrer" title="Follow us on Instagram">
                   <img src="/assets/img/icons/Instagram.svg" className="d-block" width="24" height="24" alt="Instagram Icon" />
                 </a>
-                <a href="#">
+                <a href="https://www.linkedin.com/company/jedaanihospitals" target="_blank" rel="noopener noreferrer" title="Follow us on LinkedIn">
                   <img src="/assets/img/icons/LinkedIn.svg" className="d-block" width="24" height="24" alt="LinkedIn Icon" />
                 </a>
               </div>

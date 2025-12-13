@@ -1,6 +1,8 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { useEffect } from 'react';
 import { AuthProvider } from './context/AuthContext';
 import ThemeStyles from './components/ThemeStyles';
+import { injectGlobalStyles } from './utils/globalStyles';
 import HomePage from './components/HomePage';
 import LoginPage from './pages/LoginPage';
 import SignUpPage from './pages/SignUpPage';
@@ -20,10 +22,17 @@ import AdminDoctors from './components/admin/AdminDoctors';
 import AdminTestimonials from './components/admin/AdminTestimonials';
 import AdminDepartmentTabs from './components/admin/AdminDepartmentTabs';
 import AdminOtpLogs from './components/admin/AdminOtpLogs';
+import AdminPatients from './components/admin/AdminPatients';
+import AdminHisPatients from './components/admin/AdminHisPatients';
+import PatientDetails from './components/admin/PatientDetails';
 import ProtectedRoute from './components/admin/ProtectedRoute';
 import './App.css';
 
 function App() {
+  useEffect(() => {
+    injectGlobalStyles();
+  }, []);
+
   return (
     <AuthProvider>
       <Router>
@@ -74,6 +83,21 @@ function App() {
           <Route path="/admin/otp-logs" element={
             <ProtectedRoute>
               <AdminOtpLogs />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/patients" element={
+            <ProtectedRoute>
+              <AdminPatients />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/his-patients" element={
+            <ProtectedRoute>
+              <AdminHisPatients />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/patients/:id" element={
+            <ProtectedRoute>
+              <PatientDetails />
             </ProtectedRoute>
           } />
         </Routes>

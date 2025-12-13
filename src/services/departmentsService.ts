@@ -104,7 +104,9 @@ class DepartmentsService {
     active?: boolean;
     with_doctors_count?: boolean;
     with_doctors?: boolean;
-  }): Promise<Department[]> {
+    branch_id?: number;
+    with_branches?: boolean;
+  }): Promise<{ departments: Department[]; branches?: { id: number; name: string }[] }> {
     const url = new URL(`${this.baseUrl}/departments`);
     
     if (params?.active !== undefined) {
@@ -118,6 +120,14 @@ class DepartmentsService {
     if (params?.with_doctors) {
       url.searchParams.append('with_doctors', 'true');
     }
+    
+    if (params?.branch_id !== undefined) {
+      url.searchParams.append('branch_id', String(params.branch_id));
+    }
+    
+    if (params?.with_branches) {
+      url.searchParams.append('with_branches', 'true');
+    }
 
     const response = await fetch(url.toString());
     
@@ -125,13 +135,16 @@ class DepartmentsService {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     
-    const result: ApiResponse<Department[]> = await response.json();
+    const result = await response.json();
     
     if (!result.success) {
       throw new Error(result.message || 'Failed to fetch departments');
     }
     
-    return result.data;
+    return {
+      departments: result.data,
+      branches: result.branches
+    };
   }
 
   async getDepartment(id: number, params?: {
@@ -402,6 +415,23 @@ class DepartmentsService {
     
     if (!result.success) {
       throw new Error(result.message || 'Failed to fetch tab types');
+    }
+    
+    return result.data;
+  }
+
+  // Get testimonials for a specific department (testimonials from doctors in that department)
+  async getDepartmentTestimonials(departmentId: number): Promise<any[]> {
+    const response = await fetch(`${this.baseUrl}/departments/${departmentId}/testimonials`);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const result = await response.json();
+    
+    if (result.status !== 'success') {
+      throw new Error(result.message || 'Failed to fetch department testimonials');
     }
     
     return result.data;

@@ -38,6 +38,8 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
     { path: '/admin/branches', label: 'Branches', icon: 'branch' },
     { path: '/admin/departments', label: 'Departments', icon: 'department' },
     { path: '/admin/doctors', label: 'Doctors', icon: 'doctor' },
+    { path: '/admin/patients', label: 'Patients', icon: 'users' },
+    { path: '/admin/his-patients', label: 'HIS Patients', icon: 'his' },
     { path: '/admin/testimonials', label: 'Testimonials', icon: 'testimonial' },
   ];
 
@@ -82,6 +84,24 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
             <path d="M19 8v6M22 11h-6" />
           </svg>
         );
+      case 'users':
+        return (
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2">
+            <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+            <circle cx="9" cy="7" r="4" />
+            <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" />
+          </svg>
+        );
+      case 'his':
+        return (
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2">
+            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+            <polyline points="14 2 14 8 20 8" />
+            <line x1="16" y1="13" x2="8" y2="13" />
+            <line x1="16" y1="17" x2="8" y2="17" />
+            <polyline points="10 9 9 9 8 9" />
+          </svg>
+        );
       case 'testimonial':
         return (
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2">
@@ -100,7 +120,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
         display: 'flex',
         minHeight: '100vh',
         background: 'linear-gradient(135deg, #0a4d68 0%, #088395 40%, #05bfdb 80%, #00ffca 100%)',
-        fontFamily: "'Nunito', sans-serif",
+        fontFamily: "'Calibri', 'Segoe UI', sans-serif",
         margin: 0,
         padding: 0,
       }}
