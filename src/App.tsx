@@ -24,6 +24,7 @@ import AdminDepartmentTabs from './components/admin/AdminDepartmentTabs';
 import AdminOtpLogs from './components/admin/AdminOtpLogs';
 import AdminPatients from './components/admin/AdminPatients';
 import AdminHisPatients from './components/admin/AdminHisPatients';
+import AdminHisAppointments from './components/admin/AdminHisAppointments';
 import PatientDetails from './components/admin/PatientDetails';
 import ProtectedRoute from './components/admin/ProtectedRoute';
 import './App.css';
@@ -93,6 +94,11 @@ function App() {
           <Route path="/admin/his-patients" element={
             <ProtectedRoute>
               <AdminHisPatients />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/his-appointments" element={
+            <ProtectedRoute>
+              <AdminHisAppointments />
             </ProtectedRoute>
           } />
           <Route path="/admin/patients/:id" element={

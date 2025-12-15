@@ -21,6 +21,7 @@ interface ServiceItem {
 
 interface Doctor {
   id: number;
+  doctor_code: string;
   name: string;
   email: string;
   phone: string;
@@ -40,6 +41,7 @@ interface Doctor {
 }
 
 interface FormData {
+  doctor_code: string;
   name: string;
   email: string;
   phone: string;
@@ -56,6 +58,7 @@ interface FormData {
 }
 
 const initialFormData: FormData = {
+  doctor_code: '',
   name: '',
   email: '',
   phone: '',
@@ -171,6 +174,7 @@ const AdminDoctors: React.FC = () => {
     if (doctor) {
       setEditingDoctor(doctor);
       const newFormData: FormData = {
+        doctor_code: doctor.doctor_code || '',
         name: doctor.name,
         email: doctor.email,
         phone: doctor.phone || '',
@@ -341,6 +345,9 @@ const AdminDoctors: React.FC = () => {
 
     try {
       const submitData = new FormData();
+      if (formData.doctor_code) {
+        submitData.append('doctor_code', formData.doctor_code);
+      }
       submitData.append('name', formData.name);
       submitData.append('email', formData.email);
       submitData.append('phone', formData.phone);
@@ -1051,6 +1058,7 @@ const AdminDoctors: React.FC = () => {
         <thead>
           <tr>
             <th style={styles.th}>Image</th>
+            <th style={styles.th}>Doctor Code</th>
             <th style={styles.th}>Name</th>
             <th style={styles.th}>Department</th>
             <th style={styles.th}>Branch</th>
@@ -1068,6 +1076,11 @@ const AdminDoctors: React.FC = () => {
                 ) : (
                   <div style={styles.imagePlaceholder}>👤</div>
                 )}
+              </td>
+              <td style={styles.td}>
+                <div style={{ fontSize: '13px', color: '#666', fontFamily: 'monospace' }}>
+                  {doctor.doctor_code || '-'}
+                </div>
               </td>
               <td style={styles.td}>
                 <div>{doctor.name}</div>
@@ -1180,8 +1193,19 @@ const AdminDoctors: React.FC = () => {
                   </label>
                 </div>
 
-                {/* Name & Email */}
+                {/* Doctor Code & Name */}
                 <div style={styles.formRow}>
+                  <div>
+                    <label style={styles.label}>Doctor Code</label>
+                    <input
+                      type="text"
+                      name="doctor_code"
+                      value={formData.doctor_code}
+                      onChange={handleInputChange}
+                      style={styles.input}
+                      placeholder="e.g., DOC-001"
+                    />
+                  </div>
                   <div>
                     <label style={styles.label}>Name *</label>
                     <input
@@ -1193,17 +1217,19 @@ const AdminDoctors: React.FC = () => {
                       required
                     />
                   </div>
-                  <div>
-                    <label style={styles.label}>Email *</label>
-                    <input
-                      type="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      style={styles.input}
-                      required
-                    />
-                  </div>
+                </div>
+
+                {/* Email */}
+                <div style={styles.formGroup}>
+                  <label style={styles.label}>Email *</label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    style={styles.input}
+                    required
+                  />
                 </div>
 
                 {/* Phone & Location */}

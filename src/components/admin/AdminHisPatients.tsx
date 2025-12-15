@@ -12,6 +12,8 @@ const AdminHisPatients: React.FC = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [totalPatients, setTotalPatients] = useState(0);
   const [perPage] = useState(15);
+  const [selectedPatient, setSelectedPatient] = useState<HisPatient | null>(null);
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -59,12 +61,22 @@ const AdminHisPatients: React.FC = () => {
     });
   };
 
-  const calculateAge = (dob: string | null) => {
+  const calculateAge = (dob: string | null | undefined) => {
     if (!dob) return 'N/A';
     const birthDate = new Date(dob);
     const ageDiff = Date.now() - birthDate.getTime();
     const ageDate = new Date(ageDiff);
     return Math.abs(ageDate.getUTCFullYear() - 1970);
+  };
+
+  const handleRowClick = (patient: HisPatient) => {
+    setSelectedPatient(patient);
+    setShowModal(true);
+  };
+
+  const closeModal = () => {
+    setShowModal(false);
+    setSelectedPatient(null);
   };
 
   return (
@@ -234,9 +246,11 @@ const AdminHisPatients: React.FC = () => {
                     {patients.map((patient, index) => (
                       <tr
                         key={patient.id}
+                        onClick={() => handleRowClick(patient)}
                         style={{
                           background: index % 2 === 0 ? 'white' : '#f9fafb',
                           transition: 'background-color 0.2s',
+                          cursor: 'pointer',
                         }}
                         onMouseEnter={(e) => e.currentTarget.style.background = '#f0f9ff'}
                         onMouseLeave={(e) => e.currentTarget.style.background = index % 2 === 0 ? 'white' : '#f9fafb'}
@@ -340,9 +354,215 @@ const AdminHisPatients: React.FC = () => {
           )}
         </div>
       </div>
+
+      {/* Patient Detail Modal */}
+      {showModal && selectedPatient && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0, 0, 0, 0.5)',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 1000,
+            padding: '20px',
+          }}
+          onClick={closeModal}
+        >
+          <div
+            style={{
+              background: 'white',
+              borderRadius: '16px',
+              maxWidth: '900px',
+              width: '100%',
+              maxHeight: '90vh',
+              overflow: 'auto',
+              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div style={{
+              padding: '24px',
+              borderBottom: '2px solid #E5E7EB',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              background: 'linear-gradient(135deg, #088395 0%, #0a4d68 100%)',
+              color: 'white',
+              borderRadius: '16px 16px 0 0',
+            }}>
+              <div>
+                <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '4px' }}>
+                  Patient Details
+                </h2>
+                <p style={{ fontSize: '14px', opacity: 0.9 }}>
+                  HIS Code: {selectedPatient.Code}
+                </p>
+              </div>
+              <button
+                onClick={closeModal}
+                style={{
+                  background: 'rgba(255, 255, 255, 0.2)',
+                  border: 'none',
+                  borderRadius: '8px',
+                  padding: '8px 16px',
+                  color: 'white',
+                  cursor: 'pointer',
+                  fontSize: '16px',
+                  fontWeight: '600',
+                }}
+              >
+                ✕ Close
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div style={{ padding: '24px' }}>
+              {/* Personal Information */}
+              <div style={{ marginBottom: '32px' }}>
+                <h3 style={{
+                  fontSize: '18px',
+                  fontWeight: '700',
+                  color: '#0a4d68',
+                  marginBottom: '16px',
+                  borderBottom: '2px solid #088395',
+                  paddingBottom: '8px',
+                }}>
+                  Personal Information
+                </h3>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '16px' }}>
+                  <DetailField label="File Number" value={selectedPatient.FileNumber} />
+                  <DetailField label="English Name" value={selectedPatient.EngName} />
+                  <DetailField label="First Name" value={selectedPatient.Name} />
+                  <DetailField label="Middle Name" value={selectedPatient.MiddleName} />
+                  <DetailField label="Family Name" value={selectedPatient.FamilyName} />
+                  <DetailField label="Gender" value={selectedPatient.Gender === true ? 'Male' : selectedPatient.Gender === false ? 'Female' : 'N/A'} />
+                  <DetailField label="Date of Birth" value={selectedPatient.Birthday ? formatDate(selectedPatient.Birthday) : 'N/A'} />
+                  <DetailField label="Age" value={`${selectedPatient.AgeYear || 0}Y ${selectedPatient.AgeMonth || 0}M ${selectedPatient.AgeDay || 0}D`} />
+                  <DetailField label="Marital Status" value={selectedPatient.Maritalstatus} />
+                  <DetailField label="Religion" value={selectedPatient.Relegion} />
+                  <DetailField label="Nationality Code" value={selectedPatient.NationCode} />
+                  <DetailField label="Blood Type" value={selectedPatient.BloodType} />
+                </div>
+              </div>
+
+              {/* Contact Information */}
+              <div style={{ marginBottom: '32px' }}>
+                <h3 style={{
+                  fontSize: '18px',
+                  fontWeight: '700',
+                  color: '#0a4d68',
+                  marginBottom: '16px',
+                  borderBottom: '2px solid #088395',
+                  paddingBottom: '8px',
+                }}>
+                  Contact Information
+                </h3>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '16px' }}>
+                  <DetailField label="Telephone" value={selectedPatient.Telephone} />
+                  <DetailField label="Email" value={selectedPatient.E_Mail} />
+                  <DetailField label="Work Phone" value={selectedPatient.WorkPhone} />
+                  <DetailField label="Address" value={selectedPatient.Addres} />
+                  <DetailField label="City" value={selectedPatient.City} />
+                  <DetailField label="Country" value={selectedPatient.Country} />
+                  <DetailField label="P.O. Box" value={selectedPatient.PoBox} />
+                </div>
+              </div>
+
+              {/* Identification */}
+              <div style={{ marginBottom: '32px' }}>
+                <h3 style={{
+                  fontSize: '18px',
+                  fontWeight: '700',
+                  color: '#0a4d68',
+                  marginBottom: '16px',
+                  borderBottom: '2px solid #088395',
+                  paddingBottom: '8px',
+                }}>
+                  Identification
+                </h3>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '16px' }}>
+                  <DetailField label="ID Number" value={selectedPatient.IdNumber} />
+                  <DetailField label="ID Type" value={selectedPatient.IdType} />
+                  <DetailField label="ID Issue Date" value={selectedPatient.IdIssuedate ? formatDate(selectedPatient.IdIssuedate) : 'N/A'} />
+                  <DetailField label="ID Expiry Date" value={selectedPatient.IDExpiryDate ? formatDate(selectedPatient.IDExpiryDate) : 'N/A'} />
+                  <DetailField label="Passport Number" value={selectedPatient.PassportNumber} />
+                  <DetailField label="Visa Number" value={selectedPatient.VisaNumber} />
+                </div>
+              </div>
+
+              {/* Emergency Contact */}
+              {(selectedPatient.EmName || selectedPatient.Kinname || selectedPatient.Kinmobile) && (
+                <div style={{ marginBottom: '32px' }}>
+                  <h3 style={{
+                    fontSize: '18px',
+                    fontWeight: '700',
+                    color: '#0a4d68',
+                    marginBottom: '16px',
+                    borderBottom: '2px solid #088395',
+                    paddingBottom: '8px',
+                  }}>
+                    Emergency Contact
+                  </h3>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '16px' }}>
+                    <DetailField label="Emergency Name" value={selectedPatient.EmName} />
+                    <DetailField label="Kin Name" value={selectedPatient.Kinname} />
+                    <DetailField label="Kin Mobile" value={selectedPatient.Kinmobile} />
+                    <DetailField label="Kin Address" value={selectedPatient.Kinaddress} />
+                    <DetailField label="Relation Type" value={selectedPatient.Relationtype} />
+                  </div>
+                </div>
+              )}
+
+              {/* System Information */}
+              <div>
+                <h3 style={{
+                  fontSize: '18px',
+                  fontWeight: '700',
+                  color: '#0a4d68',
+                  marginBottom: '16px',
+                  borderBottom: '2px solid #088395',
+                  paddingBottom: '8px',
+                }}>
+                  System Information
+                </h3>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '16px' }}>
+                  <DetailField label="Entry Date" value={selectedPatient.EntryDate ? formatDate(selectedPatient.EntryDate) : 'N/A'} />
+                  <DetailField label="Entry Time" value={selectedPatient.EntryTime} />
+                  <DetailField label="Last Synced" value={selectedPatient.last_synced_at ? formatDate(selectedPatient.last_synced_at) : 'N/A'} />
+                  <DetailField label="Created At" value={formatDate(selectedPatient.created_at)} />
+                  <DetailField label="Updated At" value={formatDate(selectedPatient.updated_at)} />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </AdminLayout>
   );
 };
+
+// Helper component for detail fields
+const DetailField: React.FC<{ label: string; value: string | number | null | undefined }> = ({ label, value }) => (
+  <div style={{
+    background: '#f9fafb',
+    padding: '12px',
+    borderRadius: '8px',
+    border: '1px solid #E5E7EB',
+  }}>
+    <div style={{ fontSize: '12px', color: '#6B7280', marginBottom: '4px', fontWeight: '600' }}>
+      {label}
+    </div>
+    <div style={{ fontSize: '14px', color: '#111827', fontWeight: '500' }}>
+      {value || 'N/A'}
+    </div>
+  </div>
+);
 
 const tableHeaderStyle: React.CSSProperties = {
   padding: '16px',

@@ -5,22 +5,46 @@ export type HisPatient = {
   id: number;
   Code: string;
   FileNumber?: string;
+  file_number?: string;
   Name?: string;
   MiddleName?: string;
   FamilyName?: string;
   EngName?: string;
+  english_full_name?: string;
+  arabic_full_name?: string;
   Gender?: boolean;
+  gender?: string;
   Birthday?: string;
+  date_of_birth?: string;
   AgeYear?: number;
   AgeMonth?: number;
   AgeDay?: number;
   IdNumber?: string;
+  IdType?: string;
+  IdIssuedate?: string;
+  IDExpiryDate?: string;
+  PassportNumber?: string;
+  VisaNumber?: string;
   Telephone?: string;
+  mobile?: string;
   E_Mail?: string;
+  WorkPhone?: string;
+  Addres?: string;
+  City?: string;
+  Country?: string;
+  PoBox?: string;
   Maritalstatus?: string;
   Relegion?: string;
   NationCode?: string;
+  nationality?: string;
   BloodType?: string;
+  EmName?: string;
+  Kinname?: string;
+  Kinmobile?: string;
+  Kinaddress?: string;
+  Relationtype?: string;
+  EntryDate?: string;
+  EntryTime?: string;
   last_synced_at?: string;
   created_at: string;
   updated_at: string;
@@ -37,12 +61,14 @@ export type HisSyncStats = {
 
 export type PaginatedResponse<T> = {
   data: T[];
-  current_page: number;
-  last_page: number;
-  per_page: number;
-  total: number;
-  from: number;
-  to: number;
+  pagination?: {
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+    from: number;
+    to: number;
+  };
 };
 
 // Get HIS patients list (admin only)
