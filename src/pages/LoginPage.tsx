@@ -4,6 +4,8 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import CustomSelect from '../components/CustomSelect';
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
+
 // Input Field Component
 const InputField = ({ 
   label, 
@@ -102,7 +104,7 @@ const LoginPage = () => {
     setIsLoading(true);
     
     try {
-      const response = await fetch('http://localhost:8000/api/auth/login-with-id', {
+      const response = await fetch(`${API_BASE_URL}/auth/login-with-id`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -147,7 +149,7 @@ const LoginPage = () => {
     setIsLoading(true);
     
     try {
-      const response = await fetch('http://localhost:8000/api/auth/login/otp/verify', {
+      const response = await fetch(`${API_BASE_URL}/auth/login/otp/verify`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import UpcomingAppointmentsView from './UpcomingAppointmentsView';
 import PastAppointmentsView from './PastAppointmentsView';
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://api.jedaanihospitals.com/api';
+const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
 
 // Calendar Icons
 const CalendarAddIcon = () => (

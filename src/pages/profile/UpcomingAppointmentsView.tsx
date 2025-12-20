@@ -11,7 +11,7 @@ interface Appointment {
   status: string;
 }
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://api.jedaanihospitals.com/api';
+const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
 
 // Department Icon Component
 const DepartmentIcon = ({ department }: { department: string }) => {
