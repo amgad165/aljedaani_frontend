@@ -1,13 +1,25 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import {
+  getUserHisRadiologyReports,
+  viewHisRadiologyReportPdf,
+  downloadHisRadiologyReportPdf,
+  formatReportDate,
+  type HisRadiologyReport,
+} from '../../services/hisRadiologyUserService';
 
 interface ReportCardProps {
-  title: string;
-  technician: string;
-  date: string;
+  report: HisRadiologyReport;
+  onViewPdf: () => void;
+  onDownloadPdf: () => void;
 }
 
-const ReportCard = ({ title, technician, date }: ReportCardProps) => (
-  <div style={{
+const ReportCard = ({ report, onViewPdf, onDownloadPdf }: ReportCardProps) => {
+  const inspectionName = report.InspectionCode || 'Radiology Test';
+  const technicianName = report.REFDOCTOR || 'N/A';
+  const reportDate = formatReportDate(report.R_DATE);
+
+  return (
+    <div style={{
     boxSizing: 'border-box',
     display: 'flex',
     flexDirection: 'column',
@@ -34,10 +46,10 @@ const ReportCard = ({ title, technician, date }: ReportCardProps) => (
       textAlign: 'center',
       color: '#061F42',
     }}>
-      {title}
+      {inspectionName}
     </div>
     
-    {/* Technician */}
+    {/* Technician/Doctor */}
     <div style={{
       width: '260px',
       fontFamily: 'Varela Round',
@@ -47,7 +59,7 @@ const ReportCard = ({ title, technician, date }: ReportCardProps) => (
       textAlign: 'center',
       color: '#061F42',
     }}>
-      {technician}
+      Ref. Doctor: {technicianName}
     </div>
     
     {/* Date Badge */}
@@ -71,7 +83,7 @@ const ReportCard = ({ title, technician, date }: ReportCardProps) => (
         textAlign: 'center',
         color: '#1F57A4',
       }}>
-        {date}
+        {reportDate}
       </div>
     </div>
     
@@ -85,60 +97,120 @@ const ReportCard = ({ title, technician, date }: ReportCardProps) => (
       width: '260px',
       height: '32px',
     }}>
-      <button style={{
-        display: 'flex',
-        flexDirection: 'row',
-        justifyContent: 'center',
-        alignItems: 'center',
-        padding: '8px 12px',
-        width: '126px',
-        height: '32px',
-        background: '#061F42',
-        borderRadius: '8px',
-        border: 'none',
-        cursor: 'pointer',
-        fontFamily: 'Nunito',
-        fontWeight: 600,
-        fontSize: '14px',
-        lineHeight: '16px',
-        color: '#FFFFFF',
-      }}>
+      <button 
+        onClick={onDownloadPdf}
+        style={{
+          display: 'flex',
+          flexDirection: 'row',
+          justifyContent: 'center',
+          alignItems: 'center',
+          padding: '8px 12px',
+          width: '126px',
+          height: '32px',
+          background: '#061F42',
+          borderRadius: '8px',
+          border: 'none',
+          cursor: 'pointer',
+          fontFamily: 'Nunito',
+          fontWeight: 600,
+          fontSize: '14px',
+          lineHeight: '16px',
+          color: '#FFFFFF',
+        }}>
         Download
       </button>
-      <button style={{
-        display: 'flex',
-        flexDirection: 'row',
-        justifyContent: 'center',
-        alignItems: 'center',
-        padding: '8px 12px',
-        width: '126px',
-        height: '32px',
-        background: '#15C9FA',
-        borderRadius: '8px',
-        border: 'none',
-        cursor: 'pointer',
-        fontFamily: 'Nunito',
-        fontWeight: 600,
-        fontSize: '14px',
-        lineHeight: '16px',
-        color: '#FFFFFF',
-      }}>
+      <button 
+        onClick={onViewPdf}
+        style={{
+          display: 'flex',
+          flexDirection: 'row',
+          justifyContent: 'center',
+          alignItems: 'center',
+          padding: '8px 12px',
+          width: '126px',
+          height: '32px',
+          background: '#15C9FA',
+          borderRadius: '8px',
+          border: 'none',
+          cursor: 'pointer',
+          fontFamily: 'Nunito',
+          fontWeight: 600,
+          fontSize: '14px',
+          lineHeight: '16px',
+          color: '#FFFFFF',
+        }}>
         View File
       </button>
     </div>
   </div>
-);
+  );
+};
 
 const RadReportsTab = () => {
   const [currentPage, setCurrentPage] = useState(1);
+  const [reports, setReports] = useState<HisRadiologyReport[]>([]);
+  const [totalPages, setTotalPages] = useState(1);
+  const [, setTotal] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const perPage = 4; // 2x2 grid
+
+  // Fetch reports
+  const fetchReports = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await getUserHisRadiologyReports(currentPage, perPage, {
+        search: searchQuery || undefined,
+      });
+      setReports(response.data);
+      setTotalPages(response.pagination.last_page);
+      setTotal(response.pagination.total);
+    } catch (err: any) {
+      console.error('Error fetching HIS radiology reports:', err);
+      setError(err.response?.data?.message || 'Failed to load radiology reports');
+      setReports([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchReports();
+  }, [currentPage, searchQuery]);
+
+  const handleViewPdf = (slno: string) => {
+    viewHisRadiologyReportPdf(slno);
+  };
+
+  const handleDownloadPdf = async (slno: string) => {
+    try {
+      await downloadHisRadiologyReportPdf(slno);
+    } catch (err) {
+      alert('Failed to download PDF');
+    }
+  };
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    setCurrentPage(1); // Reset to first page on new search
+    fetchReports();
+  };
+
+  const handlePageChange = (page: number) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  };
   
   // Mock data - replace with actual data from API
-  const reports = [
-    { id: 1, title: 'Blood Test', technician: 'Lab Technician: Samir Tayel', date: '25/08/2025' },
-    { id: 2, title: 'Blood Test', technician: 'Lab Technician: Samir Tayel', date: '25/08/2025' },
-    { id: 3, title: 'Blood Test', technician: 'Lab Technician: Samir Tayel', date: '25/08/2025' },
-    { id: 4, title: 'Blood Test', technician: 'Lab Technician: Samir Tayel', date: '25/08/2025' },
-  ];
+  // const reports = [
+  //   { id: 1, title: 'Blood Test', technician: 'Lab Technician: Samir Tayel', date: '25/08/2025' },
+  //   { id: 2, title: 'Blood Test', technician: 'Lab Technician: Samir Tayel', date: '25/08/2025' },
+  //   { id: 3, title: 'Blood Test', technician: 'Lab Technician: Samir Tayel', date: '25/08/2025' },
+  //   { id: 4, title: 'Blood Test', technician: 'Lab Technician: Samir Tayel', date: '25/08/2025' },
+  // ];
 
   return (
     <div style={{
@@ -215,38 +287,44 @@ const RadReportsTab = () => {
             height: '40px',
             flexGrow: 1,
           }}>
-            <div style={{
-              display: 'flex',
-              flexDirection: 'row',
-              alignItems: 'center',
-              padding: '8px 12px',
-              gap: '12px',
-              width: '100%',
-              height: '40px',
-              background: '#F9FAFB',
-              border: '1px solid #A4A5A5',
-              borderRadius: '8px',
-            }}>
-              <input
-                type="text"
-                placeholder="Search for documents"
-                style={{
-                  width: '100%',
-                  border: 'none',
-                  background: 'transparent',
-                  fontFamily: 'Nunito',
-                  fontWeight: 500,
-                  fontSize: '14px',
-                  lineHeight: '16px',
-                  color: '#9EA2AE',
-                  outline: 'none',
-                }}
-              />
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="11" cy="11" r="7" stroke="#061F42" strokeWidth="1.5"/>
-                <path d="M20 20L17 17" stroke="#131927" strokeWidth="1.5" strokeLinecap="round"/>
-              </svg>
-            </div>
+            <form onSubmit={handleSearch} style={{ width: '100%' }}>
+              <div style={{
+                display: 'flex',
+                flexDirection: 'row',
+                alignItems: 'center',
+                padding: '8px 12px',
+                gap: '12px',
+                width: '100%',
+                height: '40px',
+                background: '#F9FAFB',
+                border: '1px solid #A4A5A5',
+                borderRadius: '8px',
+              }}>
+                <input
+                  type="text"
+                  placeholder="Search for documents"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  style={{
+                    width: '100%',
+                    border: 'none',
+                    background: 'transparent',
+                    fontFamily: 'Nunito',
+                    fontWeight: 500,
+                    fontSize: '14px',
+                    lineHeight: '16px',
+                    color: '#9EA2AE',
+                    outline: 'none',
+                  }}
+                />
+                <button type="submit" style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="11" cy="11" r="7" stroke="#061F42" strokeWidth="1.5"/>
+                    <path d="M20 20L17 17" stroke="#131927" strokeWidth="1.5" strokeLinecap="round"/>
+                  </svg>
+                </button>
+              </div>
+            </form>
           </div>
           
           {/* Date/Time Button */}
@@ -281,22 +359,63 @@ const RadReportsTab = () => {
       </div>
       
       {/* Reports Grid */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(2, 284px)',
-        gap: '28px 44px',
-        width: '612px',
-        height: '411.33px',
-      }}>
-        {reports.map((report) => (
-          <ReportCard
-            key={report.id}
-            title={report.title}
-            technician={report.technician}
-            date={report.date}
-          />
-        ))}
-      </div>
+      {loading ? (
+        <div style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          width: '612px',
+          height: '411.33px',
+          fontFamily: 'Nunito',
+          fontSize: '16px',
+          color: '#666',
+        }}>
+          Loading reports...
+        </div>
+      ) : error ? (
+        <div style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          width: '612px',
+          height: '411.33px',
+          fontFamily: 'Nunito',
+          fontSize: '16px',
+          color: '#d32f2f',
+        }}>
+          {error}
+        </div>
+      ) : reports.length === 0 ? (
+        <div style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          width: '612px',
+          height: '411.33px',
+          fontFamily: 'Nunito',
+          fontSize: '16px',
+          color: '#666',
+        }}>
+          No radiology reports found
+        </div>
+      ) : (
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(2, 284px)',
+          gap: '28px 44px',
+          width: '612px',
+          minHeight: '411.33px',
+        }}>
+          {reports.map((report) => (
+            <ReportCard
+              key={report.id}
+              report={report}
+              onViewPdf={() => handleViewPdf(report.SLNO)}
+              onDownloadPdf={() => handleDownloadPdf(report.SLNO)}
+            />
+          ))}
+        </div>
+      )}
       
       {/* Pagination */}
       <div style={{
@@ -318,66 +437,87 @@ const RadReportsTab = () => {
           height: '48px',
         }}>
           {/* Previous Button */}
-          <button style={{
-            display: 'flex',
-            flexDirection: 'row',
-            justifyContent: 'center',
-            alignItems: 'center',
-            padding: '12px',
-            width: '48px',
-            height: '48px',
-            borderRadius: '24px',
-            border: 'none',
-            background: 'transparent',
-            cursor: 'pointer',
-          }}>
+          <button 
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+            style={{
+              display: 'flex',
+              flexDirection: 'row',
+              justifyContent: 'center',
+              alignItems: 'center',
+              padding: '12px',
+              width: '48px',
+              height: '48px',
+              borderRadius: '24px',
+              border: 'none',
+              background: 'transparent',
+              cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+              opacity: currentPage === 1 ? 0.5 : 1,
+            }}>
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M15 18L9 12L15 6" stroke="#061F42" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
           </button>
           
           {/* Page Numbers */}
-          {[1, 2, 3, 4].map((page) => (
-            <button
-              key={page}
-              onClick={() => setCurrentPage(page)}
-              style={{
-                display: 'flex',
-                flexDirection: 'row',
-                justifyContent: 'center',
-                alignItems: 'center',
-                padding: '12px',
-                width: '48px',
-                height: '44px',
-                background: currentPage === page ? '#061F42' : 'transparent',
-                borderRadius: '12px',
-                border: 'none',
-                cursor: 'pointer',
-                fontFamily: 'Varela Round',
-                fontWeight: 400,
-                fontSize: '16px',
-                lineHeight: '40px',
-                color: currentPage === page ? '#FFFFFF' : '#061F42',
-              }}
-            >
-              {page}
-            </button>
-          ))}
+          {Array.from({ length: Math.min(totalPages, 4) }, (_, i) => {
+            let page;
+            if (totalPages <= 4) {
+              page = i + 1;
+            } else if (currentPage <= 2) {
+              page = i + 1;
+            } else if (currentPage >= totalPages - 1) {
+              page = totalPages - 3 + i;
+            } else {
+              page = currentPage - 1 + i;
+            }
+            
+            return (
+              <button
+                key={page}
+                onClick={() => handlePageChange(page)}
+                style={{
+                  display: 'flex',
+                  flexDirection: 'row',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  padding: '12px',
+                  width: '48px',
+                  height: '44px',
+                  background: currentPage === page ? '#061F42' : 'transparent',
+                  borderRadius: '12px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontFamily: 'Varela Round',
+                  fontWeight: 400,
+                  fontSize: '16px',
+                  lineHeight: '40px',
+                  color: currentPage === page ? '#FFFFFF' : '#061F42',
+                }}
+              >
+                {page}
+              </button>
+            );
+          })}
           
           {/* Next Button */}
-          <button style={{
-            display: 'flex',
-            flexDirection: 'row',
-            justifyContent: 'center',
-            alignItems: 'center',
-            padding: '12px',
-            width: '48px',
-            height: '48px',
-            borderRadius: '24px',
-            border: 'none',
-            background: 'transparent',
-            cursor: 'pointer',
-          }}>
+          <button 
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            style={{
+              display: 'flex',
+              flexDirection: 'row',
+              justifyContent: 'center',
+              alignItems: 'center',
+              padding: '12px',
+              width: '48px',
+              height: '48px',
+              borderRadius: '24px',
+              border: 'none',
+              background: 'transparent',
+              cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
+              opacity: currentPage === totalPages ? 0.5 : 1,
+            }}>
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M9 18L15 12L9 6" stroke="#061F42" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>

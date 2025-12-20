@@ -18,6 +18,8 @@ interface StepInfo {
 interface VerificationData {
   mobileNumber: string;
   otpCode: string;
+  verificationId: number | null;
+  verificationToken: string | null;
 }
 
 interface ProfileData {
@@ -155,7 +157,7 @@ const InputField = ({
 };
 
 const SignUpPage = () => {
-  const { register, clearError } = useAuth();
+  const { clearError } = useAuth();
   const navigate = useNavigate();
   
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -166,6 +168,8 @@ const SignUpPage = () => {
   const [verificationData, setVerificationData] = useState<VerificationData>({
     mobileNumber: '',
     otpCode: '',
+    verificationId: null,
+    verificationToken: null,
   });
   
   const [profileData, setProfileData] = useState<ProfileData>({
@@ -210,10 +214,16 @@ const SignUpPage = () => {
     setIsSubmitting(true);
     try {
       const { authService } = await import('../services/authService');
-      await authService.sendRegistrationOtp(verificationData.mobileNumber);
+      const result = await authService.sendPhoneVerificationOtp(verificationData.mobileNumber, 'registration');
+      
+      setVerificationData(prev => ({
+        ...prev,
+        verificationId: result.verification_id,
+      }));
       setIsOtpSent(true);
-      setResendCountdown(30); // 30 second countdown
-      alert('OTP sent to your mobile number!');
+      setResendCountdown(60); // 60 second countdown
+      
+      alert(result.otp ? `OTP: ${result.otp} (Debug mode)` : result.message);
     } catch (err: unknown) {
       if (typeof err === 'object' && err !== null && 'message' in err) {
         alert((err as { message: string }).message);
@@ -231,9 +241,15 @@ const SignUpPage = () => {
     setIsSubmitting(true);
     try {
       const { authService } = await import('../services/authService');
-      await authService.sendRegistrationOtp(verificationData.mobileNumber);
-      setResendCountdown(30); // Reset countdown
-      alert('OTP resent to your mobile number!');
+      const result = await authService.sendPhoneVerificationOtp(verificationData.mobileNumber, 'registration');
+      
+      setVerificationData(prev => ({
+        ...prev,
+        verificationId: result.verification_id,
+      }));
+      setResendCountdown(60); // Reset countdown
+      
+      alert(result.otp ? `OTP: ${result.otp} (Debug mode)` : result.message);
     } catch (err: unknown) {
       if (typeof err === 'object' && err !== null && 'message' in err) {
         alert((err as { message: string }).message);
@@ -250,17 +266,27 @@ const SignUpPage = () => {
       alert('Please enter the OTP code');
       return;
     }
+    if (!verificationData.verificationId) {
+      alert('Verification session expired. Please request a new OTP.');
+      return;
+    }
 
     setIsSubmitting(true);
     try {
       const { authService } = await import('../services/authService');
-      const result = await authService.verifyRegistrationOtp(
+      const result = await authService.verifyPhoneOtp(
         verificationData.mobileNumber,
-        verificationData.otpCode
+        verificationData.otpCode,
+        verificationData.verificationId
       );
       
-      if (result.verified) {
+      if (result.success) {
+        setVerificationData(prev => ({
+          ...prev,
+          verificationToken: result.verification_token,
+        }));
         setCurrentStep(2);
+        alert(result.message);
       } else {
         alert('Invalid OTP. Please try again.');
       }
@@ -305,12 +331,17 @@ const SignUpPage = () => {
       alert('Password must be at least 8 characters');
       return;
     }
+    if (!verificationData.verificationToken) {
+      alert('Phone verification expired. Please start over.');
+      return;
+    }
 
     setIsSubmitting(true);
     clearError();
     
     try {
-      await register({
+      const { authService } = await import('../services/authService');
+      const result = await authService.secureRegister({
         email: profileData.email,
         password: profileData.password,
         password_confirmation: profileData.confirmPassword,
@@ -327,7 +358,10 @@ const SignUpPage = () => {
         address: profileData.address || undefined,
         phone: verificationData.mobileNumber,
         profile_photo: profileData.profilePhoto || undefined,
-      });
+      }, verificationData.verificationToken);
+      
+      // Store auth token
+      localStorage.setItem('auth_token', result.token);
       
       navigate('/profile');
     } catch (err: unknown) {

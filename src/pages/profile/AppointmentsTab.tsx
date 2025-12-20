@@ -1,3 +1,9 @@
+import { useState, useEffect } from 'react';
+import UpcomingAppointmentsView from './UpcomingAppointmentsView';
+import PastAppointmentsView from './PastAppointmentsView';
+
+const API_URL = import.meta.env.VITE_API_URL || 'https://api.jedaanihospitals.com/api';
+
 // Calendar Icons
 const CalendarAddIcon = () => (
   <img src="/assets/images/profile/Calendar_blue.png" alt="Calendar Add" style={{ width: '31.2px', height: '31.2px' }} />
@@ -13,28 +19,47 @@ const AppointmentCard = ({
   count,
   color = '#061F42',
   icon,
+  onClick,
 }: {
   title: string;
   count: number;
   color?: string;
   icon: React.ReactNode;
+  onClick?: () => void;
 }) => (
-  <div style={{
-    boxSizing: 'border-box',
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: '12px',
-    gap: '12px',
-    width: '300px',
-    minWidth: '270px',
-    maxWidth: '300px',
-    height: '127.2px',
-    background: '#FFFFFF',
-    border: '1px solid #D8D8D8',
-    borderRadius: '12px',
-  }}>
+  <div
+    onClick={onClick}
+    style={{
+      boxSizing: 'border-box',
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: '12px',
+      gap: '12px',
+      width: '300px',
+      minWidth: '270px',
+      maxWidth: '300px',
+      height: '127.2px',
+      background: '#FFFFFF',
+      border: '1px solid #D8D8D8',
+      borderRadius: '12px',
+      cursor: onClick ? 'pointer' : 'default',
+      transition: 'all 0.2s ease',
+    }}
+    onMouseEnter={(e) => {
+      if (onClick) {
+        e.currentTarget.style.transform = 'translateY(-2px)';
+        e.currentTarget.style.boxShadow = '0px 4px 8px rgba(0, 0, 0, 0.15)';
+      }
+    }}
+    onMouseLeave={(e) => {
+      if (onClick) {
+        e.currentTarget.style.transform = 'translateY(0)';
+        e.currentTarget.style.boxShadow = 'none';
+      }
+    }}
+  >
     {/* Icon and Title */}
     <div style={{
       display: 'flex',
@@ -145,17 +170,71 @@ const BookAppointmentCard = () => (
   </div>
 );
 
-interface AppointmentData {
-  upcomingCount: number;
-  pastCount: number;
-}
+type ViewType = 'main' | 'upcoming' | 'past';
 
-const AppointmentsTab = ({ appointmentData }: { appointmentData?: AppointmentData }) => {
-  const data = appointmentData || {
-    upcomingCount: 1,
-    pastCount: 12,
+const AppointmentsTab = () => {
+  const [currentView, setCurrentView] = useState<ViewType>('main');
+  const [upcomingCount, setUpcomingCount] = useState(0);
+  const [pastCount, setPastCount] = useState(0);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchAppointmentCounts();
+  }, []);
+
+  const fetchAppointmentCounts = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('auth_token');
+
+      const [upcomingResponse, pastResponse] = await Promise.all([
+        fetch(`${API_URL}/my-appointments/upcoming`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+          },
+        }),
+        fetch(`${API_URL}/my-appointments/past`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+          },
+        }),
+      ]);
+
+      const upcomingData = await upcomingResponse.json();
+      const pastData = await pastResponse.json();
+
+      if (upcomingData.success) {
+        setUpcomingCount(upcomingData.data.length);
+      }
+
+      if (pastData.success) {
+        setPastCount(pastData.data.length);
+      }
+    } catch (err) {
+      console.error('Error fetching appointment counts:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
+  // Show different views
+  if (currentView === 'upcoming') {
+    return <UpcomingAppointmentsView onBack={() => setCurrentView('main')} />;
+  }
+
+  if (currentView === 'past') {
+    return <PastAppointmentsView onBack={() => setCurrentView('main')} />;
+  }
+
+  // Main view with cards
+
+  // Main view with cards
   return (
     <div style={{
       display: 'flex',
@@ -170,32 +249,49 @@ const AppointmentsTab = ({ appointmentData }: { appointmentData?: AppointmentDat
       {/* Book Appointment Card */}
       <BookAppointmentCard />
 
-      {/* Upcoming and Past Appointments Cards */}
-      <div style={{
-        display: 'flex',
-        flexDirection: 'row',
-        alignItems: 'flex-start',
-        padding: '0px',
-        gap: '12px',
-        width: '612px',
-        height: '127.2px',
-      }}>
-        {/* Upcoming Appointments */}
-        <AppointmentCard
-          title="Upcoming Appointments"
-          count={data.upcomingCount}
-          color="#00ABDA"
-          icon={<CalendarAddIcon />}
-        />
+      {/* Loading State */}
+      {loading ? (
+        <div style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          padding: '40px',
+          fontFamily: 'Nunito, sans-serif',
+          fontSize: '16px',
+          color: '#061F42',
+        }}>
+          Loading appointments...
+        </div>
+      ) : (
+        /* Upcoming and Past Appointments Cards */
+        <div style={{
+          display: 'flex',
+          flexDirection: 'row',
+          alignItems: 'flex-start',
+          padding: '0px',
+          gap: '12px',
+          width: '612px',
+          height: '127.2px',
+        }}>
+          {/* Upcoming Appointments */}
+          <AppointmentCard
+            title="Upcoming Appointments"
+            count={upcomingCount}
+            color="#00ABDA"
+            icon={<CalendarAddIcon />}
+            onClick={() => setCurrentView('upcoming')}
+          />
 
-        {/* Past Appointments */}
-        <AppointmentCard
-          title="Past Appointments"
-          count={data.pastCount}
-          color="#1F57A4"
-          icon={<CalendarLateIcon />}
-        />
-      </div>
+          {/* Past Appointments */}
+          <AppointmentCard
+            title="Past Appointments"
+            count={pastCount}
+            color="#1F57A4"
+            icon={<CalendarLateIcon />}
+            onClick={() => setCurrentView('past')}
+          />
+        </div>
+      )}
     </div>
   );
 };

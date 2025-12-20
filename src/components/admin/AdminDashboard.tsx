@@ -182,14 +182,6 @@ const AdminDashboard: React.FC = () => {
       gradient: 'linear-gradient(243.25deg, rgba(184, 190, 239, 0.49) 2.76%, #1C33FD 98%)',
     },
     { 
-      title: 'Reports', 
-      value: stats.doctors, 
-      icon: 'doctors',
-      link: '/admin/doctors',
-      gradient: 'linear-gradient(242.81deg, #91F46E 2.68%, #3F752C 97.74%)',
-      iconColor: '#91F46E'
-    },
-    { 
       title: 'Testimonials', 
       value: stats.testimonials, 
       icon: 'testimonials',
@@ -203,6 +195,22 @@ const AdminDashboard: React.FC = () => {
       link: '/admin/his-patients',
       gradient: 'linear-gradient(242.76deg, #FFB84D 2.79%, #FF6B35 98.27%)',
       iconColor: '#FFD700'
+    },
+    { 
+      title: 'HIS Appointments', 
+      value: '-', 
+      icon: 'his',
+      link: '/admin/his-appointments',
+      gradient: 'linear-gradient(242.81deg, #91F46E 2.68%, #3F752C 97.74%)',
+      iconColor: '#91F46E'
+    },
+    { 
+      title: 'HIS Radiology', 
+      value: '-', 
+      icon: 'his',
+      link: '/admin/his-radiology',
+      gradient: 'linear-gradient(242.76deg, #60A5FA 2.79%, #3B82F6 98.27%)',
+      iconColor: '#60A5FA'
     },
   ];
 
@@ -396,6 +404,7 @@ const AdminDashboard: React.FC = () => {
             { title: 'Add Doctor', link: '/admin/doctors', color: '#3F752C' },
             { title: 'Add Testimonial', link: '/admin/testimonials', color: '#4F4F4F' },
             { title: 'View OTP Logs', link: '/admin/otp-logs', color: '#10B981' },
+            { title: 'Doctor Availability', link: '/admin/doctor-availability', color: '#FF6B35' },
           ].map((action) => (
             <Link
               key={action.title}

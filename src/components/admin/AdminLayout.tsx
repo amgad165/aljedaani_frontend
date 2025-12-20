@@ -32,15 +32,25 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       icon: 'dashboard',
       subItems: [
         { path: '/admin', label: 'Overview' },
-
       ]
     },
     { path: '/admin/branches', label: 'Branches', icon: 'branch' },
     { path: '/admin/departments', label: 'Departments', icon: 'department' },
     { path: '/admin/doctors', label: 'Doctors', icon: 'doctor' },
     { path: '/admin/patients', label: 'Patients', icon: 'users' },
-    { path: '/admin/his-patients', label: 'HIS Patients', icon: 'his' },
-    { path: '/admin/his-appointments', label: 'HIS Appointments', icon: 'calendar' },
+    {
+      path: '/admin/his',
+      label: 'HIS',
+      icon: 'his',
+      subItems: [
+        { path: '/admin/his-patients', label: 'Patients' },
+        { path: '/admin/his-appointments', label: 'Appointments' },
+        { path: '/admin/his-radiology', label: 'Radiology' },
+        { path: '/admin/his-shifts', label: 'Shifts' },
+        { path: '/admin/his-shift-defines', label: 'Shift Defines' },
+        { path: '/admin/his-shift-define-details', label: 'Shift Assignments' },
+      ]
+    },
     { path: '/admin/testimonials', label: 'Testimonials', icon: 'testimonial' },
   ];
 

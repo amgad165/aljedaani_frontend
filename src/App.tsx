@@ -25,6 +25,11 @@ import AdminOtpLogs from './components/admin/AdminOtpLogs';
 import AdminPatients from './components/admin/AdminPatients';
 import AdminHisPatients from './components/admin/AdminHisPatients';
 import AdminHisAppointments from './components/admin/AdminHisAppointments';
+import AdminHisRadiology from './components/admin/AdminHisRadiology';
+import AdminHisShifts from './components/admin/AdminHisShifts';
+import AdminHisShiftDefines from './components/admin/AdminHisShiftDefines';
+import AdminHisShiftDefineDetails from './components/admin/AdminHisShiftDefineDetails';
+import DoctorAvailability from './components/admin/DoctorAvailability';
 import PatientDetails from './components/admin/PatientDetails';
 import ProtectedRoute from './components/admin/ProtectedRoute';
 import './App.css';
@@ -99,6 +104,29 @@ function App() {
           <Route path="/admin/his-appointments" element={
             <ProtectedRoute>
               <AdminHisAppointments />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/his-radiology" element={
+            <ProtectedRoute>
+              <AdminHisRadiology />
+            </ProtectedRoute>
+          } />          <Route path="/admin/his-shifts" element={
+            <ProtectedRoute>
+              <AdminHisShifts />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/his-shift-defines" element={
+            <ProtectedRoute>
+              <AdminHisShiftDefines />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/his-shift-define-details" element={
+            <ProtectedRoute>
+              <AdminHisShiftDefineDetails />
+            </ProtectedRoute>
+          } />          <Route path="/admin/doctor-availability" element={
+            <ProtectedRoute>
+              <DoctorAvailability />
             </ProtectedRoute>
           } />
           <Route path="/admin/patients/:id" element={

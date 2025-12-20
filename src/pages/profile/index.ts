@@ -5,6 +5,8 @@ export { default as AppointmentsTab } from './AppointmentsTab';
 export { default as LabReportsTab } from './LabReportsTab';
 export { default as RadReportsTab } from './RadReportsTab';
 export { default as MedicalReportsTab } from './MedicalReportsTab';
+export { default as UpcomingAppointmentsView } from './UpcomingAppointmentsView';
+export { default as PastAppointmentsView } from './PastAppointmentsView';
 
 // Types
 export type { TabType, TabInfo, ProfileData, User } from './types';

@@ -103,7 +103,7 @@ const ProfilePage = () => {
       case 'edit-profile':
         return <EditProfileTab profileData={profileData} onSave={handleProfileSave} onUpdate={refreshUser} />;
       case 'appointments':
-        return <AppointmentsTab appointmentData={{ upcomingCount: profileData.appointments.new, pastCount: profileData.appointments.old }} />;
+        return <AppointmentsTab />;
       case 'lab-reports':
         return <LabReportsTab />;
       case 'rad-reports':

@@ -15,6 +15,7 @@ interface Patient {
   gender: string;
   profile_photo?: string;
   created_at: string;
+  is_his_patient?: boolean;
 }
 
 const AdminPatients: React.FC = () => {
@@ -213,6 +214,9 @@ const AdminPatients: React.FC = () => {
                       AGE/GENDER
                     </th>
                     <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '12px', fontWeight: '600', color: '#6B7280' }}>
+                      TYPE
+                    </th>
+                    <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '12px', fontWeight: '600', color: '#6B7280' }}>
                       REGISTERED
                     </th>
                     <th style={{ padding: '12px 16px', textAlign: 'center', fontSize: '12px', fontWeight: '600', color: '#6B7280' }}>
@@ -288,6 +292,33 @@ const AdminPatients: React.FC = () => {
                         <div style={{ fontSize: '13px', color: '#6B7280', textTransform: 'capitalize' }}>
                           {patient.gender}
                         </div>
+                      </td>
+                      <td style={{ padding: '16px' }}>
+                        {patient.is_his_patient ? (
+                          <span style={{
+                            display: 'inline-block',
+                            padding: '4px 12px',
+                            borderRadius: '12px',
+                            fontSize: '12px',
+                            fontWeight: '600',
+                            background: '#FEF3C7',
+                            color: '#92400E',
+                          }}>
+                            HIS Patient
+                          </span>
+                        ) : (
+                          <span style={{
+                            display: 'inline-block',
+                            padding: '4px 12px',
+                            borderRadius: '12px',
+                            fontSize: '12px',
+                            fontWeight: '600',
+                            background: '#E0E7FF',
+                            color: '#3730A3',
+                          }}>
+                            Regular
+                          </span>
+                        )}
                       </td>
                       <td style={{ padding: '16px', fontSize: '14px', color: '#6B7280' }}>
                         {formatDate(patient.created_at)}
