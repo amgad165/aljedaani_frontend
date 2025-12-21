@@ -26,6 +26,8 @@ import AdminPatients from './components/admin/AdminPatients';
 import AdminHisPatients from './components/admin/AdminHisPatients';
 import AdminHisAppointments from './components/admin/AdminHisAppointments';
 import AdminHisRadiology from './components/admin/AdminHisRadiology';
+import AdminHisLab from './components/admin/AdminHisLab';
+import AdminHisMedical from './components/admin/AdminHisMedical';
 import AdminHisShifts from './components/admin/AdminHisShifts';
 import AdminHisShiftDefines from './components/admin/AdminHisShiftDefines';
 import AdminHisShiftDefineDetails from './components/admin/AdminHisShiftDefineDetails';
@@ -110,7 +112,18 @@ function App() {
             <ProtectedRoute>
               <AdminHisRadiology />
             </ProtectedRoute>
-          } />          <Route path="/admin/his-shifts" element={
+          } />
+          <Route path="/admin/his-lab" element={
+            <ProtectedRoute>
+              <AdminHisLab />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/his-medical" element={
+            <ProtectedRoute>
+              <AdminHisMedical />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/his-shifts" element={
             <ProtectedRoute>
               <AdminHisShifts />
             </ProtectedRoute>

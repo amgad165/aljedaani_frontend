@@ -212,6 +212,22 @@ const AdminDashboard: React.FC = () => {
       gradient: 'linear-gradient(242.76deg, #60A5FA 2.79%, #3B82F6 98.27%)',
       iconColor: '#60A5FA'
     },
+    { 
+      title: 'HIS Lab Reports', 
+      value: '-', 
+      icon: 'his',
+      link: '/admin/his-lab',
+      gradient: 'linear-gradient(242.76deg, #F472B6 2.79%, #EC4899 98.27%)',
+      iconColor: '#F472B6'
+    },
+    { 
+      title: 'HIS Medical Reports', 
+      value: '-', 
+      icon: 'his',
+      link: '/admin/his-medical',
+      gradient: 'linear-gradient(242.76deg, #A78BFA 2.79%, #8B5CF6 98.27%)',
+      iconColor: '#A78BFA'
+    },
   ];
 
   const getIcon = (icon: string, white = false, accentColor?: string) => {

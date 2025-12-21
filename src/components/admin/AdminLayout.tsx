@@ -46,6 +46,8 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
         { path: '/admin/his-patients', label: 'Patients' },
         { path: '/admin/his-appointments', label: 'Appointments' },
         { path: '/admin/his-radiology', label: 'Radiology' },
+        { path: '/admin/his-lab', label: 'Lab Reports' },
+        { path: '/admin/his-medical', label: 'Medical Reports' },
         { path: '/admin/his-shifts', label: 'Shifts' },
         { path: '/admin/his-shift-defines', label: 'Shift Defines' },
         { path: '/admin/his-shift-define-details', label: 'Shift Assignments' },
