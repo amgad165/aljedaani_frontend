@@ -23,11 +23,13 @@ import AdminTestimonials from './components/admin/AdminTestimonials';
 import AdminDepartmentTabs from './components/admin/AdminDepartmentTabs';
 import AdminOtpLogs from './components/admin/AdminOtpLogs';
 import AdminPatients from './components/admin/AdminPatients';
+import AdminAppointments from './components/admin/AdminAppointments';
 import AdminHisPatients from './components/admin/AdminHisPatients';
 import AdminHisAppointments from './components/admin/AdminHisAppointments';
 import AdminHisRadiology from './components/admin/AdminHisRadiology';
 import AdminHisLab from './components/admin/AdminHisLab';
 import AdminHisMedical from './components/admin/AdminHisMedical';
+import AdminHisConsultations from './components/admin/AdminHisConsultations';
 import AdminHisShifts from './components/admin/AdminHisShifts';
 import AdminHisShiftDefines from './components/admin/AdminHisShiftDefines';
 import AdminHisShiftDefineDetails from './components/admin/AdminHisShiftDefineDetails';
@@ -98,6 +100,11 @@ function App() {
               <AdminPatients />
             </ProtectedRoute>
           } />
+          <Route path="/admin/appointments" element={
+            <ProtectedRoute>
+              <AdminAppointments />
+            </ProtectedRoute>
+          } />
           <Route path="/admin/his-patients" element={
             <ProtectedRoute>
               <AdminHisPatients />
@@ -121,6 +128,11 @@ function App() {
           <Route path="/admin/his-medical" element={
             <ProtectedRoute>
               <AdminHisMedical />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/his-consultations" element={
+            <ProtectedRoute>
+              <AdminHisConsultations />
             </ProtectedRoute>
           } />
           <Route path="/admin/his-shifts" element={

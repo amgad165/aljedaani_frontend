@@ -1,8 +1,16 @@
+import { useState } from 'react';
 import type { ProfileData } from './types';
 import {
   CalendarIcon,
   DocumentIcon,
-} from './icons';// Dashboard Card Component
+} from './icons';
+import MyVitals from '../../components/patient/MyVitals';
+import ChiefComplaints from '../../components/patient/ChiefComplaints';
+import History from '../../components/patient/History';
+
+interface DashboardTabProps {
+  profileData: ProfileData;
+}
 const DashboardCard = ({ 
   title, 
   icon, 
@@ -10,6 +18,7 @@ const DashboardCard = ({
   hasAvatar = false,
   avatarUrl = '',
   name = '',
+  onClick,
 }: { 
   title: string; 
   icon?: React.ReactNode;
@@ -17,8 +26,9 @@ const DashboardCard = ({
   hasAvatar?: boolean;
   avatarUrl?: string;
   name?: string;
+  onClick?: () => void;
 }) => (
-  <div style={{
+  <div onClick={onClick} style={{
     boxSizing: 'border-box',
     display: 'flex',
     flexDirection: 'column',
@@ -31,6 +41,18 @@ const DashboardCard = ({
     background: '#FFFFFF',
     border: '1px solid #D8D8D8',
     borderRadius: '12px',
+    cursor: onClick ? 'pointer' : 'default',
+    transition: 'all 0.2s ease',
+  }}
+  onMouseEnter={(e) => {
+    if (onClick) {
+      (e.currentTarget as HTMLElement).style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.08)';
+      (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)';
+    }
+  }}
+  onMouseLeave={(e) => {
+    (e.currentTarget as HTMLElement).style.boxShadow = 'none';
+    (e.currentTarget as HTMLElement).style.transform = 'translateY(0)';
   }}>
     {hasAvatar ? (
       <>
@@ -100,57 +122,185 @@ const DashboardCard = ({
 );
 
 // Stats Display Component
-const StatsDisplay = ({ 
-  items 
-}: { 
-  items: { value: number; label: string }[] 
-}) => (
+const StatsDisplay = ({ items }: { items: { value: number; label: string }[] }) => (
   <div style={{
     display: 'flex',
-    flexDirection: 'column',
+    flexDirection: 'row',
+    justifyContent: 'center',
     alignItems: 'center',
-    padding: '8px',
-    gap: '4px',
-    width: '472px',
-    background: '#F8F8F8',
-    borderRadius: '12px',
+    gap: '24px',
+    width: '100%',
   }}>
     {items.map((item, index) => (
       <div key={index} style={{
         display: 'flex',
-        flexDirection: 'row',
-        justifyContent: 'center',
+        flexDirection: 'column',
         alignItems: 'center',
-        gap: '8px',
+        gap: '4px',
       }}>
-        <span style={{
+        <div style={{
           fontFamily: 'Nunito, sans-serif',
           fontWeight: 700,
-          fontSize: '20px',
-          lineHeight: '30px',
-          color: '#15C9FA',
+          fontSize: '24px',
+          lineHeight: '32px',
+          color: '#061F42',
         }}>
           {item.value}
-        </span>
-        <span style={{
+        </div>
+        <div style={{
           fontFamily: 'Nunito, sans-serif',
-          fontWeight: 700,
-          fontSize: '20px',
-          lineHeight: '30px',
-          color: '#15C9FA',
+          fontWeight: 400,
+          fontSize: '14px',
+          lineHeight: '20px',
+          color: '#6A7282',
         }}>
           {item.label}
-        </span>
+        </div>
       </div>
     ))}
   </div>
 );
 
-interface DashboardTabProps {
-  profileData: ProfileData;
-}
-
 const DashboardTab = ({ profileData }: DashboardTabProps) => {
+  const [showVitals, setShowVitals] = useState(false);
+  const [showChiefComplaints, setShowChiefComplaints] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
+
+  if (showChiefComplaints) {
+    return (
+      <div style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        width: '100%',
+        padding: '0',
+      }}>
+        {/* Back Button */}
+        <button
+          onClick={() => setShowChiefComplaints(false)}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '8px 16px',
+            marginBottom: '24px',
+            borderRadius: '8px',
+            border: '1px solid #D8D8D8',
+            background: '#FFFFFF',
+            cursor: 'pointer',
+            fontFamily: 'Nunito, sans-serif',
+            fontWeight: 600,
+            fontSize: '16px',
+            color: '#061F42',
+            transition: 'all 0.2s ease',
+            alignSelf: 'flex-start',
+          }}
+          onMouseEnter={(e) => {
+            (e.currentTarget as HTMLElement).style.background = '#F5F5F5';
+          }}
+          onMouseLeave={(e) => {
+            (e.currentTarget as HTMLElement).style.background = '#FFFFFF';
+          }}
+        >
+          ← Back to Dashboard
+        </button>
+
+        {/* Chief Complaints Content */}
+        <ChiefComplaints />
+      </div>
+    );
+  }
+
+  if (showHistory) {
+    return (
+      <div style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        width: '100%',
+        padding: '0',
+      }}>
+        {/* Back Button */}
+        <button
+          onClick={() => setShowHistory(false)}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '8px 16px',
+            marginBottom: '24px',
+            borderRadius: '8px',
+            border: '1px solid #D8D8D8',
+            background: '#FFFFFF',
+            cursor: 'pointer',
+            fontFamily: 'Nunito, sans-serif',
+            fontWeight: 600,
+            fontSize: '16px',
+            color: '#061F42',
+            transition: 'all 0.2s ease',
+            alignSelf: 'flex-start',
+          }}
+          onMouseEnter={(e) => {
+            (e.currentTarget as HTMLElement).style.background = '#F5F5F5';
+          }}
+          onMouseLeave={(e) => {
+            (e.currentTarget as HTMLElement).style.background = '#FFFFFF';
+          }}
+        >
+          ← Back to Dashboard
+        </button>
+
+        {/* History Content */}
+        <History />
+      </div>
+    );
+  }
+
+  if (showVitals) {
+    return (
+      <div style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        width: '100%',
+        padding: '0',
+      }}>
+        {/* Back Button */}
+        <button
+          onClick={() => setShowVitals(false)}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '8px 16px',
+            marginBottom: '24px',
+            borderRadius: '8px',
+            border: '1px solid #D8D8D8',
+            background: '#FFFFFF',
+            cursor: 'pointer',
+            fontFamily: 'Nunito, sans-serif',
+            fontWeight: 600,
+            fontSize: '16px',
+            color: '#061F42',
+            transition: 'all 0.2s ease',
+            alignSelf: 'flex-start',
+          }}
+          onMouseEnter={(e) => {
+            (e.currentTarget as HTMLElement).style.background = '#F5F5F5';
+          }}
+          onMouseLeave={(e) => {
+            (e.currentTarget as HTMLElement).style.background = '#FFFFFF';
+          }}
+        >
+          ← Back to Dashboard
+        </button>
+
+        {/* Vitals Content */}
+        <MyVitals />
+      </div>
+    );
+  }
+
   return (
     <div style={{
       display: 'grid',
@@ -167,9 +317,13 @@ const DashboardTab = ({ profileData }: DashboardTabProps) => {
       />
 
       {/* My Vitals Card */}
-      <DashboardCard title="My Vitals" icon={
-        <img src="/assets/images/profile/Heart-Rate.png" alt="Heart Rate" style={{ width: '24px', height: '24px' }} />
-      }>
+      <DashboardCard 
+        title="My Vitals" 
+        icon={
+          <img src="/assets/images/profile/Heart-Rate.png" alt="Heart Rate" style={{ width: '24px', height: '24px' }} />
+        }
+        onClick={() => setShowVitals(true)}
+      >
         {/* Empty state - can be expanded later */}
       </DashboardCard>
 
@@ -190,16 +344,24 @@ const DashboardTab = ({ profileData }: DashboardTabProps) => {
       </DashboardCard>
 
       {/* Chief Complaints Card */}
-      <DashboardCard title="Chief Complaints" icon={
-        <img src="/assets/images/profile/complaints.png" alt="Chief Complaints" style={{ width: '24px', height: '24px' }} />
-      }>
+      <DashboardCard 
+        title="Chief Complaints" 
+        icon={
+          <img src="/assets/images/profile/complaints.png" alt="Chief Complaints" style={{ width: '24px', height: '24px' }} />
+        }
+        onClick={() => setShowChiefComplaints(true)}
+      >
         {/* Empty state - can be expanded later */}
       </DashboardCard>
 
       {/* History Card */}
-      <DashboardCard title="History" icon={
-        <img src="/assets/images/profile/history.png" alt="History" style={{ width: '24px', height: '24px' }} />
-      }>
+      <DashboardCard 
+        title="History" 
+        icon={
+          <img src="/assets/images/profile/history.png" alt="History" style={{ width: '24px', height: '24px' }} />
+        }
+        onClick={() => setShowHistory(true)}
+      >
         {/* Empty state - can be expanded later */}
       </DashboardCard>
     </div>

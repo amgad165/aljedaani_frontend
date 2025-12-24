@@ -10,6 +10,26 @@ const getAuthHeaders = () => {
 };
 
 // Types
+export interface VitalReading {
+  value?: number | null;
+  systolic?: number | null;
+  diastolic?: number | null;
+  unit: string;
+  recorded_at: string;
+}
+
+export interface VitalsData {
+  blood_pressure: VitalReading;
+  heart_rate: VitalReading;
+  temperature: VitalReading;
+  respiratory_rate: VitalReading;
+  blood_glucose: VitalReading;
+  weight: VitalReading;
+  height?: VitalReading;
+  bmi?: VitalReading;
+  oxygen_saturation?: VitalReading;
+}
+
 export interface LabReport {
   id: number;
   user_id: number;
@@ -442,6 +462,72 @@ export const medicalReportsService = {
     });
     const data = await response.json();
     return data.data;
+  },
+};
+
+// Patient Service (vitals and patient data)
+export const patientService = {
+  // Get latest vital signs from most recent consultation
+  getLatestVitals: async (): Promise<{
+    success: boolean;
+    message: string;
+    data: {
+      vitals: VitalsData;
+      consultation: {
+        inspection_code: string;
+        consultation_date: string;
+        doctor_code: string;
+        dept_code: string;
+      };
+    };
+  }> => {
+    const response = await fetch(`${API_BASE_URL}/patient/vitals/latest`, {
+      headers: getAuthHeaders(),
+    });
+    return response.json();
+  },
+
+  // Get latest consultation with chief complaint
+  getLatestConsultation: async (): Promise<{
+    success: boolean;
+    message: string;
+    data: {
+      inspection_code: string;
+      consultation_date: string;
+      doctor_code: string;
+      dept_code: string;
+      chief_complaint: string;
+    };
+  }> => {
+    const response = await fetch(`${API_BASE_URL}/patient/consultation/latest`, {
+      headers: getAuthHeaders(),
+    });
+    return response.json();
+  },
+
+  // Get consultation history
+  getConsultationHistory: async (): Promise<{
+    success: boolean;
+    message: string;
+    data: Array<{
+      inspection_code: string;
+      consultation_date: string;
+      chief_complaint: string;
+      diagnosis: string;
+      doctor_code: string | number;
+      temperature: number | string;
+      bp_max: number | string;
+      bp_min: number | string;
+      pulse: number | string;
+      revisit: number;
+      revisit_after: number | null;
+      revisit_after_unit: string | null;
+    }>;
+  }> => {
+    const response = await fetch(`${API_BASE_URL}/patient/consultation/history`, {
+      headers: getAuthHeaders(),
+    });
+    return response.json();
   },
 };
 

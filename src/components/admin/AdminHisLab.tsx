@@ -305,7 +305,7 @@ const AdminHisLab: React.FC = () => {
                           </span>
                         </td>
                         <td style={tableCellStyle}>{report.DOCTORCODE || 'N/A'}</td>
-                        <td style={tableCellStyle}>{report.LabTechnician || 'N/A'}</td>
+                        <td style={tableCellStyle}>{report.LabMan || 'N/A'}</td>
                         <td style={tableCellStyle}>
                           {report.PANIC && report.PANIC !== 'NO' ? (
                             <span style={{
@@ -458,47 +458,72 @@ const AdminHisLab: React.FC = () => {
                 <InfoRow label="SLNO" value={selectedReport.SLNO} />
                 <InfoRow label="Lab Ref No" value={selectedReport.LABREFNO} />
                 <InfoRow label="File Number" value={selectedReport.FILENUMBER} />
+                <InfoRow label="Patient Code" value={selectedReport.PATIENTCODE} />
                 <InfoRow label="Report Date" value={formatDate(selectedReport.R_DATE)} />
                 <InfoRow label="Report Time" value={formatTime(selectedReport.R_TIME)} />
                 <InfoRow label="Status" value={selectedReport.STATUS === '1' ? 'Completed' : selectedReport.STATUS === '0' ? 'Pending' : selectedReport.STATUS} />
-                <InfoRow label="Invoice Number" value={selectedReport.INVOICENUMBER} />
+                <InfoRow label="Invoice Number" value={selectedReport.INVOICENO} />
+                <InfoRow label="Case Code" value={selectedReport.CASECODE} />
               </Section>
 
               {/* Test Information */}
               <Section title="Test Information">
                 <InfoRow label="Category" value={selectedReport.Category} />
-                <InfoRow label="Category Group" value={selectedReport.CategoryGroup} />
-                <InfoRow label="Unit" value={selectedReport.Unit} />
-                <InfoRow label="Normal Result" value={selectedReport.NORMALRESULT} />
+                <InfoRow label="Department Code" value={selectedReport.DepartCode} />
+                <InfoRow label="In Patient" value={selectedReport.Inpatient} />
+                <InfoRow label="From Outside" value={selectedReport.FromOutSide} />
               </Section>
 
               {/* Results */}
               <Section title="Results">
-                <InfoRow label="Result" value={selectedReport.result} />
-                <InfoRow label="Result RTF" value={selectedReport.resultrtf} />
+                <InfoRow label="Result" value={selectedReport.RESULT} />
+                <InfoRow label="Result RTF" value={selectedReport.RESULTRTF} />
+                <InfoRow label="Result Status" value={selectedReport.ResultStatus} />
               </Section>
 
               {/* Personnel */}
               <Section title="Personnel">
                 <InfoRow label="Doctor Code" value={selectedReport.DOCTORCODE} />
+                <InfoRow label="Referring Doctor" value={selectedReport.REFDOCTOR} />
+                <InfoRow label="Edit Doctor Code" value={selectedReport.EditDrCode} />
                 <InfoRow label="Lab Manager" value={selectedReport.LabMan} />
-                <InfoRow label="Lab Technician" value={selectedReport.LabTechnician} />
-                <InfoRow label="Department Code" value={selectedReport.DEPTCODE} />
+                <InfoRow label="Lab Manager 2" value={selectedReport.LABMAN2} />
+                <InfoRow label="Lab Admin" value={selectedReport.LabAdmin} />
               </Section>
 
-              {/* Payment & Panic */}
+              {/* Payment & Status */}
               <Section title="Payment & Status">
-                <InfoRow label="Patient Code" value={selectedReport.PATIENTCODE} />
-                <InfoRow label="Payment Type" value={selectedReport.COMPCASH} />
+                <InfoRow label="Company Patient" value={selectedReport.COMPPATIENT} />
+                <InfoRow label="Payment Type" value={selectedReport.CASHCREDIT} />
                 <InfoRow label="Panic Flag" value={selectedReport.PANIC} />
+                <InfoRow label="Lab Printed" value={selectedReport.LPrinted} />
+                <InfoRow label="Reviewed" value={selectedReport.Reviewed} />
+                <InfoRow label="Review Note" value={selectedReport.ReviewNote} />
               </Section>
+
+              {/* Approval Information */}
+              {(selectedReport.AprovalMsg || selectedReport.AprovalTime) && (
+                <Section title="Approval Information">
+                  <InfoRow label="Approval Message" value={selectedReport.AprovalMsg} />
+                  <InfoRow label="Approval Time" value={selectedReport.AprovalTime} />
+                </Section>
+              )}
 
               {/* System Information */}
               <Section title="System Information">
                 <InfoRow label="Last Synced" value={selectedReport.last_synced_at ? formatDate(selectedReport.last_synced_at) : null} />
                 <InfoRow label="Created At" value={selectedReport.created_at ? formatDate(selectedReport.created_at) : null} />
                 <InfoRow label="Updated At" value={selectedReport.updated_at ? formatDate(selectedReport.updated_at) : null} />
+                <InfoRow label="Deleted At" value={selectedReport.deleted_at ? formatDate(selectedReport.deleted_at) : null} />
               </Section>
+
+              {/* Sync Metadata */}
+              {selectedReport.sync_metadata && (
+                <Section title="Sync Metadata">
+                  <InfoRow label="Synced From" value={selectedReport.sync_metadata.synced_from} />
+                  <InfoRow label="Raw Data Hash" value={selectedReport.sync_metadata.raw_data_hash} />
+                </Section>
+              )}
 
               {/* Patient Information (if linked) */}
               {selectedReport.patient && (

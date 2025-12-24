@@ -1,12 +1,19 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { 
+  getUserHisLabReports, 
+  downloadHisLabReportPdf, 
+  viewHisLabReportPdf,
+  formatReportDate,
+  type HisLabReport 
+} from '../../services/hisLabUserService';
 
 interface ReportCardProps {
-  title: string;
-  technician: string;
-  date: string;
+  report: HisLabReport;
+  onDownload: (slno: string) => void;
+  onView: (slno: string) => void;
 }
 
-const ReportCard = ({ title, technician, date }: ReportCardProps) => (
+const ReportCard = ({ report, onDownload, onView }: ReportCardProps) => (
   <div style={{
     boxSizing: 'border-box',
     display: 'flex',
@@ -34,7 +41,7 @@ const ReportCard = ({ title, technician, date }: ReportCardProps) => (
       textAlign: 'center',
       color: '#061F42',
     }}>
-      {title}
+      {report.Category || 'Lab Test'}
     </div>
     
     {/* Technician */}
@@ -47,7 +54,7 @@ const ReportCard = ({ title, technician, date }: ReportCardProps) => (
       textAlign: 'center',
       color: '#061F42',
     }}>
-      {technician}
+      {report.LabMan ? `Lab Technician: ${report.LabMan}` : 'Lab Technician'}
     </div>
     
     {/* Date Badge */}
@@ -71,7 +78,7 @@ const ReportCard = ({ title, technician, date }: ReportCardProps) => (
         textAlign: 'center',
         color: '#1F57A4',
       }}>
-        {date}
+        {formatReportDate(report.R_DATE)}
       </div>
     </div>
     
@@ -85,44 +92,50 @@ const ReportCard = ({ title, technician, date }: ReportCardProps) => (
       width: '260px',
       height: '32px',
     }}>
-      <button style={{
-        display: 'flex',
-        flexDirection: 'row',
-        justifyContent: 'center',
-        alignItems: 'center',
-        padding: '8px 12px',
-        width: '126px',
-        height: '32px',
-        background: '#061F42',
-        borderRadius: '8px',
-        border: 'none',
-        cursor: 'pointer',
-        fontFamily: 'Nunito',
-        fontWeight: 600,
-        fontSize: '14px',
-        lineHeight: '16px',
-        color: '#FFFFFF',
-      }}>
+      <button 
+        onClick={() => onDownload(report.SLNO)}
+        style={{
+          display: 'flex',
+          flexDirection: 'row',
+          justifyContent: 'center',
+          alignItems: 'center',
+          padding: '8px 12px',
+          width: '126px',
+          height: '32px',
+          background: '#061F42',
+          borderRadius: '8px',
+          border: 'none',
+          cursor: 'pointer',
+          fontFamily: 'Nunito',
+          fontWeight: 600,
+          fontSize: '14px',
+          lineHeight: '16px',
+          color: '#FFFFFF',
+        }}
+      >
         Download
       </button>
-      <button style={{
-        display: 'flex',
-        flexDirection: 'row',
-        justifyContent: 'center',
-        alignItems: 'center',
-        padding: '8px 12px',
-        width: '126px',
-        height: '32px',
-        background: '#15C9FA',
-        borderRadius: '8px',
-        border: 'none',
-        cursor: 'pointer',
-        fontFamily: 'Nunito',
-        fontWeight: 600,
-        fontSize: '14px',
-        lineHeight: '16px',
-        color: '#FFFFFF',
-      }}>
+      <button 
+        onClick={() => onView(report.SLNO)}
+        style={{
+          display: 'flex',
+          flexDirection: 'row',
+          justifyContent: 'center',
+          alignItems: 'center',
+          padding: '8px 12px',
+          width: '126px',
+          height: '32px',
+          background: '#15C9FA',
+          borderRadius: '8px',
+          border: 'none',
+          cursor: 'pointer',
+          fontFamily: 'Nunito',
+          fontWeight: 600,
+          fontSize: '14px',
+          lineHeight: '16px',
+          color: '#FFFFFF',
+        }}
+      >
         View File
       </button>
     </div>
@@ -131,14 +144,71 @@ const ReportCard = ({ title, technician, date }: ReportCardProps) => (
 
 const LabReportsTab = () => {
   const [currentPage, setCurrentPage] = useState(1);
+  const [reports, setReports] = useState<HisLabReport[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [totalPages, setTotalPages] = useState(1);
   
-  // Mock data - replace with actual data from API
-  const reports = [
-    { id: 1, title: 'Blood Test', technician: 'Lab Technician: Samir Tayel', date: '25/08/2025' },
-    { id: 2, title: 'Blood Test', technician: 'Lab Technician: Samir Tayel', date: '25/08/2025' },
-    { id: 3, title: 'Blood Test', technician: 'Lab Technician: Samir Tayel', date: '25/08/2025' },
-    { id: 4, title: 'Blood Test', technician: 'Lab Technician: Samir Tayel', date: '25/08/2025' },
-  ];
+  useEffect(() => {
+    fetchReports();
+  }, [currentPage]);
+
+  const fetchReports = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await getUserHisLabReports(currentPage, 12);
+      setReports(response.data);
+      setTotalPages(response.pagination.last_page);
+    } catch (err) {
+      setError('Failed to load lab reports');
+      console.error('Error fetching lab reports:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDownload = async (slno: string) => {
+    try {
+      await downloadHisLabReportPdf(slno);
+    } catch (err) {
+      alert('Failed to download report');
+      console.error('Error downloading report:', err);
+    }
+  };
+
+  const handleView = async (slno: string) => {
+    try {
+      await viewHisLabReportPdf(slno);
+    } catch (err) {
+      alert('Failed to view report');
+      console.error('Error viewing report:', err);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div style={{ textAlign: 'center', padding: '50px', fontSize: '18px', color: '#061F42' }}>
+        Loading lab reports...
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div style={{ textAlign: 'center', padding: '50px', fontSize: '18px', color: '#CB0729' }}>
+        {error}
+      </div>
+    );
+  }
+
+  if (reports.length === 0) {
+    return (
+      <div style={{ textAlign: 'center', padding: '50px', fontSize: '18px', color: '#061F42' }}>
+        No lab reports found
+      </div>
+    );
+  }
 
   return (
     <div style={{
@@ -290,10 +360,10 @@ const LabReportsTab = () => {
       }}>
         {reports.map((report) => (
           <ReportCard
-            key={report.id}
-            title={report.title}
-            technician={report.technician}
-            date={report.date}
+            key={report.SLNO}
+            report={report}
+            onDownload={handleDownload}
+            onView={handleView}
           />
         ))}
       </div>
@@ -337,7 +407,7 @@ const LabReportsTab = () => {
           </button>
           
           {/* Page Numbers */}
-          {[1, 2, 3, 4].map((page) => (
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
             <button
               key={page}
               onClick={() => setCurrentPage(page)}

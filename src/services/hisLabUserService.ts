@@ -9,9 +9,10 @@ const getAuthHeaders = () => {
   };
 };
 
-export interface HisRadiologyReport {
+export interface HisLabReport {
   id: number;
   SLNO: string;
+  LABREFNO: string | null;
   FILENUMBER: string;
   R_DATE: string;
   R_TIME: string;
@@ -22,21 +23,21 @@ export interface HisRadiologyReport {
   INVOICENO: string | null;
   CASECODE: string | null;
   RESULT: string | null;
+  RESULTRTF: string | null;
   STATUS: string | null;
-  INPATIENT: string | null;
-  XRAYNO: string | null;
+  ResultStatus: string | null;
+  LabMan: string | null;
+  LABMAN2: string | null;
+  LabAdmin: string | null;
+  Category: string | null;
+  FromOutSide: string | null;
+  Inpatient: string | null;
   PANIC: string | null;
-  PANICUSER: string | null;
-  DEPTCODE: string | null;
-  DEPTCODEALTER: string | null;
-  APROVED: string | null;
-  APPROVEDBY: string | null;
-  APPROVALNOTE: string | null;
-  PatientUnCode: string | null;
-  ResultRTF: string | null;
-  ResultHtomlToRTF: string | null;
-  InspectionCode: string | null;
-  EntryDate: string | null;
+  Reviewed: string | null;
+  ReviewNote: string | null;
+  DepartCode: string | null;
+  AprovalMsg: string | null;
+  AprovalTime: string | null;
   last_synced_at: string | null;
   sync_metadata: any;
   created_at: string;
@@ -51,17 +52,14 @@ export interface HisPatient {
   MiddleName: string | null;
   FamilyName: string | null;
   Gender: boolean | null;
-  Birthday: string | null;
+  DateofBirth: string | null;
   Telephone: string | null;
   IdNumber: string | null;
-  NationCode: string | null;
-  AgeYear: number | null;
-  AgeMonth: number | null;
 }
 
-export interface HisRadiologyReportsResponse {
+export interface HisLabReportsResponse {
   status: string;
-  data: HisRadiologyReport[];
+  data: HisLabReport[];
   pagination: {
     current_page: number;
     last_page: number;
@@ -72,23 +70,23 @@ export interface HisRadiologyReportsResponse {
   };
 }
 
-export interface HisRadiologyReportDetailResponse {
+export interface HisLabReportDetailResponse {
   status: string;
-  data: HisRadiologyReport;
+  data: HisLabReport;
 }
 
-// Get authenticated user's HIS radiology reports
-export const getUserHisRadiologyReports = async (
+// Get authenticated user's HIS lab reports
+export const getUserHisLabReports = async (
   page = 1,
   perPage = 15,
   filters?: {
     search?: string;
     from_date?: string;
     to_date?: string;
-    status?: string;
+    category?: string;
     department?: string;
   }
-): Promise<HisRadiologyReportsResponse> => {
+): Promise<HisLabReportsResponse> => {
   const params = new URLSearchParams({
     page: page.toString(),
     per_page: perPage.toString(),
@@ -97,42 +95,42 @@ export const getUserHisRadiologyReports = async (
   if (filters?.search) params.append('search', filters.search);
   if (filters?.from_date) params.append('from_date', filters.from_date);
   if (filters?.to_date) params.append('to_date', filters.to_date);
-  if (filters?.status) params.append('status', filters.status);
+  if (filters?.category) params.append('category', filters.category);
   if (filters?.department) params.append('department', filters.department);
 
   const response = await fetch(
-    `${API_BASE_URL}/patient/his-radiology-reports?${params.toString()}`,
+    `${API_BASE_URL}/patient/his-lab-reports?${params.toString()}`,
     { headers: getAuthHeaders() }
   );
   
   if (!response.ok) {
-    throw new Error('Failed to fetch HIS radiology reports');
+    throw new Error('Failed to fetch HIS lab reports');
   }
   
   return await response.json();
 };
 
-// Get single HIS radiology report
-export const getHisRadiologyReportDetail = async (
+// Get single HIS lab report
+export const getHisLabReportDetail = async (
   slno: string
-): Promise<HisRadiologyReportDetailResponse> => {
+): Promise<HisLabReportDetailResponse> => {
   const response = await fetch(
-    `${API_BASE_URL}/patient/his-radiology-reports/${slno}`,
+    `${API_BASE_URL}/patient/his-lab-reports/${slno}`,
     { headers: getAuthHeaders() }
   );
   
   if (!response.ok) {
-    throw new Error('Failed to fetch HIS radiology report detail');
+    throw new Error('Failed to fetch HIS lab report detail');
   }
   
   return await response.json();
 };
 
 // Download PDF
-export const downloadHisRadiologyReportPdf = async (slno: string): Promise<void> => {
+export const downloadHisLabReportPdf = async (slno: string): Promise<void> => {
   try {
     const response = await fetch(
-      `${API_BASE_URL}/patient/his-radiology-reports/${slno}/pdf?download=true`,
+      `${API_BASE_URL}/patient/his-lab-reports/${slno}/pdf?download=true`,
       { headers: getAuthHeaders() }
     );
     
@@ -146,7 +144,7 @@ export const downloadHisRadiologyReportPdf = async (slno: string): Promise<void>
     const url = window.URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.setAttribute('download', `radiology-report-${slno}.pdf`);
+    link.setAttribute('download', `lab-report-${slno}.pdf`);
     document.body.appendChild(link);
     link.click();
     link.remove();
@@ -158,10 +156,10 @@ export const downloadHisRadiologyReportPdf = async (slno: string): Promise<void>
 };
 
 // View PDF in new tab
-export const viewHisRadiologyReportPdf = async (slno: string): Promise<void> => {
+export const viewHisLabReportPdf = async (slno: string): Promise<void> => {
   try {
     const response = await fetch(
-      `${API_BASE_URL}/patient/his-radiology-reports/${slno}/pdf`,
+      `${API_BASE_URL}/patient/his-lab-reports/${slno}/pdf`,
       { headers: getAuthHeaders() }
     );
     
@@ -188,34 +186,7 @@ export const formatReportDate = (dateString: string): string => {
 // Helper function to format patient name
 export const formatPatientName = (patient?: HisPatient): string => {
   if (!patient) return 'N/A';
-  const parts = [patient.Name, patient.MiddleName, patient.FamilyName].filter(Boolean);
-  return parts.join(' ') || 'N/A';
-};
-
-// Helper function to get gender label
-export const getGenderLabel = (gender: boolean | null): string => {
-  if (gender === null) return 'N/A';
-  return gender ? 'Male' : 'Female';
-};
-
-// Helper function to calculate age
-export const calculateAge = (patient?: HisPatient): string => {
-  if (!patient) return 'N/A';
-  
-  if (patient.AgeYear !== null) {
-    let age = `${patient.AgeYear} years`;
-    if (patient.AgeMonth) {
-      age += `, ${patient.AgeMonth} months`;
-    }
-    return age;
-  }
-  
-  if (patient.Birthday) {
-    const birthday = new Date(patient.Birthday);
-    const today = new Date();
-    const ageYears = today.getFullYear() - birthday.getFullYear();
-    return `${ageYears} years`;
-  }
-  
-  return 'N/A';
+  const parts = [patient.Name, patient.MiddleName, patient.FamilyName]
+    .filter(Boolean);
+  return parts.join(' ').toUpperCase() || 'N/A';
 };

@@ -1,12 +1,25 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import {
+  getUserHisMedicalReports,
+  viewHisMedicalReportPdf,
+  downloadHisMedicalReportPdf,
+  formatReportDate,
+  formatReportType,
+  type HisMedicalReport,
+} from '../../services/hisMedicalUserService';
 
 interface ReportCardProps {
-  title: string;
-  technician: string;
-  date: string;
+  report: HisMedicalReport;
+  onViewPdf: () => void;
+  onDownloadPdf: () => void;
 }
 
-const ReportCard = ({ title, technician, date }: ReportCardProps) => (
+const ReportCard = ({ report, onViewPdf, onDownloadPdf }: ReportCardProps) => {
+  const reportType = formatReportType(report.ReportType);
+  const doctorName = report.DRNAME || 'N/A';
+  const reportDate = formatReportDate(report.MRDATE);
+
+  return (
   <div style={{
     boxSizing: 'border-box',
     display: 'flex',
@@ -34,10 +47,10 @@ const ReportCard = ({ title, technician, date }: ReportCardProps) => (
       textAlign: 'center',
       color: '#061F42',
     }}>
-      {title}
+      {reportType}
     </div>
     
-    {/* Technician */}
+    {/* Doctor */}
     <div style={{
       width: '260px',
       fontFamily: 'Varela Round',
@@ -47,7 +60,7 @@ const ReportCard = ({ title, technician, date }: ReportCardProps) => (
       textAlign: 'center',
       color: '#061F42',
     }}>
-      {technician}
+      Doctor: {doctorName}
     </div>
     
     {/* Date Badge */}
@@ -71,7 +84,7 @@ const ReportCard = ({ title, technician, date }: ReportCardProps) => (
         textAlign: 'center',
         color: '#1F57A4',
       }}>
-        {date}
+        {reportDate}
       </div>
     </div>
     
@@ -85,60 +98,119 @@ const ReportCard = ({ title, technician, date }: ReportCardProps) => (
       width: '260px',
       height: '32px',
     }}>
-      <button style={{
-        display: 'flex',
-        flexDirection: 'row',
-        justifyContent: 'center',
-        alignItems: 'center',
-        padding: '8px 12px',
-        width: '126px',
-        height: '32px',
-        background: '#061F42',
-        borderRadius: '8px',
-        border: 'none',
-        cursor: 'pointer',
-        fontFamily: 'Nunito',
-        fontWeight: 600,
-        fontSize: '14px',
-        lineHeight: '16px',
-        color: '#FFFFFF',
-      }}>
+      <button 
+        onClick={onDownloadPdf}
+        style={{
+          display: 'flex',
+          flexDirection: 'row',
+          justifyContent: 'center',
+          alignItems: 'center',
+          padding: '8px 12px',
+          width: '126px',
+          height: '32px',
+          background: '#061F42',
+          borderRadius: '8px',
+          border: 'none',
+          cursor: 'pointer',
+          fontFamily: 'Nunito',
+          fontWeight: 600,
+          fontSize: '14px',
+          lineHeight: '16px',
+          color: '#FFFFFF',
+        }}
+      >
         Download
       </button>
-      <button style={{
-        display: 'flex',
-        flexDirection: 'row',
-        justifyContent: 'center',
-        alignItems: 'center',
-        padding: '8px 12px',
-        width: '126px',
-        height: '32px',
-        background: '#15C9FA',
-        borderRadius: '8px',
-        border: 'none',
-        cursor: 'pointer',
-        fontFamily: 'Nunito',
-        fontWeight: 600,
-        fontSize: '14px',
-        lineHeight: '16px',
-        color: '#FFFFFF',
-      }}>
+      <button 
+        onClick={onViewPdf}
+        style={{
+          display: 'flex',
+          flexDirection: 'row',
+          justifyContent: 'center',
+          alignItems: 'center',
+          padding: '8px 12px',
+          width: '126px',
+          height: '32px',
+          background: '#15C9FA',
+          borderRadius: '8px',
+          border: 'none',
+          cursor: 'pointer',
+          fontFamily: 'Nunito',
+          fontWeight: 600,
+          fontSize: '14px',
+          lineHeight: '16px',
+          color: '#FFFFFF',
+        }}
+      >
         View File
       </button>
     </div>
   </div>
-);
+  );
+};
 
 const MedicalReportsTab = () => {
   const [currentPage, setCurrentPage] = useState(1);
-  
-  // Mock data - replace with actual data from API
-  const reports = [
-    { id: 1, title: 'Blood Test', technician: 'Lab Technician: Samir Tayel', date: '25/08/2025' },
-    { id: 2, title: 'Blood Test', technician: 'Lab Technician: Samir Tayel', date: '25/08/2025' },
-    { id: 3, title: 'Blood Test', technician: 'Lab Technician: Samir Tayel', date: '25/08/2025' },
-    { id: 4, title: 'Blood Test', technician: 'Lab Technician: Samir Tayel', date: '25/08/2025' },
-  ];
+  const [reports, setReports] = useState<HisMedicalReport[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [totalPages, setTotalPages] = useState(1);
+  const [searchTerm, setSearchTerm] = useState('');
+  const perPage = 4;
+
+  // Fetch reports from API
+  useEffect(() => {
+    const fetchReports = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        const filters = searchTerm ? { search: searchTerm } : {};
+        const response = await getUserHisMedicalReports(currentPage, perPage, filters);
+        
+        if (response.success) {
+          setReports(response.data);
+          setTotalPages(response.pagination.last_page);
+        }
+      } catch (err) {
+        console.error('Error fetching medical reports:', err);
+        setError('Failed to load medical reports');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchReports();
+  }, [currentPage, searchTerm]);
+
+  const handleViewPdf = async (code: string) => {
+    try {
+      await viewHisMedicalReportPdf(code);
+    } catch (err) {
+      console.error('Error viewing PDF:', err);
+      alert('Failed to view PDF');
+    }
+  };
+
+  const handleDownloadPdf = async (code: string) => {
+    try {
+      await downloadHisMedicalReportPdf(code);
+    } catch (err) {
+      console.error('Error downloading PDF:', err);
+      alert('Failed to download PDF');
+    }
+  };
+
+  const handleSearch = (value: string) => {
+    setSearchTerm(value);
+    setCurrentPage(1);
+  };
+
+  const handlePageChange = (page: number) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  };
 
   return (
     <div style={{
@@ -229,6 +301,8 @@ const MedicalReportsTab = () => {
             }}>
               <input
                 type="text"
+                value={searchTerm}
+                onChange={(e) => handleSearch(e.target.value)}
                 placeholder="Search for documents"
                 style={{
                   width: '100%',
@@ -286,16 +360,30 @@ const MedicalReportsTab = () => {
         gridTemplateColumns: 'repeat(2, 284px)',
         gap: '28px 44px',
         width: '612px',
-        height: '411.33px',
+        minHeight: '411.33px',
       }}>
-        {reports.map((report) => (
-          <ReportCard
-            key={report.id}
-            title={report.title}
-            technician={report.technician}
-            date={report.date}
-          />
-        ))}
+        {loading ? (
+          <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '40px' }}>
+            Loading reports...
+          </div>
+        ) : error ? (
+          <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '40px', color: '#CB0729' }}>
+            {error}
+          </div>
+        ) : reports.length === 0 ? (
+          <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '40px' }}>
+            No medical reports found
+          </div>
+        ) : (
+          reports.map((report) => (
+            <ReportCard
+              key={report.id}
+              report={report}
+              onViewPdf={() => handleViewPdf(report.CODE)}
+              onDownloadPdf={() => handleDownloadPdf(report.CODE)}
+            />
+          ))
+        )}
       </div>
       
       {/* Pagination */}
@@ -318,29 +406,34 @@ const MedicalReportsTab = () => {
           height: '48px',
         }}>
           {/* Previous Button */}
-          <button style={{
-            display: 'flex',
-            flexDirection: 'row',
-            justifyContent: 'center',
-            alignItems: 'center',
-            padding: '12px',
-            width: '48px',
-            height: '48px',
-            borderRadius: '24px',
-            border: 'none',
-            background: 'transparent',
-            cursor: 'pointer',
-          }}>
+          <button 
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+            style={{
+              display: 'flex',
+              flexDirection: 'row',
+              justifyContent: 'center',
+              alignItems: 'center',
+              padding: '12px',
+              width: '48px',
+              height: '48px',
+              borderRadius: '24px',
+              border: 'none',
+              background: 'transparent',
+              cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+              opacity: currentPage === 1 ? 0.5 : 1,
+            }}
+          >
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M15 18L9 12L15 6" stroke="#061F42" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
           </button>
           
           {/* Page Numbers */}
-          {[1, 2, 3, 4].map((page) => (
+          {Array.from({ length: Math.min(totalPages, 4) }, (_, i) => i + 1).map((page) => (
             <button
               key={page}
-              onClick={() => setCurrentPage(page)}
+              onClick={() => handlePageChange(page)}
               style={{
                 display: 'flex',
                 flexDirection: 'row',
@@ -365,19 +458,24 @@ const MedicalReportsTab = () => {
           ))}
           
           {/* Next Button */}
-          <button style={{
-            display: 'flex',
-            flexDirection: 'row',
-            justifyContent: 'center',
-            alignItems: 'center',
-            padding: '12px',
-            width: '48px',
-            height: '48px',
-            borderRadius: '24px',
-            border: 'none',
-            background: 'transparent',
-            cursor: 'pointer',
-          }}>
+          <button 
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            style={{
+              display: 'flex',
+              flexDirection: 'row',
+              justifyContent: 'center',
+              alignItems: 'center',
+              padding: '12px',
+              width: '48px',
+              height: '48px',
+              borderRadius: '24px',
+              border: 'none',
+              background: 'transparent',
+              cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
+              opacity: currentPage === totalPages ? 0.5 : 1,
+            }}
+          >
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M9 18L15 12L9 6" stroke="#061F42" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>

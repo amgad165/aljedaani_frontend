@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
@@ -25,6 +25,13 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
 
+  // Keep HIS menu expanded when on HIS pages
+  useEffect(() => {
+    if (location.pathname.startsWith('/admin/his')) {
+      setExpandedMenu('HIS');
+    }
+  }, [location.pathname]);
+
   const menuItems: MenuItem[] = [
     { 
       path: '/admin', 
@@ -38,6 +45,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
     { path: '/admin/departments', label: 'Departments', icon: 'department' },
     { path: '/admin/doctors', label: 'Doctors', icon: 'doctor' },
     { path: '/admin/patients', label: 'Patients', icon: 'users' },
+    { path: '/admin/appointments', label: 'Appointments', icon: 'appointments' },
     {
       path: '/admin/his',
       label: 'HIS',
@@ -48,6 +56,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
         { path: '/admin/his-radiology', label: 'Radiology' },
         { path: '/admin/his-lab', label: 'Lab Reports' },
         { path: '/admin/his-medical', label: 'Medical Reports' },
+        { path: '/admin/his-consultations', label: 'Consultations' },
         { path: '/admin/his-shifts', label: 'Shifts' },
         { path: '/admin/his-shift-defines', label: 'Shift Defines' },
         { path: '/admin/his-shift-define-details', label: 'Shift Assignments' },
@@ -103,6 +112,16 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
             <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
             <circle cx="9" cy="7" r="4" />
             <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" />
+          </svg>
+        );
+      case 'appointments':
+        return (
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+            <line x1="16" y1="2" x2="16" y2="6" />
+            <line x1="8" y1="2" x2="8" y2="6" />
+            <line x1="3" y1="10" x2="21" y2="10" />
+            <path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01M16 18h.01" />
           </svg>
         );
       case 'his':
