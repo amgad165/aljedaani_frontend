@@ -9,66 +9,34 @@ const getAuthHeaders = () => {
   };
 };
 
-export interface HisRadiologyReport {
-  id: number;
-  SLNO: string;
-  FILENUMBER: string;
-  R_DATE: string;
-  R_TIME: string;
-  COMPPATIENT: string | null;
-  CASHCREDIT: string | null;
-  REFDOCTOR: string | null;
-  DOCTORCODE: string | null;
-  INVOICENO: string | null;
-  CASECODE: string | null;
-  RESULT: string | null;
-  STATUS: string | null;
-  INPATIENT: string | null;
-  XRAYNO: string | null;
-  PANIC: string | null;
-  PANICUSER: string | null;
-  DEPTCODE: string | null;
-  DEPTCODEALTER: string | null;
-  APROVED: string | null;
-  APPROVEDBY: string | null;
-  APPROVALNOTE: string | null;
-  PatientUnCode: string | null;
-  ResultRTF: string | null;
-  ResultHtomlToRTF: string | null;
-  InspectionCode: string | null;
-  EntryDate: string | null;
-  last_synced_at: string | null;
-  sync_metadata: any;
-  created_at: string;
-  updated_at: string;
-  patient?: HisPatient;
-}
-
 export interface HisPatient {
   id: number;
-  FileNumber: string;
-  Name: string;
-  MiddleName: string | null;
-  FamilyName: string | null;
-  Gender: boolean | null;
-  Birthday: string | null;
-  Telephone: string | null;
-  IdNumber: string | null;
-  NationCode: string | null;
-  AgeYear: number | null;
-  AgeMonth: number | null;
+  Name?: string;
+  MiddleName?: string;
+  FamilyName?: string;
+  AgeYear?: number | null;
+  AgeMonth?: number | null;
+  Birthday?: string;
+}
+
+export interface HisRadiologyReport {
+  slno: string;
+  name: string | null;
+  service_name: string;
+  date: string;
+  time: string;
+  technician: string | null;
+  report_type: string;
 }
 
 export interface HisRadiologyReportsResponse {
-  status: string;
+  success: boolean;
   data: HisRadiologyReport[];
   pagination: {
     current_page: number;
     last_page: number;
     per_page: number;
     total: number;
-    from: number | null;
-    to: number | null;
   };
 }
 

@@ -4,6 +4,7 @@ export interface HisRadiologyReport {
   id: number;
   SLNO: string;
   FILENUMBER: string | null;
+  NAME: string | null;
   R_DATE: string | null;
   R_TIME: string | null;
   STATUS: string | null;

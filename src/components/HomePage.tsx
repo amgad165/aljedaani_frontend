@@ -1,5 +1,4 @@
 import { useEffect } from 'react';
-import Navbar from './Navbar';
 import HeroSection from './HeroSection';
 import LocationCards from './LocationCards';
 import OffersSection from './OffersSection';
@@ -10,8 +9,11 @@ import ExcellenceCentersSection from './ExcellenceCentersSection';
 import BlogSection from './BlogSection';
 import Footer from './Footer';
 import { animationCSS } from '../hooks/useScrollAnimation';
+import { useResponsiveNavbar } from '../hooks/useResponsiveNavbar';
 
 const HomePage = () => {
+  const ResponsiveNavbar = useResponsiveNavbar();
+
   // Inject animation CSS once on mount
   useEffect(() => {
     const styleId = 'scroll-animation-styles';
@@ -25,7 +27,7 @@ const HomePage = () => {
 
   return (
     <>
-      <Navbar />
+      {ResponsiveNavbar}
       <div className="main overflow-hidden">
         <HeroSection />
         <section className="main-sec">

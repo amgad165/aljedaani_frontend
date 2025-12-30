@@ -2,12 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { doctorsService, type Doctor } from '../services/doctorsService';
 import type { ServiceItem } from '../services/departmentsService';
-import Navbar from '../components/Navbar';
+import { useResponsiveNavbar } from '../hooks/useResponsiveNavbar';
 import DoctorFilters from '../components/DoctorFilters';
 import { LoadingSpinner } from '../components/LoadingComponents';
 import { EASINGS } from '../utils/animations';
 
 const DoctorDetailsPage: React.FC = () => {
+  const ResponsiveNavbar = useResponsiveNavbar();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [doctor, setDoctor] = useState<Doctor | null>(null);
@@ -81,7 +82,7 @@ const DoctorDetailsPage: React.FC = () => {
       {/* Description */}
       <div style={{
         width: '100%',
-        fontFamily: 'Varela Round, sans-serif',
+        fontFamily: 'Nunito, sans-serif',
         fontStyle: 'normal',
         fontWeight: 400,
         fontSize: '12px',
@@ -118,7 +119,7 @@ const DoctorDetailsPage: React.FC = () => {
         minHeight: '100vh',
         background: '#C9F3FF',
       }}>
-        <Navbar />
+        {ResponsiveNavbar}
         <LoadingSpinner fullScreen />
       </div>
     );
@@ -130,7 +131,7 @@ const DoctorDetailsPage: React.FC = () => {
         minHeight: '100vh',
         background: '#C9F3FF',
       }}>
-        <Navbar />
+        {ResponsiveNavbar}
         <div style={{
           display: 'flex',
           flexDirection: 'column',
@@ -180,7 +181,7 @@ const DoctorDetailsPage: React.FC = () => {
       display: 'flex',
       flexDirection: 'column',
     }}>
-      <Navbar />
+      {ResponsiveNavbar}
       
       {/* Main Content */}
       <div style={{
@@ -204,7 +205,7 @@ const DoctorDetailsPage: React.FC = () => {
 
           {/* Breadcrumb */}
           <div style={{
-            fontFamily: 'Varela Round, sans-serif',
+            fontFamily: 'Nunito, sans-serif',
             fontWeight: 600,
             fontSize: '16px',
             lineHeight: '40px',
@@ -362,7 +363,7 @@ const DoctorDetailsPage: React.FC = () => {
                   {/* Sub title - Specialization */}
                   <div style={{
                     width: '280px',
-                    fontFamily: 'Varela Round, sans-serif',
+                    fontFamily: 'Nunito, sans-serif',
                     fontStyle: 'normal',
                     fontWeight: 400,
                     fontSize: '12px',
@@ -482,7 +483,7 @@ const DoctorDetailsPage: React.FC = () => {
                     <ul style={{
                       margin: 0,
                       paddingLeft: '16px',
-                      fontFamily: 'Varela Round, sans-serif',
+                      fontFamily: 'Nunito, sans-serif',
                       fontStyle: 'normal',
                       fontWeight: 400,
                       fontSize: '12px',
@@ -673,7 +674,7 @@ const DoctorDetailsPage: React.FC = () => {
                       height: '200px',
                     }}>
                       <span style={{
-                        fontFamily: 'Varela Round, sans-serif',
+                        fontFamily: 'Nunito, sans-serif',
                         fontWeight: 400,
                         fontSize: '14px',
                         color: '#6A6A6A',

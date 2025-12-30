@@ -631,10 +631,8 @@ const AdminDepartmentTabs: React.FC = () => {
                     </button>
                   </div>
                   
-                  <label style={{ ...labelStyle, fontSize: '12px' }}>Service Items (bullet points)</label>
                   {(service.items || []).map((item, itemIndex) => (
-                    <div key={itemIndex} style={{ display: 'flex', gap: '8px', marginBottom: '8px', paddingLeft: '12px' }}>
-                      <span style={{ color: '#6B7280', padding: '10px 0' }}>•</span>
+                    <div key={itemIndex} style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
                       <input
                         type="text"
                         value={item}
@@ -820,8 +818,7 @@ const AdminDepartmentTabs: React.FC = () => {
                             </div>
                             
                             {(service.items || []).map((listItem, itemIndex) => (
-                              <div key={itemIndex} style={{ display: 'flex', gap: '8px', marginBottom: '4px', paddingLeft: '12px' }}>
-                                <span style={{ color: '#6B7280', padding: '6px 0' }}>•</span>
+                              <div key={itemIndex} style={{ display: 'flex', gap: '8px', marginBottom: '4px' }}>
                                 <input
                                   type="text"
                                   value={listItem}

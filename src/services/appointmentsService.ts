@@ -53,6 +53,58 @@ export interface CreateAppointmentResponse {
   };
 }
 
+export interface InitialBookingData {
+  branches: Array<{
+    id: number;
+    name: string;
+  }>;
+  departments: Array<{
+    id: number;
+    name: string;
+  }>;
+  doctors: Array<{
+    id: number;
+    name: string;
+    department_id: number;
+    branch_id: number;
+    department_name: string;
+    branch_name: string;
+  }>;
+}
+
+export interface InitialDataResponse {
+  success: boolean;
+  message: string;
+  data: InitialBookingData;
+}
+
+/**
+ * Get initial data for appointment booking (branches, departments, doctors)
+ */
+export const getInitialData = async (): Promise<InitialDataResponse> => {
+  const token = localStorage.getItem('auth_token');
+
+  if (!token) {
+    throw new Error('Authentication required');
+  }
+
+  const response = await fetch(`${API_BASE_URL}/appointments/initial-data`, {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+  });
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    throw new Error(result.message || 'Failed to fetch initial data');
+  }
+
+  return result;
+};
+
 /**
  * Create a new appointment
  */
@@ -84,5 +136,6 @@ export const createAppointment = async (
 };
 
 export const appointmentsService = {
+  getInitialData,
   createAppointment,
 };

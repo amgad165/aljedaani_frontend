@@ -161,11 +161,18 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
         display: 'flex',
         minHeight: '100vh',
         background: 'linear-gradient(135deg, #0a4d68 0%, #088395 40%, #05bfdb 80%, #00ffca 100%)',
-        fontFamily: "'Calibri', 'Segoe UI', sans-serif",
+        fontFamily: "'Nunito', sans-serif",
         margin: 0,
         padding: 0,
       }}
     >
+      <style>
+        {`
+          [data-admin-page="true"] * {
+            font-family: 'Nunito, sans-serif' !important;
+          }
+        `}
+      </style>
       {/* Sidebar Container with Padding */}
       <div style={{
         padding: '20px',

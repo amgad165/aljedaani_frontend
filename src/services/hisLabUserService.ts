@@ -10,39 +10,12 @@ const getAuthHeaders = () => {
 };
 
 export interface HisLabReport {
-  id: number;
-  SLNO: string;
-  LABREFNO: string | null;
-  FILENUMBER: string;
-  R_DATE: string;
-  R_TIME: string;
-  COMPPATIENT: string | null;
-  CASHCREDIT: string | null;
-  REFDOCTOR: string | null;
-  DOCTORCODE: string | null;
-  INVOICENO: string | null;
-  CASECODE: string | null;
-  RESULT: string | null;
-  RESULTRTF: string | null;
-  STATUS: string | null;
-  ResultStatus: string | null;
-  LabMan: string | null;
-  LABMAN2: string | null;
-  LabAdmin: string | null;
-  Category: string | null;
-  FromOutSide: string | null;
-  Inpatient: string | null;
-  PANIC: string | null;
-  Reviewed: string | null;
-  ReviewNote: string | null;
-  DepartCode: string | null;
-  AprovalMsg: string | null;
-  AprovalTime: string | null;
-  last_synced_at: string | null;
-  sync_metadata: any;
-  created_at: string;
-  updated_at: string;
-  patient?: HisPatient;
+  slno: string;
+  service_name: string;
+  date: string;
+  time: string;
+  technician: string | null;
+  report_type: string;
 }
 
 export interface HisPatient {

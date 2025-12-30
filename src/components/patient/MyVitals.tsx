@@ -71,7 +71,7 @@ const MyVitals: React.FC = () => {
   const vitalCards = vitals ? [
     {
       title: 'Blood Pressure',
-      value: `${vitals.blood_pressure.systolic ?? '--'}/${vitals.blood_pressure.diastolic ?? '--'}`,
+      value: `${vitals.blood_pressure.diastolic ?? '--'}/${vitals.blood_pressure.systolic ?? '--'}`,
       unit: vitals.blood_pressure.unit,
       icon: (
         <img 

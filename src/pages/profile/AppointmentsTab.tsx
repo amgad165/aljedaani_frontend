@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import UpcomingAppointmentsView from './UpcomingAppointmentsView';
 import PastAppointmentsView from './PastAppointmentsView';
 
@@ -121,8 +122,10 @@ const AppointmentCard = ({
 );
 
 // Book Appointment Card Component
-const BookAppointmentCard = () => (
-  <div style={{
+const BookAppointmentCard = ({ onClick }: { onClick: () => void }) => (
+  <div 
+    onClick={onClick}
+    style={{
     boxSizing: 'border-box',
     display: 'flex',
     flexDirection: 'column',
@@ -135,7 +138,18 @@ const BookAppointmentCard = () => (
     background: '#FFFFFF',
     border: '1px solid #D8D8D8',
     borderRadius: '12px',
-  }}>
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+  }}
+  onMouseEnter={(e) => {
+    e.currentTarget.style.transform = 'translateY(-2px)';
+    e.currentTarget.style.boxShadow = '0px 4px 8px rgba(0, 0, 0, 0.15)';
+  }}
+  onMouseLeave={(e) => {
+    e.currentTarget.style.transform = 'translateY(0)';
+    e.currentTarget.style.boxShadow = 'none';
+  }}
+  >
     {/* Icon and Title */}
     <div style={{
       display: 'flex',
@@ -173,51 +187,41 @@ const BookAppointmentCard = () => (
 type ViewType = 'main' | 'upcoming' | 'past';
 
 const AppointmentsTab = () => {
+  const navigate = useNavigate();
   const [currentView, setCurrentView] = useState<ViewType>('main');
   const [upcomingCount, setUpcomingCount] = useState(0);
   const [pastCount, setPastCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const hasFetchedRef = useRef(false);
 
   useEffect(() => {
-    fetchAppointmentCounts();
+    if (hasFetchedRef.current) return;
+    hasFetchedRef.current = true;
+    fetchAppointmentStats();
   }, []);
 
-  const fetchAppointmentCounts = async () => {
+  const fetchAppointmentStats = async () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('auth_token');
 
-      const [upcomingResponse, pastResponse] = await Promise.all([
-        fetch(`${API_URL}/my-appointments/upcoming`, {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-          },
-        }),
-        fetch(`${API_URL}/my-appointments/past`, {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-          },
-        }),
-      ]);
+      const response = await fetch(`${API_URL}/my-appointments/stats`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+      });
 
-      const upcomingData = await upcomingResponse.json();
-      const pastData = await pastResponse.json();
+      const data = await response.json();
 
-      if (upcomingData.success) {
-        setUpcomingCount(upcomingData.data.length);
-      }
-
-      if (pastData.success) {
-        setPastCount(pastData.data.length);
+      if (data.success) {
+        setUpcomingCount(data.data.upcoming);
+        setPastCount(data.data.past);
       }
     } catch (err) {
-      console.error('Error fetching appointment counts:', err);
+      console.error('Error fetching appointment stats:', err);
     } finally {
       setLoading(false);
     }
@@ -247,7 +251,7 @@ const AppointmentsTab = () => {
       height: 'auto',
     }}>
       {/* Book Appointment Card */}
-      <BookAppointmentCard />
+      <BookAppointmentCard onClick={() => navigate('/book-appointment')} />
 
       {/* Loading State */}
       {loading ? (

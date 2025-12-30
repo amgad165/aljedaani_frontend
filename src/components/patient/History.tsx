@@ -6,7 +6,10 @@ interface ConsultationRecord {
   consultation_date: string;
   chief_complaint: string;
   diagnosis: string;
-  doctor_code: string | number;
+  prov_diagonosis: string;
+  advice_treat: string;
+  advice_med: string;
+  doctor_name: string | null;
   temperature: number | string;
   bp_max: number | string;
   bp_min: number | string;
@@ -197,13 +200,76 @@ const History: React.FC = () => {
               </div>
             </div>
 
-            {/* Vital Signs Summary */}
+            {/* Provisional Diagnosis */}
+            <div style={{
+              marginBottom: '12px',
+              paddingBottom: '12px',
+              borderBottom: '1px solid #F3F4F6',
+            }}>
+              <div style={{
+                fontSize: '12px',
+                color: '#99A1AF',
+                marginBottom: '4px',
+              }}>
+                Provisional Diagnosis
+              </div>
+              <div style={{
+                fontSize: '13px',
+                color: '#6A7282',
+              }}>
+                {consultation.prov_diagonosis || 'N/A'}
+              </div>
+            </div>
+
+            {/* Treatment Advice */}
+            <div style={{
+              marginBottom: '12px',
+              paddingBottom: '12px',
+              borderBottom: '1px solid #F3F4F6',
+            }}>
+              <div style={{
+                fontSize: '12px',
+                color: '#99A1AF',
+                marginBottom: '4px',
+              }}>
+                Treatment Advice
+              </div>
+              <div style={{
+                fontSize: '13px',
+                color: '#6A7282',
+              }}>
+                {consultation.advice_treat || 'N/A'}
+              </div>
+            </div>
+
+            {/* Medication Advice */}
+            <div style={{
+              marginBottom: '12px',
+              paddingBottom: '12px',
+              borderBottom: '1px solid #F3F4F6',
+            }}>
+              <div style={{
+                fontSize: '12px',
+                color: '#99A1AF',
+                marginBottom: '4px',
+              }}>
+                Medication Advice
+              </div>
+              <div style={{
+                fontSize: '13px',
+                color: '#6A7282',
+              }}>
+                {consultation.advice_med || 'N/A'}
+              </div>
+            </div>
+
+            {/* Vital Signs Summary and Doctor */}
             <div style={{
               marginBottom: '12px',
               paddingBottom: '12px',
               borderBottom: '1px solid #F3F4F6',
               display: 'grid',
-              gridTemplateColumns: 'repeat(4, 1fr)',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))',
               gap: '12px',
             }}>
               {/* BP */}
@@ -278,23 +344,25 @@ const History: React.FC = () => {
                 </div>
               </div>
 
-              {/* Doctor Code */}
-              <div>
-                <div style={{
-                  fontSize: '11px',
-                  color: '#99A1AF',
-                  marginBottom: '4px',
-                }}>
-                  Doctor
+              {/* Doctor Name - only if available */}
+              {consultation.doctor_name && (
+                <div>
+                  <div style={{
+                    fontSize: '11px',
+                    color: '#99A1AF',
+                    marginBottom: '4px',
+                  }}>
+                    Doctor
+                  </div>
+                  <div style={{
+                    fontSize: '13px',
+                    fontWeight: '600',
+                    color: '#061F42',
+                  }}>
+                    {consultation.doctor_name}
+                  </div>
                 </div>
-                <div style={{
-                  fontSize: '13px',
-                  fontWeight: '600',
-                  color: '#061F42',
-                }}>
-                  #{consultation.doctor_code}
-                </div>
-              </div>
+              )}
             </div>
 
             {/* Revisit Info */}

@@ -256,6 +256,7 @@ const AdminHisRadiology: React.FC = () => {
                     <tr style={{ background: '#f9fafb' }}>
                       <th style={tableHeaderStyle}>SLNO</th>
                       <th style={tableHeaderStyle}>File Number</th>
+                      <th style={tableHeaderStyle}>Name</th>
                       <th style={tableHeaderStyle}>Date</th>
                       <th style={tableHeaderStyle}>Time</th>
                       <th style={tableHeaderStyle}>Status</th>
@@ -279,6 +280,7 @@ const AdminHisRadiology: React.FC = () => {
                       >
                         <td style={tableCellStyle}>{report.SLNO || 'N/A'}</td>
                         <td style={tableCellStyle}>{report.FILENUMBER || 'N/A'}</td>
+                        <td style={tableCellStyle}>{report.NAME || 'N/A'}</td>
                         <td style={tableCellStyle}>{formatDate(report.R_DATE)}</td>
                         <td style={tableCellStyle}>{formatTime(report.R_TIME)}</td>
                         <td style={tableCellStyle}>
@@ -446,6 +448,7 @@ const AdminHisRadiology: React.FC = () => {
               <Section title="Report Information">
                 <InfoRow label="SLNO" value={selectedReport.SLNO} />
                 <InfoRow label="File Number" value={selectedReport.FILENUMBER} />
+                <InfoRow label="Name" value={selectedReport.NAME} />
                 <InfoRow label="Report Date" value={formatDate(selectedReport.R_DATE)} />
                 <InfoRow label="Report Time" value={formatTime(selectedReport.R_TIME)} />
                 <InfoRow label="Status" value={selectedReport.STATUS === '1' ? 'Completed' : selectedReport.STATUS === '0' ? 'Pending' : selectedReport.STATUS} />

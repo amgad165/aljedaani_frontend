@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { departmentsService, type Department, type DepartmentTabContent, type Doctor, type SidebarItem } from '../services/departmentsService';
 import { type Testimonial } from '../services/testimonialsService';
-import Navbar from '../components/Navbar';
+import { useResponsiveNavbar } from '../hooks/useResponsiveNavbar';
 import { LoadingSpinner } from '../components/LoadingComponents';
 import { EASINGS } from '../utils/animations';
 
@@ -107,8 +107,18 @@ const animationStyles = `
 `;
 
 const DepartmentDetailsPage: React.FC = () => {
+  const ResponsiveNavbar = useResponsiveNavbar();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+
+  const handleBookNow = (doctor: Doctor) => {
+    const params = new URLSearchParams({
+      doctor_id: doctor.id.toString(),
+      branch_id: doctor.branch?.id?.toString() || '',
+      department_id: doctor.department?.id?.toString() || '',
+    });
+    navigate(`/book-appointment?${params.toString()}`);
+  };
   const [department, setDepartment] = useState<Department | null>(null);
   const [tabContents, setTabContents] = useState<DepartmentTabContent[]>([]);
   const [doctors, setDoctors] = useState<Doctor[]>([]);
@@ -315,7 +325,7 @@ const DepartmentDetailsPage: React.FC = () => {
 
         {/* Specialization */}
         <div style={{
-          fontFamily: 'Varela Round, sans-serif',
+          fontFamily: 'Nunito, sans-serif',
           fontSize: '12px',
           textAlign: 'center',
           color: '#061F42',
@@ -364,7 +374,7 @@ const DepartmentDetailsPage: React.FC = () => {
           gap: '4px',
           fontSize: '12px',
           color: '#061F42',
-          fontFamily: 'Varela Round, sans-serif',
+          fontFamily: 'Nunito, sans-serif',
         }}>
           <div>• {doctor.experience_years} Years Of Experience</div>
           <div>• {doctor.education}</div>
@@ -378,6 +388,7 @@ const DepartmentDetailsPage: React.FC = () => {
           width: '100%',
         }}>
           <button
+            onClick={() => doctor.status !== 'busy' && handleBookNow(doctor)}
             disabled={doctor.status === 'busy'}
             style={{
               flex: 1,
@@ -949,7 +960,7 @@ const DepartmentDetailsPage: React.FC = () => {
             <div style={{
               display: 'flex',
               flexDirection: 'column',
-              gap: '20px',
+              gap: '12px',
               width: '100%',
             }}>
               {displayServiceList.map((service, index) => (
@@ -958,10 +969,10 @@ const DepartmentDetailsPage: React.FC = () => {
                     <h4 style={{
                       fontFamily: 'Nunito, sans-serif',
                       fontWeight: 700,
-                      fontSize: '16px',
+                      fontSize: '17px',
                       lineHeight: '20px',
                       color: '#061F42',
-                      margin: '0 0 12px 0',
+                      margin: '0 0 4px 0',
                       textAlign: 'left',
                     }}>
                       {service.title}
@@ -979,19 +990,10 @@ const DepartmentDetailsPage: React.FC = () => {
                     }}>
                       {service.items.map((item, itemIndex) => (
                         <li key={itemIndex} style={{ 
-                          marginBottom: '8px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '10px',
+                          marginBottom: '5px',
+                          listStyle: 'none',
                         }}>
-                          <span style={{
-                            width: '6px',
-                            height: '6px',
-                            borderRadius: '50%',
-                            backgroundColor: '#061F42',
-                            flexShrink: 0,
-                          }} />
-                          <span>{item}</span>
+                          {item}
                         </li>
                       ))}
                     </ul>
@@ -1206,7 +1208,7 @@ const DepartmentDetailsPage: React.FC = () => {
               </h3>
               <p style={{
                 width: '280px',
-                fontFamily: 'Varela Round, sans-serif',
+                fontFamily: 'Nunito, sans-serif',
                 fontStyle: 'normal',
                 fontWeight: 400,
                 fontSize: '12px',
@@ -1321,7 +1323,7 @@ const DepartmentDetailsPage: React.FC = () => {
                     flexShrink: 0
                   }} />
                   <span style={{
-                    fontFamily: 'Varela Round, sans-serif',
+                    fontFamily: 'Nunito, sans-serif',
                     fontStyle: 'normal',
                     fontWeight: 400,
                     fontSize: '12px',
@@ -1348,7 +1350,7 @@ const DepartmentDetailsPage: React.FC = () => {
                     marginTop: '4px'
                   }} />
                   <span style={{
-                    fontFamily: 'Varela Round, sans-serif',
+                    fontFamily: 'Nunito, sans-serif',
                     fontStyle: 'normal',
                     fontWeight: 400,
                     fontSize: '12px',
@@ -1377,7 +1379,7 @@ const DepartmentDetailsPage: React.FC = () => {
                     marginTop: '4px'
                   }} />
                   <p style={{
-                    fontFamily: 'Varela Round, sans-serif',
+                    fontFamily: 'Nunito, sans-serif',
                     fontStyle: 'normal',
                     fontWeight: 400,
                     fontSize: '12px',
@@ -1622,7 +1624,7 @@ const DepartmentDetailsPage: React.FC = () => {
                 <p
                   style={{
                     width: '276px',
-                    fontFamily: 'Varela Round, sans-serif',
+                    fontFamily: 'Nunito, sans-serif',
                     fontStyle: 'normal',
                     fontWeight: 400,
                     fontSize: '12px',
@@ -1732,11 +1734,11 @@ const DepartmentDetailsPage: React.FC = () => {
                     fontFamily: 'Nunito, sans-serif',
                     fontStyle: 'normal',
                     fontWeight: 700,
-                    fontSize: '16px',
+                    fontSize: '17px',
                     lineHeight: '20px',
                     color: '#061F42',
                     margin: 0,
-                    marginBottom: '8px'
+                    marginBottom: '3px'
                   }}
                 >
                   {testimonial.review_title}
@@ -1746,7 +1748,7 @@ const DepartmentDetailsPage: React.FC = () => {
                 <p
                   style={{
                     width: '260px',
-                    fontFamily: 'Varela Round, sans-serif',
+                    fontFamily: 'Nunito, sans-serif',
                     fontStyle: 'normal',
                     fontWeight: 400,
                     fontSize: '12px',
@@ -1853,7 +1855,7 @@ const DepartmentDetailsPage: React.FC = () => {
         minHeight: '100vh',
         background: '#C9F3FF',
       }}>
-        <Navbar />
+        {ResponsiveNavbar}
         <LoadingSpinner fullScreen />
       </div>
     );
@@ -1865,7 +1867,7 @@ const DepartmentDetailsPage: React.FC = () => {
         minHeight: '100vh',
         background: '#C9F3FF',
       }}>
-        <Navbar />
+        {ResponsiveNavbar}
         <div style={{
           display: 'flex',
           flexDirection: 'column',
@@ -1911,7 +1913,7 @@ const DepartmentDetailsPage: React.FC = () => {
       display: 'flex',
       flexDirection: 'column',
     }}>
-      <Navbar />
+      {ResponsiveNavbar}
 
       {/* Main Content */}
       <div style={{
@@ -1919,11 +1921,11 @@ const DepartmentDetailsPage: React.FC = () => {
         display: 'flex',
         alignItems: 'flex-start',
         justifyContent: 'center',
-        padding: '180px 20px 40px 20px',
+        padding: window.innerWidth <= 768 ? '90px 16px 20px 16px' : '180px 20px 40px 20px',
       }}>
         <div style={{
           width: '100%',
-          maxWidth: '1120px',
+          maxWidth: '1400px',
         }}>
           {/* Title Section */}
           <div style={{
@@ -1931,17 +1933,17 @@ const DepartmentDetailsPage: React.FC = () => {
             flexDirection: 'row',
             justifyContent: 'flex-start',
             alignItems: 'center',
-            padding: '8px 24px',
+            padding: window.innerWidth <= 768 ? '8px 12px' : '8px 24px',
             background: '#FFFFFF',
             borderRadius: '15px',
             marginBottom: '8px',
-            height: '80px',
+            height: window.innerWidth <= 768 ? '60px' : '80px',
           }}>
             <h1 style={{
               fontFamily: 'Nunito, sans-serif',
               fontWeight: 600,
-              fontSize: '48px',
-              lineHeight: '50px',
+              fontSize: window.innerWidth <= 768 ? '28px' : '48px',
+              lineHeight: window.innerWidth <= 768 ? '32px' : '50px',
               color: '#061F42',
               margin: 0,
             }}>
@@ -1951,7 +1953,7 @@ const DepartmentDetailsPage: React.FC = () => {
 
           {/* Breadcrumb */}
           <div style={{
-            fontFamily: 'Varela Round, sans-serif',
+            fontFamily: 'Nunito, sans-serif',
             fontWeight: 600,
             fontSize: '16px',
             lineHeight: '40px',
@@ -2005,6 +2007,10 @@ const DepartmentDetailsPage: React.FC = () => {
               display: 'flex',
               flexDirection: 'row',
               alignItems: 'flex-start',
+              overflowX: 'auto',
+              WebkitOverflowScrolling: 'touch',
+              scrollbarWidth: 'thin',
+              gap: '2px',
             }}>
               {tabs.map((tab, index) => (
                 <button
@@ -2015,8 +2021,8 @@ const DepartmentDetailsPage: React.FC = () => {
                     flexDirection: 'row',
                     justifyContent: 'center',
                     alignItems: 'center',
-                    padding: '12px 16px',
-                    height: '40px',
+                    padding: window.innerWidth <= 768 ? '10px 12px' : '12px 16px',
+                    height: window.innerWidth <= 768 ? '36px' : '40px',
                     background: activeTab === tab.key ? '#FCFCFC' : '#E6E6E6',
                     boxShadow: activeTab === tab.key ? '0px 0px 5px rgba(0, 0, 0, 0.25)' : 'none',
                     borderRadius: '12px 12px 0px 0px',
@@ -2044,8 +2050,8 @@ const DepartmentDetailsPage: React.FC = () => {
                   <span style={{
                     fontFamily: 'Nunito, sans-serif',
                     fontWeight: activeTab === tab.key ? 700 : 600,
-                    fontSize: '20px',
-                    lineHeight: '20px',
+                    fontSize: window.innerWidth <= 768 ? '14px' : '20px',
+                    lineHeight: window.innerWidth <= 768 ? '14px' : '20px',
                     color: activeTab === tab.key ? '#061F42' : '#A4A5A5',
                     whiteSpace: 'nowrap',
                     transition: 'color 0.3s ease, font-weight 0.2s ease',

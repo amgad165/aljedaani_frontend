@@ -319,4 +319,16 @@
   position: relative;
 }
 
+/* Mobile-specific header overrides */
+@media (max-width: 768px) {
+  .header {
+    position: fixed;
+    width: 100%;
+    z-index: 1001;
+    /* Add any mobile-specific header properties here */
+    /* They won't affect desktop */
+  }
+}
+
 /*# sourceMappingURL=header.css.map */
+

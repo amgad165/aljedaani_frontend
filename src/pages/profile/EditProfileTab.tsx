@@ -210,20 +210,28 @@ const VerifyButton = () => (
 const EditProfileTab = ({ profileData, onSave, onUpdate }: EditProfileTabProps) => {
   const [formData, setFormData] = useState({
     email: profileData.email || '',
-    password: '',
-    password_confirmation: '',
     phone: profileData.phone || '',
     address: profileData.address || '',
     maritalStatus: profileData.maritalStatus || '',
     religion: profileData.religion || '',
   });
+  const [passwordData, setPasswordData] = useState({
+    current_password: '',
+    password: '',
+    password_confirmation: '',
+  });
   const [saving, setSaving] = useState(false);
+  const [changingPassword, setChangingPassword] = useState(false);
   const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [profilePhoto, setProfilePhoto] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handlePasswordChange = (field: string, value: string) => {
+    setPasswordData(prev => ({ ...prev, [field]: value }));
   };
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -298,17 +306,6 @@ const EditProfileTab = ({ profileData, onSave, onUpdate }: EditProfileTabProps) 
       if (formData.address) formDataToSend.append('address', formData.address);
       if (formData.maritalStatus) formDataToSend.append('marital_status', formData.maritalStatus);
       if (formData.religion) formDataToSend.append('religion', formData.religion);
-      
-      // Handle password update
-      if (formData.password) {
-        if (formData.password !== formData.password_confirmation) {
-          setNotification({ type: 'error', message: 'Passwords do not match' });
-          setSaving(false);
-          return;
-        }
-        formDataToSend.append('password', formData.password);
-        formDataToSend.append('password_confirmation', formData.password_confirmation);
-      }
 
       const response = await fetch(`${API_BASE_URL}/user/update`, {
         method: 'POST',
@@ -323,7 +320,6 @@ const EditProfileTab = ({ profileData, onSave, onUpdate }: EditProfileTabProps) 
 
       if (response.ok) {
         setNotification({ type: 'success', message: 'Profile updated successfully' });
-        setFormData(prev => ({ ...prev, password: '', password_confirmation: '' }));
         
         // Refresh user data first to get updated photo URL
         if (onUpdate) await onUpdate();
@@ -341,6 +337,61 @@ const EditProfileTab = ({ profileData, onSave, onUpdate }: EditProfileTabProps) 
       setNotification({ type: 'error', message: 'Failed to update profile' });
     } finally {
       setSaving(false);
+      setTimeout(() => setNotification(null), 3000);
+    }
+  };
+
+  const handleChangePassword = async () => {
+    // Validation
+    if (!passwordData.current_password || !passwordData.password || !passwordData.password_confirmation) {
+      setNotification({ type: 'error', message: 'All password fields are required' });
+      setTimeout(() => setNotification(null), 3000);
+      return;
+    }
+
+    if (passwordData.password !== passwordData.password_confirmation) {
+      setNotification({ type: 'error', message: 'New passwords do not match' });
+      setTimeout(() => setNotification(null), 3000);
+      return;
+    }
+
+    if (passwordData.password.length < 8) {
+      setNotification({ type: 'error', message: 'Password must be at least 8 characters' });
+      setTimeout(() => setNotification(null), 3000);
+      return;
+    }
+
+    try {
+      setChangingPassword(true);
+      const token = localStorage.getItem('auth_token');
+
+      const response = await fetch(`${API_BASE_URL}/user/change-password`, {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(passwordData),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        setNotification({ type: 'success', message: 'Password changed successfully. Other sessions logged out.' });
+        setPasswordData({
+          current_password: '',
+          password: '',
+          password_confirmation: '',
+        });
+      } else {
+        throw new Error(result.message || 'Failed to change password');
+      }
+    } catch (error) {
+      console.error('Error changing password:', error);
+      setNotification({ type: 'error', message: error instanceof Error ? error.message : 'Failed to change password' });
+    } finally {
+      setChangingPassword(false);
       setTimeout(() => setNotification(null), 3000);
     }
   };
@@ -577,19 +628,10 @@ const EditProfileTab = ({ profileData, onSave, onUpdate }: EditProfileTabProps) 
                   placeholder="patient@gmail.com"
                   value={formData.email}
                   onChange={(value) => handleInputChange('email', value)}
+                  disabled={true}
                 />
                 <VerifyButton />
               </div>
-
-              {/* Change Password */}
-              <InputField
-                label="Change Password"
-                placeholder="••••••••••••••"
-                value={formData.password}
-                onChange={(value) => handleInputChange('password', value)}
-                type="password"
-                hasEyeIcon={true}
-              />
 
               {/* Change Mobile Number with Verify */}
               <div style={{
@@ -645,18 +687,6 @@ SAU"
                 ]}
               />
 
-              {/* Password Confirmation (only shown if password is entered) */}
-              {formData.password && (
-                <InputField
-                  label="Confirm Password"
-                  placeholder="Confirm your new password"
-                  value={formData.password_confirmation}
-                  onChange={(value) => handleInputChange('password_confirmation', value)}
-                  type="password"
-                  hasEyeIcon={true}
-                />
-              )}
-
               {/* Religion */}
               <CustomSelect
                 label="Religion"
@@ -674,7 +704,7 @@ SAU"
           </div>
         </div>
 
-        {/* Save Button */}
+        {/* Save Profile Button */}
         <button
           onClick={handleSave}
           disabled={saving}
@@ -683,26 +713,253 @@ SAU"
             flexDirection: 'row',
             justifyContent: 'center',
             alignItems: 'center',
-            padding: '8px 12px',
-            width: saving ? '80px' : '71px',
-            height: '32px',
+            padding: '12px 32px',
+            height: '44px',
             background: '#061F42',
-            borderRadius: '8px',
+            borderRadius: '12px',
             border: 'none',
             cursor: 'pointer',
             opacity: saving ? 0.7 : 1,
+            transition: 'all 0.2s ease',
+            alignSelf: 'center',
+          }}
+          onMouseEnter={(e) => {
+            if (!saving) e.currentTarget.style.background = '#0A2E5C';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = '#061F42';
           }}
         >
           <span style={{
             fontFamily: 'Nunito, sans-serif',
-            fontWeight: 600,
-            fontSize: '14px',
-            lineHeight: '16px',
+            fontWeight: 700,
+            fontSize: '16px',
+            lineHeight: '20px',
             color: '#FFFFFF',
           }}>
-            {saving ? 'Saving...' : 'Save'}
+            {saving ? 'Saving Profile...' : 'Update Profile'}
           </span>
         </button>
+
+        {/* Password Change Section */}
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'flex-start',
+          padding: '16px',
+          gap: '12px',
+          width: '100%',
+          background: '#F8F8F8',
+          borderRadius: '12px',
+          border: '2px solid #00ABDA',
+        }}>
+          {/* Section Title */}
+          <div style={{
+            fontFamily: 'Nunito, sans-serif',
+            fontWeight: 700,
+            fontSize: '18px',
+            lineHeight: '24px',
+            color: '#061F42',
+            marginBottom: '4px',
+          }}>
+            Change Password
+          </div>
+
+          <div style={{
+            display: 'flex',
+            flexDirection: 'row',
+            alignItems: 'flex-start',
+            padding: '0px',
+            gap: '16px',
+            width: '100%',
+          }}>
+            {/* Current Password */}
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'flex-start',
+              padding: '0px',
+              gap: '8px',
+              flex: 1,
+            }}>
+              <div style={{
+                fontFamily: 'Nunito, sans-serif',
+                fontWeight: 700,
+                fontSize: '16px',
+                lineHeight: '24px',
+                color: '#061F42',
+              }}>
+                Current Password
+              </div>
+              <div style={{
+                boxSizing: 'border-box',
+                display: 'flex',
+                flexDirection: 'row',
+                alignItems: 'center',
+                padding: '12px',
+                gap: '12px',
+                width: '100%',
+                height: '40px',
+                border: '1.5px solid #A4A5A5',
+                borderRadius: '8px',
+                background: '#FFFFFF',
+              }}>
+                <input
+                  type="password"
+                  placeholder="Enter current password"
+                  value={passwordData.current_password}
+                  onChange={(e) => handlePasswordChange('current_password', e.target.value)}
+                  style={{
+                    width: '100%',
+                    fontFamily: 'Nunito, sans-serif',
+                    fontWeight: 500,
+                    fontSize: '14px',
+                    lineHeight: '16px',
+                    color: passwordData.current_password ? '#061F42' : '#9EA2AE',
+                    border: 'none',
+                    outline: 'none',
+                    background: 'transparent',
+                  }}
+                />
+                <EyeIcon />
+              </div>
+            </div>
+
+            {/* New Password */}
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'flex-start',
+              padding: '0px',
+              gap: '8px',
+              flex: 1,
+            }}>
+              <div style={{
+                fontFamily: 'Nunito, sans-serif',
+                fontWeight: 700,
+                fontSize: '16px',
+                lineHeight: '24px',
+                color: '#061F42',
+              }}>
+                New Password
+              </div>
+              <div style={{
+                boxSizing: 'border-box',
+                display: 'flex',
+                flexDirection: 'row',
+                alignItems: 'center',
+                padding: '12px',
+                gap: '12px',
+                width: '100%',
+                height: '40px',
+                border: '1.5px solid #A4A5A5',
+                borderRadius: '8px',
+                background: '#FFFFFF',
+              }}>
+                <input
+                  type="password"
+                  placeholder="Min 8 characters"
+                  value={passwordData.password}
+                  onChange={(e) => handlePasswordChange('password', e.target.value)}
+                  style={{
+                    width: '100%',
+                    fontFamily: 'Nunito, sans-serif',
+                    fontWeight: 500,
+                    fontSize: '14px',
+                    lineHeight: '16px',
+                    color: passwordData.password ? '#061F42' : '#9EA2AE',
+                    border: 'none',
+                    outline: 'none',
+                    background: 'transparent',
+                  }}
+                />
+                <EyeIcon />
+              </div>
+            </div>
+
+            {/* Confirm New Password */}
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'flex-start',
+              padding: '0px',
+              gap: '8px',
+              flex: 1,
+            }}>
+              <div style={{
+                fontFamily: 'Nunito, sans-serif',
+                fontWeight: 700,
+                fontSize: '16px',
+                lineHeight: '24px',
+                color: '#061F42',
+              }}>
+                Confirm Password
+              </div>
+              <div style={{
+                boxSizing: 'border-box',
+                display: 'flex',
+                flexDirection: 'row',
+                alignItems: 'center',
+                padding: '12px',
+                gap: '12px',
+                width: '100%',
+                height: '40px',
+                border: '1.5px solid #A4A5A5',
+                borderRadius: '8px',
+                background: '#FFFFFF',
+              }}>
+                <input
+                  type="password"
+                  placeholder="Confirm new password"
+                  value={passwordData.password_confirmation}
+                  onChange={(e) => handlePasswordChange('password_confirmation', e.target.value)}
+                  style={{
+                    width: '100%',
+                    fontFamily: 'Nunito, sans-serif',
+                    fontWeight: 500,
+                    fontSize: '14px',
+                    lineHeight: '16px',
+                    color: passwordData.password_confirmation ? '#061F42' : '#9EA2AE',
+                    border: 'none',
+                    outline: 'none',
+                    background: 'transparent',
+                  }}
+                />
+                <EyeIcon />
+              </div>
+            </div>
+          </div>
+
+          {/* Change Password Button */}
+          <button
+            onClick={handleChangePassword}
+            disabled={changingPassword}
+            style={{
+              display: 'flex',
+              flexDirection: 'row',
+              justifyContent: 'center',
+              alignItems: 'center',
+              padding: '8px 16px',
+              height: '32px',
+              background: '#00ABDA',
+              borderRadius: '8px',
+              border: 'none',
+              cursor: 'pointer',
+              opacity: changingPassword ? 0.7 : 1,
+              alignSelf: 'flex-end',
+            }}
+          >
+            <span style={{
+              fontFamily: 'Nunito, sans-serif',
+              fontWeight: 600,
+              fontSize: '14px',
+              lineHeight: '16px',
+              color: '#FFFFFF',
+            }}>
+              {changingPassword ? 'Changing...' : 'Change Password'}
+            </span>
+          </button>
+        </div>
       </div>
       </div>
     </div>

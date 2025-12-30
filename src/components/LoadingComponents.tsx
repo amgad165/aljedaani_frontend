@@ -251,23 +251,49 @@ export const DepartmentCardSkeleton: React.FC<{ count?: number }> = ({ count = 9
           style={{
             boxSizing: 'border-box',
             display: 'flex',
-            flexDirection: 'row',
+            flexDirection: 'column',
             alignItems: 'center',
-            padding: '8px 16px',
-            gap: '12px',
-            width: '357.33px',
-            height: '48px',
-            background: '#FFFFFF',
-            border: '1px solid #DADADA',
-            borderRadius: '8px',
-            animation: `fadeIn 0.3s ease-out ${index * 0.03}s both`,
+            padding: '32px 24px',
+            gap: '16px',
+            background: 'linear-gradient(135deg, #FFFFFF 0%, #F8FCFF 100%)',
+            border: '1px solid #E5F4FF',
+            borderRadius: '16px',
+            boxShadow: '0 2px 8px rgba(0, 171, 218, 0.08)',
+            position: 'relative',
+            overflow: 'hidden',
+            animation: `fadeIn 0.5s ease-out ${index * 0.06}s both`,
           }}
         >
+          {/* Decorative Corner Element */}
+          <div style={{
+            position: 'absolute',
+            top: '-20px',
+            right: '-20px',
+            width: '80px',
+            height: '80px',
+            background: 'linear-gradient(135deg, rgba(0, 171, 218, 0.08) 0%, rgba(0, 171, 218, 0.02) 100%)',
+            borderRadius: '50%',
+          }} />
+
+          {/* Icon Skeleton */}
           <div
             style={{
-              width: '32px',
-              height: '32px',
+              width: '80px',
+              height: '80px',
               borderRadius: '50%',
+              background: 'linear-gradient(90deg, #E8F8FF 25%, #D1F0FF 50%, #E8F8FF 75%)',
+              backgroundSize: '200% 100%',
+              animation: 'shimmer 1.5s ease-in-out infinite',
+              boxShadow: '0 4px 16px rgba(0, 171, 218, 0.12)',
+            }}
+          />
+
+          {/* Title Skeleton */}
+          <div
+            style={{
+              width: '80%',
+              height: '24px',
+              borderRadius: '6px',
               background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
               backgroundSize: '200% 100%',
               animation: 'shimmer 1.5s ease-in-out infinite',
@@ -275,9 +301,34 @@ export const DepartmentCardSkeleton: React.FC<{ count?: number }> = ({ count = 9
           />
           <div
             style={{
-              flex: 1,
+              width: '60%',
+              height: '24px',
+              borderRadius: '6px',
+              background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
+              backgroundSize: '200% 100%',
+              animation: 'shimmer 1.5s ease-in-out infinite',
+            }}
+          />
+
+          {/* Badge Skeleton */}
+          <div
+            style={{
+              width: '120px',
+              height: '28px',
+              borderRadius: '20px',
+              background: 'linear-gradient(90deg, rgba(0, 171, 218, 0.12) 25%, rgba(0, 171, 218, 0.08) 50%, rgba(0, 171, 218, 0.12) 75%)',
+              backgroundSize: '200% 100%',
+              animation: 'shimmer 1.5s ease-in-out infinite',
+            }}
+          />
+
+          {/* View Details Skeleton */}
+          <div
+            style={{
+              width: '100px',
               height: '16px',
               borderRadius: '4px',
+              marginTop: '8px',
               background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
               backgroundSize: '200% 100%',
               animation: 'shimmer 1.5s ease-in-out infinite',

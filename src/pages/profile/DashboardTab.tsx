@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { ProfileData } from './types';
 import {
   CalendarIcon,
@@ -7,6 +7,19 @@ import {
 import MyVitals from '../../components/patient/MyVitals';
 import ChiefComplaints from '../../components/patient/ChiefComplaints';
 import History from '../../components/patient/History';
+
+interface DashboardStats {
+  appointments: {
+    total: number;
+    new: number;
+    old: number;
+  };
+  documents: {
+    total: number;
+    new: number;
+    old: number;
+  };
+}
 
 interface DashboardTabProps {
   profileData: ProfileData;
@@ -165,6 +178,36 @@ const DashboardTab = ({ profileData }: DashboardTabProps) => {
   const [showVitals, setShowVitals] = useState(false);
   const [showChiefComplaints, setShowChiefComplaints] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [loading, setLoading] = useState(true);
+  const hasFetchedRef = useRef(false);
+
+  useEffect(() => {
+    if (hasFetchedRef.current) return;
+    hasFetchedRef.current = true;
+    fetchDashboardStats();
+  }, []);
+
+  const fetchDashboardStats = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('auth_token');
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api'}/patient/dashboard/patient-stats`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      const data = await response.json();
+      if (data.success) {
+        setStats(data.data);
+      }
+    } catch (error) {
+      console.error('Error fetching dashboard stats:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (showChiefComplaints) {
     return (
@@ -301,6 +344,49 @@ const DashboardTab = ({ profileData }: DashboardTabProps) => {
     );
   }
 
+  // Loading Screen
+  if (loading) {
+    return (
+      <div style={{
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+        width: '100%',
+        height: '500px',
+        gap: '24px',
+      }}>
+        {/* Spinner */}
+        <div style={{
+          width: '60px',
+          height: '60px',
+          border: '6px solid #F0F0F0',
+          borderTop: '6px solid #1E88E5',
+          borderRadius: '50%',
+          animation: 'spin 1s linear infinite',
+        }} />
+        
+        {/* Loading Text */}
+        <div style={{
+          fontFamily: 'Nunito, sans-serif',
+          fontWeight: 600,
+          fontSize: '18px',
+          color: '#061F42',
+        }}>
+          Loading Dashboard...
+        </div>
+
+        {/* Inline keyframes animation */}
+        <style>{`
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        `}</style>
+      </div>
+    );
+  }
+
   return (
     <div style={{
       display: 'grid',
@@ -330,16 +416,18 @@ const DashboardTab = ({ profileData }: DashboardTabProps) => {
       {/* Total Appointments Card */}
       <DashboardCard title="Total Appointments" icon={<CalendarIcon />}>
         <StatsDisplay items={[
-          { value: profileData.appointments.new, label: 'New' },
-          { value: profileData.appointments.old, label: 'Old' },
+          { value: stats?.appointments.total ?? 0, label: 'Total' },
+          { value: stats?.appointments.new ?? 0, label: 'New' },
+          { value: stats?.appointments.old ?? 0, label: 'Old' },
         ]} />
       </DashboardCard>
 
       {/* My Documents Card */}
       <DashboardCard title="My Documents" icon={<DocumentIcon />}>
         <StatsDisplay items={[
-          { value: profileData.documents.new, label: 'New Item' },
-          { value: profileData.documents.old, label: 'Old Items' },
+          { value: stats?.documents.total ?? 0, label: 'Total' },
+          { value: stats?.documents.new ?? 0, label: 'New Items' },
+          { value: stats?.documents.old ?? 0, label: 'Old Items' },
         ]} />
       </DashboardCard>
 

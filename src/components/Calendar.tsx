@@ -152,7 +152,7 @@ const Calendar: React.FC<CalendarProps> = ({
           style={{
             display: 'flex',
             flexDirection: 'row',
-            justifyContent: 'space-between',
+            justifyContent: 'flex-start',
             alignItems: 'flex-start',
             padding: '0px 24px',
             gap: '14px',

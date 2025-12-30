@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { Link, useNavigate } from 'react-router-dom';
-import Navbar from '../components/Navbar';
+import { useResponsiveNavbar } from '../hooks/useResponsiveNavbar';
 import Footer from '../components/Footer';
 import CustomSelect from '../components/CustomSelect';
 
@@ -157,6 +157,7 @@ const InputField = ({
 };
 
 const SignUpPage = () => {
+  const ResponsiveNavbar = useResponsiveNavbar();
   const { clearError } = useAuth();
   const navigate = useNavigate();
   
@@ -1100,7 +1101,7 @@ const SignUpPage = () => {
 
   return (
     <div className="page-wrapper" style={{ minHeight: '100vh' }}>
-      <Navbar />
+      {ResponsiveNavbar}
       
       <div style={{ height: '180px', background: '#C9F3FF' }} />
       

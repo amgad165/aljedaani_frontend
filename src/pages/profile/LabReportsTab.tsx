@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { 
   getUserHisLabReports, 
   downloadHisLabReportPdf, 
@@ -41,21 +41,23 @@ const ReportCard = ({ report, onDownload, onView }: ReportCardProps) => (
       textAlign: 'center',
       color: '#061F42',
     }}>
-      {report.Category || 'Lab Test'}
+      {report.service_name || 'Lab Test'}
     </div>
     
-    {/* Technician */}
-    <div style={{
-      width: '260px',
-      fontFamily: 'Varela Round',
-      fontWeight: 400,
-      fontSize: '12px',
-      lineHeight: '16px',
-      textAlign: 'center',
-      color: '#061F42',
-    }}>
-      {report.LabMan ? `Lab Technician: ${report.LabMan}` : 'Lab Technician'}
-    </div>
+    {/* Technician - Only show if technician exists */}
+    {report.technician && (
+      <div style={{
+        width: '260px',
+        fontFamily: 'Varela Round',
+        fontWeight: 400,
+        fontSize: '12px',
+        lineHeight: '16px',
+        textAlign: 'center',
+        color: '#061F42',
+      }}>
+        Lab Technician: {report.technician}
+      </div>
+    )}
     
     {/* Date Badge */}
     <div style={{
@@ -78,7 +80,7 @@ const ReportCard = ({ report, onDownload, onView }: ReportCardProps) => (
         textAlign: 'center',
         color: '#1F57A4',
       }}>
-        {formatReportDate(report.R_DATE)}
+        {formatReportDate(report.date)}
       </div>
     </div>
     
@@ -93,7 +95,7 @@ const ReportCard = ({ report, onDownload, onView }: ReportCardProps) => (
       height: '32px',
     }}>
       <button 
-        onClick={() => onDownload(report.SLNO)}
+        onClick={() => onDownload(report.slno)}
         style={{
           display: 'flex',
           flexDirection: 'row',
@@ -116,7 +118,7 @@ const ReportCard = ({ report, onDownload, onView }: ReportCardProps) => (
         Download
       </button>
       <button 
-        onClick={() => onView(report.SLNO)}
+        onClick={() => onView(report.slno)}
         style={{
           display: 'flex',
           flexDirection: 'row',
@@ -148,17 +150,33 @@ const LabReportsTab = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [totalPages, setTotalPages] = useState(1);
-  
-  useEffect(() => {
-    fetchReports();
-  }, [currentPage]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [dateFilter, setDateFilter] = useState<string | null>(null);
+  const hasFetchedRef = useRef(false);
 
-  const fetchReports = async () => {
+  const fetchReports = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
       const response = await getUserHisLabReports(currentPage, 12);
-      setReports(response.data);
+      let filteredReports = response.data;
+      
+      // Apply search filter
+      if (searchQuery) {
+        filteredReports = filteredReports.filter(report =>
+          report.service_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          report.technician?.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+      }
+      
+      // Apply date filter
+      if (dateFilter) {
+        filteredReports = filteredReports.filter(report =>
+          report.date === dateFilter
+        );
+      }
+      
+      setReports(filteredReports);
       setTotalPages(response.pagination.last_page);
     } catch (err) {
       setError('Failed to load lab reports');
@@ -166,7 +184,13 @@ const LabReportsTab = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentPage, searchQuery, dateFilter]);
+
+  useEffect(() => {
+    if (hasFetchedRef.current) return;
+    hasFetchedRef.current = true;
+    fetchReports();
+  }, [fetchReports]);
 
   const handleDownload = async (slno: string) => {
     try {
@@ -186,29 +210,16 @@ const LabReportsTab = () => {
     }
   };
 
-  if (loading) {
-    return (
-      <div style={{ textAlign: 'center', padding: '50px', fontSize: '18px', color: '#061F42' }}>
-        Loading lab reports...
-      </div>
-    );
-  }
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+    setCurrentPage(1); // Reset to first page on search
+  };
 
-  if (error) {
-    return (
-      <div style={{ textAlign: 'center', padding: '50px', fontSize: '18px', color: '#CB0729' }}>
-        {error}
-      </div>
-    );
-  }
-
-  if (reports.length === 0) {
-    return (
-      <div style={{ textAlign: 'center', padding: '50px', fontSize: '18px', color: '#061F42' }}>
-        No lab reports found
-      </div>
-    );
-  }
+  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const date = e.target.value;
+    setDateFilter(date || null);
+    setCurrentPage(1); // Reset to first page on date filter
+  };
 
   return (
     <div style={{
@@ -300,6 +311,8 @@ const LabReportsTab = () => {
               <input
                 type="text"
                 placeholder="Search for documents"
+                value={searchQuery}
+                onChange={handleSearchChange}
                 style={{
                   width: '100%',
                   border: 'none',
@@ -319,54 +332,88 @@ const LabReportsTab = () => {
             </div>
           </div>
           
-          {/* Date/Time Button */}
-          <button style={{
-            boxSizing: 'border-box',
-            display: 'flex',
-            flexDirection: 'row',
-            justifyContent: 'center',
-            alignItems: 'center',
-            padding: '8px 12px',
-            width: '132px',
-            height: '40px',
-            background: '#FFFFFF',
-            border: '1px solid #061F42',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            fontFamily: 'Nunito',
-            fontWeight: 600,
-            fontSize: '14px',
-            lineHeight: '16px',
-            color: '#061F42',
-          }}>
-            Date/Time
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ marginLeft: '4px' }}>
-              <rect x="3" y="4" width="18" height="18" rx="2" stroke="#061F42" strokeWidth="1.5"/>
-              <path d="M3 8H21" stroke="#061F42" strokeWidth="1.5"/>
-              <path d="M8 2V6" stroke="#131927" strokeWidth="1.5" strokeLinecap="round"/>
-              <path d="M16 2V6" stroke="#131927" strokeWidth="1.5" strokeLinecap="round"/>
-            </svg>
-          </button>
+          {/* Date Input */}
+          <input
+            type="date"
+            value={dateFilter || ''}
+            onChange={handleDateChange}
+            style={{
+              boxSizing: 'border-box',
+              width: '132px',
+              height: '40px',
+              padding: '8px 12px',
+              background: '#FFFFFF',
+              border: '1px solid #061F42',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontFamily: 'Nunito',
+              fontWeight: 600,
+              fontSize: '14px',
+              lineHeight: '16px',
+              color: '#061F42',
+            }}
+          />
         </div>
       </div>
       
       {/* Reports Grid */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(2, 284px)',
-        gap: '28px 44px',
-        width: '612px',
-        height: '411.33px',
-      }}>
-        {reports.map((report) => (
-          <ReportCard
-            key={report.SLNO}
-            report={report}
-            onDownload={handleDownload}
-            onView={handleView}
-          />
-        ))}
-      </div>
+      {loading ? (
+        <div style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          width: '612px',
+          height: '411.33px',
+          fontFamily: 'Nunito',
+          fontSize: '16px',
+          color: '#666',
+        }}>
+          Loading lab reports...
+        </div>
+      ) : error ? (
+        <div style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          width: '612px',
+          height: '411.33px',
+          fontFamily: 'Nunito',
+          fontSize: '16px',
+          color: '#CB0729',
+        }}>
+          {error}
+        </div>
+      ) : reports.length === 0 ? (
+        <div style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          width: '612px',
+          height: '411.33px',
+          fontFamily: 'Nunito',
+          fontSize: '16px',
+          color: '#666',
+        }}>
+          No lab reports found
+        </div>
+      ) : (
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(2, 284px)',
+          gap: '28px 44px',
+          width: '612px',
+          height: '411.33px',
+        }}>
+          {reports.map((report) => (
+            <ReportCard
+              key={report.slno}
+              report={report}
+              onDownload={handleDownload}
+              onView={handleView}
+            />
+          ))}
+        </div>
+      )}
       
       {/* Pagination */}
       <div style={{

@@ -175,6 +175,7 @@ const AdminAppointments: React.FC = () => {
         }}>
           <div>
             <h1 style={{
+              fontFamily: 'Nunito, sans-serif',
               fontSize: '32px',
               fontWeight: '700',
               color: '#0a4d68',
@@ -182,7 +183,7 @@ const AdminAppointments: React.FC = () => {
             }}>
               Appointments
             </h1>
-            <p style={{ color: '#6b7280', fontSize: '16px' }}>
+            <p style={{ fontFamily: 'Nunito, sans-serif', color: '#6b7280', fontSize: '16px' }}>
               Manage web-booked appointments
             </p>
           </div>
@@ -201,10 +202,10 @@ const AdminAppointments: React.FC = () => {
             borderRadius: '12px',
             color: 'white',
           }}>
-            <div style={{ fontSize: '14px', opacity: 0.9, marginBottom: '8px' }}>
+            <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '14px', opacity: 0.9, marginBottom: '8px' }}>
               Total Appointments
             </div>
-            <div style={{ fontSize: '32px', fontWeight: '700' }}>
+            <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '32px', fontWeight: '700' }}>
               {pagination?.total || 0}
             </div>
           </div>
@@ -215,10 +216,10 @@ const AdminAppointments: React.FC = () => {
             borderRadius: '12px',
             color: 'white',
           }}>
-            <div style={{ fontSize: '14px', opacity: 0.9, marginBottom: '8px' }}>
+            <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '14px', opacity: 0.9, marginBottom: '8px' }}>
               Synced to HIS
             </div>
-            <div style={{ fontSize: '32px', fontWeight: '700' }}>
+            <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '32px', fontWeight: '700' }}>
               {appointments.filter(a => a.synced_to_his).length}
             </div>
           </div>
@@ -229,10 +230,10 @@ const AdminAppointments: React.FC = () => {
             borderRadius: '12px',
             color: 'white',
           }}>
-            <div style={{ fontSize: '14px', opacity: 0.9, marginBottom: '8px' }}>
+            <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '14px', opacity: 0.9, marginBottom: '8px' }}>
               Pending Sync
             </div>
-            <div style={{ fontSize: '32px', fontWeight: '700' }}>
+            <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '32px', fontWeight: '700' }}>
               {appointments.filter(a => !a.synced_to_his).length}
             </div>
           </div>
@@ -243,10 +244,10 @@ const AdminAppointments: React.FC = () => {
             borderRadius: '12px',
             color: 'white',
           }}>
-            <div style={{ fontSize: '14px', opacity: 0.9, marginBottom: '8px' }}>
+            <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '14px', opacity: 0.9, marginBottom: '8px' }}>
               Today's Appointments
             </div>
-            <div style={{ fontSize: '32px', fontWeight: '700' }}>
+            <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '32px', fontWeight: '700' }}>
               {appointments.filter(a => 
                 formatDate(a.appointment_date) === formatDate(new Date().toISOString())
               ).length}
@@ -269,6 +270,7 @@ const AdminAppointments: React.FC = () => {
           }}>
             <div>
               <label style={{
+                fontFamily: 'Nunito, sans-serif',
                 display: 'block',
                 marginBottom: '8px',
                 fontSize: '14px',
@@ -283,6 +285,7 @@ const AdminAppointments: React.FC = () => {
                 value={searchTerm}
                 onChange={(e) => handleSearchChange(e.target.value)}
                 style={{
+                  fontFamily: 'Nunito, sans-serif',
                   width: '100%',
                   padding: '10px 16px',
                   border: '1px solid #d1d5db',
@@ -294,6 +297,7 @@ const AdminAppointments: React.FC = () => {
 
             <div>
               <label style={{
+                fontFamily: 'Nunito, sans-serif',
                 display: 'block',
                 marginBottom: '8px',
                 fontSize: '14px',
@@ -309,6 +313,7 @@ const AdminAppointments: React.FC = () => {
                   setCurrentPage(1);
                 }}
                 style={{
+                  fontFamily: 'Nunito, sans-serif',
                   width: '100%',
                   padding: '10px 16px',
                   border: '1px solid #d1d5db',
@@ -326,6 +331,7 @@ const AdminAppointments: React.FC = () => {
 
             <div>
               <label style={{
+                fontFamily: 'Nunito, sans-serif',
                 display: 'block',
                 marginBottom: '8px',
                 fontSize: '14px',
@@ -341,6 +347,7 @@ const AdminAppointments: React.FC = () => {
                   setCurrentPage(1);
                 }}
                 style={{
+                  fontFamily: 'Nunito, sans-serif',
                   width: '100%',
                   padding: '10px 16px',
                   border: '1px solid #d1d5db',
@@ -364,11 +371,11 @@ const AdminAppointments: React.FC = () => {
           overflow: 'hidden',
         }}>
           {loading ? (
-            <div style={{ textAlign: 'center', padding: '48px', color: '#6b7280' }}>
+            <div style={{ fontFamily: 'Nunito, sans-serif', textAlign: 'center', padding: '48px', color: '#6b7280' }}>
               Loading appointments...
             </div>
           ) : appointments.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '48px', color: '#6b7280' }}>
+            <div style={{ fontFamily: 'Nunito, sans-serif', textAlign: 'center', padding: '48px', color: '#6b7280' }}>
               No appointments found
             </div>
           ) : (
@@ -377,25 +384,25 @@ const AdminAppointments: React.FC = () => {
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                   <thead style={{ background: '#f9fafb', borderBottom: '1px solid #e5e7eb' }}>
                     <tr>
-                      <th style={{ padding: '16px', textAlign: 'left', fontSize: '14px', fontWeight: '600', color: '#374151' }}>
+                      <th style={{ fontFamily: 'Nunito, sans-serif', padding: '16px', textAlign: 'left', fontSize: '14px', fontWeight: '600', color: '#374151' }}>
                         Patient
                       </th>
-                      <th style={{ padding: '16px', textAlign: 'left', fontSize: '14px', fontWeight: '600', color: '#374151' }}>
+                      <th style={{ fontFamily: 'Nunito, sans-serif', padding: '16px', textAlign: 'left', fontSize: '14px', fontWeight: '600', color: '#374151' }}>
                         Doctor
                       </th>
-                      <th style={{ padding: '16px', textAlign: 'left', fontSize: '14px', fontWeight: '600', color: '#374151' }}>
+                      <th style={{ fontFamily: 'Nunito, sans-serif', padding: '16px', textAlign: 'left', fontSize: '14px', fontWeight: '600', color: '#374151' }}>
                         Department
                       </th>
-                      <th style={{ padding: '16px', textAlign: 'left', fontSize: '14px', fontWeight: '600', color: '#374151' }}>
+                      <th style={{ fontFamily: 'Nunito, sans-serif', padding: '16px', textAlign: 'left', fontSize: '14px', fontWeight: '600', color: '#374151' }}>
                         Date & Time
                       </th>
-                      <th style={{ padding: '16px', textAlign: 'left', fontSize: '14px', fontWeight: '600', color: '#374151' }}>
+                      <th style={{ fontFamily: 'Nunito, sans-serif', padding: '16px', textAlign: 'left', fontSize: '14px', fontWeight: '600', color: '#374151' }}>
                         Status
                       </th>
-                      <th style={{ padding: '16px', textAlign: 'left', fontSize: '14px', fontWeight: '600', color: '#374151' }}>
+                      <th style={{ fontFamily: 'Nunito, sans-serif', padding: '16px', textAlign: 'left', fontSize: '14px', fontWeight: '600', color: '#374151' }}>
                         HIS Sync
                       </th>
-                      <th style={{ padding: '16px', textAlign: 'left', fontSize: '14px', fontWeight: '600', color: '#374151' }}>
+                      <th style={{ fontFamily: 'Nunito, sans-serif', padding: '16px', textAlign: 'left', fontSize: '14px', fontWeight: '600', color: '#374151' }}>
                         Source
                       </th>
                     </tr>
@@ -414,34 +421,35 @@ const AdminAppointments: React.FC = () => {
                         onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                       >
                         <td style={{ padding: '16px' }}>
-                          <div style={{ fontWeight: '500', color: '#111827' }}>
+                          <div style={{ fontFamily: 'Nunito, sans-serif', fontWeight: '500', color: '#111827' }}>
                             {appointment.patient_name}
                           </div>
-                          <div style={{ fontSize: '14px', color: '#6b7280' }}>
+                          <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '14px', color: '#6b7280' }}>
                             {appointment.patient_phone}
                           </div>
                         </td>
                         <td style={{ padding: '16px' }}>
-                          <div style={{ fontSize: '14px', color: '#111827' }}>
+                          <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '14px', color: '#111827' }}>
                             {appointment.doctor?.name || 'N/A'}
                           </div>
-                          <div style={{ fontSize: '12px', color: '#6b7280' }}>
+                          <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '12px', color: '#6b7280' }}>
                             Code: {appointment.doctor_code || 'N/A'}
                           </div>
                         </td>
-                        <td style={{ padding: '16px', fontSize: '14px', color: '#6b7280' }}>
+                        <td style={{ fontFamily: 'Nunito, sans-serif', padding: '16px', fontSize: '14px', color: '#6b7280' }}>
                           {appointment.department?.name || 'N/A'}
                         </td>
                         <td style={{ padding: '16px' }}>
-                          <div style={{ fontSize: '14px', color: '#111827' }}>
+                          <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '14px', color: '#111827' }}>
                             {formatDate(appointment.appointment_date)}
                           </div>
-                          <div style={{ fontSize: '14px', color: '#6b7280' }}>
+                          <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '14px', color: '#6b7280' }}>
                             {formatTime(appointment.appointment_time)}
                           </div>
                         </td>
                         <td style={{ padding: '16px' }}>
                           <span style={{
+                            fontFamily: 'Nunito, sans-serif',
                             display: 'inline-block',
                             padding: '4px 12px',
                             borderRadius: '12px',
@@ -462,7 +470,7 @@ const AdminAppointments: React.FC = () => {
                                 borderRadius: '50%',
                                 backgroundColor: '#10b981',
                               }} />
-                              <span style={{ fontSize: '14px', color: '#10b981' }}>Synced</span>
+                              <span style={{ fontFamily: 'Nunito, sans-serif', fontSize: '14px', color: '#10b981' }}>Synced</span>
                             </div>
                           ) : (
                             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -472,11 +480,11 @@ const AdminAppointments: React.FC = () => {
                                 borderRadius: '50%',
                                 backgroundColor: '#f59e0b',
                               }} />
-                              <span style={{ fontSize: '14px', color: '#f59e0b' }}>Pending</span>
+                              <span style={{ fontFamily: 'Nunito, sans-serif', fontSize: '14px', color: '#f59e0b' }}>Pending</span>
                             </div>
                           )}
                         </td>
-                        <td style={{ padding: '16px', fontSize: '14px', color: '#6b7280' }}>
+                        <td style={{ fontFamily: 'Nunito, sans-serif', padding: '16px', fontSize: '14px', color: '#6b7280' }}>
                           {appointment.booking_source.toUpperCase()}
                         </td>
                       </tr>
@@ -494,7 +502,7 @@ const AdminAppointments: React.FC = () => {
                   padding: '16px 24px',
                   borderTop: '1px solid #e5e7eb',
                 }}>
-                  <div style={{ fontSize: '14px', color: '#6b7280' }}>
+                  <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '14px', color: '#6b7280' }}>
                     Showing {((pagination.current_page - 1) * pagination.per_page) + 1} to{' '}
                     {Math.min(pagination.current_page * pagination.per_page, pagination.total)} of{' '}
                     {pagination.total} appointments
@@ -504,6 +512,7 @@ const AdminAppointments: React.FC = () => {
                       onClick={() => setCurrentPage(currentPage - 1)}
                       disabled={currentPage === 1}
                       style={{
+                        fontFamily: 'Nunito, sans-serif',
                         padding: '8px 16px',
                         border: '1px solid #d1d5db',
                         borderRadius: '8px',
@@ -518,6 +527,7 @@ const AdminAppointments: React.FC = () => {
                       onClick={() => setCurrentPage(currentPage + 1)}
                       disabled={currentPage === pagination.last_page}
                       style={{
+                        fontFamily: 'Nunito, sans-serif',
                         padding: '8px 16px',
                         border: '1px solid #d1d5db',
                         borderRadius: '8px',
@@ -573,12 +583,13 @@ const AdminAppointments: React.FC = () => {
               justifyContent: 'space-between',
               alignItems: 'center',
             }}>
-              <h2 style={{ fontSize: '24px', fontWeight: '700', color: '#0a4d68' }}>
+              <h2 style={{ fontFamily: 'Nunito, sans-serif', fontSize: '24px', fontWeight: '700', color: '#0a4d68' }}>
                 Appointment Details
               </h2>
               <button
                 onClick={closeModal}
                 style={{
+                  fontFamily: 'Nunito, sans-serif',
                   background: 'none',
                   border: 'none',
                   fontSize: '24px',
@@ -599,37 +610,37 @@ const AdminAppointments: React.FC = () => {
               }}>
                 {/* Patient Information */}
                 <div>
-                  <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#0a4d68', marginBottom: '16px' }}>
+                  <h3 style={{ fontFamily: 'Nunito, sans-serif', fontSize: '16px', fontWeight: '600', color: '#0a4d68', marginBottom: '16px' }}>
                     Patient Information
                   </h3>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                     <div>
-                      <div style={{ fontSize: '12px', color: '#6b7280' }}>Name</div>
-                      <div style={{ fontSize: '14px', fontWeight: '500', color: '#111827' }}>
+                      <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '12px', color: '#6b7280' }}>Name</div>
+                      <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '14px', fontWeight: '500', color: '#111827' }}>
                         {selectedAppointment.patient_name}
                       </div>
                     </div>
                     <div>
-                      <div style={{ fontSize: '12px', color: '#6b7280' }}>Phone</div>
-                      <div style={{ fontSize: '14px', fontWeight: '500', color: '#111827' }}>
+                      <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '12px', color: '#6b7280' }}>Phone</div>
+                      <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '14px', fontWeight: '500', color: '#111827' }}>
                         {selectedAppointment.patient_phone}
                       </div>
                     </div>
                     <div>
-                      <div style={{ fontSize: '12px', color: '#6b7280' }}>Email</div>
-                      <div style={{ fontSize: '14px', fontWeight: '500', color: '#111827' }}>
+                      <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '12px', color: '#6b7280' }}>Email</div>
+                      <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '14px', fontWeight: '500', color: '#111827' }}>
                         {selectedAppointment.patient_email || 'N/A'}
                       </div>
                     </div>
                     <div>
-                      <div style={{ fontSize: '12px', color: '#6b7280' }}>Medical Record Number</div>
-                      <div style={{ fontSize: '14px', fontWeight: '500', color: '#111827' }}>
+                      <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '12px', color: '#6b7280' }}>Medical Record Number</div>
+                      <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '14px', fontWeight: '500', color: '#111827' }}>
                         {selectedAppointment.medical_record_number || 'N/A'}
                       </div>
                     </div>
                     <div>
-                      <div style={{ fontSize: '12px', color: '#6b7280' }}>National ID</div>
-                      <div style={{ fontSize: '14px', fontWeight: '500', color: '#111827' }}>
+                      <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '12px', color: '#6b7280' }}>National ID</div>
+                      <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '14px', fontWeight: '500', color: '#111827' }}>
                         {selectedAppointment.national_id || 'N/A'}
                       </div>
                     </div>
@@ -638,46 +649,46 @@ const AdminAppointments: React.FC = () => {
 
                 {/* Appointment Information */}
                 <div>
-                  <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#0a4d68', marginBottom: '16px' }}>
+                  <h3 style={{ fontFamily: 'Nunito, sans-serif', fontSize: '16px', fontWeight: '600', color: '#0a4d68', marginBottom: '16px' }}>
                     Appointment Information
                   </h3>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                     <div>
-                      <div style={{ fontSize: '12px', color: '#6b7280' }}>Doctor</div>
-                      <div style={{ fontSize: '14px', fontWeight: '500', color: '#111827' }}>
+                      <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '12px', color: '#6b7280' }}>Doctor</div>
+                      <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '14px', fontWeight: '500', color: '#111827' }}>
                         {selectedAppointment.doctor?.name || 'N/A'}
                       </div>
-                      <div style={{ fontSize: '12px', color: '#6b7280' }}>
+                      <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '12px', color: '#6b7280' }}>
                         Code: {selectedAppointment.doctor_code || 'N/A'}
                       </div>
                     </div>
                     <div>
-                      <div style={{ fontSize: '12px', color: '#6b7280' }}>Department</div>
-                      <div style={{ fontSize: '14px', fontWeight: '500', color: '#111827' }}>
+                      <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '12px', color: '#6b7280' }}>Department</div>
+                      <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '14px', fontWeight: '500', color: '#111827' }}>
                         {selectedAppointment.department?.name || 'N/A'}
                       </div>
                     </div>
                     <div>
-                      <div style={{ fontSize: '12px', color: '#6b7280' }}>Branch</div>
-                      <div style={{ fontSize: '14px', fontWeight: '500', color: '#111827' }}>
+                      <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '12px', color: '#6b7280' }}>Branch</div>
+                      <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '14px', fontWeight: '500', color: '#111827' }}>
                         {selectedAppointment.branch?.name || 'N/A'}
                       </div>
                     </div>
                     <div>
-                      <div style={{ fontSize: '12px', color: '#6b7280' }}>Date & Time</div>
-                      <div style={{ fontSize: '14px', fontWeight: '500', color: '#111827' }}>
+                      <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '12px', color: '#6b7280' }}>Date & Time</div>
+                      <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '14px', fontWeight: '500', color: '#111827' }}>
                         {formatDate(selectedAppointment.appointment_date)} at {formatTime(selectedAppointment.appointment_time)}
                       </div>
                     </div>
                     <div>
-                      <div style={{ fontSize: '12px', color: '#6b7280' }}>Duration</div>
-                      <div style={{ fontSize: '14px', fontWeight: '500', color: '#111827' }}>
+                      <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '12px', color: '#6b7280' }}>Duration</div>
+                      <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '14px', fontWeight: '500', color: '#111827' }}>
                         {selectedAppointment.slot_duration} minutes
                       </div>
                     </div>
                     <div>
-                      <div style={{ fontSize: '12px', color: '#6b7280' }}>Shift</div>
-                      <div style={{ fontSize: '14px', fontWeight: '500', color: '#111827' }}>
+                      <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '12px', color: '#6b7280' }}>Shift</div>
+                      <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '14px', fontWeight: '500', color: '#111827' }}>
                         {selectedAppointment.shift_code || 'N/A'}
                       </div>
                     </div>
@@ -686,16 +697,17 @@ const AdminAppointments: React.FC = () => {
 
                 {/* Status & Sync Information */}
                 <div style={{ gridColumn: 'span 2' }}>
-                  <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#0a4d68', marginBottom: '16px' }}>
+                  <h3 style={{ fontFamily: 'Nunito, sans-serif', fontSize: '16px', fontWeight: '600', color: '#0a4d68', marginBottom: '16px' }}>
                     Status & Sync
                   </h3>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '24px' }}>
                     <div>
-                      <div style={{ fontSize: '12px', color: '#6b7280', marginBottom: '8px' }}>Status</div>
+                      <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '12px', color: '#6b7280', marginBottom: '8px' }}>Status</div>
                       <select
                         value={selectedAppointment.status}
                         onChange={(e) => handleStatusChange(selectedAppointment.id, e.target.value)}
                         style={{
+                          fontFamily: 'Nunito, sans-serif',
                           padding: '8px 12px',
                           border: '1px solid #d1d5db',
                           borderRadius: '8px',
@@ -710,35 +722,35 @@ const AdminAppointments: React.FC = () => {
                       </select>
                     </div>
                     <div>
-                      <div style={{ fontSize: '12px', color: '#6b7280' }}>Booking Source</div>
-                      <div style={{ fontSize: '14px', fontWeight: '500', color: '#111827' }}>
+                      <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '12px', color: '#6b7280' }}>Booking Source</div>
+                      <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '14px', fontWeight: '500', color: '#111827' }}>
                         {selectedAppointment.booking_source.toUpperCase()}
                       </div>
                     </div>
                     <div>
-                      <div style={{ fontSize: '12px', color: '#6b7280' }}>HIS Sync Status</div>
-                      <div style={{ fontSize: '14px', fontWeight: '500', color: selectedAppointment.synced_to_his ? '#10b981' : '#f59e0b' }}>
+                      <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '12px', color: '#6b7280' }}>HIS Sync Status</div>
+                      <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '14px', fontWeight: '500', color: selectedAppointment.synced_to_his ? '#10b981' : '#f59e0b' }}>
                         {selectedAppointment.synced_to_his ? 'Synced' : 'Pending'}
                       </div>
                     </div>
                     {selectedAppointment.his_appointment_code && (
                       <div>
-                        <div style={{ fontSize: '12px', color: '#6b7280' }}>HIS Appointment Code</div>
-                        <div style={{ fontSize: '14px', fontWeight: '500', color: '#111827' }}>
+                        <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '12px', color: '#6b7280' }}>HIS Appointment Code</div>
+                        <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '14px', fontWeight: '500', color: '#111827' }}>
                           {selectedAppointment.his_appointment_code}
                         </div>
                       </div>
                     )}
                     <div>
-                      <div style={{ fontSize: '12px', color: '#6b7280' }}>Sync Attempts</div>
-                      <div style={{ fontSize: '14px', fontWeight: '500', color: '#111827' }}>
+                      <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '12px', color: '#6b7280' }}>Sync Attempts</div>
+                      <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '14px', fontWeight: '500', color: '#111827' }}>
                         {selectedAppointment.sync_attempts || 0}
                       </div>
                     </div>
                     {selectedAppointment.last_sync_attempt_at && (
                       <div>
-                        <div style={{ fontSize: '12px', color: '#6b7280' }}>Last Sync Attempt</div>
-                        <div style={{ fontSize: '14px', fontWeight: '500', color: '#111827' }}>
+                        <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '12px', color: '#6b7280' }}>Last Sync Attempt</div>
+                        <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '14px', fontWeight: '500', color: '#111827' }}>
                           {formatDate(selectedAppointment.last_sync_attempt_at)}
                         </div>
                       </div>
@@ -752,10 +764,10 @@ const AdminAppointments: React.FC = () => {
                       borderLeft: '4px solid #ef4444',
                       borderRadius: '4px',
                     }}>
-                      <div style={{ fontSize: '12px', fontWeight: '600', color: '#991b1b', marginBottom: '4px' }}>
+                      <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '12px', fontWeight: '600', color: '#991b1b', marginBottom: '4px' }}>
                         Sync Error
                       </div>
-                      <div style={{ fontSize: '14px', color: '#7f1d1d' }}>
+                      <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '14px', color: '#7f1d1d' }}>
                         {selectedAppointment.sync_error}
                       </div>
                     </div>
@@ -765,21 +777,21 @@ const AdminAppointments: React.FC = () => {
                 {/* Notes */}
                 {(selectedAppointment.reason || selectedAppointment.notes) && (
                   <div style={{ gridColumn: 'span 2' }}>
-                    <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#0a4d68', marginBottom: '16px' }}>
-                      Notes
-                    </h3>
+                  <h3 style={{ fontFamily: 'Nunito, sans-serif', fontSize: '16px', fontWeight: '600', color: '#0a4d68', marginBottom: '16px' }}>
+                    Notes
+                  </h3>
                     {selectedAppointment.reason && (
                       <div style={{ marginBottom: '12px' }}>
-                        <div style={{ fontSize: '12px', color: '#6b7280' }}>Reason</div>
-                        <div style={{ fontSize: '14px', color: '#111827' }}>
+                        <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '12px', color: '#6b7280' }}>Reason</div>
+                        <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '14px', color: '#111827' }}>
                           {selectedAppointment.reason}
                         </div>
                       </div>
                     )}
                     {selectedAppointment.notes && (
                       <div>
-                        <div style={{ fontSize: '12px', color: '#6b7280' }}>Notes</div>
-                        <div style={{ fontSize: '14px', color: '#111827' }}>
+                        <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '12px', color: '#6b7280' }}>Notes</div>
+                        <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '14px', color: '#111827' }}>
                           {selectedAppointment.notes}
                         </div>
                       </div>
@@ -789,7 +801,7 @@ const AdminAppointments: React.FC = () => {
 
                 {/* Timestamps */}
                 <div style={{ gridColumn: 'span 2', paddingTop: '16px', borderTop: '1px solid #e5e7eb' }}>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px', fontSize: '12px', color: '#6b7280' }}>
+                  <div style={{ fontFamily: 'Nunito, sans-serif', display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px', fontSize: '12px', color: '#6b7280' }}>
                     <div>
                       Created: {formatDate(selectedAppointment.created_at)}
                     </div>
@@ -811,6 +823,7 @@ const AdminAppointments: React.FC = () => {
               <button
                 onClick={closeModal}
                 style={{
+                  fontFamily: 'Nunito, sans-serif',
                   padding: '10px 24px',
                   background: '#0a4d68',
                   color: 'white',

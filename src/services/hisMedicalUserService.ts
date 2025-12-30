@@ -10,24 +10,12 @@ const getAuthHeaders = () => {
 };
 
 export interface HisMedicalReport {
-  id: number;
-  CODE: string;
-  FILENUMBER: string | null;
-  PatientID: string | null;
-  MRDATE: string | null;
-  ATTDATE: string | null;
-  ATTTIME: string | null;
-  MRTO: string | null;
-  MRDESC: string | null;
-  MRDESCNCHAR: string | null;
-  PATNAME: string | null;
-  DRNAME: string | null;
-  DRCODE: string | null;
-  COMPCASH: string | null;
-  ReportType: string | null;
-  InspectionCode: string | null;
-  created_at: string;
-  updated_at: string;
+  slno: string;
+  service_name: string;
+  date: string;
+  time: string;
+  technician: string | null;
+  report_type: string;
 }
 
 export interface HisMedicalReportsResponse {

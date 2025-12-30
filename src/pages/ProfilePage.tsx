@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
-import { Navigate } from 'react-router-dom';
-import Navbar from '../components/Navbar';
+import { Navigate, useSearchParams } from 'react-router-dom';
+import { useResponsiveNavbar } from '../hooks/useResponsiveNavbar';
 import Footer from '../components/Footer';
 import {
   DashboardTab,
@@ -14,14 +14,24 @@ import {
 import type { TabType, TabInfo, ProfileData } from './profile';
 
 const ProfilePage = () => {
+  const ResponsiveNavbar = useResponsiveNavbar();
   const { isAuthenticated, user, isLoading, refreshUser } = useAuth();
+  const [searchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState<TabType>('dashboard');
+
+  // Handle tab parameter from URL
+  useEffect(() => {
+    const tabParam = searchParams.get('tab');
+    if (tabParam && ['dashboard', 'edit-profile', 'appointments', 'lab-reports', 'rad-reports', 'medical-reports'].includes(tabParam)) {
+      setActiveTab(tabParam as TabType);
+    }
+  }, [searchParams]);
 
   const tabs: TabInfo[] = [
     { id: 'dashboard', label: 'Dashboard', width: '148px' },
     { id: 'edit-profile', label: 'Edit Profile', width: '149px' },
     { id: 'appointments', label: 'My Appointments', width: '211px' },
-    { id: 'lab-reports', label: 'Lab. Reports', width: '164px' },
+    { id: 'lab-reports', label: 'Lab. Results', width: '164px' },
     { id: 'rad-reports', label: 'Rad. Reports', width: '167px' },
     { id: 'medical-reports', label: 'Medical Reports', width: '197px' },
   ];
@@ -62,9 +72,10 @@ const ProfilePage = () => {
         flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',
-        padding: '12px 16px',
-        width: tab.width,
-        height: '40px',
+        padding: window.innerWidth <= 768 ? '10px 12px' : '12px 16px',
+        width: window.innerWidth <= 768 ? 'auto' : tab.width,
+        minWidth: window.innerWidth <= 768 ? '80px' : 'auto',
+        height: window.innerWidth <= 768 ? '36px' : '40px',
         background: isActive ? '#FCFCFC' : '#E6E6E6',
         boxShadow: isActive ? '0px 0px 5px rgba(0, 0, 0, 0.25)' : 'none',
         borderRadius: '12px 12px 0px 0px',
@@ -77,12 +88,13 @@ const ProfilePage = () => {
         fontFamily: 'Nunito, sans-serif',
         fontStyle: 'normal',
         fontWeight: 600,
-        fontSize: '20px',
-        lineHeight: '20px',
+        fontSize: window.innerWidth <= 768 ? '14px' : '20px',
+        lineHeight: window.innerWidth <= 768 ? '14px' : '20px',
         display: 'flex',
         alignItems: 'center',
         textAlign: 'center',
         color: isActive ? '#061F42' : '#A4A5A5',
+        whiteSpace: 'nowrap',
       }}>
         {tab.label}
       </span>
@@ -136,31 +148,32 @@ const ProfilePage = () => {
       minHeight: '100vh',
       background: 'linear-gradient(180deg, #B1E8F4 0%, #B1E8F4 100%)',
     }}>
-      <Navbar />
+      {ResponsiveNavbar}
 
       {/* Main Content */}
       <main style={{
         flex: 1,
         display: 'flex',
         justifyContent: 'center',
-        padding: '0 40px 40px 40px',
-        marginTop: '170px',
+        padding: window.innerWidth <= 768 ? '0 16px 20px 16px' : '0 40px 40px 40px',
+        marginTop: window.innerWidth <= 768 ? '90px' : '170px',
       }}>
         <div style={{
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'flex-start',
           padding: '0px',
-          width: '1120px',
+          width: window.innerWidth <= 768 ? '100%' : '1400px',
+          maxWidth: '100%',
         }}>
           {/* Page Title */}
           <h1 style={{
             fontFamily: 'Nunito, sans-serif',
             fontWeight: 700,
-            fontSize: '32px',
-            lineHeight: '40px',
+            fontSize: window.innerWidth <= 768 ? '24px' : '32px',
+            lineHeight: window.innerWidth <= 768 ? '32px' : '40px',
             color: '#061F42',
-            marginBottom: '24px',
+            marginBottom: window.innerWidth <= 768 ? '16px' : '24px',
           }}>
             My Profile
           </h1>
@@ -172,9 +185,11 @@ const ProfilePage = () => {
             alignItems: 'flex-start',
             padding: '0px',
             width: '100%',
-            height: '40px',
-            flexWrap: 'wrap',
-            gap: '4px',
+            height: window.innerWidth <= 768 ? 'auto' : '40px',
+            flexWrap: window.innerWidth <= 768 ? 'wrap' : 'nowrap',
+            gap: '1px',
+            overflowX: window.innerWidth <= 768 ? 'auto' : 'visible',
+            WebkitOverflowScrolling: 'touch',
           }}>
             {tabs.map((tab) => (
               <TabButton key={tab.id} tab={tab} isActive={activeTab === tab.id} />
@@ -187,9 +202,10 @@ const ProfilePage = () => {
             flexDirection: 'row',
             justifyContent: 'flex-start',
             alignItems: 'flex-start',
-            padding: '12px',
+            padding: window.innerWidth <= 768 ? '8px' : '12px',
             gap: '12px',
-            width: '1120px',
+            width: window.innerWidth <= 768 ? '100%' : '1400px',
+            maxWidth: '100%',
             minHeight: '460px',
             background: '#FCFCFC',
             boxShadow: '0px 4px 5px rgba(0, 0, 0, 0.25)',

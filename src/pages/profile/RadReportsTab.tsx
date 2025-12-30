@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import {
   getUserHisRadiologyReports,
   viewHisRadiologyReportPdf,
@@ -14,9 +14,9 @@ interface ReportCardProps {
 }
 
 const ReportCard = ({ report, onViewPdf, onDownloadPdf }: ReportCardProps) => {
-  const inspectionName = report.InspectionCode || 'Radiology Test';
-  const technicianName = report.REFDOCTOR || 'N/A';
-  const reportDate = formatReportDate(report.R_DATE);
+  const inspectionName = report.service_name || 'Radiology Test';
+  const technicianName = report.technician;
+  const reportDate = formatReportDate(report.date);
 
   return (
     <div style={{
@@ -49,18 +49,20 @@ const ReportCard = ({ report, onViewPdf, onDownloadPdf }: ReportCardProps) => {
       {inspectionName}
     </div>
     
-    {/* Technician/Doctor */}
-    <div style={{
-      width: '260px',
-      fontFamily: 'Varela Round',
-      fontWeight: 400,
-      fontSize: '12px',
-      lineHeight: '16px',
-      textAlign: 'center',
-      color: '#061F42',
-    }}>
-      Ref. Doctor: {technicianName}
-    </div>
+    {/* Technician/Doctor - Only show if technician exists */}
+    {technicianName && (
+      <div style={{
+        width: '260px',
+        fontFamily: 'Varela Round',
+        fontWeight: 400,
+        fontSize: '12px',
+        lineHeight: '16px',
+        textAlign: 'center',
+        color: '#061F42',
+      }}>
+        Ref. Doctor: {technicianName}
+      </div>
+    )}
     
     {/* Date Badge */}
     <div style={{
@@ -154,17 +156,28 @@ const RadReportsTab = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [dateFilter, setDateFilter] = useState<string | null>(null);
+  const hasFetchedRef = useRef(false);
   const perPage = 4; // 2x2 grid
 
   // Fetch reports
-  const fetchReports = async () => {
+  const fetchReports = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
       const response = await getUserHisRadiologyReports(currentPage, perPage, {
         search: searchQuery || undefined,
       });
-      setReports(response.data);
+      let filteredReports = response.data;
+      
+      // Apply date filter on client side
+      if (dateFilter) {
+        filteredReports = filteredReports.filter(report =>
+          report.date === dateFilter
+        );
+      }
+      
+      setReports(filteredReports);
       setTotalPages(response.pagination.last_page);
       setTotal(response.pagination.total);
     } catch (err: any) {
@@ -174,11 +187,13 @@ const RadReportsTab = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentPage, searchQuery, dateFilter]);
 
   useEffect(() => {
+    if (hasFetchedRef.current) return;
+    hasFetchedRef.current = true;
     fetchReports();
-  }, [currentPage, searchQuery]);
+  }, [fetchReports]);
 
   const handleViewPdf = (slno: string) => {
     viewHisRadiologyReportPdf(slno);
@@ -196,6 +211,12 @@ const RadReportsTab = () => {
     e.preventDefault();
     setCurrentPage(1); // Reset to first page on new search
     fetchReports();
+  };
+
+  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const date = e.target.value;
+    setDateFilter(date || null);
+    setCurrentPage(1);
   };
 
   const handlePageChange = (page: number) => {
@@ -327,34 +348,27 @@ const RadReportsTab = () => {
             </form>
           </div>
           
-          {/* Date/Time Button */}
-          <button style={{
-            boxSizing: 'border-box',
-            display: 'flex',
-            flexDirection: 'row',
-            justifyContent: 'center',
-            alignItems: 'center',
-            padding: '8px 12px',
-            width: '132px',
-            height: '40px',
-            background: '#FFFFFF',
-            border: '1px solid #061F42',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            fontFamily: 'Nunito',
-            fontWeight: 600,
-            fontSize: '14px',
-            lineHeight: '16px',
-            color: '#061F42',
-          }}>
-            Date/Time
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ marginLeft: '4px' }}>
-              <rect x="3" y="4" width="18" height="18" rx="2" stroke="#061F42" strokeWidth="1.5"/>
-              <path d="M3 8H21" stroke="#061F42" strokeWidth="1.5"/>
-              <path d="M8 2V6" stroke="#131927" strokeWidth="1.5" strokeLinecap="round"/>
-              <path d="M16 2V6" stroke="#131927" strokeWidth="1.5" strokeLinecap="round"/>
-            </svg>
-          </button>
+          {/* Date Input */}
+          <input
+            type="date"
+            value={dateFilter || ''}
+            onChange={handleDateChange}
+            style={{
+              boxSizing: 'border-box',
+              width: '132px',
+              height: '40px',
+              padding: '8px 12px',
+              background: '#FFFFFF',
+              border: '1px solid #061F42',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontFamily: 'Nunito',
+              fontWeight: 600,
+              fontSize: '14px',
+              lineHeight: '16px',
+              color: '#061F42',
+            }}
+          />
         </div>
       </div>
       
@@ -408,10 +422,10 @@ const RadReportsTab = () => {
         }}>
           {reports.map((report) => (
             <ReportCard
-              key={report.id}
+              key={report.slno}
               report={report}
-              onViewPdf={() => handleViewPdf(report.SLNO)}
-              onDownloadPdf={() => handleDownloadPdf(report.SLNO)}
+              onViewPdf={() => handleViewPdf(report.slno)}
+              onDownloadPdf={() => handleDownloadPdf(report.slno)}
             />
           ))}
         </div>

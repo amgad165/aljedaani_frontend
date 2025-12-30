@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { branchesService, type Branch } from '../services/branchesService';
 import { departmentsService, type Department } from '../services/departmentsService';
 import { doctorsService, type Doctor } from '../services/doctorsService';
-import Navbar from '../components/Navbar';
+import { useResponsiveNavbar } from '../hooks/useResponsiveNavbar';
 import Footer from '../components/Footer';
 import { CardSkeleton } from '../components/LoadingComponents';
 import { EASINGS } from '../utils/animations';
@@ -12,9 +12,10 @@ import { EASINGS } from '../utils/animations';
 interface DoctorCardProps {
   doctor: Doctor;
   onLearnMore: (doctorId: number) => void;
+  onBookNow: (doctor: Doctor) => void;
 }
 
-const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onLearnMore }) => {
+const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onLearnMore, onBookNow }) => {
   const [isHovered, setIsHovered] = useState(false);
   
   const getStatusStyle = (status: string) => {
@@ -146,7 +147,7 @@ const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onLearnMore }) => {
         <div style={{
           width: '268px',
           height: '16px',
-          fontFamily: 'Varela Round, sans-serif',
+          fontFamily: 'Nunito, sans-serif',
           fontStyle: 'normal',
           fontWeight: 400,
           fontSize: '12px',
@@ -267,7 +268,7 @@ const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onLearnMore }) => {
           <div style={{
             width: '226px',
             height: '32px',
-            fontFamily: 'Varela Round, sans-serif',
+            fontFamily: 'Nunito, sans-serif',
             fontStyle: 'normal',
             fontWeight: 400,
             fontSize: '12px',
@@ -291,7 +292,9 @@ const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onLearnMore }) => {
         width: '268px',
         height: '32px',
       }}>
-        <button style={{
+        <button 
+          onClick={() => doctor.status !== 'busy' && onBookNow(doctor)}
+          style={{
           display: 'flex',
           flexDirection: 'row',
           justifyContent: 'center',
@@ -485,6 +488,7 @@ const ContactItem: React.FC<ContactItemProps> = ({ icon, title, lines }) => {
 };
 
 const BranchesPage: React.FC = () => {
+  const ResponsiveNavbar = useResponsiveNavbar();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   
@@ -605,10 +609,19 @@ const BranchesPage: React.FC = () => {
     navigate(`/doctors/${doctorId}`);
   };
 
+  const handleBookNow = (doctor: Doctor) => {
+    const params = new URLSearchParams({
+      doctor_id: doctor.id.toString(),
+      branch_id: doctor.branch?.id?.toString() || '',
+      department_id: doctor.department?.id?.toString() || '',
+    });
+    navigate(`/book-appointment?${params.toString()}`);
+  };
+
   if (loading) {
     return (
       <div style={{ minHeight: '100vh', background: '#C9F3FF' }}>
-        <Navbar />
+        {ResponsiveNavbar}
         <div style={{
           display: 'flex',
           justifyContent: 'center',
@@ -634,7 +647,7 @@ const BranchesPage: React.FC = () => {
   if (error) {
     return (
       <div style={{ minHeight: '100vh', background: '#C9F3FF' }}>
-        <Navbar />
+        {ResponsiveNavbar}
         <div style={{
           display: 'flex',
           justifyContent: 'center',
@@ -652,16 +665,16 @@ const BranchesPage: React.FC = () => {
 
   return (
     <div style={{ minHeight: '100vh', background: '#C9F3FF' }}>
-      <Navbar />
+      {ResponsiveNavbar}
       
       {/* Page Content */}
       <div style={{
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'flex-start',
-        padding: '180px 0px 0px',
+        padding: window.innerWidth <= 768 ? '90px 16px 0px' : '180px 0px 0px',
         gap: '10px',
-        maxWidth: '1117px',
+        maxWidth: window.innerWidth <= 768 ? '100%' : '1117px',
         margin: '0 auto',
         background: '#C9F3FF',
       }}>
@@ -671,9 +684,9 @@ const BranchesPage: React.FC = () => {
           flexDirection: 'row',
           justifyContent: 'center',
           alignItems: 'center',
-          padding: '8px 8px 8px 24px',
+          padding: window.innerWidth <= 768 ? '8px 12px' : '8px 8px 8px 24px',
           width: '100%',
-          height: '66px',
+          height: window.innerWidth <= 768 ? '56px' : '66px',
           background: '#FFFFFF',
           borderRadius: '15px',
         }}>
@@ -681,8 +694,8 @@ const BranchesPage: React.FC = () => {
             fontFamily: 'Nunito, sans-serif',
             fontStyle: 'normal',
             fontWeight: 600,
-            fontSize: '48px',
-            lineHeight: '50px',
+            fontSize: window.innerWidth <= 768 ? '28px' : '48px',
+            lineHeight: window.innerWidth <= 768 ? '32px' : '50px',
             color: '#061F42',
             margin: 0,
             flexGrow: 1,
@@ -729,7 +742,7 @@ const BranchesPage: React.FC = () => {
             </span>
           </Link>
           <span style={{
-            fontFamily: 'Varela Round, sans-serif',
+            fontFamily: 'Nunito, sans-serif',
             fontWeight: 400,
             fontSize: '16px',
             lineHeight: '40px',
@@ -1224,7 +1237,7 @@ const BranchesPage: React.FC = () => {
                     {/* Doctor Cards */}
                     {doctors.length > 0 ? (
                       doctors.slice(0, 3).map(doctor => (
-                        <DoctorCard key={doctor.id} doctor={doctor} onLearnMore={handleLearnMore} />
+                        <DoctorCard key={doctor.id} doctor={doctor} onLearnMore={handleLearnMore} onBookNow={handleBookNow} />
                       ))
                     ) : (
                       <div style={{

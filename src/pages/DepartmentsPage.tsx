@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { departmentsService, type Department } from '../services/departmentsService';
-import Navbar from '../components/Navbar';
+import { useResponsiveNavbar } from '../hooks/useResponsiveNavbar';
 import { DepartmentCardSkeleton } from '../components/LoadingComponents';
 import { EASINGS, getStaggerDelay } from '../utils/animations';
 
 const DepartmentsPage: React.FC = () => {
+  const ResponsiveNavbar = useResponsiveNavbar();
   const navigate = useNavigate();
   const [filteredDepartments, setFilteredDepartments] = useState<Department[]>([]);
   const [branches, setBranches] = useState<{ id: number; name: string }[]>([]);
@@ -69,7 +70,7 @@ const DepartmentsPage: React.FC = () => {
         background: '#C9F3FF',
         paddingTop: '0px',
       }}>
-        <Navbar />
+        {ResponsiveNavbar}
         <div style={{
           flex: 1,
           display: 'flex',
@@ -146,9 +147,10 @@ const DepartmentsPage: React.FC = () => {
             {/* Departments Grid Skeleton */}
             <div style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(3, 357.33px)',
-              gap: '12px',
+              gridTemplateColumns: 'repeat(3, 1fr)',
+              gap: '24px',
               width: '100%',
+              marginBottom: '40px',
             }}>
               {[...Array(9)].map((_, index) => (
                 <DepartmentCardSkeleton key={index} />
@@ -167,7 +169,7 @@ const DepartmentsPage: React.FC = () => {
         background: '#C9F3FF',
         paddingTop: '0px',
       }}>
-        <Navbar />
+        {ResponsiveNavbar}
         <div style={{
           display: 'flex',
           justifyContent: 'center',
@@ -190,7 +192,7 @@ const DepartmentsPage: React.FC = () => {
       display: 'flex',
       flexDirection: 'column',
     }}>
-      <Navbar />
+      {ResponsiveNavbar}
       <div style={{
         flex: 1,
         display: 'flex',
@@ -215,12 +217,13 @@ const DepartmentsPage: React.FC = () => {
       {/* Title Section */}
       <div style={{
         display: 'flex',
-        flexDirection: 'row',
+        flexDirection: window.innerWidth <= 768 ? 'column' : 'row',
         justifyContent: 'center',
-        alignItems: 'center',
-        padding: '8px 8px 8px 24px',
-        width: '1120px',
-        height: '80px',
+        alignItems: window.innerWidth <= 768 ? 'flex-start' : 'center',
+        padding: window.innerWidth <= 768 ? '8px 12px' : '8px 8px 8px 24px',
+        width: window.innerWidth <= 768 ? '100%' : '1120px',
+        maxWidth: '100%',
+        height: window.innerWidth <= 768 ? 'auto' : '80px',
         background: '#FFFFFF',
         borderRadius: '15px',
         gap: '16px',
@@ -229,8 +232,8 @@ const DepartmentsPage: React.FC = () => {
           fontFamily: 'Nunito, sans-serif',
           fontStyle: 'normal',
           fontWeight: 600,
-          fontSize: '48px',
-          lineHeight: '50px',
+          fontSize: window.innerWidth <= 768 ? '28px' : '48px',
+          lineHeight: window.innerWidth <= 768 ? '32px' : '50px',
           color: '#061F42',
           margin: 0,
           flexGrow: 1,
@@ -470,7 +473,7 @@ const DepartmentsPage: React.FC = () => {
       <div style={{
         width: '1120px',
         height: '40px',
-        fontFamily: 'Varela Round, sans-serif',
+        fontFamily: 'Nunito, sans-serif',
         fontStyle: 'normal',
         fontWeight: 600,
         fontSize: '16px',
@@ -515,9 +518,10 @@ const DepartmentsPage: React.FC = () => {
       {/* Departments Grid */}
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(3, 357.33px)',
-        gap: '12px',
+        gridTemplateColumns: 'repeat(3, 1fr)',
+        gap: '24px',
         width: '100%',
+        marginBottom: '40px',
       }}>
         {filteredDepartments.map((department, index) => (
           <div
@@ -526,58 +530,79 @@ const DepartmentsPage: React.FC = () => {
             style={{
               boxSizing: 'border-box',
               display: 'flex',
-              flexDirection: 'row',
+              flexDirection: 'column',
               alignItems: 'center',
-              padding: '8px 16px',
-              gap: '12px',
-              width: '357.33px',
-              height: '48px',
-              background: '#FFFFFF',
-              border: '1px solid #DADADA',
-              borderRadius: '8px',
+              padding: '32px 24px',
+              gap: '16px',
+              background: 'linear-gradient(135deg, #FFFFFF 0%, #F8FCFF 100%)',
+              border: '1px solid #E5F4FF',
+              borderRadius: '16px',
               cursor: 'pointer',
-              transition: `all 0.3s ${EASINGS.smooth}`,
+              transition: `all 0.4s ${EASINGS.smooth}`,
               opacity: 0,
-              animation: `fadeIn 0.4s ${EASINGS.smooth} ${getStaggerDelay(index, 50)}ms forwards`,
+              animation: `fadeIn 0.5s ${EASINGS.smooth} ${getStaggerDelay(index, 60)}ms forwards`,
+              boxShadow: '0 2px 8px rgba(0, 171, 218, 0.08)',
+              position: 'relative',
+              overflow: 'hidden',
             }}
             onMouseEnter={(e) => {
-              (e.currentTarget as HTMLElement).style.background = '#DAF8FF';
-              (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)';
-              (e.currentTarget as HTMLElement).style.boxShadow = '0 4px 12px rgba(0, 171, 218, 0.15)';
+              const element = e.currentTarget as HTMLElement;
+              element.style.background = 'linear-gradient(135deg, #FFFFFF 0%, #E8F8FF 100%)';
+              element.style.transform = 'translateY(-8px)';
+              element.style.boxShadow = '0 12px 24px rgba(0, 171, 218, 0.18)';
+              element.style.borderColor = '#00ABDA';
             }}
             onMouseLeave={(e) => {
-              (e.currentTarget as HTMLElement).style.background = '#FFFFFF';
-              (e.currentTarget as HTMLElement).style.transform = 'translateY(0)';
-              (e.currentTarget as HTMLElement).style.boxShadow = 'none';
+              const element = e.currentTarget as HTMLElement;
+              element.style.background = 'linear-gradient(135deg, #FFFFFF 0%, #F8FCFF 100%)';
+              element.style.transform = 'translateY(0)';
+              element.style.boxShadow = '0 2px 8px rgba(0, 171, 218, 0.08)';
+              element.style.borderColor = '#E5F4FF';
             }}
           >
+            {/* Decorative Corner Element */}
+            <div style={{
+              position: 'absolute',
+              top: '-20px',
+              right: '-20px',
+              width: '80px',
+              height: '80px',
+              background: 'linear-gradient(135deg, rgba(0, 171, 218, 0.08) 0%, rgba(0, 171, 218, 0.02) 100%)',
+              borderRadius: '50%',
+              pointerEvents: 'none',
+            }} />
+
             {/* Icon Container */}
             <div style={{
               display: 'flex',
-              flexDirection: 'row',
               justifyContent: 'center',
               alignItems: 'center',
-              padding: '0px',
-              width: '32px',
-              height: '32px',
-              background: '#E1F9FF',
-              borderRadius: '16777200px',
-              flex: 'none',
-              order: 0,
-              flexGrow: 0,
-            }}>
+              width: '80px',
+              height: '80px',
+              background: 'linear-gradient(135deg, #E8F8FF 0%, #D1F0FF 100%)',
+              borderRadius: '50%',
+              boxShadow: '0 4px 16px rgba(0, 171, 218, 0.12)',
+              position: 'relative',
+              transition: 'transform 0.3s ease',
+            }}
+            onMouseEnter={(e) => {
+              e.stopPropagation();
+              (e.currentTarget as HTMLElement).style.transform = 'scale(1.1) rotate(5deg)';
+            }}
+            onMouseLeave={(e) => {
+              e.stopPropagation();
+              (e.currentTarget as HTMLElement).style.transform = 'scale(1) rotate(0deg)';
+            }}
+            >
               {/* Department Icon */}
               <img 
                 src={department.icon || '/assets/images/departments/icon.png'} 
                 alt={`${department.name} Icon`} 
                 style={{
-                  width: '18px',
-                  height: '18px',
+                  width: '40px',
+                  height: '40px',
                   objectFit: 'contain',
-                  borderRadius: '0px',
-                  flex: 'none',
-                  order: 0,
-                  flexGrow: 0,
+                  filter: 'drop-shadow(0 2px 4px rgba(0, 171, 218, 0.2))',
                 }} 
               />
             </div>
@@ -585,18 +610,68 @@ const DepartmentsPage: React.FC = () => {
             {/* Department Title */}
             <h3 style={{
               fontFamily: 'Nunito, sans-serif',
-              fontStyle: 'normal',
-              fontWeight: 500,
-              fontSize: '14px',
-              lineHeight: '16px',
-              color: '#000000',
+              fontWeight: 700,
+              fontSize: '18px',
+              lineHeight: '24px',
+              color: '#061F42',
               margin: 0,
-              flex: 'none',
-              order: 1,
-              flexGrow: 0,
+              textAlign: 'center',
+              minHeight: '48px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
             }}>
               {department.name}
             </h3>
+
+            {/* Doctor Count Badge */}
+            {department.doctors_count !== undefined && department.doctors_count > 0 && (
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '6px 16px',
+                background: 'rgba(0, 171, 218, 0.08)',
+                borderRadius: '20px',
+                fontSize: '13px',
+                fontFamily: 'Nunito, sans-serif',
+                fontWeight: 600,
+                color: '#00ABDA',
+              }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                  <circle cx="12" cy="7" r="4" />
+                </svg>
+                <span>{department.doctors_count} {department.doctors_count === 1 ? 'Doctor' : 'Doctors'}</span>
+              </div>
+            )}
+
+            {/* View Details Arrow */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              marginTop: '8px',
+              fontSize: '14px',
+              fontFamily: 'Nunito, sans-serif',
+              fontWeight: 600,
+              color: '#00ABDA',
+              transition: 'gap 0.3s ease',
+            }}
+            onMouseEnter={(e) => {
+              e.stopPropagation();
+              (e.currentTarget as HTMLElement).style.gap = '10px';
+            }}
+            onMouseLeave={(e) => {
+              e.stopPropagation();
+              (e.currentTarget as HTMLElement).style.gap = '6px';
+            }}
+            >
+              <span>View Details</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
+            </div>
           </div>
         ))}
       </div>

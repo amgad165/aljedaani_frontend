@@ -1,9 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 interface Appointment {
   id: number;
   department: string;
+  department_icon?: string;
   doctor_name: string;
+  doctor_image?: string;
   branch: string;
   appointment_date: string;
   appointment_time: string;
@@ -13,15 +15,35 @@ interface Appointment {
 
 const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
 
-// Department Icon Component
-const DepartmentIcon = ({ department }: { department: string }) => {
-  const getIconColor = () => {
-    if (department.toLowerCase().includes('cardio')) return '#1F57A4';
-    if (department.toLowerCase().includes('neuro')) return '#1F57A4';
-    if (department.toLowerCase().includes('onco')) return '#1F57A4';
-    return '#1F57A4';
-  };
+// Doctor Image Component
+const DoctorImage = ({ imageUrl, doctorName }: { imageUrl?: string; doctorName: string }) => {
+  if (imageUrl) {
+    return (
+      <div style={{
+        display: 'flex',
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: '0px',
+        width: '64px',
+        height: '64px',
+      }}>
+        <img 
+          src={imageUrl} 
+          alt={doctorName} 
+          style={{
+            width: '64px',
+            height: '64px',
+            objectFit: 'cover',
+            borderRadius: '50%',
+            border: '2px solid #E0E0E0',
+          }}
+        />
+      </div>
+    );
+  }
 
+  // Fallback icon if no image provided
   return (
     <div style={{
       display: 'flex',
@@ -29,13 +51,14 @@ const DepartmentIcon = ({ department }: { department: string }) => {
       justifyContent: 'center',
       alignItems: 'center',
       padding: '0px',
-      width: '32px',
-      height: '32px',
+      width: '64px',
+      height: '64px',
       background: '#E8EEF7',
       borderRadius: '50%',
+      border: '2px solid #E0E0E0',
     }}>
-      <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="9" cy="9" r="8" stroke={getIconColor()} strokeWidth="1.5" />
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 12C14.21 12 16 10.21 16 8C16 5.79 14.21 4 12 4C9.79 4 8 5.79 8 8C8 10.21 9.79 12 12 12ZM12 14C9.33 14 4 15.34 4 18V20H20V18C20 15.34 14.67 14 12 14Z" fill="#1F57A4"/>
       </svg>
     </div>
   );
@@ -123,78 +146,92 @@ const AppointmentCard = ({ appointment }: { appointment: Appointment }) => {
       gap: '12px',
       width: '346.67px',
       minWidth: '320px',
-      height: '200px',
+      height: '240px',
       background: '#FFFFFF',
       border: '1px solid #D8D8D8',
       borderRadius: '12px',
       opacity: appointment.status === 'cancelled' ? 0.7 : 1,
     }}>
-      {/* Department Icon */}
-      <DepartmentIcon department={appointment.department} />
+      {/* Doctor Image */}
+      <DoctorImage imageUrl={appointment.doctor_image} doctorName={appointment.doctor_name} />
 
-      {/* Title/Subtitle */}
+      {/* Doctor Name */}
       <div style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        padding: '0px',
-        gap: '4px',
         width: '100%',
+        fontFamily: 'Nunito, sans-serif',
+        fontWeight: 700,
+        fontSize: '16px',
+        lineHeight: '20px',
+        textAlign: 'center',
+        color: '#061F42',
       }}>
-        {/* Department Title */}
-        <div style={{
-          width: '100%',
-          fontFamily: 'Nunito, sans-serif',
-          fontWeight: 700,
-          fontSize: '16px',
-          lineHeight: '20px',
-          textAlign: 'center',
-          color: '#061F42',
-        }}>
-          {appointment.department}
-        </div>
-
-        {/* Doctor Name */}
-        <div style={{
-          width: '100%',
-          fontFamily: 'Varela Round, sans-serif',
-          fontWeight: 400,
-          fontSize: '12px',
-          lineHeight: '16px',
-          textAlign: 'center',
-          color: '#061F42',
-        }}>
-          {appointment.doctor_name}
-        </div>
+        {appointment.doctor_name}
       </div>
 
-      {/* Branch Badge */}
+      {/* Branch and Department in one line */}
       <div style={{
-        boxSizing: 'border-box',
         display: 'flex',
         flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',
-        padding: '4px 8px',
-        gap: '4px',
-        height: '24px',
-        background: '#FFFFFF',
-        border: '1px solid #D9D9D9',
-        borderRadius: '24px',
+        gap: '8px',
+        flexWrap: 'wrap',
       }}>
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="8" cy="5" r="2" stroke="#6A6A6A" strokeWidth="1.5" />
-          <circle cx="8" cy="11" r="0.5" fill="#6A6A6A" stroke="#6A6A6A" strokeWidth="1.5" />
-        </svg>
-        <span style={{
-          fontFamily: 'Nunito, sans-serif',
-          fontWeight: 600,
-          fontSize: '12px',
-          lineHeight: '16px',
-          color: '#6A6A6A',
+        <div style={{
+          boxSizing: 'border-box',
+          display: 'flex',
+          flexDirection: 'row',
+          justifyContent: 'center',
+          alignItems: 'center',
+          padding: '4px 8px',
+          gap: '6px',
+          height: '24px',
+          background: '#FFFFFF',
+          border: '1px solid #D9D9D9',
+          borderRadius: '24px',
         }}>
-          {appointment.branch}
-        </span>
+          <img 
+            src="/assets/images/doctors/location_icon.png" 
+            alt="Location" 
+            style={{
+              width: '14px',
+              height: '14px',
+              objectFit: 'contain',
+            }}
+          />
+          <span style={{
+            fontFamily: 'Nunito, sans-serif',
+            fontWeight: 600,
+            fontSize: '12px',
+            lineHeight: '16px',
+            color: '#6A6A6A',
+          }}>
+            {appointment.branch}
+          </span>
+        </div>
+        <div style={{
+          boxSizing: 'border-box',
+          display: 'flex',
+          flexDirection: 'row',
+          justifyContent: 'center',
+          alignItems: 'center',
+          padding: '4px 8px',
+          gap: '6px',
+          height: '24px',
+          background: '#E8EEF7',
+          border: '1px solid #D9D9D9',
+          borderRadius: '24px',
+        }}>
+          <span style={{
+            fontFamily: 'Nunito, sans-serif',
+            fontWeight: 600,
+            fontSize: '12px',
+            lineHeight: '16px',
+            color: '#1F57A4',
+          }}>
+            {appointment.department}
+          </span>
+        </div>
       </div>
 
       {/* Date/Time Box */}
@@ -243,8 +280,11 @@ const PastAppointmentsView = ({ onBack }: { onBack: () => void }) => {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const hasFetchedRef = useRef(false);
 
   useEffect(() => {
+    if (hasFetchedRef.current) return;
+    hasFetchedRef.current = true;
     fetchAppointments();
   }, []);
 

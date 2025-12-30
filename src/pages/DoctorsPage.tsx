@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { doctorsService, type Doctor, type PaginatedResponse } from '../services/doctorsService';
 import { branchesService, type Branch } from '../services/branchesService';
 import { departmentsService, type Department } from '../services/departmentsService';
-import Navbar from '../components/Navbar';
+import { useResponsiveNavbar } from '../hooks/useResponsiveNavbar';
 import CustomSelect from '../components/CustomSelect';
 import { DoctorCardSkeleton } from '../components/LoadingComponents';
 import { EASINGS, getStaggerDelay } from '../utils/animations';
@@ -11,9 +11,10 @@ import { EASINGS, getStaggerDelay } from '../utils/animations';
 interface DoctorCardProps {
   doctor: Doctor;
   onLearnMore: (doctorId: number) => void;
+  onBookNow: (doctor: Doctor) => void;
 }
 
-const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onLearnMore }) => {
+const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onLearnMore, onBookNow }) => {
   const [isHovered, setIsHovered] = useState(false);
   
   const getStatusStyle = (status: string) => {
@@ -41,9 +42,10 @@ const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onLearnMore }) => {
         alignItems: 'center',
         padding: '10px',
         gap: '12px',
-        width: '271px',
-        maxWidth: '300px',
-        height: '368px',
+        width: '100%',
+        maxWidth: window.innerWidth <= 768 ? '100%' : '300px',
+        height: window.innerWidth <= 768 ? 'auto' : '368px',
+        minHeight: window.innerWidth <= 768 ? '320px' : 'auto',
         background: '#FFFFFF',
         border: '1px solid #D8D8D8',
         borderRadius: '12px',
@@ -60,7 +62,8 @@ const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onLearnMore }) => {
         flexDirection: 'column',
         alignItems: 'flex-start',
         padding: '0px 0px 8px',
-        width: '251px',
+        width: '100%',
+        maxWidth: '251px',
         height: '32px',
       }}>
         <div style={{
@@ -124,12 +127,14 @@ const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onLearnMore }) => {
         flexDirection: 'column',
         alignItems: 'flex-start',
         padding: '0px',
-        width: '251px',
-        height: '36px',
+        width: '100%',
+        maxWidth: '251px',
+        minHeight: '36px',
       }}>
         <h3 style={{
-          width: '251px',
-          height: '20px',
+          width: '100%',
+          maxWidth: '251px',
+          minHeight: '20px',
           fontFamily: 'Nunito, sans-serif',
           fontStyle: 'normal',
           fontWeight: 700,
@@ -142,9 +147,10 @@ const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onLearnMore }) => {
           {doctor.name}
         </h3>
         <div style={{
-          width: '251px',
-          height: '16px',
-          fontFamily: 'Varela Round, sans-serif',
+          width: '100%',
+          maxWidth: '251px',
+          minHeight: '16px',
+          fontFamily: 'Nunito, sans-serif',
           fontStyle: 'normal',
           fontWeight: 400,
           fontSize: '12px',
@@ -164,8 +170,9 @@ const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onLearnMore }) => {
         alignItems: 'flex-start',
         padding: '8px',
         gap: '4px',
-        width: '251px',
-        height: '84px',
+        width: '100%',
+        maxWidth: '251px',
+        minHeight: '84px',
         background: '#F8F8F8',
         borderRadius: '12px',
       }}>
@@ -278,7 +285,7 @@ const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onLearnMore }) => {
           <div style={{
             width: '209px',
             height: '32px',
-            fontFamily: 'Varela Round, sans-serif',
+            fontFamily: 'Nunito, sans-serif',
             fontStyle: 'normal',
             fontWeight: 400,
             fontSize: '12px',
@@ -302,7 +309,9 @@ const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onLearnMore }) => {
         width: '251px',
         height: '32px',
       }}>
-        <button style={{
+        <button 
+          onClick={() => doctor.status !== 'busy' && onBookNow(doctor)}
+          style={{
           display: 'flex',
           flexDirection: 'row',
           justifyContent: 'center',
@@ -387,6 +396,7 @@ const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onLearnMore }) => {
 };
 
 const DoctorsPage: React.FC = () => {
+  const ResponsiveNavbar = useResponsiveNavbar();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [doctors, setDoctors] = useState<PaginatedResponse<Doctor> | null>(null);
@@ -405,6 +415,16 @@ const DoctorsPage: React.FC = () => {
 
   const handleLearnMore = (doctorId: number) => {
     navigate(`/doctors/${doctorId}`);
+  };
+
+  const handleBookNow = (doctor: Doctor) => {
+    // Navigate to book appointment page with pre-selected doctor, branch, and department
+    const params = new URLSearchParams({
+      doctor_id: doctor.id.toString(),
+      branch_id: doctor.branch?.id?.toString() || '',
+      department_id: doctor.department?.id?.toString() || '',
+    });
+    navigate(`/book-appointment?${params.toString()}`);
   };
 
   // Fetch initial data (branches and departments)
@@ -505,7 +525,7 @@ const DoctorsPage: React.FC = () => {
       }}
     >
       <span style={{
-        fontFamily: 'Varela Round, sans-serif',
+        fontFamily: 'Nunito, sans-serif',
         fontStyle: 'normal',
         fontWeight: 400,
         fontSize: '16px',
@@ -524,7 +544,7 @@ const DoctorsPage: React.FC = () => {
         minHeight: '100vh',
         background: '#C9F3FF',
       }}>
-        <Navbar />
+        {ResponsiveNavbar}
         <div style={{
           flex: 1,
           display: 'flex',
@@ -564,8 +584,8 @@ const DoctorsPage: React.FC = () => {
             {/* Doctors Grid Skeleton */}
             <div style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(4, 1fr)',
-              gap: '12px',
+              gridTemplateColumns: window.innerWidth <= 768 ? '1fr' : window.innerWidth <= 1024 ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)',
+              gap: window.innerWidth <= 768 ? '16px' : '12px',
               width: '100%',
               justifyContent: 'center',
             }}>
@@ -585,7 +605,7 @@ const DoctorsPage: React.FC = () => {
         minHeight: '100vh',
         background: '#C9F3FF',
       }}>
-        <Navbar />
+        {ResponsiveNavbar}
         <div style={{
           display: 'flex',
           justifyContent: 'center',
@@ -608,38 +628,39 @@ const DoctorsPage: React.FC = () => {
       display: 'flex',
       flexDirection: 'column',
     }}>
-      <Navbar />
+      {ResponsiveNavbar}
       <div style={{
         flex: 1,
         display: 'flex',
         alignItems: 'flex-start',
         justifyContent: 'center',
-        padding: '170px 20px 20px 20px',
+        padding: window.innerWidth <= 768 ? '90px 16px 20px 16px' : '170px 20px 20px 20px',
       }}>
         <div style={{
           width: '100%',
-          maxWidth: '1170px',
-          padding: '12px',
+          maxWidth: '1400px',
+          padding: window.innerWidth <= 768 ? '8px' : '12px',
         }}>
       {/* Title Section */}
       <div style={{
         display: 'flex',
-        flexDirection: 'row',
+        flexDirection: window.innerWidth <= 768 ? 'column' : 'row',
         justifyContent: 'center',
-        alignItems: 'center',
-        padding: '8px 8px 8px 24px',
+        alignItems: window.innerWidth <= 768 ? 'flex-start' : 'center',
+        padding: window.innerWidth <= 768 ? '8px 12px' : '8px 8px 8px 24px',
         width: '100%',
-        height: '80px',
+        height: window.innerWidth <= 768 ? 'auto' : '80px',
         background: '#FFFFFF',
         borderRadius: '15px',
         marginBottom: '5px',
+        gap: window.innerWidth <= 768 ? '12px' : '0',
       }}>
         <h1 style={{
           fontFamily: 'Nunito, sans-serif',
           fontStyle: 'normal',
           fontWeight: 600,
-          fontSize: '48px',
-          lineHeight: '50px',
+          fontSize: window.innerWidth <= 768 ? '28px' : '48px',
+          lineHeight: window.innerWidth <= 768 ? '32px' : '50px',
           color: '#061F42',
           margin: 0,
           flexGrow: 1,
@@ -650,17 +671,18 @@ const DoctorsPage: React.FC = () => {
         {/* Selection dropdowns */}
         <div style={{
           display: 'flex',
-          flexDirection: 'row',
+          flexDirection: window.innerWidth <= 768 ? 'column' : 'row',
           flexWrap: 'wrap',
           alignItems: 'center',
           alignContent: 'flex-start',
-          padding: '12px',
+          padding: window.innerWidth <= 768 ? '0' : '12px',
           gap: '12px',
           background: 'rgba(0, 0, 0, 0.001)',
           borderRadius: '12px',
+          width: window.innerWidth <= 768 ? '100%' : 'auto',
         }}>
           {/* Branch Filter */}
-          <div style={{ width: '180px' }}>
+          <div style={{ width: window.innerWidth <= 768 ? '100%' : '180px' }}>
             <CustomSelect
               placeholder="Select Branch"
               value={selectedBranch}
@@ -674,7 +696,7 @@ const DoctorsPage: React.FC = () => {
           </div>
 
           {/* Department Filter */}
-          <div style={{ width: '180px' }}>
+          <div style={{ width: window.innerWidth <= 768 ? '100%' : '180px' }}>
             <CustomSelect
               placeholder="Select Department"
               value={selectedDepartment}
@@ -729,7 +751,7 @@ const DoctorsPage: React.FC = () => {
       <div style={{
         width: '1120px',
         height: '40px',
-        fontFamily: 'Varela Round, sans-serif',
+        fontFamily: 'Nunito, sans-serif',
         fontStyle: 'normal',
         fontWeight: 400,
         fontSize: '16px',
@@ -794,8 +816,8 @@ const DoctorsPage: React.FC = () => {
       {/* Doctors Grid */}
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(4, 1fr)',
-        gap: '12px',
+        gridTemplateColumns: window.innerWidth <= 768 ? '1fr' : window.innerWidth <= 1024 ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)',
+        gap: window.innerWidth <= 768 ? '16px' : '12px',
         width: '100%',
         justifyContent: 'center',
       }}>
@@ -807,7 +829,7 @@ const DoctorsPage: React.FC = () => {
               animation: `fadeIn 0.5s ${EASINGS.smooth} ${getStaggerDelay(index, 80)}ms forwards`,
             }}
           >
-            <DoctorCard doctor={doctor} onLearnMore={handleLearnMore} />
+            <DoctorCard doctor={doctor} onLearnMore={handleLearnMore} onBookNow={handleBookNow} />
           </div>
         ))}
       </div>
@@ -848,23 +870,20 @@ const DoctorsPage: React.FC = () => {
                 background: 'transparent',
                 cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
                 opacity: currentPage === 1 ? 0.5 : 1,
+                transition: 'all 0.2s ease',
+              }}
+              onMouseEnter={(e) => {
+                if (currentPage !== 1) {
+                  (e.currentTarget as HTMLElement).style.background = '#F0F9FF';
+                }
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLElement).style.background = 'transparent';
               }}
             >
-              <div style={{
-                width: '24px',
-                height: '24px',
-                position: 'relative',
-              }}>
-                <div style={{
-                  position: 'absolute',
-                  left: '37.5%',
-                  right: '37.5%',
-                  top: '25%',
-                  bottom: '25%',
-                  background: '#061F42',
-                  border: '1.5px solid #061F42',
-                }} />
-              </div>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#061F42" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M15 18l-6-6 6-6" />
+              </svg>
             </button>
 
             {/* Page Numbers */}
@@ -896,24 +915,20 @@ const DoctorsPage: React.FC = () => {
                 background: 'transparent',
                 cursor: currentPage === doctors.last_page ? 'not-allowed' : 'pointer',
                 opacity: currentPage === doctors.last_page ? 0.5 : 1,
+                transition: 'all 0.2s ease',
+              }}
+              onMouseEnter={(e) => {
+                if (currentPage !== doctors.last_page) {
+                  (e.currentTarget as HTMLElement).style.background = '#F0F9FF';
+                }
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLElement).style.background = 'transparent';
               }}
             >
-              <div style={{
-                width: '24px',
-                height: '24px',
-                position: 'relative',
-              }}>
-                <div style={{
-                  position: 'absolute',
-                  left: '37.5%',
-                  right: '37.5%',
-                  top: '25%',
-                  bottom: '25%',
-                  background: '#061F42',
-                  border: '1.5px solid #061F42',
-                  transform: 'matrix(-1, 0, 0, 1, 0, 0)',
-                }} />
-              </div>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#061F42" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M9 18l6-6-6-6" />
+              </svg>
             </button>
           </div>
         </div>

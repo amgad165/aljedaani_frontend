@@ -514,7 +514,10 @@ export const patientService = {
       consultation_date: string;
       chief_complaint: string;
       diagnosis: string;
-      doctor_code: string | number;
+      prov_diagonosis: string;
+      advice_treat: string;
+      advice_med: string;
+      doctor_name: string | null;
       temperature: number | string;
       bp_max: number | string;
       bp_min: number | string;

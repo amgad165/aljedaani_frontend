@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import Navbar from '../components/Navbar';
+import { useResponsiveNavbar } from '../hooks/useResponsiveNavbar';
 import Footer from '../components/Footer';
-import CustomSelect from '../components/CustomSelect';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
 
@@ -75,28 +74,24 @@ const InputField = ({
 };
 
 const LoginPage = () => {
+  const ResponsiveNavbar = useResponsiveNavbar();
   const [currentStep, setCurrentStep] = useState(1); // 1: Credentials, 2: OTP
-  const [idType, setIdType] = useState('');
-  const [identifier, setIdentifier] = useState(''); // MR Number or National ID
+  const [nationalId, setNationalId] = useState('');
+  const [medicalRecordNumber, setMedicalRecordNumber] = useState('');
   const [password, setPassword] = useState('');
   const [otpCode, setOtpCode] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  // ID Type options
-  const idTypeOptions = [
-    { value: 'medical_record', label: 'Medical Record Number' },
-    { value: 'national_id', label: 'National ID' },
-  ];
-
   const handleCredentialsSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!idType) {
-      setError('Please select an ID type');
-      return;
-    }
+    
+    // Determine which ID type is being used
+    const idType = nationalId ? 'national_id' : 'medical_record';
+    const identifier = nationalId || medicalRecordNumber;
+    
     if (!identifier || !password) {
-      setError('Please fill in all fields');
+      setError('Please fill in National ID or Medical Record Number and password');
       return;
     }
     
@@ -144,6 +139,10 @@ const LoginPage = () => {
       setError('Please enter a valid 6-digit OTP');
       return;
     }
+    
+    // Determine which ID type is being used
+    const idType = nationalId ? 'national_id' : 'medical_record';
+    const identifier = nationalId || medicalRecordNumber;
     
     setError('');
     setIsLoading(true);
@@ -193,12 +192,28 @@ const LoginPage = () => {
     setOtpCode('');
   };
 
+  // Handle National ID change with mutual exclusion
+  const handleNationalIdChange = (value: string) => {
+    setNationalId(value);
+    if (value) {
+      setMedicalRecordNumber(''); // Clear MR if National ID is entered
+    }
+  };
+
+  // Handle Medical Record Number change with mutual exclusion
+  const handleMedicalRecordNumberChange = (value: string) => {
+    setMedicalRecordNumber(value);
+    if (value) {
+      setNationalId(''); // Clear National ID if MR is entered
+    }
+  };
+
   return (
     <div style={{
       minHeight: '100vh',
       backgroundColor: '#F0FBFC',
     }}>
-      <Navbar />
+      {ResponsiveNavbar}
       
       <div style={{ height: '180px', background: '#F0FBFC' }} />
       
@@ -271,23 +286,136 @@ const LoginPage = () => {
                 flexDirection: 'column',
                 gap: '24px',
               }}>
-                <CustomSelect
-                  label="ID Type"
-                  placeholder="Select your ID type"
-                  value={idType}
-                  onChange={setIdType}
-                  options={idTypeOptions}
-                  required={true}
-                />
+                {/* National ID Input */}
+                <div style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'flex-start',
+                  gap: '8px',
+                  width: '100%',
+                }}>
+                  <label style={{
+                    fontFamily: 'Nunito, sans-serif',
+                    fontWeight: 700,
+                    fontSize: '16px',
+                    lineHeight: '24px',
+                    color: '#061F42',
+                  }}>
+                    National ID
+                  </label>
+                  <div style={{
+                    boxSizing: 'border-box',
+                    display: 'flex',
+                    alignItems: 'center',
+                    padding: '12px',
+                    gap: '12px',
+                    width: '100%',
+                    height: '44px',
+                    border: '1.5px solid #D1D5DB',
+                    borderRadius: '10px',
+                    backgroundColor: medicalRecordNumber ? '#F3F4F6' : '#FFFFFF',
+                    opacity: medicalRecordNumber ? 0.6 : 1,
+                  }}>
+                    <input
+                      type="text"
+                      placeholder="Enter your National ID"
+                      value={nationalId}
+                      onChange={(e) => handleNationalIdChange(e.target.value)}
+                      disabled={!!medicalRecordNumber}
+                      style={{
+                        flex: 1,
+                        fontFamily: 'Nunito, sans-serif',
+                        fontWeight: 400,
+                        fontSize: '14px',
+                        lineHeight: '20px',
+                        color: '#061F42',
+                        border: 'none',
+                        outline: 'none',
+                        backgroundColor: 'transparent',
+                        cursor: medicalRecordNumber ? 'not-allowed' : 'text',
+                      }}
+                    />
+                  </div>
+                </div>
 
-                <InputField
-                  label="ID or MR Number"
-                  placeholder="XXX XXXX XX"
-                  value={identifier}
-                  onChange={setIdentifier}
-                  type="text"
-                  required={true}
-                />
+                {/* OR Divider */}
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '16px',
+                  margin: '0',
+                }}>
+                  <div style={{
+                    flex: 1,
+                    height: '1px',
+                    backgroundColor: '#E5E7EB',
+                  }} />
+                  <span style={{
+                    fontFamily: 'Nunito, sans-serif',
+                    fontSize: '14px',
+                    fontWeight: 600,
+                    color: '#6B7280',
+                  }}>
+                    OR
+                  </span>
+                  <div style={{
+                    flex: 1,
+                    height: '1px',
+                    backgroundColor: '#E5E7EB',
+                  }} />
+                </div>
+
+                {/* Medical Record Number Input */}
+                <div style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'flex-start',
+                  gap: '8px',
+                  width: '100%',
+                }}>
+                  <label style={{
+                    fontFamily: 'Nunito, sans-serif',
+                    fontWeight: 700,
+                    fontSize: '16px',
+                    lineHeight: '24px',
+                    color: '#061F42',
+                  }}>
+                    Medical Record Number
+                  </label>
+                  <div style={{
+                    boxSizing: 'border-box',
+                    display: 'flex',
+                    alignItems: 'center',
+                    padding: '12px',
+                    gap: '12px',
+                    width: '100%',
+                    height: '44px',
+                    border: '1.5px solid #D1D5DB',
+                    borderRadius: '10px',
+                    backgroundColor: nationalId ? '#F3F4F6' : '#FFFFFF',
+                    opacity: nationalId ? 0.6 : 1,
+                  }}>
+                    <input
+                      type="text"
+                      placeholder="Enter your Medical Record Number"
+                      value={medicalRecordNumber}
+                      onChange={(e) => handleMedicalRecordNumberChange(e.target.value)}
+                      disabled={!!nationalId}
+                      style={{
+                        flex: 1,
+                        fontFamily: 'Nunito, sans-serif',
+                        fontWeight: 400,
+                        fontSize: '14px',
+                        lineHeight: '20px',
+                        color: '#061F42',
+                        border: 'none',
+                        outline: 'none',
+                        backgroundColor: 'transparent',
+                        cursor: nationalId ? 'not-allowed' : 'text',
+                      }}
+                    />
+                  </div>
+                </div>
 
                 <InputField
                   label="Enter Password"

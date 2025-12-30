@@ -262,7 +262,7 @@ const TestimonialSection = () => {
                 <p
                   style={{
                     width: '276px',
-                    fontFamily: 'Varela Round, sans-serif',
+                    fontFamily: 'Nunito, sans-serif',
                     fontStyle: 'normal',
                     fontWeight: 400,
                     fontSize: '12px',
@@ -384,7 +384,7 @@ const TestimonialSection = () => {
                 <p
                   style={{
                     width: '260px',
-                    fontFamily: 'Varela Round, sans-serif',
+                    fontFamily: 'Nunito, sans-serif',
                     fontStyle: 'normal',
                     fontWeight: 400,
                     fontSize: '12px',

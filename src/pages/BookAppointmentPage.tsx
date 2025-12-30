@@ -1,14 +1,31 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
-import { Link, useNavigate } from 'react-router-dom';
-import Navbar from '../components/Navbar';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { useResponsiveNavbar } from '../hooks/useResponsiveNavbar';
 import Footer from '../components/Footer';
 import CustomSelect from '../components/CustomSelect';
 import Calendar from '../components/Calendar';
-import { branchesService, type Branch } from '../services/branchesService';
-import { departmentsService, type Department } from '../services/departmentsService';
-import { doctorsService, type Doctor } from '../services/doctorsService';
 import { appointmentsService } from '../services/appointmentsService';
+
+// Simplified types for initial data (only fields needed for booking)
+interface Branch {
+  id: number;
+  name: string;
+}
+
+interface Department {
+  id: number;
+  name: string;
+}
+
+interface Doctor {
+  id: number;
+  name: string;
+  department_id: number;
+  branch_id: number;
+  department_name: string;
+  branch_name: string;
+}
 
 // Step types
 type StepStatus = 'completed' | 'current' | 'upcoming';
@@ -177,7 +194,9 @@ const InputField = ({
 };
 
 const BookAppointmentPage = () => {
+  const ResponsiveNavbar = useResponsiveNavbar();
   const { isAuthenticated, user, register, clearError } = useAuth();
+  const [searchParams] = useSearchParams();
   
   // Local loading state for the form submission
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -234,6 +253,7 @@ const BookAppointmentPage = () => {
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [filteredDoctors, setFilteredDoctors] = useState<Doctor[]>([]);
   const [loadingInitialData, setLoadingInitialData] = useState(true);
+  const [isInitializing, setIsInitializing] = useState(false);
 
   // Available slots state
   const [availableSlots, setAvailableSlots] = useState<DaySchedule[]>([]);
@@ -253,26 +273,49 @@ const BookAppointmentPage = () => {
   const selectedDaySlots = availableSlots.find(day => day.date === doctorSelection.selectedDate);
   const availableTimeSlots = selectedDaySlots?.slots.filter(s => s.available) || [];
 
-  // Load initial data (branches and departments)
+  // Load initial data (branches, departments, and doctors)
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
         setLoadingInitialData(true);
-        const [branchesData, departmentsData] = await Promise.all([
-          branchesService.getBranches({ active: true }),
-          departmentsService.getDepartments({ active: true }),
-        ]);
-        setBranches(branchesData);
-        setDepartments(departmentsData.departments);
-        setFilteredDepartments(departmentsData.departments);
+        const response = await appointmentsService.getInitialData();
+        
+        if (response.success) {
+          setBranches(response.data.branches);
+          setDepartments(response.data.departments);
+          setFilteredDepartments(response.data.departments);
+          setDoctors(response.data.doctors);
+          setFilteredDoctors(response.data.doctors);
+        }
       } catch (err) {
-        console.error('Error loading filter data:', err);
+        console.error('Error loading initial data:', err);
       } finally {
         setLoadingInitialData(false);
       }
     };
     fetchInitialData();
   }, []);
+
+  // Initialize form with URL parameters from doctor card - wait for data to load
+  useEffect(() => {
+    if (loadingInitialData) return; // Wait for initial data to load
+
+    const branchId = searchParams.get('branch_id');
+    const departmentId = searchParams.get('department_id');
+    const doctorId = searchParams.get('doctor_id');
+
+    if (branchId || departmentId || doctorId) {
+      setIsInitializing(true);
+      setDoctorSelection(prev => ({
+        ...prev,
+        branch: branchId || prev.branch,
+        specialty: departmentId || prev.specialty,
+        doctor: doctorId || prev.doctor,
+      }));
+      // Clear initialization flag after a short delay to allow all effects to run
+      setTimeout(() => setIsInitializing(false), 1000);
+    }
+  }, [searchParams, loadingInitialData]);
 
   // Update step when authentication status changes (e.g., after page refresh)
   useEffect(() => {
@@ -292,61 +335,45 @@ const BookAppointmentPage = () => {
   // Filter departments when branch changes
   useEffect(() => {
     if (doctorSelection.branch) {
-      const filterDepartmentsByBranch = async () => {
-        try {
-          const doctorsInBranch = await doctorsService.getDoctors({
-            active: true,
-            branch_id: parseInt(doctorSelection.branch),
-            per_page: 100,
-          });
-          const deptIds = new Set(doctorsInBranch.data.map(d => d.department_id));
-          const filtered = departments.filter(dept => deptIds.has(dept.id));
-          setFilteredDepartments(filtered);
-          
-          // Reset department selection if not in filtered list
-          if (doctorSelection.specialty && !filtered.find(d => d.id === parseInt(doctorSelection.specialty))) {
-            setDoctorSelection(prev => ({ ...prev, specialty: '', doctor: '' }));
-            setDoctors([]);
-            setFilteredDoctors([]);
-          }
-        } catch (err) {
-          console.error('Error filtering departments:', err);
-        }
-      };
-      filterDepartmentsByBranch();
+      // Filter departments based on doctors in this branch
+      const doctorsInBranch = doctors.filter(d => d.branch_id === parseInt(doctorSelection.branch));
+      const deptIds = new Set(doctorsInBranch.map(d => d.department_id));
+      const filtered = departments.filter(dept => deptIds.has(dept.id));
+      setFilteredDepartments(filtered);
+      
+      // Reset department selection if not in filtered list (but not during initialization)
+      if (!isInitializing && doctorSelection.specialty && !filtered.find(d => d.id === parseInt(doctorSelection.specialty))) {
+        setDoctorSelection(prev => ({ ...prev, specialty: '', doctor: '' }));
+      }
     } else {
       setFilteredDepartments(departments);
     }
-  }, [doctorSelection.branch, departments]);
+  }, [doctorSelection.branch, departments, doctors, isInitializing]);
 
-  // Load doctors when branch or department changes
+  // Filter doctors when branch or department changes
   useEffect(() => {
     if (doctorSelection.branch || doctorSelection.specialty) {
-      const fetchDoctors = async () => {
-        try {
-          const doctorsData = await doctorsService.getDoctors({
-            active: true,
-            branch_id: doctorSelection.branch ? parseInt(doctorSelection.branch) : undefined,
-            department_id: doctorSelection.specialty ? parseInt(doctorSelection.specialty) : undefined,
-            per_page: 50,
-          });
-          setDoctors(doctorsData.data);
-          setFilteredDoctors(doctorsData.data);
-          
-          // Reset doctor selection if not in new list
-          if (doctorSelection.doctor && !doctorsData.data.find(d => d.id === parseInt(doctorSelection.doctor))) {
-            setDoctorSelection(prev => ({ ...prev, doctor: '', selectedDate: '', selectedSlot: '' }));
-          }
-        } catch (err) {
-          console.error('Error loading doctors:', err);
-        }
-      };
-      fetchDoctors();
+      // Filter doctors based on selected branch and/or department
+      let filtered = doctors;
+      
+      if (doctorSelection.branch) {
+        filtered = filtered.filter(d => d.branch_id === parseInt(doctorSelection.branch));
+      }
+      
+      if (doctorSelection.specialty) {
+        filtered = filtered.filter(d => d.department_id === parseInt(doctorSelection.specialty));
+      }
+      
+      setFilteredDoctors(filtered);
+      
+      // Reset doctor selection if not in new list (but not during initialization)
+      if (!isInitializing && doctorSelection.doctor && !filtered.find(d => d.id === parseInt(doctorSelection.doctor))) {
+        setDoctorSelection(prev => ({ ...prev, doctor: '', selectedDate: '', selectedSlot: '' }));
+      }
     } else {
-      setDoctors([]);
-      setFilteredDoctors([]);
+      setFilteredDoctors(doctors);
     }
-  }, [doctorSelection.branch, doctorSelection.specialty]);
+  }, [doctorSelection.branch, doctorSelection.specialty, doctors, isInitializing]);
 
   // Filter doctors by search term
   useEffect(() => {
@@ -673,9 +700,9 @@ const BookAppointmentPage = () => {
         position: 'relative',
         isolation: 'isolate',
         width: '100%',
-        maxWidth: '612px',
-        minWidth: '500px',
-        height: '80px',
+        maxWidth: window.innerWidth <= 768 ? '100%' : '612px',
+        minWidth: window.innerWidth <= 768 ? 'auto' : '500px',
+        height: window.innerWidth <= 768 ? '60px' : '80px',
         marginTop: '16px',
       }}>
         {/* Progress Lines - positioned to connect circles only */}
@@ -809,7 +836,8 @@ const BookAppointmentPage = () => {
             flexDirection: 'column',
             alignItems: 'center',
             gap: '12px',
-            width: '300px',
+            width: window.innerWidth <= 768 ? '100%' : '300px',
+            maxWidth: '100%',
           }}>
             <InputField
               label="Mobile Number"
@@ -941,7 +969,8 @@ const BookAppointmentPage = () => {
           alignItems: 'center',
           gap: '24px',
           width: '100%',
-          maxWidth: '616px',
+          maxWidth: window.innerWidth <= 768 ? '100%' : '616px',
+          padding: window.innerWidth <= 768 ? '0' : '0 16px',
         }}>
           {/* Header */}
           <div style={{
@@ -967,12 +996,13 @@ const BookAppointmentPage = () => {
             <p style={{
               fontFamily: 'Nunito, sans-serif',
               fontWeight: 600,
-              fontSize: '16px',
-              lineHeight: '20px',
+              fontSize: window.innerWidth <= 768 ? '14px' : '16px',
+              lineHeight: window.innerWidth <= 768 ? '18px' : '20px',
               textAlign: 'center',
               color: '#061F42',
               margin: '24px 0 0 0',
-              maxWidth: '616px',
+              maxWidth: '100%',
+              padding: window.innerWidth <= 768 ? '0 8px' : '0',
             }}>
               Fill in your information to be able to create your profile and verify your identity, when finished, click 'Next'. We will send you an OTP where you can fill it in the next step.
             </p>
@@ -1410,7 +1440,8 @@ const BookAppointmentPage = () => {
           alignItems: 'center',
           gap: '24px',
           width: '100%',
-          maxWidth: '1072px',
+          maxWidth: window.innerWidth <= 768 ? '100%' : '1072px',
+          padding: window.innerWidth <= 768 ? '0' : '0 16px',
         }}>
           {/* Header Section */}
           <div style={{
@@ -1418,7 +1449,8 @@ const BookAppointmentPage = () => {
             flexDirection: 'column',
             alignItems: 'center',
             gap: '24px',
-            width: '612px',
+            width: '100%',
+            maxWidth: window.innerWidth <= 768 ? '100%' : '612px',
           }}>
             <div style={{
               display: 'flex',
@@ -1446,11 +1478,12 @@ const BookAppointmentPage = () => {
               width: '100%',
               fontFamily: 'Nunito, sans-serif',
               fontWeight: 600,
-              fontSize: '16px',
-              lineHeight: '20px',
+              fontSize: window.innerWidth <= 768 ? '14px' : '16px',
+              lineHeight: window.innerWidth <= 768 ? '18px' : '20px',
               textAlign: 'center',
               color: '#061F42',
               margin: 0,
+              padding: window.innerWidth <= 768 ? '0 8px' : '0',
             }}>
               Choose from the following options in order to find your preferred Doctor
             </p>
@@ -1463,18 +1496,18 @@ const BookAppointmentPage = () => {
             alignItems: 'center',
             gap: '16px',
             width: '100%',
-            maxWidth: '612px',
+            maxWidth: window.innerWidth <= 768 ? '100%' : '612px',
           }}>
             {/* Three Dropdowns Row */}
             <div style={{
               display: 'flex',
-              flexDirection: 'row',
+              flexDirection: window.innerWidth <= 768 ? 'column' : 'row',
               alignItems: 'flex-start',
               gap: '16px',
               width: '100%',
             }}>
               {/* Select Branch */}
-              <div style={{ flex: 1 }}>
+              <div style={{ flex: 1, width: window.innerWidth <= 768 ? '100%' : 'auto' }}>
                 <CustomSelect
                   placeholder={loadingInitialData ? "Loading..." : "Select Branch"}
                   value={doctorSelection.branch}
@@ -1485,7 +1518,7 @@ const BookAppointmentPage = () => {
               </div>
               
               {/* Select Specialty */}
-              <div style={{ flex: 1 }}>
+              <div style={{ flex: 1, width: window.innerWidth <= 768 ? '100%' : 'auto' }}>
                 <CustomSelect
                   placeholder={loadingInitialData ? "Loading..." : "Select Specialty"}
                   value={doctorSelection.specialty}
@@ -1500,7 +1533,21 @@ const BookAppointmentPage = () => {
                 <CustomSelect
                   placeholder="Select Doctor"
                   value={doctorSelection.doctor}
-                  onChange={(value) => setDoctorSelection(prev => ({ ...prev, doctor: value, selectedDate: '', selectedSlot: '' }))}
+                  onChange={(value) => {
+                    const doctor = doctors.find(d => d.id === parseInt(value));
+                    if (doctor) {
+                      setDoctorSelection(prev => ({
+                        ...prev,
+                        branch: doctor.branch_id.toString(),
+                        specialty: doctor.department_id.toString(),
+                        doctor: value,
+                        selectedDate: '',
+                        selectedSlot: ''
+                      }));
+                    } else {
+                      setDoctorSelection(prev => ({ ...prev, doctor: value, selectedDate: '', selectedSlot: '' }));
+                    }
+                  }}
                   options={filteredDoctors.map(d => ({ value: d.id.toString(), label: d.name }))}
                   searchable={false}
                 />
@@ -1589,6 +1636,8 @@ const BookAppointmentPage = () => {
                             ...prev, 
                             doctor: doctor.id.toString(),
                             doctorSearch: doctor.name,
+                            branch: doctor.branch_id.toString(),
+                            specialty: doctor.department_id.toString(),
                             selectedDate: '',
                             selectedSlot: ''
                           }));
@@ -1615,16 +1664,14 @@ const BookAppointmentPage = () => {
                           }
                         }}
                       >
-                        {doctor.name}
-                        {doctor.specialization && (
-                          <div style={{
-                            fontSize: '12px',
-                            color: '#6B7280',
-                            marginTop: '2px',
-                          }}>
-                            {doctor.specialization}
-                          </div>
-                        )}
+                        <div>{doctor.name}</div>
+                        <div style={{
+                          fontSize: '12px',
+                          color: '#6B7280',
+                          marginTop: '2px',
+                        }}>
+                          {doctor.department_name} • {doctor.branch_name}
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -2219,158 +2266,33 @@ const BookAppointmentPage = () => {
               </div>
             </div>
             
-            {/* Payment Summary */}
+            {/* Info Badge */}
             <div style={{
               display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'flex-start',
-              padding: '8px',
+              flexDirection: 'row',
+              justifyContent: 'center',
+              alignItems: 'center',
+              padding: '6px 8px',
               gap: '8px',
               width: '100%',
-              background: '#C9F3FF',
-              borderRadius: '12px',
+              background: '#DADADA',
+              borderRadius: '8px',
             }}>
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <circle cx="8" cy="8" r="6.5" stroke="#061F42" strokeWidth="1.5"/>
+                <path d="M8 4.5V8.5" stroke="#061F42" strokeWidth="1.5" strokeLinecap="round"/>
+                <circle cx="8" cy="11" r="0.75" fill="#061F42"/>
+              </svg>
               <span style={{
-                width: '100%',
                 fontFamily: 'Nunito, sans-serif',
-                fontWeight: 700,
-                fontSize: '16px',
-                lineHeight: '20px',
-                textAlign: 'center',
+                fontWeight: 600,
+                fontSize: '12px',
+                lineHeight: '16px',
                 color: '#061F42',
+                flex: 1,
               }}>
-                Payment Summary
+                Please arrive 15 minutes before your appointment time.
               </span>
-              
-              {/* Consultation Fee */}
-              <div style={{
-                display: 'flex',
-                flexDirection: 'row',
-                justifyContent: 'center',
-                alignItems: 'center',
-                padding: '4px 12px',
-                width: '100%',
-                background: '#FFFFFF',
-                borderRadius: '8px',
-              }}>
-                <span style={{
-                  fontFamily: 'Nunito, sans-serif',
-                  fontWeight: 600,
-                  fontSize: '12px',
-                  lineHeight: '16px',
-                  color: '#061F42',
-                  flex: 1,
-                }}>
-                  Consultation Appointment
-                </span>
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                }}>
-                  <img 
-                    src="/assets/images/SAR_blue.svg" 
-                    alt="SAR" 
-                    style={{ width: '14px', height: '14px' }}
-                  />
-                  <span style={{
-                    fontFamily: 'Nunito, sans-serif',
-                    fontWeight: 600,
-                    fontSize: '16px',
-                    lineHeight: '20px',
-                    color: '#061F42',
-                  }}>
-                    112.00
-                  </span>
-                </div>
-              </div>
-              
-              {/* Total */}
-              <div style={{
-                display: 'flex',
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                padding: '8px 12px',
-                width: '100%',
-                background: '#061F42',
-                borderRadius: '8px',
-              }}>
-                <div style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'flex-start',
-                  flex: 1,
-                }}>
-                  <span style={{
-                    fontFamily: 'Nunito, sans-serif',
-                    fontWeight: 700,
-                    fontSize: '18px',
-                    lineHeight: '20px',
-                    color: '#FFFFFF',
-                  }}>
-                    TOTAL
-                  </span>
-                  <span style={{
-                    fontFamily: 'Nunito, sans-serif',
-                    fontWeight: 600,
-                    fontSize: '10px',
-                    lineHeight: '12px',
-                    color: '#FFFFFF',
-                  }}>
-                    Including VAT
-                  </span>
-                </div>
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                }}>
-                  <img 
-                    src="/assets/images/SAR.svg" 
-                    alt="SAR" 
-                    style={{ width: '36px', height: '39px', filter: 'brightness(0) invert(1)' }}
-                  />
-                  <span style={{
-                    fontFamily: 'Nunito, sans-serif',
-                    fontWeight: 800,
-                    fontSize: '32px',
-                    lineHeight: '20px',
-                    color: '#FFFFFF',
-                  }}>
-                    112<span style={{ fontSize: '20px' }}>.00</span>
-                  </span>
-                </div>
-              </div>
-              
-              {/* Info Badge */}
-              <div style={{
-                display: 'flex',
-                flexDirection: 'row',
-                justifyContent: 'center',
-                alignItems: 'center',
-                padding: '6px 8px',
-                gap: '8px',
-                width: '100%',
-                background: '#DADADA',
-                borderRadius: '8px',
-              }}>
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <circle cx="8" cy="8" r="6.5" stroke="#061F42" strokeWidth="1.5"/>
-                  <path d="M8 4.5V8.5" stroke="#061F42" strokeWidth="1.5" strokeLinecap="round"/>
-                  <circle cx="8" cy="11" r="0.75" fill="#061F42"/>
-                </svg>
-                <span style={{
-                  fontFamily: 'Nunito, sans-serif',
-                  fontWeight: 600,
-                  fontSize: '12px',
-                  lineHeight: '16px',
-                  color: '#061F42',
-                  flex: 1,
-                }}>
-                  Please arrive 15 minutes before your appointment time. You'll be required to pay this amount at the reception before your appointment.
-                </span>
-              </div>
             </div>
           </div>
         </div>
@@ -2525,7 +2447,7 @@ const BookAppointmentPage = () => {
               justifyContent: 'flex-end',
             }}>
               <button
-                onClick={() => navigate('/appointments')}
+                onClick={() => navigate('/profile?tab=appointments')}
                 style={{
                   display: 'flex',
                   flexDirection: 'row',
@@ -2560,16 +2482,16 @@ const BookAppointmentPage = () => {
 
   return (
     <div className="page-wrapper" style={{ minHeight: '100vh' }}>
-      <Navbar />
+      {ResponsiveNavbar}
       
       {/* Spacer for fixed navbar */}
-      <div style={{ height: '180px', background: '#C9F3FF' }} />
+      <div style={{ height: window.innerWidth <= 768 ? '90px' : '180px', background: '#C9F3FF' }} />
       
       {/* Main Content */}
       <main style={{
         background: '#C9F3FF',
         minHeight: 'calc(100vh - 200px)',
-        padding: '40px 20px',
+        padding: window.innerWidth <= 768 ? '20px 16px' : '40px 20px',
       }}>
         <div style={{
           maxWidth: '1200px',
@@ -2579,9 +2501,9 @@ const BookAppointmentPage = () => {
           <h1 style={{
             fontFamily: 'Nunito, sans-serif',
             fontWeight: 700,
-            fontSize: '32px',
+            fontSize: window.innerWidth <= 768 ? '24px' : '32px',
             color: '#061F42',
-            marginBottom: '24px',
+            marginBottom: window.innerWidth <= 768 ? '16px' : '24px',
           }}>
             Book Appointment
           </h1>
@@ -2591,7 +2513,7 @@ const BookAppointmentPage = () => {
             background: '#FCFCFC',
             boxShadow: '0px 4px 5px rgba(0, 0, 0, 0.25)',
             borderRadius: '12px',
-            padding: '24px',
+            padding: window.innerWidth <= 768 ? '16px' : '24px',
             display: 'flex',
             justifyContent: 'center',
           }}>

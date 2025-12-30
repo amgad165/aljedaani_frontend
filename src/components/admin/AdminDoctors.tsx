@@ -107,12 +107,19 @@ const AdminDoctors: React.FC = () => {
   const [filterDepartment, setFilterDepartment] = useState<string>('');
   const [filterBranch, setFilterBranch] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalDoctors, setTotalDoctors] = useState(0);
+  const itemsPerPage = 10;
 
   useEffect(() => {
-    fetchDoctors();
     fetchBranches();
     fetchDepartments();
   }, []);
+  
+  useEffect(() => {
+    fetchDoctors();
+  }, [currentPage, searchQuery, filterStatus, filterDepartment, filterBranch]);
 
   useEffect(() => {
     // Track changes
@@ -124,17 +131,43 @@ const AdminDoctors: React.FC = () => {
 
   const fetchDoctors = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/doctors?active=all`, {
+      setLoading(true);
+      
+      // Build query parameters
+      const params = new URLSearchParams({
+        active: 'all',
+        page: currentPage.toString(),
+        per_page: itemsPerPage.toString(),
+      });
+      
+      if (searchQuery) params.append('search', searchQuery);
+      if (filterStatus) params.append('status', filterStatus);
+      if (filterDepartment) params.append('department_id', filterDepartment);
+      if (filterBranch) params.append('branch_id', filterBranch);
+      
+      const response = await fetch(`${API_BASE_URL}/doctors?${params.toString()}`, {
         headers: {
           'Accept': 'application/json',
           'Authorization': `Bearer ${getToken()}`,
         },
       });
       const result = await response.json();
-      const data = result.data?.data || result.data || result;
-      setDoctors(Array.isArray(data) ? data : []);
+      
+      // Handle paginated response
+      if (result.data) {
+        setDoctors(result.data.data || result.data);
+        setTotalPages(result.data.last_page || 1);
+        setTotalDoctors(result.data.total || 0);
+      } else {
+        setDoctors([]);
+        setTotalPages(1);
+        setTotalDoctors(0);
+      }
     } catch (error) {
       console.error('Error fetching doctors:', error);
+      setDoctors([]);
+      setTotalPages(1);
+      setTotalDoctors(0);
     } finally {
       setLoading(false);
     }
@@ -444,37 +477,24 @@ const AdminDoctors: React.FC = () => {
     }
   };
 
-  // Filter doctors based on selected filters
-  const filteredDoctors = doctors.filter(doctor => {
-    // Search filter
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      const matchesSearch = 
-        doctor.name.toLowerCase().includes(query) ||
-        doctor.email.toLowerCase().includes(query) ||
-        (doctor.specialization && doctor.specialization.toLowerCase().includes(query));
-      if (!matchesSearch) return false;
-    }
-    
-    // Status filter
-    if (filterStatus && doctor.status !== filterStatus) return false;
-    
-    // Department filter
-    if (filterDepartment && doctor.department_id?.toString() !== filterDepartment) return false;
-    
-    // Branch filter
-    if (filterBranch && doctor.branch_id?.toString() !== filterBranch) return false;
-    
-    return true;
-  });
-
   const clearFilters = () => {
     setFilterStatus('');
     setFilterDepartment('');
     setFilterBranch('');
     setSearchQuery('');
+    setCurrentPage(1);
   };
 
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    if (currentPage !== 1) {
+      setCurrentPage(1);
+    }
+  }, [filterStatus, filterDepartment, filterBranch, searchQuery]);
+  
+  // Calculate display indices
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = Math.min(startIndex + itemsPerPage, totalDoctors);
   const hasActiveFilters = filterStatus || filterDepartment || filterBranch || searchQuery;
 
   const styles = {
@@ -1050,7 +1070,7 @@ const AdminDoctors: React.FC = () => {
 
       {/* Results Count */}
       <div style={{ marginBottom: '16px', color: '#64748b', fontSize: '14px' }}>
-        Showing {filteredDoctors.length} of {doctors.length} doctors
+        Showing {totalDoctors} doctors
         {hasActiveFilters && <span> (filtered)</span>}
       </div>
 
@@ -1068,7 +1088,7 @@ const AdminDoctors: React.FC = () => {
           </tr>
         </thead>
         <tbody>
-          {filteredDoctors.map(doctor => (
+          {doctors.map(doctor => (
             <tr key={doctor.id}>
               <td style={styles.td}>
                 {doctor.image_url ? (
@@ -1131,6 +1151,80 @@ const AdminDoctors: React.FC = () => {
           ))}
         </tbody>
       </table>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          padding: '20px',
+          backgroundColor: 'white',
+          borderRadius: '0 0 12px 12px',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+          marginTop: '-4px',
+        }}>
+          <div style={{ color: '#64748b', fontSize: '14px' }}>
+            Page {currentPage} of {totalPages} • Showing {startIndex + 1}-{endIndex} of {totalDoctors}
+          </div>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button
+              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+              disabled={currentPage === 1}
+              style={{
+                padding: '8px 16px',
+                border: '1px solid #d1d5db',
+                borderRadius: '6px',
+                backgroundColor: currentPage === 1 ? '#f3f4f6' : 'white',
+                color: currentPage === 1 ? '#94a3b8' : '#374151',
+                cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+                fontSize: '14px',
+                fontWeight: '500',
+                transition: 'all 0.2s',
+              }}
+            >
+              ← Previous
+            </button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+              <button
+                key={page}
+                onClick={() => setCurrentPage(page)}
+                style={{
+                  padding: '8px 12px',
+                  border: currentPage === page ? 'none' : '1px solid #d1d5db',
+                  borderRadius: '6px',
+                  backgroundColor: currentPage === page ? '#0d9488' : 'white',
+                  color: currentPage === page ? 'white' : '#374151',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontWeight: currentPage === page ? '600' : '500',
+                  transition: 'all 0.2s',
+                  minWidth: '36px',
+                }}
+              >
+                {page}
+              </button>
+            ))}
+            <button
+              onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+              disabled={currentPage === totalPages}
+              style={{
+                padding: '8px 16px',
+                border: '1px solid #d1d5db',
+                borderRadius: '6px',
+                backgroundColor: currentPage === totalPages ? '#f3f4f6' : 'white',
+                color: currentPage === totalPages ? '#94a3b8' : '#374151',
+                cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
+                fontSize: '14px',
+                fontWeight: '500',
+                transition: 'all 0.2s',
+              }}
+            >
+              Next →
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Drawer Overlay */}
       <div style={styles.overlay} />
