@@ -8,11 +8,15 @@ import TestimonialSection from './TestimonialSection';
 import ExcellenceCentersSection from './ExcellenceCentersSection';
 import BlogSection from './BlogSection';
 import Footer from './Footer';
+import HomepageLoading from './HomepageLoading';
+import FloatingContactButtons from './FloatingContactButtons';
 import { animationCSS } from '../hooks/useScrollAnimation';
 import { useResponsiveNavbar } from '../hooks/useResponsiveNavbar';
+import { HomepageProvider, useHomepageData } from '../context/HomepageContext';
 
-const HomePage = () => {
+const HomePageContent = () => {
   const ResponsiveNavbar = useResponsiveNavbar();
+  const { loading } = useHomepageData();
 
   // Inject animation CSS once on mount
   useEffect(() => {
@@ -27,6 +31,8 @@ const HomePage = () => {
 
   return (
     <>
+      <HomepageLoading isLoading={loading} />
+      <FloatingContactButtons />
       {ResponsiveNavbar}
       <div className="main overflow-hidden">
         <HeroSection />
@@ -42,6 +48,14 @@ const HomePage = () => {
       </div>
       <Footer />
     </>
+  );
+};
+
+const HomePage = () => {
+  return (
+    <HomepageProvider>
+      <HomePageContent />
+    </HomepageProvider>
   );
 };
 

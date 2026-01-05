@@ -7,6 +7,7 @@ import { useResponsiveNavbar } from '../hooks/useResponsiveNavbar';
 import Footer from '../components/Footer';
 import { CardSkeleton } from '../components/LoadingComponents';
 import { EASINGS } from '../utils/animations';
+import FloatingContactButtons from '../components/FloatingContactButtons';
 
 // Doctor Card Component (reused from DoctorsPage)
 interface DoctorCardProps {
@@ -665,6 +666,7 @@ const BranchesPage: React.FC = () => {
 
   return (
     <div style={{ minHeight: '100vh', background: '#C9F3FF' }}>
+      <FloatingContactButtons />
       {ResponsiveNavbar}
       
       {/* Page Content */}

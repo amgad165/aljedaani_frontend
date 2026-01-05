@@ -18,8 +18,9 @@ const Navbar = () => {
   const [isBranchesDropdownOpen, setIsBranchesDropdownOpen] = useState(false);
   const [branches, setBranches] = useState<Branch[]>([]);
   const [loadingBranches, setLoadingBranches] = useState(false);
+  const [isQRModalOpen, setIsQRModalOpen] = useState(false);
   const branchesDropdownRef = useRef<HTMLLIElement>(null);
-  const userMenuTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const userMenuTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { isAuthenticated, user, logout } = useAuth();
 
   // Fetch branches when dropdown opens
@@ -68,7 +69,28 @@ const Navbar = () => {
   ];
 
   return (
-    <header className="header">
+    <>
+      <style>
+        {`
+          @font-face {
+            font-family: 'GE-SS-TV';
+            src: url('/assets/fonts/GE-SS-TV-Light_10.otf') format('opentype');
+          }
+          .ge-ss-tv {
+            font-family: 'GE SS TV', 'GE-SS-TV', sans-serif;
+            font-style: normal;
+            font-weight: 700;
+            font-size: 17px;
+            line-height: 16px;
+            display: flex;
+            align-items: center;
+            text-align: center;
+            color: #063069;
+            text-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+          }
+        `}
+      </style>
+      <header className="header">
       {/* Top Bar */}
       <div className="topbar">
         <div className="container">
@@ -313,13 +335,13 @@ const Navbar = () => {
                 <a href="#">
                   <img src="/assets/img/icons/search.svg" className="d-block" width="24" height="24" alt="Search Icon" />
                 </a>
-                <div className="scan-wrapper">
-                  <a href="#" style={{ fontSize: '10px' }} className="s-block">
-                    <span className="text-secondary fs-14 fw-exbold">SCAN NOW</span><br />
-                    For easy access
+                <div className="scan-wrapper" onClick={() => setIsQRModalOpen(true)} style={{ cursor: 'pointer' }}>
+                  <a href="#" style={{ fontSize: '10px' }} className="s-block" onClick={(e) => e.preventDefault()}>
+                    <span className="text-secondary fs-14 fw-exbold">SCAN</span><br />
+                   For Full Access
                   </a>
-                  <a href="#">
-                    <img src="/assets/img/icons/qr-code.svg" width="33" height="33" alt="QR Code" />
+                  <a href="#" onClick={(e) => e.preventDefault()}>
+                    <img src="assets/images/qr_code/qr_code.svg" width="43" height="43" alt="QR Code" />
                   </a>
                 </div>
                 <a href="#" className="btn btn-linear">
@@ -610,6 +632,137 @@ const Navbar = () => {
         </div>
       </div>
     </header>
+
+    {/* QR Code Modal */}
+    {isQRModalOpen && (
+      <div
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.75)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 9999,
+          animation: 'fadeIn 0.3s ease',
+        }}
+        onClick={() => setIsQRModalOpen(false)}
+      >
+        <div
+          style={{
+            position: 'relative',
+            backgroundColor: '#FFFFFF',
+            borderRadius: '20px',
+            padding: '40px',
+            boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
+            maxWidth: '90%',
+            maxHeight: '90%',
+            animation: 'scaleIn 0.3s ease',
+          }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Close Button */}
+          <button
+            onClick={() => setIsQRModalOpen(false)}
+            style={{
+              position: 'absolute',
+              top: '16px',
+              right: '16px',
+              background: '#EF4444',
+              border: 'none',
+              borderRadius: '50%',
+              width: '36px',
+              height: '36px',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+              boxShadow: '0 2px 8px rgba(239, 68, 68, 0.3)',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'scale(1.1)';
+              e.currentTarget.style.boxShadow = '0 4px 12px rgba(239, 68, 68, 0.5)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'scale(1)';
+              e.currentTarget.style.boxShadow = '0 2px 8px rgba(239, 68, 68, 0.3)';
+            }}
+          >
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <path d="M15 5L5 15M5 5L15 15" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
+
+          {/* Modal Content */}
+          <div style={{ textAlign: 'center' }}>
+            <h2 style={{
+              fontFamily: 'Nunito, sans-serif',
+              fontWeight: 700,
+              fontSize: '24px',
+              color: '#061F42',
+              marginBottom: '16px',
+            }}>
+              Scan QR Code
+            </h2>
+            <p style={{
+              fontFamily: 'Nunito, sans-serif',
+              fontWeight: 400,
+              fontSize: '16px',
+              color: '#6B7280',
+              marginBottom: '32px',
+            }}>
+              Scan this code for full access
+            </p>
+            <div style={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              padding: '20px',
+              backgroundColor: '#F9FAFB',
+              borderRadius: '16px',
+              border: '2px solid #E5E7EB',
+            }}>
+              <img 
+                src="assets/images/qr_code/qr_code.svg" 
+                width="300" 
+                height="300" 
+                alt="QR Code" 
+                style={{
+                  maxWidth: '100%',
+                  height: 'auto',
+                }}
+              />
+            </div>
+          </div>
+
+          <style>{`
+            @keyframes fadeIn {
+              from {
+                opacity: 0;
+              }
+              to {
+                opacity: 1;
+              }
+            }
+            @keyframes scaleIn {
+              from {
+                opacity: 0;
+                transform: scale(0.9);
+              }
+              to {
+                opacity: 1;
+                transform: scale(1);
+              }
+            }
+          `}</style>
+        </div>
+      </div>
+    )}
+    </>
   );
 };
 

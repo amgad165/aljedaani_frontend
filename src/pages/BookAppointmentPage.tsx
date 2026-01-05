@@ -6,6 +6,7 @@ import Footer from '../components/Footer';
 import CustomSelect from '../components/CustomSelect';
 import Calendar from '../components/Calendar';
 import { appointmentsService } from '../services/appointmentsService';
+import FloatingContactButtons from '../components/FloatingContactButtons';
 
 // Simplified types for initial data (only fields needed for booking)
 interface Branch {
@@ -2482,6 +2483,7 @@ const BookAppointmentPage = () => {
 
   return (
     <div className="page-wrapper" style={{ minHeight: '100vh' }}>
+      <FloatingContactButtons />
       {ResponsiveNavbar}
       
       {/* Spacer for fixed navbar */}

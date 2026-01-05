@@ -7,6 +7,7 @@ import { useResponsiveNavbar } from '../hooks/useResponsiveNavbar';
 import CustomSelect from '../components/CustomSelect';
 import { DoctorCardSkeleton } from '../components/LoadingComponents';
 import { EASINGS, getStaggerDelay } from '../utils/animations';
+import FloatingContactButtons from '../components/FloatingContactButtons';
 
 interface DoctorCardProps {
   doctor: Doctor;
@@ -628,6 +629,7 @@ const DoctorsPage: React.FC = () => {
       display: 'flex',
       flexDirection: 'column',
     }}>
+      <FloatingContactButtons />
       {ResponsiveNavbar}
       <div style={{
         flex: 1,

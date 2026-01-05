@@ -161,7 +161,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
         display: 'flex',
         minHeight: '100vh',
         background: 'linear-gradient(135deg, #0a4d68 0%, #088395 40%, #05bfdb 80%, #00ffca 100%)',
-        fontFamily: "'Nunito', sans-serif",
+        fontFamily: "'Nunito'",
         margin: 0,
         padding: 0,
       }}
@@ -169,7 +169,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       <style>
         {`
           [data-admin-page="true"] * {
-            font-family: 'Nunito, sans-serif' !important;
+            font-family: 'Nunito' !important;
           }
         `}
       </style>

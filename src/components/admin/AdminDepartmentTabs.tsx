@@ -371,7 +371,9 @@ const AdminDepartmentTabs: React.FC = () => {
   };
 
   const removeSubSection = (index: number) => {
-    setFormData(prev => ({ ...prev, sub_sections: prev.sub_sections.filter((_, i) => i !== index) }));
+    if (window.confirm('Are you sure you want to delete this section? This action cannot be undone.')) {
+      setFormData(prev => ({ ...prev, sub_sections: prev.sub_sections.filter((_, i) => i !== index) }));
+    }
   };
 
   // Sidebar item management (NEW - with full content)
@@ -411,8 +413,10 @@ const AdminDepartmentTabs: React.FC = () => {
   };
 
   const removeSidebarItem = (index: number) => {
-    setFormData(prev => ({ ...prev, sidebar_items: prev.sidebar_items.filter((_, i) => i !== index) }));
-    if (expandedSidebarItem === index) setExpandedSidebarItem(null);
+    if (window.confirm('Are you sure you want to delete this sidebar item? This action cannot be undone.')) {
+      setFormData(prev => ({ ...prev, sidebar_items: prev.sidebar_items.filter((_, i) => i !== index) }));
+      if (expandedSidebarItem === index) setExpandedSidebarItem(null);
+    }
   };
 
   // Sidebar item service list management
@@ -436,12 +440,14 @@ const AdminDepartmentTabs: React.FC = () => {
   };
 
   const removeSidebarItemService = (sidebarIndex: number, serviceIndex: number) => {
-    setFormData(prev => {
-      const newItems = [...prev.sidebar_items];
-      const services = (newItems[sidebarIndex].service_list || []).filter((_, i) => i !== serviceIndex);
-      newItems[sidebarIndex] = { ...newItems[sidebarIndex], service_list: services };
-      return { ...prev, sidebar_items: newItems };
-    });
+    if (window.confirm('Are you sure you want to delete this service category?')) {
+      setFormData(prev => {
+        const newItems = [...prev.sidebar_items];
+        const services = (newItems[sidebarIndex].service_list || []).filter((_, i) => i !== serviceIndex);
+        newItems[sidebarIndex] = { ...newItems[sidebarIndex], service_list: services };
+        return { ...prev, sidebar_items: newItems };
+      });
+    }
   };
 
   const addSidebarItemServiceListItem = (sidebarIndex: number, serviceIndex: number) => {
@@ -468,14 +474,16 @@ const AdminDepartmentTabs: React.FC = () => {
   };
 
   const removeSidebarItemServiceListItem = (sidebarIndex: number, serviceIndex: number, itemIndex: number) => {
-    setFormData(prev => {
-      const newItems = [...prev.sidebar_items];
-      const services = [...(newItems[sidebarIndex].service_list || [])];
-      const items = (services[serviceIndex].items || []).filter((_, i) => i !== itemIndex);
-      services[serviceIndex] = { ...services[serviceIndex], items };
-      newItems[sidebarIndex] = { ...newItems[sidebarIndex], service_list: services };
-      return { ...prev, sidebar_items: newItems };
-    });
+    if (window.confirm('Are you sure you want to delete this service item?')) {
+      setFormData(prev => {
+        const newItems = [...prev.sidebar_items];
+        const services = [...(newItems[sidebarIndex].service_list || [])];
+        const items = (services[serviceIndex].items || []).filter((_, i) => i !== itemIndex);
+        services[serviceIndex] = { ...services[serviceIndex], items };
+        newItems[sidebarIndex] = { ...newItems[sidebarIndex], service_list: services };
+        return { ...prev, sidebar_items: newItems };
+      });
+    }
   };
 
   // Styles
@@ -623,8 +631,10 @@ const AdminDepartmentTabs: React.FC = () => {
                     <button 
                       style={removeButtonStyle} 
                       onClick={() => {
-                        const newServiceList = formData.service_list.filter((_, i) => i !== serviceIndex);
-                        setFormData(prev => ({ ...prev, service_list: newServiceList }));
+                        if (window.confirm('Are you sure you want to delete this service category?')) {
+                          const newServiceList = formData.service_list.filter((_, i) => i !== serviceIndex);
+                          setFormData(prev => ({ ...prev, service_list: newServiceList }));
+                        }
                       }}
                     >
                       <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
@@ -649,10 +659,12 @@ const AdminDepartmentTabs: React.FC = () => {
                       <button 
                         style={{ ...removeButtonStyle, padding: '8px' }} 
                         onClick={() => {
-                          const newServiceList = [...formData.service_list];
-                          const newItems = (newServiceList[serviceIndex].items || []).filter((_, i) => i !== itemIndex);
-                          newServiceList[serviceIndex] = { ...newServiceList[serviceIndex], items: newItems };
-                          setFormData(prev => ({ ...prev, service_list: newServiceList }));
+                          if (window.confirm('Are you sure you want to delete this service item?')) {
+                            const newServiceList = [...formData.service_list];
+                            const newItems = (newServiceList[serviceIndex].items || []).filter((_, i) => i !== itemIndex);
+                            newServiceList[serviceIndex] = { ...newServiceList[serviceIndex], items: newItems };
+                            setFormData(prev => ({ ...prev, service_list: newServiceList }));
+                          }
                         }}
                       >×</button>
                     </div>

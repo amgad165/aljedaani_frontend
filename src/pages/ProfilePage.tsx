@@ -3,6 +3,7 @@ import { useAuth } from '../hooks/useAuth';
 import { Navigate, useSearchParams } from 'react-router-dom';
 import { useResponsiveNavbar } from '../hooks/useResponsiveNavbar';
 import Footer from '../components/Footer';
+import FloatingContactButtons from '../components/FloatingContactButtons';
 import {
   DashboardTab,
   EditProfileTab,
@@ -148,6 +149,7 @@ const ProfilePage = () => {
       minHeight: '100vh',
       background: 'linear-gradient(180deg, #B1E8F4 0%, #B1E8F4 100%)',
     }}>
+      <FloatingContactButtons />
       {ResponsiveNavbar}
 
       {/* Main Content */}

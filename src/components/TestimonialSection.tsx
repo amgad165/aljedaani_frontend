@@ -1,5 +1,5 @@
-import { useEffect, useState, useCallback, useMemo } from 'react';
-import TestimonialsService, { type Testimonial } from '../services/testimonialsService';
+import { useState, useCallback } from 'react';
+import { useHomepageData } from '../context/HomepageContext';
 
 interface DoctorCard {
   id: number;
@@ -28,72 +28,37 @@ const LeftArrowIcon = () => (
 );
 
 const TestimonialSection = () => {
-  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data, loading, error } = useHomepageData();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
 
-  const testimonialsService = useMemo(() => new TestimonialsService(), []);
+  const allDoctors: DoctorCard[] = (data?.testimonials || [])
+    .filter((testimonial: any) => testimonial.doctor)
+    .map((testimonial: any) => ({
+      id: testimonial.id,
+      title: ` ${testimonial.doctor?.name || ''}`,
+      subtitle: testimonial.doctor?.specialization || '',
+      image: testimonial.doctor?.image_url || '',
+      badge1: testimonial.doctor?.branch?.name || '',
+      badge2: testimonial.doctor?.department?.name || '',
+      reviewTitle: testimonial.review_title,
+      description: testimonial.description
+    }));
 
-  const fetchTestimonials = useCallback(async () => {
-    try {
-      setLoading(true);
-      const data = await testimonialsService.getTestimonials();
-      setTestimonials(data);
-      setError(null);
-    } catch (err) {
-      setError('Failed to load testimonials');
-      console.error('Error fetching testimonials:', err);
-    } finally {
-      setLoading(false);
-    }
-  }, [testimonialsService]);
-
-  useEffect(() => {
-    fetchTestimonials();
-  }, [fetchTestimonials]);
-
-  // Convert API data to component format
-  const allDoctors: DoctorCard[] = testimonials
-    .filter(testimonial => testimonial.doctor) // Only include testimonials with doctors
-    .map((testimonial) => ({
-    id: testimonial.id,
-    title: `Dr. ${testimonial.doctor?.name || ''}`,
-    subtitle: testimonial.doctor?.specialization || '',
-    image: testimonial.doctor?.image_url || '',
-    badge1: testimonial.doctor?.branch?.name || '', // Branch name
-    badge2: testimonial.doctor?.department?.name || '', // Department name
-    reviewTitle: testimonial.review_title,
-    description: testimonial.description
-  }));
-
-  const handleNext = () => {
+  const handleNext = useCallback(() => {
     if (isAnimating || currentIndex + 3 >= allDoctors.length) return;
-    
     setIsAnimating(true);
     setCurrentIndex(prev => prev + 1);
-    
-    // Reset animation state after animation completes
-    setTimeout(() => {
-      setIsAnimating(false);
-    }, 600);
-  };
+    setTimeout(() => setIsAnimating(false), 600);
+  }, [isAnimating, currentIndex, allDoctors.length]);
 
-  const handlePrev = () => {
+  const handlePrev = useCallback(() => {
     if (isAnimating || currentIndex === 0) return;
-    
     setIsAnimating(true);
     setCurrentIndex(prev => prev - 1);
-    
-    // Reset animation state after animation completes
-    setTimeout(() => {
-      setIsAnimating(false);
-    }, 600);
-  };
+    setTimeout(() => setIsAnimating(false), 600);
+  }, [isAnimating, currentIndex]);
 
-  // Check if next/prev buttons should be visible
-  // canGoNext should be true if there are more testimonials beyond the current view
   const canGoNext = currentIndex + 3 < allDoctors.length;
   const canGoPrev = currentIndex > 0;
 

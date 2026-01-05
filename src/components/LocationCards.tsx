@@ -1,5 +1,5 @@
 import { useScrollAnimation, getAnimationStyle } from '../hooks/useScrollAnimation';
-import { useState, useEffect } from 'react';
+import { useHomepageData } from '../context/HomepageContext';
 
 interface Branch {
   id: number;
@@ -10,29 +10,8 @@ interface Branch {
 
 const LocationCards = () => {
   const { ref, isVisible } = useScrollAnimation();
-  const [branches, setBranches] = useState<Branch[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchBranches = async () => {
-      try {
-        const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
-        const response = await fetch(`${apiUrl}/branches?active=true`);
-        const result = await response.json();
-        
-        if (result.success && result.data) {
-          // Get only first 3 branches or less if not enough
-          setBranches(result.data.slice(0, 3));
-        }
-      } catch (error) {
-        console.error('Error fetching branches:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchBranches();
-  }, []);
+  const { data, loading } = useHomepageData();
+  const branches = data?.branches?.slice(0, 3) || [];
 
   if (loading) {
     return (

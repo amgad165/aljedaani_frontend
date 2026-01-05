@@ -4,6 +4,7 @@ import { departmentsService, type Department } from '../services/departmentsServ
 import { useResponsiveNavbar } from '../hooks/useResponsiveNavbar';
 import { DepartmentCardSkeleton } from '../components/LoadingComponents';
 import { EASINGS, getStaggerDelay } from '../utils/animations';
+import FloatingContactButtons from '../components/FloatingContactButtons';
 
 const DepartmentsPage: React.FC = () => {
   const ResponsiveNavbar = useResponsiveNavbar();
@@ -192,6 +193,7 @@ const DepartmentsPage: React.FC = () => {
       display: 'flex',
       flexDirection: 'column',
     }}>
+      <FloatingContactButtons />
       {ResponsiveNavbar}
       <div style={{
         flex: 1,

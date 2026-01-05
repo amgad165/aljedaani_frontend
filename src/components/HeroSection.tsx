@@ -1,15 +1,16 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { branchesService, type Branch } from '../services/branchesService';
-import { departmentsService, type Department } from '../services/departmentsService';
+import { useHomepageData } from '../context/HomepageContext';
+import { type Branch } from '../services/branchesService';
+import { type Department } from '../services/departmentsService';
 import { doctorsService, type Doctor } from '../services/doctorsService';
 
 const HeroSection = () => {
   const navigate = useNavigate();
   const [isLoaded, setIsLoaded] = useState(false);
+  const { data: homepageData, loading: homepageLoading } = useHomepageData();
   
   // Data states
-  const [branches, setBranches] = useState<Branch[]>([]);
   const [departments, setDepartments] = useState<Department[]>([]);
   const [filteredDepartments, setFilteredDepartments] = useState<Department[]>([]);
   const [doctors, setDoctors] = useState<Doctor[]>([]);
@@ -19,29 +20,22 @@ const HeroSection = () => {
   const [selectedDepartment, setSelectedDepartment] = useState('');
   const [selectedDoctor, setSelectedDoctor] = useState('');
 
+  // Get branches from context
+  const branches = homepageData?.branches || [];
+
   // Trigger entrance animation
   useEffect(() => {
     const timer = setTimeout(() => setIsLoaded(true), 100);
     return () => clearTimeout(timer);
   }, []);
 
-  // Load initial data (branches and departments)
+  // Load departments from context when available
   useEffect(() => {
-    const fetchInitialData = async () => {
-      try {
-        const [branchesData, departmentsData] = await Promise.all([
-          branchesService.getBranches({ active: true }),
-          departmentsService.getDepartments({ active: true }),
-        ]);
-        setBranches(branchesData);
-        setDepartments(departmentsData.departments);
-        setFilteredDepartments(departmentsData.departments);
-      } catch (err) {
-        console.error('Error loading filter data:', err);
-      }
-    };
-    fetchInitialData();
-  }, []);
+    if (homepageData?.departments) {
+      setDepartments(homepageData.departments);
+      setFilteredDepartments(homepageData.departments);
+    }
+  }, [homepageData]);
 
   // Filter departments when branch changes
   useEffect(() => {
@@ -212,14 +206,6 @@ const HeroSection = () => {
               <li></li>
               <li></li>
             </ul>
-            <div className="icons">
-              <a href="#" className="icon">
-                <img src="/assets/img/icons/phone.svg" width="24" height="24" alt="Phone Icon" />
-              </a>
-              <a href="#" className="icon">
-                <img src="/assets/img/icons/WhatsApp.svg" width="24" height="24" alt="WhatsApp Icon" />
-              </a>
-            </div>
           </div>
         </div>
       </div>

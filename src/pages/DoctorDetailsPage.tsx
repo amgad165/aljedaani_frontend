@@ -6,6 +6,7 @@ import { useResponsiveNavbar } from '../hooks/useResponsiveNavbar';
 import DoctorFilters from '../components/DoctorFilters';
 import { LoadingSpinner } from '../components/LoadingComponents';
 import { EASINGS } from '../utils/animations';
+import FloatingContactButtons from '../components/FloatingContactButtons';
 
 const DoctorDetailsPage: React.FC = () => {
   const ResponsiveNavbar = useResponsiveNavbar();
@@ -181,6 +182,7 @@ const DoctorDetailsPage: React.FC = () => {
       display: 'flex',
       flexDirection: 'column',
     }}>
+      <FloatingContactButtons />
       {ResponsiveNavbar}
       
       {/* Main Content */}

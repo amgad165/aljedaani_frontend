@@ -5,6 +5,7 @@ import { type Testimonial } from '../services/testimonialsService';
 import { useResponsiveNavbar } from '../hooks/useResponsiveNavbar';
 import { LoadingSpinner } from '../components/LoadingComponents';
 import { EASINGS } from '../utils/animations';
+import FloatingContactButtons from '../components/FloatingContactButtons';
 
 type TabType = 'overview' | 'doctors' | 'opd_services' | 'inpatient_services' | 'investigations' | 'success_stories';
 
@@ -1913,6 +1914,7 @@ const DepartmentDetailsPage: React.FC = () => {
       display: 'flex',
       flexDirection: 'column',
     }}>
+      <FloatingContactButtons />
       {ResponsiveNavbar}
 
       {/* Main Content */}
