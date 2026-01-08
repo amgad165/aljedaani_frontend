@@ -51,7 +51,7 @@ export interface HisLabReportDetailResponse {
 // Get authenticated user's HIS lab reports
 export const getUserHisLabReports = async (
   page = 1,
-  perPage = 15,
+  perPage = 4,
   filters?: {
     search?: string;
     from_date?: string;

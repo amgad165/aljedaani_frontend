@@ -419,6 +419,34 @@ const AdminDepartmentTabs: React.FC = () => {
     }
   };
 
+  const moveSidebarItemUp = (index: number) => {
+    if (index === 0) return;
+    setFormData(prev => {
+      const newItems = [...prev.sidebar_items];
+      [newItems[index - 1], newItems[index]] = [newItems[index], newItems[index - 1]];
+      // Update sort_order
+      newItems.forEach((item, idx) => item.sort_order = idx);
+      return { ...prev, sidebar_items: newItems };
+    });
+    // Update expanded index if needed
+    if (expandedSidebarItem === index) setExpandedSidebarItem(index - 1);
+    else if (expandedSidebarItem === index - 1) setExpandedSidebarItem(index);
+  };
+
+  const moveSidebarItemDown = (index: number) => {
+    if (index >= formData.sidebar_items.length - 1) return;
+    setFormData(prev => {
+      const newItems = [...prev.sidebar_items];
+      [newItems[index], newItems[index + 1]] = [newItems[index + 1], newItems[index]];
+      // Update sort_order
+      newItems.forEach((item, idx) => item.sort_order = idx);
+      return { ...prev, sidebar_items: newItems };
+    });
+    // Update expanded index if needed
+    if (expandedSidebarItem === index) setExpandedSidebarItem(index + 1);
+    else if (expandedSidebarItem === index + 1) setExpandedSidebarItem(index);
+  };
+
   // Sidebar item service list management
   const addSidebarItemService = (sidebarIndex: number) => {
     setFormData(prev => {
@@ -484,6 +512,29 @@ const AdminDepartmentTabs: React.FC = () => {
         return { ...prev, sidebar_items: newItems };
       });
     }
+  };
+
+  const moveSidebarItemServiceUp = (sidebarIndex: number, serviceIndex: number) => {
+    if (serviceIndex === 0) return;
+    setFormData(prev => {
+      const newItems = [...prev.sidebar_items];
+      const services = [...(newItems[sidebarIndex].service_list || [])];
+      [services[serviceIndex - 1], services[serviceIndex]] = [services[serviceIndex], services[serviceIndex - 1]];
+      newItems[sidebarIndex] = { ...newItems[sidebarIndex], service_list: services };
+      return { ...prev, sidebar_items: newItems };
+    });
+  };
+
+  const moveSidebarItemServiceDown = (sidebarIndex: number, serviceIndex: number) => {
+    const services = formData.sidebar_items[sidebarIndex].service_list || [];
+    if (serviceIndex >= services.length - 1) return;
+    setFormData(prev => {
+      const newItems = [...prev.sidebar_items];
+      const servicesArray = [...(newItems[sidebarIndex].service_list || [])];
+      [servicesArray[serviceIndex], servicesArray[serviceIndex + 1]] = [servicesArray[serviceIndex + 1], servicesArray[serviceIndex]];
+      newItems[sidebarIndex] = { ...newItems[sidebarIndex], service_list: servicesArray };
+      return { ...prev, sidebar_items: newItems };
+    });
   };
 
   // Styles
@@ -781,9 +832,27 @@ const AdminDepartmentTabs: React.FC = () => {
                         placeholder="Item title (e.g., Vaginal Ultrasound)"
                       />
                     </div>
-                    <button style={{ ...removeButtonStyle, marginLeft: '8px' }} onClick={(e) => { e.stopPropagation(); removeSidebarItem(index); }}>
-                      <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-                    </button>
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                      <button 
+                        style={{ padding: '6px', backgroundColor: index === 0 ? '#F3F4F6' : '#E0F7FA', color: index === 0 ? '#9CA3AF' : '#15C9FA', border: 'none', borderRadius: '6px', cursor: index === 0 ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center' }} 
+                        onClick={(e) => { e.stopPropagation(); moveSidebarItemUp(index); }}
+                        disabled={index === 0}
+                        title="Move up"
+                      >
+                        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" /></svg>
+                      </button>
+                      <button 
+                        style={{ padding: '6px', backgroundColor: index >= formData.sidebar_items.length - 1 ? '#F3F4F6' : '#E0F7FA', color: index >= formData.sidebar_items.length - 1 ? '#9CA3AF' : '#15C9FA', border: 'none', borderRadius: '6px', cursor: index >= formData.sidebar_items.length - 1 ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center' }} 
+                        onClick={(e) => { e.stopPropagation(); moveSidebarItemDown(index); }}
+                        disabled={index >= formData.sidebar_items.length - 1}
+                        title="Move down"
+                      >
+                        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                      </button>
+                      <button style={{ ...removeButtonStyle, marginLeft: '4px' }} onClick={(e) => { e.stopPropagation(); removeSidebarItem(index); }}>
+                        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                      </button>
+                    </div>
                   </div>
                   
                   {/* Expanded Content */}
@@ -826,6 +895,22 @@ const AdminDepartmentTabs: React.FC = () => {
                                 style={{ ...inputStyle, flex: 1, padding: '8px 12px', fontSize: '13px' }}
                                 placeholder="Category title"
                               />
+                              <button 
+                                style={{ padding: '6px', backgroundColor: serviceIndex === 0 ? '#F3F4F6' : '#E0F7FA', color: serviceIndex === 0 ? '#9CA3AF' : '#15C9FA', border: 'none', borderRadius: '6px', cursor: serviceIndex === 0 ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center' }} 
+                                onClick={() => moveSidebarItemServiceUp(index, serviceIndex)}
+                                disabled={serviceIndex === 0}
+                                title="Move up"
+                              >
+                                <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" /></svg>
+                              </button>
+                              <button 
+                                style={{ padding: '6px', backgroundColor: serviceIndex >= (item.service_list || []).length - 1 ? '#F3F4F6' : '#E0F7FA', color: serviceIndex >= (item.service_list || []).length - 1 ? '#9CA3AF' : '#15C9FA', border: 'none', borderRadius: '6px', cursor: serviceIndex >= (item.service_list || []).length - 1 ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center' }} 
+                                onClick={() => moveSidebarItemServiceDown(index, serviceIndex)}
+                                disabled={serviceIndex >= (item.service_list || []).length - 1}
+                                title="Move down"
+                              >
+                                <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                              </button>
                               <button style={{ ...removeButtonStyle, padding: '6px' }} onClick={() => removeSidebarItemService(index, serviceIndex)}>×</button>
                             </div>
                             

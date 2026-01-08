@@ -1,13 +1,6 @@
 import { useScrollAnimation, getAnimationStyle } from '../hooks/useScrollAnimation';
 import { useHomepageData } from '../context/HomepageContext';
 
-interface Branch {
-  id: number;
-  name: string;
-  image_url: string;
-  map_url: string | null;
-}
-
 const LocationCards = () => {
   const { ref, isVisible } = useScrollAnimation();
   const { data, loading } = useHomepageData();

@@ -97,14 +97,13 @@
 }
 
 .main-sec {
-  background: linear-gradient(to bottom, #8FF5F7 0%, #14C8F9 100%);
   padding: 0;
 }
 .main-sec .card-sec {
   padding-top: 0;
   position: relative;
   z-index: 1;
-  margin-top: -120px;
+  margin-top: -60px;
 }
 .main-sec .card-sec .main-wrapper {
   background: center/cover no-repeat;
@@ -178,7 +177,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 36px;
+  font-size: 28px;
   text-align: center;
   color: white;
   margin-left: auto;
@@ -207,7 +206,7 @@
 .main-sec .service-sec .service-wrapper .wrapper-1 .content-wrapper .icon {
   width: 88px;
   height: 88px;
-  font-size: 24px;
+  font-size: 20px;
   margin-right: 0;
 }
 .main-sec .service-sec .service-wrapper .wrapper-1 .content-wrapper .service-card .right {
@@ -436,6 +435,28 @@
     flex-wrap: wrap;
     gap: 8px;
   }
+  /* Offers Section Responsive - Title */
+  .main-sec .service-sec h2 {
+    font-size: 32px;
+  }
+  /* Offers Section Responsive - Main Offer */
+  .main-sec .service-sec .service-wrapper .image-wrapper .content-wrapper .icon {
+    width: 100px;
+    height: 100px;
+    font-size: 20px;
+  }
+  .main-sec .service-sec .service-wrapper .image-wrapper .service-card .h3 {
+    font-size: 20px !important;
+  }
+  /* Offers Section Responsive - Side Offers */
+  .main-sec .service-sec .service-wrapper .wrapper-1 .content-wrapper .icon {
+    width: 70px;
+    height: 70px;
+    font-size: 18px;
+  }
+  .main-sec .service-sec .service-wrapper .wrapper-1 .service-card .h3 {
+    font-size: 18px !important;
+  }
   .main-sec .banner-sec {
     transform: translateY(0);
     margin-bottom: clamp(60px, 10vw, 120px);
@@ -483,6 +504,32 @@
 @media (max-width: 576px) {
   .hero-sec .hero-wrapper .form {
     grid-template-columns: 1fr;
+  }
+  /* Offers Section Mobile - Additional adjustments for very small screens */
+  .main-sec .service-sec h2 {
+    font-size: 28px;
+  }
+  .main-sec .service-sec .service-wrapper .image-wrapper {
+    min-height: 250px;
+  }
+  .main-sec .service-sec .service-wrapper .image-wrapper .content-wrapper .icon {
+    width: 80px;
+    height: 80px;
+    font-size: 18px;
+  }
+  .main-sec .service-sec .service-wrapper .image-wrapper .service-card .h3 {
+    font-size: 18px !important;
+  }
+  .main-sec .service-sec .service-wrapper .wrapper-1 {
+    min-height: 220px;
+  }
+  .main-sec .service-sec .service-wrapper .wrapper-1 .content-wrapper .icon {
+    width: 60px;
+    height: 60px;
+    font-size: 16px;
+  }
+  .main-sec .service-sec .service-wrapper .wrapper-1 .service-card .h3 {
+    font-size: 16px !important;
   }
   .review-sec .review-slider {
     padding: 0 40px;

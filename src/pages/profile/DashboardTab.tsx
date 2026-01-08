@@ -11,13 +11,14 @@ import History from '../../components/patient/History';
 interface DashboardStats {
   appointments: {
     total: number;
-    new: number;
-    old: number;
+    upcoming: number;
+    past: number;
   };
   documents: {
     total: number;
-    new: number;
-    old: number;
+    lab_reports: number;
+    rad_reports: number;
+    medical_reports: number;
   };
 }
 
@@ -417,17 +418,17 @@ const DashboardTab = ({ profileData }: DashboardTabProps) => {
       <DashboardCard title="Total Appointments" icon={<CalendarIcon />}>
         <StatsDisplay items={[
           { value: stats?.appointments.total ?? 0, label: 'Total' },
-          { value: stats?.appointments.new ?? 0, label: 'New' },
-          { value: stats?.appointments.old ?? 0, label: 'Old' },
+          { value: stats?.appointments.upcoming ?? 0, label: 'Upcoming' },
+          { value: stats?.appointments.past ?? 0, label: 'Past' },
         ]} />
       </DashboardCard>
 
       {/* My Documents Card */}
       <DashboardCard title="My Documents" icon={<DocumentIcon />}>
         <StatsDisplay items={[
-          { value: stats?.documents.total ?? 0, label: 'Total' },
-          { value: stats?.documents.new ?? 0, label: 'New Items' },
-          { value: stats?.documents.old ?? 0, label: 'Old Items' },
+          { value: stats?.documents.lab_reports ?? 0, label: 'Lab Reports' },
+          { value: stats?.documents.rad_reports ?? 0, label: 'Rad Reports' },
+          { value: stats?.documents.medical_reports ?? 0, label: 'Medical' },
         ]} />
       </DashboardCard>
 

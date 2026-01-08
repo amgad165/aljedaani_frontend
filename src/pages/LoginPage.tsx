@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useResponsiveNavbar } from '../hooks/useResponsiveNavbar';
 import Footer from '../components/Footer';
+import ToastContainer from '../components/ToastContainer';
+import { useToast } from '../hooks/useToast';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
 
@@ -75,6 +77,7 @@ const InputField = ({
 
 const LoginPage = () => {
   const ResponsiveNavbar = useResponsiveNavbar();
+  const { toasts, removeToast, success, error: showError, info } = useToast();
   const [currentStep, setCurrentStep] = useState(1); // 1: Credentials, 2: OTP
   const [nationalId, setNationalId] = useState('');
   const [medicalRecordNumber, setMedicalRecordNumber] = useState('');
@@ -120,7 +123,7 @@ const LoginPage = () => {
       }
 
       if (data.success) {
-        alert(`OTP sent to ${data.phone}${data.otp ? ` (Debug: ${data.otp})` : ''}`);
+        success(`OTP sent to ${data.phone}${data.otp ? ` (Debug: ${data.otp})` : ''}`);
         setCurrentStep(2);
       } else {
         setError(data.message || 'Failed to send OTP');
@@ -516,7 +519,7 @@ const LoginPage = () => {
                   <button
                     type="button"
                     onClick={() => {
-                      alert('OTP resent to your mobile number');
+                      info('OTP resent to your mobile number');
                     }}
                     style={{
                       fontFamily: 'Nunito, sans-serif',
@@ -642,6 +645,7 @@ const LoginPage = () => {
         </div>
       </div>
 
+      <ToastContainer toasts={toasts} removeToast={removeToast} />
       <Footer />
     </div>
   );

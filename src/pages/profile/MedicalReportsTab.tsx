@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   getUserHisMedicalReports,
   viewHisMedicalReportPdf,
@@ -158,7 +158,6 @@ const MedicalReportsTab = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
   const [dateFilter, setDateFilter] = useState<string | null>(null);
-  const hasFetchedRef = useRef(false);
   const perPage = 4;
 
   // Fetch reports from API
@@ -192,8 +191,6 @@ const MedicalReportsTab = () => {
   }, [currentPage, searchTerm, dateFilter]);
 
   useEffect(() => {
-    if (hasFetchedRef.current) return;
-    hasFetchedRef.current = true;
     fetchReports();
   }, [fetchReports]);
 

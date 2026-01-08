@@ -4,6 +4,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useResponsiveNavbar } from '../hooks/useResponsiveNavbar';
 import Footer from '../components/Footer';
 import CustomSelect from '../components/CustomSelect';
+import ToastContainer from '../components/ToastContainer';
+import { useToast } from '../hooks/useToast';
 
 // Step types
 type StepStatus = 'completed' | 'current' | 'upcoming';
@@ -160,6 +162,7 @@ const SignUpPage = () => {
   const ResponsiveNavbar = useResponsiveNavbar();
   const { clearError } = useAuth();
   const navigate = useNavigate();
+  const { toasts, removeToast, success, error: showError, warning, info } = useToast();
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
@@ -208,7 +211,7 @@ const SignUpPage = () => {
 
   const handleSendOtp = async () => {
     if (!verificationData.mobileNumber) {
-      alert('Please enter your mobile number');
+      warning('Please enter your mobile number');
       return;
     }
 
@@ -224,12 +227,12 @@ const SignUpPage = () => {
       setIsOtpSent(true);
       setResendCountdown(60); // 60 second countdown
       
-      alert(result.otp ? `OTP: ${result.otp} (Debug mode)` : result.message);
+      success(result.otp ? `OTP: ${result.otp} (Debug mode)` : result.message);
     } catch (err: unknown) {
       if (typeof err === 'object' && err !== null && 'message' in err) {
-        alert((err as { message: string }).message);
+        showError((err as { message: string }).message);
       } else {
-        alert('Failed to send OTP. Please try again.');
+        showError('Failed to send OTP. Please try again.');
       }
     } finally {
       setIsSubmitting(false);
@@ -250,12 +253,12 @@ const SignUpPage = () => {
       }));
       setResendCountdown(60); // Reset countdown
       
-      alert(result.otp ? `OTP: ${result.otp} (Debug mode)` : result.message);
+      success(result.otp ? `OTP: ${result.otp} (Debug mode)` : result.message);
     } catch (err: unknown) {
       if (typeof err === 'object' && err !== null && 'message' in err) {
-        alert((err as { message: string }).message);
+        showError((err as { message: string }).message);
       } else {
-        alert('Failed to resend OTP. Please try again.');
+        showError('Failed to resend OTP. Please try again.');
       }
     } finally {
       setIsSubmitting(false);
@@ -264,11 +267,11 @@ const SignUpPage = () => {
 
   const handleVerifyOtp = async () => {
     if (!verificationData.otpCode) {
-      alert('Please enter the OTP code');
+      warning('Please enter the OTP code');
       return;
     }
     if (!verificationData.verificationId) {
-      alert('Verification session expired. Please request a new OTP.');
+      showError('Verification session expired. Please request a new OTP.');
       return;
     }
 
@@ -287,15 +290,15 @@ const SignUpPage = () => {
           verificationToken: result.verification_token,
         }));
         setCurrentStep(2);
-        alert(result.message);
+        success(result.message);
       } else {
-        alert('Invalid OTP. Please try again.');
+        showError('Invalid OTP. Please try again.');
       }
     } catch (err: unknown) {
       if (typeof err === 'object' && err !== null && 'message' in err) {
-        alert((err as { message: string }).message);
+        showError((err as { message: string }).message);
       } else {
-        alert('OTP verification failed. Please try again.');
+        showError('OTP verification failed. Please try again.');
       }
     } finally {
       setIsSubmitting(false);
@@ -305,35 +308,35 @@ const SignUpPage = () => {
   const handleProfileSubmit = async () => {
     // Validate required fields
     if (!profileData.firstName || !profileData.lastName || !profileData.email || !profileData.password) {
-      alert('Please fill in all required fields');
+      warning('Please fill in all required fields');
       return;
     }
     if (!profileData.gender) {
-      alert('Please select your gender');
+      warning('Please select your gender');
       return;
     }
     if (!profileData.dateOfBirth) {
-      alert('Please enter your date of birth');
+      warning('Please enter your date of birth');
       return;
     }
     if (!profileData.nationality) {
-      alert('Please select your nationality');
+      warning('Please select your nationality');
       return;
     }
     if (!profileData.medicalRecordNumber && !profileData.nationalId) {
-      alert('Please enter either Medical Record Number (MR) or National ID');
+      warning('Please enter either Medical Record Number (MR) or National ID');
       return;
     }
     if (profileData.password !== profileData.confirmPassword) {
-      alert('Passwords do not match');
+      showError('Passwords do not match');
       return;
     }
     if (profileData.password.length < 8) {
-      alert('Password must be at least 8 characters');
+      showError('Password must be at least 8 characters');
       return;
     }
     if (!verificationData.verificationToken) {
-      alert('Phone verification expired. Please start over.');
+      showError('Phone verification expired. Please start over.');
       return;
     }
 
@@ -369,11 +372,11 @@ const SignUpPage = () => {
       if (typeof err === 'object' && err !== null && 'errors' in err) {
         const errors = (err as { errors: Record<string, string[]> }).errors;
         const errorMessages = Object.values(errors).flat().join('\n');
-        alert(errorMessages);
+        showError(errorMessages);
       } else if (typeof err === 'object' && err !== null && 'message' in err) {
-        alert((err as { message: string }).message);
+        showError((err as { message: string }).message);
       } else {
-        alert('Registration failed. Please try again.');
+        showError('Registration failed. Please try again.');
       }
     } finally {
       setIsSubmitting(false);
@@ -816,11 +819,11 @@ const SignUpPage = () => {
                 if (file) {
                   const validTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif'];
                   if (!validTypes.includes(file.type)) {
-                    alert('Please upload a valid image file (JPEG, PNG, or GIF)');
+                    warning('Please upload a valid image file (JPEG, PNG, or GIF)');
                     return;
                   }
                   if (file.size > 2 * 1024 * 1024) {
-                    alert('Image size must be less than 2MB');
+                    warning('Image size must be less than 2MB');
                     return;
                   }
                 }
@@ -1137,6 +1140,7 @@ const SignUpPage = () => {
         </div>
       </main>
       
+      <ToastContainer toasts={toasts} removeToast={removeToast} />
       <Footer />
     </div>
   );

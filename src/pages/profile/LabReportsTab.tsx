@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { 
   getUserHisLabReports, 
   downloadHisLabReportPdf, 
@@ -152,13 +152,12 @@ const LabReportsTab = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
   const [dateFilter, setDateFilter] = useState<string | null>(null);
-  const hasFetchedRef = useRef(false);
 
   const fetchReports = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await getUserHisLabReports(currentPage, 12);
+      const response = await getUserHisLabReports(currentPage, 4);
       let filteredReports = response.data;
       
       // Apply search filter
@@ -187,8 +186,6 @@ const LabReportsTab = () => {
   }, [currentPage, searchQuery, dateFilter]);
 
   useEffect(() => {
-    if (hasFetchedRef.current) return;
-    hasFetchedRef.current = true;
     fetchReports();
   }, [fetchReports]);
 
@@ -219,6 +216,12 @@ const LabReportsTab = () => {
     const date = e.target.value;
     setDateFilter(date || null);
     setCurrentPage(1); // Reset to first page on date filter
+  };
+
+  const handlePageChange = (page: number) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
   };
 
   return (
@@ -435,29 +438,33 @@ const LabReportsTab = () => {
           height: '48px',
         }}>
           {/* Previous Button */}
-          <button style={{
-            display: 'flex',
-            flexDirection: 'row',
-            justifyContent: 'center',
-            alignItems: 'center',
-            padding: '12px',
-            width: '48px',
-            height: '48px',
-            borderRadius: '24px',
-            border: 'none',
-            background: 'transparent',
-            cursor: 'pointer',
-          }}>
+          <button 
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+            style={{
+              display: 'flex',
+              flexDirection: 'row',
+              justifyContent: 'center',
+              alignItems: 'center',
+              padding: '12px',
+              width: '48px',
+              height: '48px',
+              borderRadius: '24px',
+              border: 'none',
+              background: 'transparent',
+              cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+              opacity: currentPage === 1 ? 0.5 : 1,
+            }}>
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M15 18L9 12L15 6" stroke="#061F42" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
           </button>
           
           {/* Page Numbers */}
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+          {Array.from({ length: Math.min(totalPages, 4) }, (_, i) => i + 1).map((page) => (
             <button
               key={page}
-              onClick={() => setCurrentPage(page)}
+              onClick={() => handlePageChange(page)}
               style={{
                 display: 'flex',
                 flexDirection: 'row',
@@ -482,19 +489,23 @@ const LabReportsTab = () => {
           ))}
           
           {/* Next Button */}
-          <button style={{
-            display: 'flex',
-            flexDirection: 'row',
-            justifyContent: 'center',
-            alignItems: 'center',
-            padding: '12px',
-            width: '48px',
-            height: '48px',
-            borderRadius: '24px',
-            border: 'none',
-            background: 'transparent',
-            cursor: 'pointer',
-          }}>
+          <button 
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            style={{
+              display: 'flex',
+              flexDirection: 'row',
+              justifyContent: 'center',
+              alignItems: 'center',
+              padding: '12px',
+              width: '48px',
+              height: '48px',
+              borderRadius: '24px',
+              border: 'none',
+              background: 'transparent',
+              cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
+              opacity: currentPage === totalPages ? 0.5 : 1,
+            }}>
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M9 18L15 12L9 6" stroke="#061F42" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>

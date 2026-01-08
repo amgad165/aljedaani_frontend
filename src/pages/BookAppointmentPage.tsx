@@ -7,6 +7,8 @@ import CustomSelect from '../components/CustomSelect';
 import Calendar from '../components/Calendar';
 import { appointmentsService } from '../services/appointmentsService';
 import FloatingContactButtons from '../components/FloatingContactButtons';
+import ToastContainer from '../components/ToastContainer';
+import { useToast } from '../hooks/useToast';
 
 // Simplified types for initial data (only fields needed for booking)
 interface Branch {
@@ -198,6 +200,7 @@ const BookAppointmentPage = () => {
   const ResponsiveNavbar = useResponsiveNavbar();
   const { isAuthenticated, user, register, clearError } = useAuth();
   const [searchParams] = useSearchParams();
+  const { toasts, removeToast, success, error: showError, warning, info } = useToast();
   
   // Local loading state for the form submission
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -451,7 +454,7 @@ const BookAppointmentPage = () => {
 
   const handleSendOtp = async () => {
     if (!verificationData.mobileNumber) {
-      alert('Please enter your mobile number');
+      warning('Please enter your mobile number');
       return;
     }
 
@@ -461,12 +464,12 @@ const BookAppointmentPage = () => {
       await authService.sendRegistrationOtp(verificationData.mobileNumber);
       setIsOtpSent(true);
       setResendCountdown(30); // 30 second countdown
-      alert('OTP sent to your mobile number!');
+      success('OTP sent to your mobile number!');
     } catch (err: unknown) {
       if (typeof err === 'object' && err !== null && 'message' in err) {
-        alert((err as { message: string }).message);
+        showError((err as { message: string }).message);
       } else {
-        alert('Failed to send OTP. Please try again.');
+        showError('Failed to send OTP. Please try again.');
       }
     } finally {
       setIsSubmitting(false);
@@ -481,12 +484,12 @@ const BookAppointmentPage = () => {
       const { authService } = await import('../services/authService');
       await authService.sendRegistrationOtp(verificationData.mobileNumber);
       setResendCountdown(30); // Reset countdown
-      alert('OTP resent to your mobile number!');
+      success('OTP resent to your mobile number!');
     } catch (err: unknown) {
       if (typeof err === 'object' && err !== null && 'message' in err) {
-        alert((err as { message: string }).message);
+        showError((err as { message: string }).message);
       } else {
-        alert('Failed to resend OTP. Please try again.');
+        showError('Failed to resend OTP. Please try again.');
       }
     } finally {
       setIsSubmitting(false);
@@ -495,7 +498,7 @@ const BookAppointmentPage = () => {
 
   const handleVerifyOtp = async () => {
     if (!verificationData.otpCode) {
-      alert('Please enter the OTP code');
+      warning('Please enter the OTP code');
       return;
     }
 
@@ -510,13 +513,13 @@ const BookAppointmentPage = () => {
       if (result.verified) {
         setCurrentStep(2);
       } else {
-        alert('Invalid OTP. Please try again.');
+        showError('Invalid OTP. Please try again.');
       }
     } catch (err: unknown) {
       if (typeof err === 'object' && err !== null && 'message' in err) {
-        alert((err as { message: string }).message);
+        showError((err as { message: string }).message);
       } else {
-        alert('OTP verification failed. Please try again.');
+        showError('OTP verification failed. Please try again.');
       }
     } finally {
       setIsSubmitting(false);
@@ -526,31 +529,31 @@ const BookAppointmentPage = () => {
   const handleProfileSubmit = async () => {
     // Validate required fields
     if (!profileData.firstName || !profileData.lastName || !profileData.email || !profileData.password) {
-      alert('Please fill in all required fields');
+      warning('Please fill in all required fields');
       return;
     }
     if (!profileData.gender) {
-      alert('Please select your gender');
+      warning('Please select your gender');
       return;
     }
     if (!profileData.dateOfBirth) {
-      alert('Please enter your date of birth');
+      warning('Please enter your date of birth');
       return;
     }
     if (!profileData.nationality) {
-      alert('Please select your nationality');
+      warning('Please select your nationality');
       return;
     }
     if (!profileData.medicalRecordNumber && !profileData.nationalId) {
-      alert('Please enter either Medical Record Number (MR) or National ID');
+      warning('Please enter either Medical Record Number (MR) or National ID');
       return;
     }
     if (profileData.password !== profileData.confirmPassword) {
-      alert('Passwords do not match');
+      showError('Passwords do not match');
       return;
     }
     if (profileData.password.length < 8) {
-      alert('Password must be at least 8 characters');
+      showError('Password must be at least 8 characters');
       return;
     }
 
@@ -585,11 +588,11 @@ const BookAppointmentPage = () => {
       if (typeof err === 'object' && err !== null && 'errors' in err) {
         const errors = (err as { errors: Record<string, string[]> }).errors;
         const errorMessages = Object.values(errors).flat().join('\n');
-        alert(errorMessages);
+        showError(errorMessages);
       } else if (typeof err === 'object' && err !== null && 'message' in err) {
-        alert((err as { message: string }).message);
+        showError((err as { message: string }).message);
       } else {
-        alert('Registration failed. Please try again.');
+        showError('Registration failed. Please try again.');
       }
     } finally {
       setIsSubmitting(false);
@@ -598,7 +601,7 @@ const BookAppointmentPage = () => {
 
   const handleConfirmAppointment = async () => {
     if (!doctorSelection.doctor || !doctorSelection.selectedDate || !doctorSelection.selectedSlot) {
-      alert('Please complete all required fields');
+      warning('Please complete all required fields');
       return;
     }
 
@@ -672,7 +675,7 @@ const BookAppointmentPage = () => {
       console.error('Error creating appointment:', error);
       const errorMessage = error.message || 'Failed to create appointment. Please try again.';
       setSubmissionError(errorMessage);
-      alert(errorMessage);
+      showError(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -1142,12 +1145,12 @@ const BookAppointmentPage = () => {
                     // Validate file type
                     const validTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif'];
                     if (!validTypes.includes(file.type)) {
-                      alert('Please upload a valid image file (JPEG, PNG, or GIF)');
+                      warning('Please upload a valid image file (JPEG, PNG, or GIF)');
                       return;
                     }
                     // Validate file size (max 2MB)
                     if (file.size > 2 * 1024 * 1024) {
-                      alert('Image size must be less than 2MB');
+                      warning('Image size must be less than 2MB');
                       return;
                     }
                   }
@@ -2524,6 +2527,7 @@ const BookAppointmentPage = () => {
         </div>
       </main>
       
+      <ToastContainer toasts={toasts} removeToast={removeToast} />
       <Footer />
     </div>
   );

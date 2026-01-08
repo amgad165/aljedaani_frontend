@@ -1,14 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useHomepageData } from '../context/HomepageContext';
-import { type Branch } from '../services/branchesService';
 import { type Department } from '../services/departmentsService';
 import { doctorsService, type Doctor } from '../services/doctorsService';
 
 const HeroSection = () => {
   const navigate = useNavigate();
   const [isLoaded, setIsLoaded] = useState(false);
-  const { data: homepageData, loading: homepageLoading } = useHomepageData();
+  const { data: homepageData } = useHomepageData();
   
   // Data states
   const [departments, setDepartments] = useState<Department[]>([]);

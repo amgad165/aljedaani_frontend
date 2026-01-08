@@ -60,12 +60,13 @@ const Navbar = () => {
   const navItems: NavItem[] = [
     { label: 'About us', href: '#', hasDropdown: true },
     { label: 'Branches', href: '/branches', hasDropdown: true, isBranchesDropdown: true },
-    { label: 'Pharmacies', href: '#' },
     { label: 'Departments', href: '/departments', hasDropdown: true },
     { label: 'Doctors', href: '/doctors' },
+    { label: 'Pharmacies', href: '#' },
     { label: 'Patient experience', href: '#', hasDropdown: true },
     { label: 'Media', href: '#', hasDropdown: true },
-    { label: 'More', href: '#', hasDropdown: true },
+    { label: 'Careers', href: '#'},
+    { label: 'Contact', href: '/contact'},
   ];
 
   return (
@@ -341,7 +342,7 @@ const Navbar = () => {
                    For Full Access
                   </a>
                   <a href="#" onClick={(e) => e.preventDefault()}>
-                    <img src="assets/images/qr_code/qr_code.svg" width="43" height="43" alt="QR Code" />
+                    <img src="/assets/images/qr_code/qr_code.svg" width="43" height="43" alt="QR Code" />
                   </a>
                 </div>
                 <a href="#" className="btn btn-linear">
@@ -727,7 +728,7 @@ const Navbar = () => {
               border: '2px solid #E5E7EB',
             }}>
               <img 
-                src="assets/images/qr_code/qr_code.svg" 
+                src="/assets/images/qr_code/qr_code.svg" 
                 width="300" 
                 height="300" 
                 alt="QR Code" 

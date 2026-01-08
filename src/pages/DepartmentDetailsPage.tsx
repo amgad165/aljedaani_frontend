@@ -88,6 +88,11 @@ const animationStyles = `
     transform: translateX(4px);
     box-shadow: 0 2px 8px rgba(0, 171, 218, 0.15);
   }
+
+  /* Hide scrollbar for doctor carousel */
+  ::-webkit-scrollbar {
+    display: none;
+  }
   
   .card-hover {
     transition: all 0.3s ${EASINGS.smooth};
@@ -136,6 +141,11 @@ const DepartmentDetailsPage: React.FC = () => {
   const [sidebarContentKey, setSidebarContentKey] = useState(0);
   const [isTabTransitioning, setIsTabTransitioning] = useState(false);
   const [isSidebarTransitioning, setIsSidebarTransitioning] = useState(false);
+
+  // Doctor carousel states
+  const [canScrollDoctorLeft, setCanScrollDoctorLeft] = useState(false);
+  const [canScrollDoctorRight, setCanScrollDoctorRight] = useState(false);
+  const doctorScrollRef = React.useRef<HTMLDivElement>(null);
 
   const tabs: { key: TabType; label: string }[] = [
     { key: 'overview', label: 'Overview' },
@@ -203,6 +213,58 @@ const DepartmentDetailsPage: React.FC = () => {
     setActiveSidebarItem(null);
     setSidebarContentKey(prev => prev + 1);
   }, [activeTab]);
+
+  // Check doctor scroll position
+  useEffect(() => {
+    const checkDoctorScroll = () => {
+      if (doctorScrollRef.current) {
+        const { scrollLeft, scrollWidth, clientWidth } = doctorScrollRef.current;
+        setCanScrollDoctorLeft(scrollLeft > 10);
+        setCanScrollDoctorRight(scrollLeft < scrollWidth - clientWidth - 10);
+      }
+    };
+
+    const scrollElement = doctorScrollRef.current;
+    if (scrollElement) {
+      // Initial check
+      setTimeout(() => checkDoctorScroll(), 100);
+      checkDoctorScroll();
+      scrollElement.addEventListener('scroll', checkDoctorScroll);
+      window.addEventListener('resize', checkDoctorScroll);
+      
+      return () => {
+        scrollElement.removeEventListener('scroll', checkDoctorScroll);
+        window.removeEventListener('resize', checkDoctorScroll);
+      };
+    }
+  }, [doctors]);
+
+  const scrollDoctors = (direction: 'left' | 'right') => {
+    if (doctorScrollRef.current) {
+      const cardWidth = 270; // Width of one doctor card
+      const gap = 16; // Gap between cards
+      const scrollAmount = (cardWidth + gap) * 2; // Scroll 2 cards at a time
+      
+      const currentScroll = doctorScrollRef.current.scrollLeft;
+      const targetScroll = direction === 'left' 
+        ? currentScroll - scrollAmount 
+        : currentScroll + scrollAmount;
+      
+      doctorScrollRef.current.scrollTo({
+        left: targetScroll,
+        behavior: 'smooth'
+      });
+
+      // Update arrows after scroll animation completes
+      setTimeout(() => {
+        if (doctorScrollRef.current) {
+          const { scrollLeft, scrollWidth, clientWidth } = doctorScrollRef.current;
+          setCanScrollDoctorLeft(scrollLeft > 10);
+          setCanScrollDoctorRight(scrollLeft < scrollWidth - clientWidth - 10);
+        }
+      }, 400);
+    }
+  };
 
   const getCurrentTabContent = (): DepartmentTabContent | undefined => {
     if (activeTab === 'doctors' || activeTab === 'success_stories') return undefined;
@@ -559,7 +621,7 @@ const DepartmentDetailsPage: React.FC = () => {
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'center',
-                alignItems: 'center',
+                alignItems: (item.id === 'overview_main' || item.title === 'Overview') ? 'center' : 'flex-start',
                 padding: '12px',
                 width: '271px',
                 height: '44px',
@@ -591,8 +653,8 @@ const DepartmentDetailsPage: React.FC = () => {
                 fontFamily: 'Nunito, sans-serif',
                 fontWeight: isSelected ? 700 : 600,
                 fontSize: '16px',
-                lineHeight: '20px',
-                textAlign: 'center',
+                lineHeight: '14px',
+                textAlign: (item.id === 'overview_main' || item.title === 'Overview') ? 'center' : 'left',
                 color: '#061F42',
                 transition: 'font-weight 0.2s ease',
               }}>
@@ -961,7 +1023,7 @@ const DepartmentDetailsPage: React.FC = () => {
             <div style={{
               display: 'flex',
               flexDirection: 'column',
-              gap: '12px',
+              gap: '7px',
               width: '100%',
             }}>
               {displayServiceList.map((service, index) => (
@@ -970,8 +1032,8 @@ const DepartmentDetailsPage: React.FC = () => {
                     <h4 style={{
                       fontFamily: 'Nunito, sans-serif',
                       fontWeight: 700,
-                      fontSize: '17px',
-                      lineHeight: '20px',
+                      fontSize: '16px',
+                      lineHeight: '14px',
                       color: '#061F42',
                       margin: '0 0 4px 0',
                       textAlign: 'left',
@@ -985,7 +1047,7 @@ const DepartmentDetailsPage: React.FC = () => {
                       padding: 0,
                       listStyle: 'none',
                       fontFamily: 'Nunito, sans-serif',
-                      fontSize: '16px',
+                      fontSize: '15px',
                       lineHeight: '24px',
                       color: '#061F42',
                     }}>
@@ -1029,7 +1091,7 @@ const DepartmentDetailsPage: React.FC = () => {
       <div style={{
         display: 'flex',
         flexDirection: 'column',
-        alignItems: 'flex-start',
+        alignItems: 'center',
         padding: '24px',
         gap: '24px',
         background: '#FCFCFC',
@@ -1041,7 +1103,7 @@ const DepartmentDetailsPage: React.FC = () => {
           display: 'flex',
           flexWrap: 'wrap',
           gap: '16px',
-          justifyContent: 'flex-start',
+          justifyContent: 'center',
         }}>
           {doctors.map((doctor, index) => renderDoctorCard(doctor, index))}
         </div>
@@ -2113,81 +2175,123 @@ const DepartmentDetailsPage: React.FC = () => {
               </h3>
 
               <div style={{
-                display: 'flex',
-                flexDirection: 'row',
-                alignItems: 'center',
-                gap: '16px',
+                position: 'relative',
+                maxWidth: '1248px', // Container + space for arrows
+                margin: '0 auto',
+                padding: '0 60px', // Space for arrows on sides
               }}>
                 {/* Left Arrow */}
-                <button 
+                {canScrollDoctorLeft && doctors.length > 4 && (
+                  <button 
+                    onClick={() => scrollDoctors('left')}
+                    style={{
+                      position: 'absolute',
+                      left: '0',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      width: '50px',
+                      height: '50px',
+                      borderRadius: '50%',
+                      backgroundColor: '#ffffff',
+                      border: '2px solid #1a7a7a',
+                      color: '#1a7a7a',
+                      cursor: 'pointer',
+                      fontSize: '24px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      zIndex: 100,
+                      transition: 'all 0.3s ease',
+                      boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = '#1a7a7a';
+                      e.currentTarget.style.color = '#ffffff';
+                      e.currentTarget.style.transform = 'translateY(-50%) scale(1.1)';
+                      e.currentTarget.style.boxShadow = '0 6px 20px rgba(26,122,122,0.4)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = '#ffffff';
+                      e.currentTarget.style.color = '#1a7a7a';
+                      e.currentTarget.style.transform = 'translateY(-50%) scale(1)';
+                      e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+                    }}
+                  >
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="15 18 9 12 15 6"></polyline>
+                    </svg>
+                  </button>
+                )}
+
+                {/* Inner scroll container */}
+                <div style={{
+                  position: 'relative',
+                  overflow: 'hidden',
+                  width: '100%',
+                }}>
+                {/* Doctor Cards */}
+                <div 
+                  ref={doctorScrollRef}
                   style={{
-                    width: '40px',
-                    height: '40px',
-                    borderRadius: '50%',
-                    border: '1px solid #D8D8D8',
-                    background: '#FFFFFF',
-                    cursor: 'pointer',
                     display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    transition: 'all 0.3s ease',
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = '#061F42';
-                    e.currentTarget.style.color = '#FFFFFF';
-                    e.currentTarget.style.borderColor = '#061F42';
-                    e.currentTarget.style.transform = 'scale(1.1)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = '#FFFFFF';
-                    e.currentTarget.style.color = '#000000';
-                    e.currentTarget.style.borderColor = '#D8D8D8';
-                    e.currentTarget.style.transform = 'scale(1)';
+                    gap: '16px',
+                    overflowX: 'auto',
+                    overflowY: 'hidden',
+                    scrollbarWidth: 'none',
+                    msOverflowStyle: 'none',
+                    padding: '0',
                   }}
                 >
-                  ←
-                </button>
-
-                {/* Doctor Cards */}
-                <div style={{
-                  display: 'flex',
-                  flexDirection: 'row',
-                  gap: '16px',
-                  overflow: 'hidden',
-                  flex: 1,
-                }}>
-                  {doctors.slice(0, 3).map((doctor, index) => renderDoctorCard(doctor, index))}
+                  {doctors.map((doctor, index) => (
+                    <div key={doctor.id} style={{ flex: '0 0 270px' }}>
+                      {renderDoctorCard(doctor, index)}
+                    </div>
+                  ))}
+                </div>
                 </div>
 
                 {/* Right Arrow */}
-                <button 
-                  style={{
-                    width: '40px',
-                    height: '40px',
-                    borderRadius: '50%',
-                    border: '1px solid #D8D8D8',
-                    background: '#FFFFFF',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    transition: 'all 0.3s ease',
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = '#061F42';
-                    e.currentTarget.style.color = '#FFFFFF';
-                    e.currentTarget.style.borderColor = '#061F42';
-                    e.currentTarget.style.transform = 'scale(1.1)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = '#FFFFFF';
-                    e.currentTarget.style.color = '#000000';
-                    e.currentTarget.style.borderColor = '#D8D8D8';
-                    e.currentTarget.style.transform = 'scale(1)';
-                  }}
-                >
-                  →
-                </button>
+                {canScrollDoctorRight && doctors.length > 4 && (
+                  <button 
+                    onClick={() => scrollDoctors('right')}
+                    style={{
+                      position: 'absolute',
+                      right: '0',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      width: '50px',
+                      height: '50px',
+                      borderRadius: '50%',
+                      backgroundColor: '#ffffff',
+                      border: '2px solid #1a7a7a',
+                      color: '#1a7a7a',
+                      cursor: 'pointer',
+                      fontSize: '24px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      zIndex: 100,
+                      transition: 'all 0.3s ease',
+                      boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = '#1a7a7a';
+                      e.currentTarget.style.color = '#ffffff';
+                      e.currentTarget.style.transform = 'translateY(-50%) scale(1.1)';
+                      e.currentTarget.style.boxShadow = '0 6px 20px rgba(26,122,122,0.4)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = '#ffffff';
+                      e.currentTarget.style.color = '#1a7a7a';
+                      e.currentTarget.style.transform = 'translateY(-50%) scale(1)';
+                      e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+                    }}
+                  >
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                  </button>
+                )}
               </div>
             </div>
           )}

@@ -1,8 +1,6 @@
-import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
 const Footer = () => {
-  const [hoveredLocation, setHoveredLocation] = useState<string | null>(null);
 
   const hospitals = [
     { name: 'Al Safa Hospital', id: 'al-safa' },
@@ -101,16 +99,48 @@ const Footer = () => {
         .location-popup {
           animation: fadeIn 0.2s ease;
         }
+        @media (max-width: 992px) {
+          .footer-container {
+            padding: 0 24px !important;
+          }
+          .footer-content {
+            flex-direction: column !important;
+            gap: 32px !important;
+          }
+          .footer-column {
+            width: 100% !important;
+            padding-top: 0 !important;
+          }
+          .footer-section-title {
+            font-size: 18px;
+            margin-bottom: 16px;
+          }
+        }
+        @media (max-width: 576px) {
+          .footer-container {
+            padding: 0 16px !important;
+          }
+          .footer-logo {
+            margin-bottom: 32px !important;
+          }
+          .footer-content {
+            gap: 24px !important;
+          }
+          .footer-section-title {
+            font-size: 16px;
+            margin-bottom: 12px;
+          }
+        }
       `}</style>
 
-      <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 48px' }}>
+      <div className="footer-container" style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 48px' }}>
         {/* Logo Section */}
-        <div style={{ marginBottom: '48px' }}>
+        <div className="footer-logo" style={{ marginBottom: '48px' }}>
           <a href="/" className='log' style={{ display: 'inline-block' }}>
             <img 
               src="/assets/img/footer-logo.webp" 
-              width="284" 
-              height="100" 
+              width="224" 
+              height="90" 
               alt="Jedaani Hospitals Logo"
               style={{ display: 'block' }}
             />
@@ -118,13 +148,13 @@ const Footer = () => {
         </div>
 
         {/* Main Footer Content */}
-        <div style={{
+        <div className="footer-content" style={{
           display: 'flex',
           flexDirection: 'row',
           gap: '48px',
         }}>
           {/* Contact Us Section */}
-          <div style={{ flex: '0 0 auto', width: '230px' }}>
+          <div className="footer-column" style={{ flex: '0 0 auto', width: '230px' }}>
             <div className="footer-section-title">Contact Us</div>
             
             {/* Phone */}
@@ -187,8 +217,6 @@ const Footer = () => {
               {hospitals.map((hospital) => (
                 <div
                   key={hospital.id}
-                  onMouseEnter={() => setHoveredLocation(hospital.id)}
-                  onMouseLeave={() => setHoveredLocation(null)}
                   style={{ position: 'relative' }}
                 >
                   <div style={{
@@ -233,7 +261,7 @@ const Footer = () => {
           </div>
 
           {/* Quick Links */}
-          <div style={{ flex: '0 0 auto', width: '230px', paddingTop: '48px' }}>
+          <div className="footer-column" style={{ flex: '0 0 auto', width: '230px', paddingTop: '48px' }}>
             <ul style={{
               display: 'flex',
               flexDirection: 'column',
@@ -253,7 +281,7 @@ const Footer = () => {
           </div>
 
           {/* Category Links */}
-          <div style={{ flex: '0 0 auto', width: '230px', paddingTop: '48px' }}>
+          <div className="footer-column" style={{ flex: '0 0 auto', width: '230px', paddingTop: '48px' }}>
             <ul style={{
               display: 'flex',
               flexDirection: 'column',
@@ -273,7 +301,7 @@ const Footer = () => {
           </div>
 
           {/* Main Links */}
-          <div style={{ flex: '0 0 auto', width: '230px', paddingTop: '48px' }}>
+          <div className="footer-column" style={{ flex: '0 0 auto', width: '230px', paddingTop: '48px' }}>
             <ul style={{
               display: 'flex',
               flexDirection: 'column',
@@ -293,7 +321,7 @@ const Footer = () => {
           </div>
 
           {/* CTA Buttons Column */}
-          <div style={{ flex: '0 0 auto', width: '230px', paddingTop: '48px' }}>
+          <div className="footer-column" style={{ flex: '0 0 auto', width: '230px', paddingTop: '48px' }}>
             <div style={{
               display: 'flex',
               flexDirection: 'column',

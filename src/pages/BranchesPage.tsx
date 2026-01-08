@@ -354,9 +354,10 @@ const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onLearnMore, onBookNow 
 // Specialty Item Component
 interface SpecialtyItemProps {
   name: string;
+  icon?: string;
 }
 
-const SpecialtyItem: React.FC<SpecialtyItemProps> = ({ name }) => (
+const SpecialtyItem: React.FC<SpecialtyItemProps> = ({ name, icon }) => (
   <div style={{
     display: 'flex',
     flexDirection: 'row',
@@ -375,12 +376,22 @@ const SpecialtyItem: React.FC<SpecialtyItemProps> = ({ name }) => (
       padding: '0px',
       width: '32px',
       height: '32px',
-      background: '#E1F9FF',
-      borderRadius: '50%',
     }}>
-      <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-        <path d="M9 1L11 7H17L12 11L14 17L9 13L4 17L6 11L1 7H7L9 1Z" stroke="#00ABDA" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-      </svg>
+      {icon ? (
+        <img 
+          src={icon} 
+          alt={name}
+          style={{
+            width: '24px',
+            height: '24px',
+            objectFit: 'contain',
+          }}
+        />
+      ) : (
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+          <path d="M9 1L11 7H17L12 11L14 17L9 13L4 17L6 11L1 7H7L9 1Z" stroke="#00ABDA" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      )}
     </div>
     <span style={{
       fontFamily: 'Varela, sans-serif',
@@ -504,6 +515,11 @@ const BranchesPage: React.FC = () => {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
+  // Doctor carousel state
+  const [canScrollDoctorLeft, setCanScrollDoctorLeft] = useState(false);
+  const [canScrollDoctorRight, setCanScrollDoctorRight] = useState(true);
+  const doctorScrollRef = React.useRef<HTMLDivElement>(null);
+
   const openLightbox = (index: number) => {
     setCurrentImageIndex(index);
     setLightboxOpen(true);
@@ -537,6 +553,66 @@ const BranchesPage: React.FC = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lightboxOpen, selectedBranch]);
+
+  // Check doctor scroll position
+  useEffect(() => {
+    const checkDoctorScroll = () => {
+      if (doctorScrollRef.current) {
+        const { scrollLeft, scrollWidth, clientWidth } = doctorScrollRef.current;
+        const canScrollLeft = scrollLeft > 10;
+        const canScrollRight = scrollLeft < scrollWidth - clientWidth - 10;
+        
+        setCanScrollDoctorLeft(canScrollLeft);
+        setCanScrollDoctorRight(canScrollRight);
+        
+        console.log('Scroll Check:', { scrollLeft, scrollWidth, clientWidth, canScrollLeft, canScrollRight, doctorsCount: doctors.length });
+      }
+    };
+
+    const scrollElement = doctorScrollRef.current;
+    if (scrollElement && doctors.length > 0) {
+      // Initial check
+      checkDoctorScroll();
+      // Delayed check after render
+      setTimeout(() => checkDoctorScroll(), 100);
+      // Another check to be sure
+      setTimeout(() => checkDoctorScroll(), 300);
+      
+      scrollElement.addEventListener('scroll', checkDoctorScroll);
+      window.addEventListener('resize', checkDoctorScroll);
+      
+      return () => {
+        scrollElement.removeEventListener('scroll', checkDoctorScroll);
+        window.removeEventListener('resize', checkDoctorScroll);
+      };
+    }
+  }, [doctors]);
+
+  const scrollDoctors = (direction: 'left' | 'right') => {
+    if (doctorScrollRef.current) {
+      const cardWidth = 288;
+      const gap = 12;
+      const scrollAmount = (cardWidth + gap) * 2;
+      
+      const currentScroll = doctorScrollRef.current.scrollLeft;
+      const targetScroll = direction === 'left' 
+        ? currentScroll - scrollAmount 
+        : currentScroll + scrollAmount;
+      
+      doctorScrollRef.current.scrollTo({
+        left: targetScroll,
+        behavior: 'smooth'
+      });
+
+      setTimeout(() => {
+        if (doctorScrollRef.current) {
+          const { scrollLeft, scrollWidth, clientWidth } = doctorScrollRef.current;
+          setCanScrollDoctorLeft(scrollLeft > 10);
+          setCanScrollDoctorRight(scrollLeft < scrollWidth - clientWidth - 10);
+        }
+      }, 400);
+    }
+  };
 
   // Fetch branches
   useEffect(() => {
@@ -582,7 +658,6 @@ const BranchesPage: React.FC = () => {
         const doctorsData = await doctorsService.getDoctors({
           active: true,
           branch_id: selectedBranch.id,
-          per_page: 10,
         });
         setDoctors(doctorsData.data);
 
@@ -633,7 +708,7 @@ const BranchesPage: React.FC = () => {
             display: 'grid',
             gridTemplateColumns: 'repeat(3, 1fr)',
             gap: '24px',
-            maxWidth: '1200px',
+            maxWidth: '1400px',
             width: '100%',
           }}>
             {[...Array(6)].map((_, index) => (
@@ -676,7 +751,7 @@ const BranchesPage: React.FC = () => {
         alignItems: 'flex-start',
         padding: window.innerWidth <= 768 ? '90px 16px 0px' : '180px 0px 0px',
         gap: '10px',
-        maxWidth: window.innerWidth <= 768 ? '100%' : '1117px',
+        maxWidth: window.innerWidth <= 768 ? '100%' : '1400px',
         margin: '0 auto',
         background: '#C9F3FF',
       }}>
@@ -839,7 +914,7 @@ const BranchesPage: React.FC = () => {
                   alignItems: 'flex-start',
                   padding: '1px',
                   width: '100%',
-                  height: '302px',
+                  height: '402px',
                   background: '#FFFFFF',
                   border: '1px solid #F3F4F6',
                   boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.1), 0px 1px 2px -1px rgba(0, 0, 0, 0.1)',
@@ -849,7 +924,7 @@ const BranchesPage: React.FC = () => {
                   <div style={{
                     position: 'relative',
                     width: '100%',
-                    height: '300px',
+                    height: '400px',
                     backgroundImage: `url(${selectedBranch.image_url || '/assets/img/branches/default-branch.jpg'})`,
                     backgroundSize: 'cover',
                     backgroundPosition: 'center',
@@ -1109,7 +1184,7 @@ const BranchesPage: React.FC = () => {
                   }}>
                     {departments.length > 0 ? (
                       departments.map(dept => (
-                        <SpecialtyItem key={dept.id} name={dept.name} />
+                        <SpecialtyItem key={dept.id} name={dept.name} icon={dept.icon} />
                       ))
                     ) : (
                       // Fallback if no departments loaded
@@ -1207,75 +1282,133 @@ const BranchesPage: React.FC = () => {
 
                   {/* Doctors List */}
                   <div style={{
-                    display: 'flex',
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    padding: '0px',
-                    gap: '12px',
-                    width: '100%',
-                    overflowX: 'auto',
+                    position: 'relative',
+                    maxWidth: '1400px',
+                    margin: '0 auto',
+                    padding: '0 60px',
                   }}>
                     {/* Left Arrow */}
-                    <button style={{
-                      display: 'flex',
-                      flexDirection: 'row',
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      padding: '16px',
-                      width: '80px',
-                      height: '80px',
-                      borderRadius: '12px',
-                      border: 'none',
-                      background: 'transparent',
-                      cursor: 'pointer',
-                      flexShrink: 0,
-                    }}>
-                      <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-                        <circle cx="24" cy="24" r="23" stroke="#131927" strokeWidth="1.5"/>
-                        <path d="M27 18L21 24L27 30" stroke="#061F42" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
-                    </button>
-
-                    {/* Doctor Cards */}
-                    {doctors.length > 0 ? (
-                      doctors.slice(0, 3).map(doctor => (
-                        <DoctorCard key={doctor.id} doctor={doctor} onLearnMore={handleLearnMore} onBookNow={handleBookNow} />
-                      ))
-                    ) : (
-                      <div style={{
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        width: '100%',
-                        height: '200px',
-                        fontFamily: 'Nunito, sans-serif',
-                        fontSize: '16px',
-                        color: '#6A6A6A',
-                      }}>
-                        No doctors found for this branch.
-                      </div>
+                    {doctors.length > 4 && canScrollDoctorLeft && (
+                      <button 
+                        onClick={() => scrollDoctors('left')}
+                        style={{
+                          position: 'absolute',
+                          left: '0',
+                          top: '50%',
+                          transform: 'translateY(-50%)',
+                          width: '50px',
+                          height: '50px',
+                          borderRadius: '50%',
+                          backgroundColor: '#ffffff',
+                          border: '2px solid #1a7a7a',
+                          color: '#1a7a7a',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          zIndex: 100,
+                          transition: 'all 0.3s ease',
+                          boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = '#1a7a7a';
+                          e.currentTarget.style.color = '#ffffff';
+                          e.currentTarget.style.transform = 'translateY(-50%) scale(1.1)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = '#ffffff';
+                          e.currentTarget.style.color = '#1a7a7a';
+                          e.currentTarget.style.transform = 'translateY(-50%) scale(1)';
+                        }}
+                      >
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="15 18 9 12 15 6"></polyline>
+                        </svg>
+                      </button>
                     )}
 
-                    {/* Right Arrow */}
-                    <button style={{
-                      display: 'flex',
-                      flexDirection: 'row',
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      padding: '16px',
-                      width: '80px',
-                      height: '80px',
-                      borderRadius: '12px',
-                      border: 'none',
-                      background: 'transparent',
-                      cursor: 'pointer',
-                      flexShrink: 0,
+                    {/* Inner scroll container */}
+                    <div style={{
+                      position: 'relative',
+                      overflow: 'hidden',
+                      width: '100%',
                     }}>
-                      <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-                        <circle cx="24" cy="24" r="23" stroke="#131927" strokeWidth="1.5"/>
-                        <path d="M21 18L27 24L21 30" stroke="#061F42" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
-                    </button>
+                      <div 
+                        ref={doctorScrollRef}
+                        style={{
+                          display: 'flex',
+                          gap: '12px',
+                          overflowX: 'auto',
+                          overflowY: 'hidden',
+                          scrollbarWidth: 'none',
+                          msOverflowStyle: 'none',
+                          padding: '0',
+                        }}
+                      >
+                        {doctors.length > 0 ? (
+                          doctors.map(doctor => (
+                            <div key={doctor.id} style={{ flex: '0 0 288px' }}>
+                              <DoctorCard doctor={doctor} onLearnMore={handleLearnMore} onBookNow={handleBookNow} />
+                            </div>
+                          ))
+                        ) : (
+                          <div style={{
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            width: '100%',
+                            height: '200px',
+                            fontFamily: 'Nunito, sans-serif',
+                            fontSize: '16px',
+                            color: '#6A6A6A',
+                          }}>
+                            No doctors found for this branch.
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Right Arrow */}
+                    {doctors.length > 4 && (
+                      <button 
+                        onClick={() => scrollDoctors('right')}
+                        disabled={!canScrollDoctorRight}
+                        style={{
+                          position: 'absolute',
+                          right: '0',
+                          top: '50%',
+                          transform: 'translateY(-50%)',
+                          width: '50px',
+                          height: '50px',
+                          borderRadius: '50%',
+                          backgroundColor: '#ffffff',
+                          border: '2px solid #1a7a7a',
+                          color: '#1a7a7a',
+                          cursor: canScrollDoctorRight ? 'pointer' : 'not-allowed',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          zIndex: 100,
+                          transition: 'all 0.3s ease',
+                          boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+                          opacity: canScrollDoctorRight ? 1 : 0.4,
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = '#1a7a7a';
+                          e.currentTarget.style.color = '#ffffff';
+                          e.currentTarget.style.transform = 'translateY(-50%) scale(1.1)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = '#ffffff';
+                          e.currentTarget.style.color = '#1a7a7a';
+                          e.currentTarget.style.transform = 'translateY(-50%) scale(1)';
+                        }}
+                      >
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                      </button>
+                    )}
                   </div>
                 </div>
               </>
@@ -1530,6 +1663,13 @@ const BranchesPage: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Hide scrollbar for doctor carousel */}
+      <style>{`
+        ::-webkit-scrollbar {
+          display: none;
+        }
+      `}</style>
     </div>
   );
 };

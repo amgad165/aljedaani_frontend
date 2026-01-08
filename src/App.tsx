@@ -6,11 +6,13 @@ import { injectGlobalStyles } from './utils/globalStyles';
 import HomePage from './components/HomePage';
 import LoginPage from './pages/LoginPage';
 import SignUpPage from './pages/SignUpPage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import DepartmentsPage from './pages/DepartmentsPage';
 import DepartmentDetailsPage from './pages/DepartmentDetailsPage';
 import DoctorsPage from './pages/DoctorsPage';
 import DoctorDetailsPage from './pages/DoctorDetailsPage';
 import BranchesPage from './pages/BranchesPage';
+import ContactPage from './pages/ContactPage';
 import BookAppointmentPage from './pages/BookAppointmentPage';
 import ProfilePage from './pages/ProfilePage';
 // Admin Pages
@@ -20,6 +22,8 @@ import AdminBranches from './components/admin/AdminBranches';
 import AdminDepartments from './components/admin/AdminDepartments';
 import AdminDoctors from './components/admin/AdminDoctors';
 import AdminTestimonials from './components/admin/AdminTestimonials';
+import AdminExcellenceCenters from './components/admin/AdminExcellenceCenters';
+import AdminOffers from './components/admin/AdminOffers';
 import AdminDepartmentTabs from './components/admin/AdminDepartmentTabs';
 import AdminOtpLogs from './components/admin/AdminOtpLogs';
 import AdminPatients from './components/admin/AdminPatients';
@@ -35,6 +39,7 @@ import AdminHisShiftDefines from './components/admin/AdminHisShiftDefines';
 import AdminHisShiftDefineDetails from './components/admin/AdminHisShiftDefineDetails';
 import DoctorAvailability from './components/admin/DoctorAvailability';
 import PatientDetails from './components/admin/PatientDetails';
+import AdminContactSubmissions from './components/admin/AdminContactSubmissions';
 import ProtectedRoute from './components/admin/ProtectedRoute';
 import './App.css';
 
@@ -51,6 +56,7 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignUpPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/book-appointment" element={<BookAppointmentPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/departments" element={<DepartmentsPage />} />
@@ -58,6 +64,7 @@ function App() {
           <Route path="/doctors" element={<DoctorsPage />} />
           <Route path="/doctors/:id" element={<DoctorDetailsPage />} />
           <Route path="/branches" element={<BranchesPage />} />
+          <Route path="/contact" element={<ContactPage />} />
           {/* Admin Routes */}
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin" element={
@@ -88,6 +95,16 @@ function App() {
           <Route path="/admin/testimonials" element={
             <ProtectedRoute>
               <AdminTestimonials />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/excellence-centers" element={
+            <ProtectedRoute>
+              <AdminExcellenceCenters />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/offers" element={
+            <ProtectedRoute>
+              <AdminOffers />
             </ProtectedRoute>
           } />
           <Route path="/admin/otp-logs" element={
@@ -149,7 +166,13 @@ function App() {
             <ProtectedRoute>
               <AdminHisShiftDefineDetails />
             </ProtectedRoute>
-          } />          <Route path="/admin/doctor-availability" element={
+          } />
+          <Route path="/admin/contact-submissions" element={
+            <ProtectedRoute>
+              <AdminContactSubmissions />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/doctor-availability" element={
             <ProtectedRoute>
               <DoctorAvailability />
             </ProtectedRoute>

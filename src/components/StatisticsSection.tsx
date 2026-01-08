@@ -45,14 +45,102 @@ const StatisticsSection = () => {
   ];
 
   return (
-    <section 
-      style={{ 
-        backgroundColor: '#1F57A4',
-        padding: '80px 0'
-      }} 
-      className="counter-sec"
-    >
+    <>
+      <style>
+        {`
+          @media (max-width: 992px) {
+            .care-section-title {
+              font-size: 32px !important;
+              line-height: 38px !important;
+              padding: 10px 16px !important;
+            }
+            .stats-grid {
+              flex-wrap: wrap !important;
+              gap: 12px !important;
+            }
+            .stat-card {
+              width: calc(50% - 6px) !important;
+              height: 160px !important;
+              padding: 16px !important;
+            }
+            .stat-number {
+              font-size: 36px !important;
+              line-height: 42px !important;
+              height: 60px !important;
+            }
+            .stat-icon {
+              width: 40px !important;
+              height: 28px !important;
+            }
+            .stat-label {
+              font-size: 16px !important;
+              line-height: 18px !important;
+            }
+          }
+          @media (max-width: 576px) {
+            .care-section {
+              padding: 60px 0 !important;
+            }
+            .care-section-container {
+              padding: 0 16px !important;
+            }
+            .care-section-title {
+              font-size: 28px !important;
+              line-height: 34px !important;
+            }
+            .stats-grid {
+              flex-direction: column !important;
+            }
+            .stat-card {
+              width: 100% !important;
+              height: 140px !important;
+              padding: 16px 12px !important;
+            }
+            .stat-number {
+              font-size: 32px !important;
+              line-height: 38px !important;
+              height: 50px !important;
+            }
+            .stat-icon {
+              width: 36px !important;
+              height: 26px !important;
+            }
+            .stat-label {
+              font-size: 16px !important;
+              line-height: 20px !important;
+            }
+            .stat-number-container {
+              width: 100% !important;
+              height: auto !important;
+              padding: 8px 4px !important;
+            }
+            .stat-icon-label-container {
+              width: 100% !important;
+              height: auto !important;
+              padding: 8px 4px !important;
+            }
+          }
+              height: 50px !important;
+            }
+            .stat-icon {
+              width: 35px !important;
+              height: 24px !important;
+            }
+            .stat-label {
+              font-size: 14px !important;
+            }
+          }
+        `}
+      </style>
+      <section 
+        className="care-section"
+        style={{ 
+          backgroundColor: '#1F57A4',
+          padding: '80px 0'
+        }} 
+      >
       <div 
+        className="care-section-container"
         style={{
           maxWidth: '1128px',
           margin: '0 auto',
@@ -66,6 +154,7 @@ const StatisticsSection = () => {
         {/* Title */}
         <div 
           ref={titleRef}
+          className="care-section-title"
           style={{
             display: 'flex',
             flexDirection: 'row',
@@ -96,6 +185,7 @@ const StatisticsSection = () => {
         {/* Stats Grid */}
         <div 
           ref={statsRef}
+          className="stats-grid"
           style={{
             display: 'flex',
             flexDirection: 'row',
@@ -110,6 +200,7 @@ const StatisticsSection = () => {
           {stats.map((stat, index) => (
             <div 
               key={stat.id}
+              className="stat-card"
               style={{
                 display: 'flex',
                 flexDirection: 'column',
@@ -128,12 +219,13 @@ const StatisticsSection = () => {
             >
               {/* Number */}
               <div 
+                className="stat-number-container"
                 style={{
                   display: 'flex',
                   flexDirection: 'row',
                   alignItems: 'center',
                   padding: '10px 4px',
-                  width: '220.5px',
+                  width: '100%',
                   height: '86px',
                   flex: 'none',
                   order: 0,
@@ -142,8 +234,9 @@ const StatisticsSection = () => {
                 }}
               >
                 <span 
+                  className="stat-number"
                   style={{
-                    width: '212.5px',
+                    width: '100%',
                     height: '66px',
                     fontFamily: 'Nunito, sans-serif',
                     fontStyle: 'normal',
@@ -163,13 +256,14 @@ const StatisticsSection = () => {
 
               {/* Icon and Label */}
               <div 
+                className="stat-icon-label-container"
                 style={{
                   display: 'flex',
                   flexDirection: 'row',
                   alignItems: 'center',
                   padding: '10px 4px',
                   gap: '10px',
-                  width: '238px',
+                  width: '100%',
                   height: '54px',
                   flex: 'none',
                   order: 1,
@@ -192,6 +286,7 @@ const StatisticsSection = () => {
                   <img 
                     src={stat.icon} 
                     alt={stat.label}
+                    className="stat-icon"
                     style={{
                       width: '50px',
                       height: '34px',
@@ -202,6 +297,7 @@ const StatisticsSection = () => {
                   />
                 </div>
                 <span 
+                  className="stat-label"
                   style={{
                     width: '46px',
                     height: '20px',
@@ -224,6 +320,7 @@ const StatisticsSection = () => {
         </div>
       </div>
     </section>
+    </>
   );
 };
 

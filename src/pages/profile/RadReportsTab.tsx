@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   getUserHisRadiologyReports,
   viewHisRadiologyReportPdf,
@@ -157,7 +157,6 @@ const RadReportsTab = () => {
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [dateFilter, setDateFilter] = useState<string | null>(null);
-  const hasFetchedRef = useRef(false);
   const perPage = 4; // 2x2 grid
 
   // Fetch reports
@@ -190,8 +189,6 @@ const RadReportsTab = () => {
   }, [currentPage, searchQuery, dateFilter]);
 
   useEffect(() => {
-    if (hasFetchedRef.current) return;
-    hasFetchedRef.current = true;
     fetchReports();
   }, [fetchReports]);
 

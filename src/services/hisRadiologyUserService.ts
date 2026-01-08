@@ -48,7 +48,7 @@ export interface HisRadiologyReportDetailResponse {
 // Get authenticated user's HIS radiology reports
 export const getUserHisRadiologyReports = async (
   page = 1,
-  perPage = 15,
+  perPage = 4,
   filters?: {
     search?: string;
     from_date?: string;

@@ -1,9 +1,11 @@
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 
 interface HomepageData {
   branches: any[];
   testimonials: any[];
   departments: any[];
+  excellence_centers: any[];
+  offers: any[];
 }
 
 interface HomepageContextType {

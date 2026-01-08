@@ -88,7 +88,7 @@ const DepartmentsPage: React.FC = () => {
             isolation: 'isolate',
             position: 'relative',
             width: '100%',
-            maxWidth: '1170px',
+            maxWidth: '1400px',
             background: '#C9F3FF',
             borderRadius: '15px',
             padding: '24px',
@@ -101,7 +101,7 @@ const DepartmentsPage: React.FC = () => {
               justifyContent: 'center',
               alignItems: 'center',
               padding: '8px 8px 8px 24px',
-              width: '1120px',
+              width: '1400px',
               height: '80px',
               background: '#FFFFFF',
               borderRadius: '15px',
@@ -119,7 +119,7 @@ const DepartmentsPage: React.FC = () => {
 
             {/* Results Text Skeleton */}
             <div style={{
-              width: '1120px',
+              width: '1400px',
               height: '40px',
             }}>
               <div style={{
@@ -148,7 +148,7 @@ const DepartmentsPage: React.FC = () => {
             {/* Departments Grid Skeleton */}
             <div style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(3, 1fr)',
+              gridTemplateColumns: 'repeat(4, 1fr)',
               gap: '24px',
               width: '100%',
               marginBottom: '40px',
@@ -210,7 +210,7 @@ const DepartmentsPage: React.FC = () => {
           isolation: 'isolate',
           position: 'relative',
           width: '100%',
-          maxWidth: '1170px',
+          maxWidth: '1400px',
           background: '#C9F3FF',
           borderRadius: '15px',
           padding: '24px',
@@ -223,7 +223,7 @@ const DepartmentsPage: React.FC = () => {
         justifyContent: 'center',
         alignItems: window.innerWidth <= 768 ? 'flex-start' : 'center',
         padding: window.innerWidth <= 768 ? '8px 12px' : '8px 8px 8px 24px',
-        width: window.innerWidth <= 768 ? '100%' : '1120px',
+        width: window.innerWidth <= 768 ? '100%' : '1400px',
         maxWidth: '100%',
         height: window.innerWidth <= 768 ? 'auto' : '80px',
         background: '#FFFFFF',
@@ -473,7 +473,7 @@ const DepartmentsPage: React.FC = () => {
 
       {/* Results Text */}
       <div style={{
-        width: '1120px',
+        width: '1330px',
         height: '40px',
         fontFamily: 'Nunito, sans-serif',
         fontStyle: 'normal',
@@ -520,7 +520,7 @@ const DepartmentsPage: React.FC = () => {
       {/* Departments Grid */}
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(3, 1fr)',
+        gridTemplateColumns: 'repeat(4, 1fr)',
         gap: '24px',
         width: '100%',
         marginBottom: '40px',
@@ -581,9 +581,6 @@ const DepartmentsPage: React.FC = () => {
               alignItems: 'center',
               width: '80px',
               height: '80px',
-              background: 'linear-gradient(135deg, #E8F8FF 0%, #D1F0FF 100%)',
-              borderRadius: '50%',
-              boxShadow: '0 4px 16px rgba(0, 171, 218, 0.12)',
               position: 'relative',
               transition: 'transform 0.3s ease',
             }}
@@ -601,8 +598,8 @@ const DepartmentsPage: React.FC = () => {
                 src={department.icon || '/assets/images/departments/icon.png'} 
                 alt={`${department.name} Icon`} 
                 style={{
-                  width: '40px',
-                  height: '40px',
+                  width: '48px',
+                  height: '48px',
                   objectFit: 'contain',
                   filter: 'drop-shadow(0 2px 4px rgba(0, 171, 218, 0.2))',
                 }} 
@@ -613,8 +610,8 @@ const DepartmentsPage: React.FC = () => {
             <h3 style={{
               fontFamily: 'Nunito, sans-serif',
               fontWeight: 700,
-              fontSize: '18px',
-              lineHeight: '24px',
+              fontSize: '20px',
+              lineHeight: '26px',
               color: '#061F42',
               margin: 0,
               textAlign: 'center',

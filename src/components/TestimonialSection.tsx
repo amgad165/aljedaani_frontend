@@ -83,18 +83,65 @@ const TestimonialSection = () => {
   }
 
   return (
-    <section style={{ padding: '80px 0' }}>
-      <div
-        style={{
-          maxWidth: '1228px',
-          margin: '0 auto',
-          padding: '0 9px',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'flex-start',
-          gap: '24px'
-        }}
-      >
+    <>
+      <style>
+        {`
+          @media (max-width: 992px) {
+            .testimonial-container {
+              padding: 0 16px !important;
+            }
+            .testimonial-title {
+              font-size: 32px !important;
+              line-height: 38px !important;
+            }
+            .testimonial-carousel {
+              overflow-x: auto !important;
+              -webkit-overflow-scrolling: touch !important;
+              scroll-snap-type: x mandatory !important;
+            }
+            .testimonial-slider {
+              transform: none !important;
+              width: auto !important;
+            }
+            .testimonial-card {
+              scroll-snap-align: center !important;
+              min-width: 280px !important;
+              max-width: 300px !important;
+            }
+            .nav-button {
+              display: none !important;
+            }
+          }
+          @media (max-width: 576px) {
+            .testimonial-section {
+              padding: 60px 0 !important;
+            }
+            .testimonial-title {
+              font-size: 28px !important;
+              line-height: 34px !important;
+            }
+            .testimonial-card {
+              min-width: 260px !important;
+              max-width: 280px !important;
+              height: auto !important;
+              min-height: 350px !important;
+            }
+          }
+        `}
+      </style>
+      <section className="testimonial-section" style={{ padding: '80px 0' }}>
+        <div
+          className="testimonial-container"
+          style={{
+            maxWidth: '1228px',
+            margin: '0 auto',
+            padding: '0 9px',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'flex-start',
+            gap: '24px'
+          }}
+        >
         {/* Title */}
         <div
           style={{
@@ -107,6 +154,7 @@ const TestimonialSection = () => {
           }}
         >
           <h2
+            className="testimonial-title"
             style={{
               fontFamily: 'Nunito, sans-serif',
               fontStyle: 'normal',
@@ -125,6 +173,7 @@ const TestimonialSection = () => {
 
         {/* Cards Container */}
         <div
+          className="testimonial-carousel"
           style={{
             display: 'flex',
             flexDirection: 'row',
@@ -147,6 +196,7 @@ const TestimonialSection = () => {
             }}
           >
           <div
+            className="testimonial-slider"
             style={{
               display: 'flex',
               flexDirection: 'row',
@@ -159,6 +209,7 @@ const TestimonialSection = () => {
             {allDoctors.map((doctor) => (
             <div
               key={doctor.id}
+              className="testimonial-card"
               style={{
                 boxSizing: 'border-box',
                 display: 'flex',
@@ -426,6 +477,7 @@ const TestimonialSection = () => {
           {/* Navigation Button - Left */}
           <button
             onClick={handlePrev}
+            className="nav-button"
             style={{
               position: 'absolute',
               left: '20px',
@@ -450,6 +502,7 @@ const TestimonialSection = () => {
           {/* Navigation Button - Right */}
           <button
             onClick={handleNext}
+            className="nav-button"
             style={{
               position: 'absolute',
               right: '20px',
@@ -473,6 +526,7 @@ const TestimonialSection = () => {
         </div>
       </div>
     </section>
+    </>
   );
 };
 

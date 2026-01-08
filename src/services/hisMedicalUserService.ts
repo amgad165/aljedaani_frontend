@@ -44,7 +44,7 @@ export interface HisMedicalFilters {
  */
 export const getUserHisMedicalReports = async (
   page: number = 1,
-  perPage: number = 10,
+  perPage: number = 4,
   filters: HisMedicalFilters = {}
 ): Promise<HisMedicalReportsResponse> => {
   const params = new URLSearchParams({

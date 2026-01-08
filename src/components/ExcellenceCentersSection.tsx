@@ -1,188 +1,429 @@
+import { useState, useRef, useEffect } from 'react';
 import { useScrollAnimation, getAnimationStyle } from '../hooks/useScrollAnimation';
+import { useHomepageData } from '../context/HomepageContext';
 
-interface Center {
+interface ExcellenceCenter {
   id: number;
   name: string;
-  image: string;
+  description: string;
+  image_url: string | null;
+  map_url: string | null;
+  sort_order: number;
 }
+
+const LeftArrowIcon = () => (
+  <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="24" cy="24" r="24" fill="white" fillOpacity="0.95"/>
+    <path d="M28 16L20 24L28 32" stroke="#061F42" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
 
 const RightArrowIcon = () => (
   <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <rect width="48" height="48" rx="12" fill="none"/>
-    <path d="M18 24H30M30 24L24 18M30 24L24 30" stroke="#061F42" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+    <circle cx="24" cy="24" r="24" fill="white" fillOpacity="0.95"/>
+    <path d="M20 16L28 24L20 32" stroke="#061F42" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
   </svg>
 );
 
 const ExcellenceCentersSection = () => {
   const { ref: titleRef, isVisible: titleVisible } = useScrollAnimation();
   const { ref: gridRef, isVisible: gridVisible } = useScrollAnimation();
+  const { data } = useHomepageData();
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [scrollLeft, setScrollLeft] = useState(0);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  const centers: ExcellenceCenter[] = data?.excellence_centers || [];
+
+  console.log('ExcellenceCentersSection - data:', data);
+  console.log('ExcellenceCentersSection - centers:', centers);
+
+  const updateScrollButtons = () => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    setCanScrollLeft(container.scrollLeft > 10);
+    setCanScrollRight(
+      container.scrollLeft < container.scrollWidth - container.clientWidth - 10
+    );
+  };
+
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    updateScrollButtons();
+    container.addEventListener('scroll', updateScrollButtons);
+    window.addEventListener('resize', updateScrollButtons);
+
+    return () => {
+      container.removeEventListener('scroll', updateScrollButtons);
+      window.removeEventListener('resize', updateScrollButtons);
+    };
+  }, [centers]);
+
+  // Show section even if loading or empty for debugging
+  // if (!data) {
+  //   return null;
+  // }
+
+  // if (centers.length === 0) {
+  //   return null;
+  // }
+
+  const scroll = (direction: 'left' | 'right') => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    // Scroll by 4 cards width (4 * 300px) + gaps (4 * 24px)
+    const scrollAmount = (300 * 4) + (24 * 3);
+    container.scrollBy({
+      left: direction === 'left' ? -scrollAmount : scrollAmount,
+      behavior: 'smooth'
+    });
+  };
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+    
+    setIsDragging(true);
+    setStartX(e.pageX - container.offsetLeft);
+    setScrollLeft(container.scrollLeft);
+    container.style.cursor = 'grabbing';
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging) return;
+    
+    const container = scrollContainerRef.current;
+    if (!container) return;
+    
+    e.preventDefault();
+    const x = e.pageX - container.offsetLeft;
+    const walk = (x - startX) * 2;
+    container.scrollLeft = scrollLeft - walk;
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+    const container = scrollContainerRef.current;
+    if (container) {
+      container.style.cursor = 'grab';
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (isDragging) {
+      setIsDragging(false);
+      const container = scrollContainerRef.current;
+      if (container) {
+        container.style.cursor = 'grab';
+      }
+    }
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+    
+    setIsDragging(true);
+    setStartX(e.touches[0].pageX - container.offsetLeft);
+    setScrollLeft(container.scrollLeft);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isDragging) return;
+    
+    const container = scrollContainerRef.current;
+    if (!container) return;
+    
+    const x = e.touches[0].pageX - container.offsetLeft;
+    const walk = (x - startX) * 2;
+    container.scrollLeft = scrollLeft - walk;
+  };
+
+  const handleTouchEnd = () => {
+    setIsDragging(false);
+  };
   
-  const centers: Center[] = [
-    { id: 1, name: 'Al Safa Hospital', image: '/assets/img/gallery-img.webp' },
-    { id: 2, name: 'Al Safa Hospital', image: '/assets/img/gallery-img.webp' },
-    { id: 3, name: 'Al Safa Hospital', image: '/assets/img/gallery-img.webp' }
-  ];
-
   return (
-    <section 
-      style={{ 
-        backgroundColor: '#F3F3F3',
-        padding: '80px 0',
-        position: 'relative',
-        width: '100%'
-      }}
-    >
-      <div 
-        style={{
-          maxWidth: '1128px',
-          margin: '0 auto',
-          padding: '0 24px',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'flex-start',
-          gap: '24px'
-        }}
-      >
-        {/* Title */}
-        <div 
-          ref={titleRef}
-          style={{
-            display: 'flex',
-            flexDirection: 'row',
-            justifyContent: 'center',
-            alignItems: 'center',
-            padding: '10px 32px',
-            width: '100%',
-            height: '70px',
-            ...getAnimationStyle(titleVisible, 0)
-          }}
-        >
-          <h2 
-            style={{
-              fontFamily: 'Nunito, sans-serif',
-              fontStyle: 'normal',
-              fontWeight: 800,
-              fontSize: '48px',
-              lineHeight: '50px',
-              textAlign: 'center',
-              color: '#061F42',
-              margin: 0,
-              flex: 1
-            }}
-          >
-            Excellence Centers
-          </h2>
-        </div>
-
-        {/* Centers Grid */}
-        <div 
-          ref={gridRef}
-          style={{
-            display: 'flex',
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            padding: 0,
-            gap: '24px',
-            width: '100%',
-            height: '200px'
-          }}
-        >
-          {centers.map((center, index) => (
-            <div
-              key={center.id}
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'flex-end',
-                alignItems: 'flex-start',
-                padding: 0,
-                margin: '0 auto',
-                width: '300px',
-                minWidth: '300px',
-                height: '200px',
-                minHeight: '200px',
-                background: '#FFFFFF',
-                borderRadius: '12px',
-                position: 'relative',
-                overflow: 'hidden',
-                ...getAnimationStyle(gridVisible, index * 0.1)
-              }}
-            >
-              {/* Background Image */}
-              <div
-                style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  width: '100%',
-                  height: '100%',
-                  backgroundImage: `url(${center.image})`,
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center',
-                  borderRadius: '12px',
-                  zIndex: 1
-                }}
-              />
-
-              {/* Headline with semi-transparent background */}
-              <div
-                style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'center',
-                  alignItems: 'flex-start',
-                  padding: '12px',
-                  gap: '8px',
-                  width: '100%',
-                  height: '62px',
-                  background: 'rgba(79, 79, 79, 0.6)',
-                  borderRadius: '0px 32px 12px 12px',
-                  position: 'relative',
-                  zIndex: 2
-                }}
-              >
-                <h3
-                  style={{
-                    width: '276px',
-                    height: '38px',
-                    fontFamily: 'Nunito, sans-serif',
-                    fontStyle: 'normal',
-                    fontWeight: 700,
-                    fontSize: '24px',
-                    lineHeight: '38px',
-                    color: '#FFFFFF',
-                    margin: 0,
-                    flex: 'none'
-                  }}
-                >
-                  {center.name}
-                </h3>
-              </div>
-            </div>
-          ))}
-
-          {/* Navigation Button */}
-          <div
+    <section className="main-sec" style={{ backgroundColor: '#F3F3F3', paddingTop: '80px', paddingBottom: '80px' }}>
+      <section className="card-sec" style={{ paddingTop: 0 }}>
+        <div className="container">
+          {/* Title */}
+          <div 
+            ref={titleRef}
             style={{
               display: 'flex',
-              flexDirection: 'row',
               justifyContent: 'center',
               alignItems: 'center',
-              padding: '16px',
-              margin: '0 auto',
-              width: '80px',
-              height: '80px',
-              borderRadius: '12px',
-              background: 'none',
-              cursor: 'pointer',
-              transition: 'all 0.3s ease'
+              marginBottom: '40px',
+              ...getAnimationStyle(titleVisible, 0)
             }}
           >
-            <RightArrowIcon />
+            <h2 
+              style={{
+                fontFamily: 'Nunito, sans-serif',
+                fontWeight: 800,
+                fontSize: '48px',
+                lineHeight: '50px',
+                textAlign: 'center',
+                color: '#061F42',
+                margin: 0
+              }}
+            >
+              Excellence Centers
+            </h2>
+          </div>
+
+          {/* Carousel Container */}
+          <div style={{ position: 'relative' }}>
+            {/* Left Arrow */}
+            {canScrollLeft && (
+              <button
+                onClick={() => scroll('left')}
+                style={{
+                  position: 'absolute',
+                  left: '-24px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  zIndex: 10,
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: 0,
+                  transition: 'all 0.3s ease',
+                  opacity: 1,
+                  filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.15))'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-50%) scale(1.1)';
+                  e.currentTarget.style.filter = 'drop-shadow(0 6px 12px rgba(0,0,0,0.2))';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-50%) scale(1)';
+                  e.currentTarget.style.filter = 'drop-shadow(0 4px 8px rgba(0,0,0,0.15))';
+                }}
+              >
+                <LeftArrowIcon />
+              </button>
+            )}
+
+            {/* Scrollable Grid */}
+            <div 
+              ref={(el) => {
+                scrollContainerRef.current = el;
+                gridRef.current = el;
+              }}
+              onMouseDown={handleMouseDown}
+              onMouseMove={handleMouseMove}
+              onMouseUp={handleMouseUp}
+              onMouseLeave={handleMouseLeave}
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+              style={{
+                display: 'flex',
+                gap: '24px',
+                overflowX: 'auto',
+                scrollbarWidth: 'none',
+                msOverflowStyle: 'none',
+                cursor: isDragging ? 'grabbing' : 'grab',
+                userSelect: 'none',
+                scrollBehavior: 'smooth',
+                paddingBottom: '10px'
+              }}
+              className="hide-scrollbar"
+            >
+              {centers.map((center, index) => (
+                <div
+                  key={center.id}
+                  style={{
+                    minWidth: '280px',
+                    maxWidth: '280px',
+                    flex: '0 0 auto',
+                    ...getAnimationStyle(gridVisible, index * 0.1)
+                  }}
+                >
+                  <div 
+                    style={{ 
+                      backgroundImage: `url('${center.image_url || '/assets/img/card-img-1.webp'}')`,
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center',
+                      height: '380px',
+                      borderRadius: '20px',
+                      overflow: 'hidden',
+                      position: 'relative',
+                      boxShadow: '0 8px 24px rgba(0, 0, 0, 0.12)',
+                      transition: 'all 0.3s ease',
+                      cursor: 'pointer',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = 'translateY(-8px)';
+                      e.currentTarget.style.boxShadow = '0 12px 32px rgba(0, 0, 0, 0.18)';
+                      const overlay = e.currentTarget.querySelector('.hover-overlay') as HTMLElement;
+                      if (overlay) overlay.style.opacity = '1';
+                      const name = e.currentTarget.querySelector('.center-name') as HTMLElement;
+                      if (name) name.style.transform = 'translateY(-4px)';
+                      const button = e.currentTarget.querySelector('.view-location-btn') as HTMLElement;
+                      if (button) {
+                        // Show button but dimmed if no map_url
+                        button.style.opacity = center.map_url ? '1' : '0.5';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'translateY(0)';
+                      e.currentTarget.style.boxShadow = '0 8px 24px rgba(0, 0, 0, 0.12)';
+                      const overlay = e.currentTarget.querySelector('.hover-overlay') as HTMLElement;
+                      if (overlay) overlay.style.opacity = '0';
+                      const name = e.currentTarget.querySelector('.center-name') as HTMLElement;
+                      if (name) name.style.transform = 'translateY(0)';
+                      const button = e.currentTarget.querySelector('.view-location-btn') as HTMLElement;
+                      if (button) button.style.opacity = '0';
+                    }}
+                  >
+                    {/* Hover Overlay */}
+                    <div className="hover-overlay" style={{
+                      position: 'absolute',
+                      inset: 0,
+                      background: 'rgba(6, 31, 66, 0.7)',
+                      opacity: 0,
+                      transition: 'opacity 0.3s ease',
+                      pointerEvents: 'none'
+                    }} />
+                    
+                    {/* Gradient for text readability at bottom */}
+                    <div style={{
+                      position: 'absolute',
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      height: '50%',
+                      background: 'linear-gradient(180deg, rgba(6, 31, 66, 0) 0%, rgba(6, 31, 66, 0.6) 100%)',
+                      pointerEvents: 'none'
+                    }} />
+
+                    {/* Content at Bottom */}
+                    <div style={{
+                      position: 'absolute',
+                      bottom: '16px',
+                      left: 0,
+                      right: 0,
+                      padding: '0 20px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '12px'
+                    }}>
+                      {/* Center Name */}
+                      <span className="center-name" style={{
+                        fontFamily: 'Nunito, sans-serif',
+                        fontWeight: 800,
+                        fontSize: '24px',
+                        lineHeight: '30px',
+                        color: '#FFFFFF',
+                        textShadow: '0 2px 8px rgba(0, 0, 0, 0.5)',
+                        display: 'block',
+                        textAlign: 'left',
+                        transition: 'transform 0.3s ease'
+                      }}>
+                        {center.name}
+                      </span>
+
+                      {/* View Location Button - Hidden by default */}
+                      <a 
+                        href={center.map_url || '#'}
+                        target={center.map_url ? '_blank' : undefined}
+                        rel={center.map_url ? 'noopener noreferrer' : undefined}
+                        onClick={(e) => {
+                          if (!center.map_url || isDragging) {
+                            e.preventDefault();
+                          }
+                        }}
+                        className="view-location-btn"
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          padding: '10px 16px',
+                          backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                          borderRadius: '12px',
+                          fontSize: '14px',
+                          fontWeight: 600,
+                          fontFamily: 'Nunito, sans-serif',
+                          color: '#061F42',
+                          textDecoration: 'none',
+                          alignSelf: 'flex-start',
+                          opacity: 0,
+                          cursor: center.map_url ? 'pointer' : 'not-allowed',
+                          pointerEvents: center.map_url ? 'auto' : 'none',
+                          transition: 'all 0.3s ease',
+                          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)'
+                        }}
+                        onMouseEnter={(e) => {
+                          if (center.map_url) {
+                            e.currentTarget.style.backgroundColor = '#15C9FA';
+                            e.currentTarget.style.color = '#FFFFFF';
+                            e.currentTarget.style.transform = 'translateY(-2px)';
+                            e.currentTarget.style.boxShadow = '0 4px 12px rgba(21, 201, 250, 0.4)';
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (center.map_url) {
+                            e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.95)';
+                            e.currentTarget.style.color = '#061F42';
+                            e.currentTarget.style.transform = 'translateY(0)';
+                            e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.15)';
+                          }
+                        }}
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" fill="currentColor"/>
+                        </svg>
+                        View location
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Right Arrow */}
+            {canScrollRight && (
+              <button
+                onClick={() => scroll('right')}
+                style={{
+                  position: 'absolute',
+                  right: '-24px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  zIndex: 10,
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: 0,
+                  transition: 'all 0.3s ease',
+                  opacity: 1,
+                  filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.15))'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-50%) scale(1.1)';
+                  e.currentTarget.style.filter = 'drop-shadow(0 6px 12px rgba(0,0,0,0.2))';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-50%) scale(1)';
+                  e.currentTarget.style.filter = 'drop-shadow(0 4px 8px rgba(0,0,0,0.15))';
+                }}
+              >
+                <RightArrowIcon />
+              </button>
+            )}
           </div>
         </div>
-      </div>
+      </section>
     </section>
   );
 };
