@@ -162,7 +162,7 @@ const SignUpPage = () => {
   const ResponsiveNavbar = useResponsiveNavbar();
   const { clearError } = useAuth();
   const navigate = useNavigate();
-  const { toasts, removeToast, success, error: showError, warning, info } = useToast();
+  const { toasts, removeToast, success, error: showError, warning } = useToast();
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);

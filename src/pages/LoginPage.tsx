@@ -77,7 +77,7 @@ const InputField = ({
 
 const LoginPage = () => {
   const ResponsiveNavbar = useResponsiveNavbar();
-  const { toasts, removeToast, success, error: showError, info } = useToast();
+  const { toasts, removeToast, success, info } = useToast();
   const [currentStep, setCurrentStep] = useState(1); // 1: Credentials, 2: OTP
   const [nationalId, setNationalId] = useState('');
   const [medicalRecordNumber, setMedicalRecordNumber] = useState('');

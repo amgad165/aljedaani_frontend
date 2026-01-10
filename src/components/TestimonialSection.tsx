@@ -129,7 +129,7 @@ const TestimonialSection = () => {
           }
         `}
       </style>
-      <section className="testimonial-section" style={{ padding: '80px 0' }}>
+      <section className="testimonial-section" style={{ padding: '40px 0' }}>
         <div
           className="testimonial-container"
           style={{

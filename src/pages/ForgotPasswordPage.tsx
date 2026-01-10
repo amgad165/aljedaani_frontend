@@ -83,7 +83,7 @@ const InputField = ({
 const ForgotPasswordPage = () => {
   const ResponsiveNavbar = useResponsiveNavbar();
   const navigate = useNavigate();
-  const { toasts, removeToast, success: showSuccess, error: showError, info } = useToast();
+  const { toasts, removeToast, success: showSuccess } = useToast();
   const [currentStep, setCurrentStep] = useState(1); // 1: Identifier, 2: OTP, 3: New Password
   const [nationalId, setNationalId] = useState('');
   const [medicalRecordNumber, setMedicalRecordNumber] = useState('');

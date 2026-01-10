@@ -238,7 +238,7 @@ p {
 }
 
 section {
-  padding: clamp(60px, 10vw, 120px) 0;
+  padding: clamp(40px, 10vw, 38px) 0;
 }
 
 .img-fluid {

@@ -200,7 +200,7 @@ const BookAppointmentPage = () => {
   const ResponsiveNavbar = useResponsiveNavbar();
   const { isAuthenticated, user, register, clearError } = useAuth();
   const [searchParams] = useSearchParams();
-  const { toasts, removeToast, success, error: showError, warning, info } = useToast();
+  const { toasts, removeToast, success, error: showError, warning } = useToast();
   
   // Local loading state for the form submission
   const [isSubmitting, setIsSubmitting] = useState(false);

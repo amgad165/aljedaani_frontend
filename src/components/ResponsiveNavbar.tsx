@@ -39,7 +39,7 @@ const ResponsiveNavbar = () => {
   }, [isBranchesOpen, branches.length]);
 
   const navItems: NavItem[] = [
-    { label: 'About us', href: '#', hasDropdown: true },
+    { label: 'About us', href: '/about', hasDropdown: true },
     { label: 'Branches', href: '/branches', hasDropdown: true, isBranchesDropdown: true },
     { label: 'Pharmacies', href: '#' },
     { label: 'Departments', href: '/departments', hasDropdown: true },

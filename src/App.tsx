@@ -15,6 +15,7 @@ import BranchesPage from './pages/BranchesPage';
 import ContactPage from './pages/ContactPage';
 import BookAppointmentPage from './pages/BookAppointmentPage';
 import ProfilePage from './pages/ProfilePage';
+import AboutUsPage from './pages/AboutUsPage';
 // Admin Pages
 import AdminLogin from './components/admin/AdminLogin';
 import AdminDashboard from './components/admin/AdminDashboard';
@@ -65,6 +66,7 @@ function App() {
           <Route path="/doctors/:id" element={<DoctorDetailsPage />} />
           <Route path="/branches" element={<BranchesPage />} />
           <Route path="/contact" element={<ContactPage />} />
+          <Route path="/about" element={<AboutUsPage />} />
           {/* Admin Routes */}
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin" element={

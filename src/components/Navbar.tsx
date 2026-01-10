@@ -58,7 +58,7 @@ const Navbar = () => {
   };
 
   const navItems: NavItem[] = [
-    { label: 'About us', href: '#', hasDropdown: true },
+    { label: 'About us', href: '/about', hasDropdown: true },
     { label: 'Branches', href: '/branches', hasDropdown: true, isBranchesDropdown: true },
     { label: 'Departments', href: '/departments', hasDropdown: true },
     { label: 'Doctors', href: '/doctors' },

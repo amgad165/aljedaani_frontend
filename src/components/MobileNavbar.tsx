@@ -7,7 +7,7 @@ const MobileNavbar = () => {
   const { isAuthenticated, user, logout } = useAuth();
 
   const navItems = [
-    { label: 'About us', href: '#' },
+    { label: 'About us', href: '/about' },
     { label: 'Branches', href: '/branches' },
     { label: 'Pharmacies', href: '#' },
     { label: 'Departments', href: '/departments' },

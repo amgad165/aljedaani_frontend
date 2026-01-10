@@ -78,8 +78,8 @@ const ExcellenceCentersSection = () => {
     const container = scrollContainerRef.current;
     if (!container) return;
 
-    // Scroll by 4 cards width (4 * 300px) + gaps (4 * 24px)
-    const scrollAmount = (300 * 4) + (24 * 3);
+    // Scroll by 5 cards width (5 * 280px) + gaps (5 * 24px)
+    const scrollAmount = (280 * 5) + (24 * 4);
     container.scrollBy({
       left: direction === 'left' ? -scrollAmount : scrollAmount,
       behavior: 'smooth'
@@ -153,7 +153,7 @@ const ExcellenceCentersSection = () => {
   return (
     <section className="main-sec" style={{ backgroundColor: '#F3F3F3', paddingTop: '80px', paddingBottom: '80px' }}>
       <section className="card-sec" style={{ paddingTop: 0 }}>
-        <div className="container">
+        <div className="container" style={{ maxWidth: '1600px' }}>
           {/* Title */}
           <div 
             ref={titleRef}
@@ -322,7 +322,7 @@ const ExcellenceCentersSection = () => {
                       <span className="center-name" style={{
                         fontFamily: 'Nunito, sans-serif',
                         fontWeight: 800,
-                        fontSize: '24px',
+                        fontSize: '22px',
                         lineHeight: '30px',
                         color: '#FFFFFF',
                         textShadow: '0 2px 8px rgba(0, 0, 0, 0.5)',
