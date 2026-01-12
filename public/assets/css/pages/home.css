@@ -172,8 +172,8 @@
 }
 .main-sec .service-sec .service-wrapper .image-wrapper .content-wrapper .icon {
   background: url("./../../img/star-border.webp") center/contain no-repeat;
-  width: 129px;
-  height: 129px;
+  width: 105px;
+  height: 105px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -227,7 +227,7 @@
 }
 .main-sec .banner-sec .banner-wrapper .image-wrapper {
   position: absolute;
-  top: 40px;
+  top: 30px;
   right: 45px;
 }
 
@@ -435,6 +435,72 @@
     flex-wrap: wrap;
     gap: 8px;
   }
+
+  /* Mobile: Make all offers uniform */
+  .main-sec .service-sec .service-wrapper {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .main-sec .service-sec .service-wrapper .right-side {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+  }
+
+  .main-sec .service-sec .service-wrapper .image-wrapper,
+  .main-sec .service-sec .service-wrapper .wrapper-1 {
+    height: 260px;
+    width: 100%;
+  }
+
+  /* Mobile: Move percentage badge to top right */
+  .main-sec .service-sec .service-wrapper .image-wrapper .content-wrapper {
+    padding: 14px;
+  }
+
+  .main-sec .service-sec .service-wrapper .image-wrapper .content-wrapper .icon.roboto {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    margin: 0 !important;
+  }
+
+  .main-sec .service-sec .service-wrapper .image-wrapper .content-wrapper .icon.responsive-d-block {
+    display: flex !important;
+  }
+
+  .main-sec .service-sec .service-wrapper .image-wrapper .content-wrapper .icon.responsive-d-none {
+    display: none !important;
+  }
+
+  .main-sec .service-sec .service-wrapper .image-wrapper .content-wrapper .service-card {
+    padding: 10px 16px;
+  }
+
+  .main-sec .service-sec .service-wrapper .image-wrapper .content-wrapper.resposive-justify-end {
+    justify-content: flex-end;
+  }
+
+  .main-sec .service-sec .service-wrapper .wrapper-1 .content-wrapper .service-card .right {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  /* Mobile: Uniform button styling for all offers */
+  .main-sec .service-sec .service-wrapper .buttons > div {
+    padding: 10px 20px !important;
+  }
+
+  .main-sec .service-sec .service-wrapper .buttons > div > div:first-child {
+    font-size: 13px !important;
+  }
+
+  .main-sec .service-sec .service-wrapper .buttons > div > div:last-child {
+    font-size: 20px !important;
+  }
+
   /* Offers Section Responsive - Title */
   .main-sec .service-sec h2 {
     font-size: 32px;

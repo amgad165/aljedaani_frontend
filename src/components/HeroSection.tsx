@@ -137,7 +137,7 @@ const HeroSection = () => {
               Trusted care across<br />
               the <span className="fw-exbold main-title text-primary-light">Kingdom</span>
             </h1>
-            <a style={{ padding: '12px 20px' }} href="#" className="btn btn-primary w-100">
+            <a style={{ padding: '12px 20px' }} href="/book-appointment" className="btn btn-primary w-100">
               Book appointment
             </a>
           </div>
@@ -149,6 +149,7 @@ const HeroSection = () => {
             opacity: isLoaded ? 1 : 0,
             transform: isLoaded ? 'translateY(0)' : 'translateY(40px)',
             transition: 'opacity 0.7s cubic-bezier(0.4, 0, 0.2, 1) 0.2s, transform 0.7s cubic-bezier(0.4, 0, 0.2, 1) 0.2s',
+            justifyContent: 'center'
           }}
         >
           <form className="form" onSubmit={handleSearch}>

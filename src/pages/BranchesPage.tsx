@@ -44,7 +44,8 @@ const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onLearnMore, onBookNow 
         alignItems: 'center',
         padding: '10px',
         gap: '12px',
-        width: '288px',
+        width: '100%',
+        minWidth: '260px',
         maxWidth: '300px',
         height: '368px',
         background: '#FFFFFF',
@@ -64,7 +65,7 @@ const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onLearnMore, onBookNow 
         flexDirection: 'column',
         alignItems: 'flex-start',
         padding: '0px 0px 8px',
-        width: '268px',
+        width: '100%',
         height: '32px',
       }}>
         <div style={{
@@ -128,11 +129,11 @@ const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onLearnMore, onBookNow 
         flexDirection: 'column',
         alignItems: 'flex-start',
         padding: '0px',
-        width: '268px',
+        width: '100%',
         height: '36px',
       }}>
         <h3 style={{
-          width: '268px',
+          width: '100%',
           height: '20px',
           fontFamily: 'Nunito, sans-serif',
           fontStyle: 'normal',
@@ -146,7 +147,7 @@ const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onLearnMore, onBookNow 
           {doctor.name}
         </h3>
         <div style={{
-          width: '268px',
+          width: '100%',
           height: '16px',
           fontFamily: 'Nunito, sans-serif',
           fontStyle: 'normal',
@@ -362,10 +363,10 @@ const SpecialtyItem: React.FC<SpecialtyItemProps> = ({ name, icon }) => (
     display: 'flex',
     flexDirection: 'row',
     alignItems: 'center',
-    padding: '0px 0px 0px 16px',
-    gap: '12px',
-    width: '247px',
-    height: '32px',
+    padding: '0px 0px 0px 12px',
+    gap: '8px',
+    width: '100%',
+    minHeight: '32px',
     borderRadius: '12px',
   }}>
     <div style={{
@@ -374,21 +375,22 @@ const SpecialtyItem: React.FC<SpecialtyItemProps> = ({ name, icon }) => (
       justifyContent: 'center',
       alignItems: 'center',
       padding: '0px',
-      width: '32px',
-      height: '32px',
+      width: '28px',
+      height: '28px',
+      flexShrink: 0,
     }}>
       {icon ? (
         <img 
           src={icon} 
           alt={name}
           style={{
-            width: '24px',
-            height: '24px',
+            width: '20px',
+            height: '20px',
             objectFit: 'contain',
           }}
         />
       ) : (
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+        <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
           <path d="M9 1L11 7H17L12 11L14 17L9 13L4 17L6 11L1 7H7L9 1Z" stroke="#00ABDA" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
       )}
@@ -397,9 +399,12 @@ const SpecialtyItem: React.FC<SpecialtyItemProps> = ({ name, icon }) => (
       fontFamily: 'Varela, sans-serif',
       fontStyle: 'normal',
       fontWeight: 400,
-      fontSize: '15px',
-      lineHeight: '21px',
+      fontSize: '14px',
+      lineHeight: '20px',
       color: '#364153',
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+      whiteSpace: 'nowrap',
     }}>
       {name}
     </span>
@@ -411,9 +416,10 @@ interface ContactItemProps {
   icon: 'address' | 'phone' | 'email';
   title: string;
   lines: string[];
+  isMobile?: boolean;
 }
 
-const ContactItem: React.FC<ContactItemProps> = ({ icon, title, lines }) => {
+const ContactItem: React.FC<ContactItemProps> = ({ icon, title, lines, isMobile = false }) => {
   const renderIcon = () => {
     switch (icon) {
       case 'address':
@@ -446,7 +452,7 @@ const ContactItem: React.FC<ContactItemProps> = ({ icon, title, lines }) => {
       justifyContent: 'center',
       alignItems: 'center',
       padding: '0px',
-      gap: '16px',
+      gap: isMobile ? '12px' : '16px',
       flex: 1,
     }}>
       <div style={{
@@ -511,14 +517,35 @@ const BranchesPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
+  // Transition states
+  const [branchContentKey, setBranchContentKey] = useState(0);
+  const [isBranchTransitioning, setIsBranchTransitioning] = useState(false);
+  
   // Gallery lightbox state
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  // Mobile state
+  const [isMobile, setIsMobile] = useState(false);
 
   // Doctor carousel state
   const [canScrollDoctorLeft, setCanScrollDoctorLeft] = useState(false);
   const [canScrollDoctorRight, setCanScrollDoctorRight] = useState(true);
   const doctorScrollRef = React.useRef<HTMLDivElement>(null);
+
+  // Check if mobile on mount and resize
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    
+    // Check on mount
+    checkMobile();
+    
+    // Add resize listener
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const openLightbox = (index: number) => {
     setCurrentImageIndex(index);
@@ -590,8 +617,8 @@ const BranchesPage: React.FC = () => {
 
   const scrollDoctors = (direction: 'left' | 'right') => {
     if (doctorScrollRef.current) {
-      const cardWidth = 288;
-      const gap = 12;
+      const cardWidth = 300;
+      const gap = 20;
       const scrollAmount = (cardWidth + gap) * 2;
       
       const currentScroll = doctorScrollRef.current.scrollLeft;
@@ -678,7 +705,14 @@ const BranchesPage: React.FC = () => {
   }, [selectedBranch]);
 
   const handleBranchSelect = (branch: Branch) => {
-    setSelectedBranch(branch);
+    if (branch.id === selectedBranch?.id) return;
+    
+    setIsBranchTransitioning(true);
+    setTimeout(() => {
+      setSelectedBranch(branch);
+      setBranchContentKey(prev => prev + 1);
+      setIsBranchTransitioning(false);
+    }, 200);
   };
 
   const handleLearnMore = (doctorId: number) => {
@@ -749,9 +783,9 @@ const BranchesPage: React.FC = () => {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'flex-start',
-        padding: window.innerWidth <= 768 ? '90px 16px 0px' : '180px 0px 0px',
+        padding: isMobile ? '90px 16px 0px' : '180px 0px 0px',
         gap: '10px',
-        maxWidth: window.innerWidth <= 768 ? '100%' : '1400px',
+        maxWidth: isMobile ? '100%' : '1400px',
         margin: '0 auto',
         background: '#C9F3FF',
       }}>
@@ -761,9 +795,9 @@ const BranchesPage: React.FC = () => {
           flexDirection: 'row',
           justifyContent: 'center',
           alignItems: 'center',
-          padding: window.innerWidth <= 768 ? '8px 12px' : '8px 8px 8px 24px',
+          padding: isMobile ? '8px 12px' : '8px 8px 8px 24px',
           width: '100%',
-          height: window.innerWidth <= 768 ? '56px' : '66px',
+          height: isMobile ? '56px' : '66px',
           background: '#FFFFFF',
           borderRadius: '15px',
         }}>
@@ -771,8 +805,8 @@ const BranchesPage: React.FC = () => {
             fontFamily: 'Nunito, sans-serif',
             fontStyle: 'normal',
             fontWeight: 600,
-            fontSize: window.innerWidth <= 768 ? '28px' : '48px',
-            lineHeight: window.innerWidth <= 768 ? '32px' : '50px',
+            fontSize: isMobile ? '28px' : '44px',
+            lineHeight: isMobile ? '32px' : '50px',
             color: '#061F42',
             margin: 0,
             flexGrow: 1,
@@ -787,9 +821,10 @@ const BranchesPage: React.FC = () => {
           flexDirection: 'row',
           alignItems: 'center',
           padding: '0px',
-          gap: '12px',
+          gap: isMobile ? '8px' : '12px',
           width: '100%',
-          height: '40px',
+          minHeight: isMobile ? 'auto' : '40px',
+          flexWrap: isMobile ? 'wrap' : 'nowrap',
         }}>
           <Link to="/" style={{
             boxSizing: 'border-box',
@@ -797,21 +832,22 @@ const BranchesPage: React.FC = () => {
             flexDirection: 'row',
             justifyContent: 'center',
             alignItems: 'center',
-            padding: '8px 12px',
+            padding: isMobile ? '6px 10px' : '8px 12px',
             gap: '8px',
-            height: '32px',
+            height: isMobile ? '28px' : '32px',
             background: '#FFFFFF',
             border: '1px solid #061F42',
             borderRadius: '8px',
             textDecoration: 'none',
+            flexShrink: 0,
           }}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <svg width={isMobile ? "18" : "24"} height={isMobile ? "18" : "24"} viewBox="0 0 24 24" fill="none">
               <path d="M19 12H5M5 12L12 19M5 12L12 5" stroke="#061F42" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
             <span style={{
               fontFamily: 'Nunito, sans-serif',
               fontWeight: 600,
-              fontSize: '14px',
+              fontSize: isMobile ? '12px' : '14px',
               lineHeight: '16px',
               color: '#061F42',
             }}>
@@ -821,9 +857,12 @@ const BranchesPage: React.FC = () => {
           <span style={{
             fontFamily: 'Nunito, sans-serif',
             fontWeight: 400,
-            fontSize: '16px',
-            lineHeight: '40px',
+            fontSize: isMobile ? '13px' : '16px',
+            lineHeight: isMobile ? '20px' : '40px',
             color: '#A4A5A5',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: isMobile ? 'normal' : 'nowrap',
           }}>
             Displaying results for{' '}
             <span style={{ color: '#061F42' }}>
@@ -859,6 +898,8 @@ const BranchesPage: React.FC = () => {
             flexDirection: 'row',
             alignItems: 'flex-start',
             padding: '0px',
+            overflowX: isMobile ? 'auto' : 'visible',
+            gap: isMobile ? '8px' : '0px',
           }}>
             {branches.map((branch) => (
               <button
@@ -869,20 +910,22 @@ const BranchesPage: React.FC = () => {
                   flexDirection: 'row',
                   justifyContent: 'center',
                   alignItems: 'center',
-                  padding: '12px 16px',
-                  height: '40px',
+                  padding: isMobile ? '10px 14px' : '12px 16px',
+                  height: isMobile ? '36px' : '40px',
                   background: selectedBranch?.id === branch.id ? '#FCFCFC' : '#E6E6E6',
                   boxShadow: selectedBranch?.id === branch.id ? '0px 0px 5px rgba(0, 0, 0, 0.25)' : 'none',
                   borderRadius: '12px 12px 0px 0px',
                   border: 'none',
                   cursor: 'pointer',
+                  whiteSpace: 'nowrap',
+                  flexShrink: 0,
                 }}>
                 <span style={{
                   fontFamily: 'Nunito, sans-serif',
                   fontStyle: 'normal',
                   fontWeight: 600,
-                  fontSize: '20px',
-                  lineHeight: '20px',
+                  fontSize: isMobile ? '16px' : '20px',
+                  lineHeight: isMobile ? '16px' : '20px',
                   textAlign: 'center',
                   color: selectedBranch?.id === branch.id ? '#061F42' : '#A4A5A5',
                 }}>
@@ -893,17 +936,22 @@ const BranchesPage: React.FC = () => {
           </div>
 
           {/* Main Content Panel */}
-          <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'flex-start',
-            padding: '24px',
-            gap: '24px',
-            width: '100%',
-            background: '#FCFCFC',
-            boxShadow: '0px 4px 5px rgba(0, 0, 0, 0.25)',
-            borderRadius: '0px 12px 12px 12px',
-          }}>
+          <div 
+            key={branchContentKey}
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'flex-start',
+              padding: isMobile ? '16px' : '24px',
+              gap: isMobile ? '16px' : '24px',
+              width: '100%',
+              background: '#FCFCFC',
+              boxShadow: '0px 4px 5px rgba(0, 0, 0, 0.25)',
+              borderRadius: '0px 12px 12px 12px',
+              opacity: isBranchTransitioning ? 0 : 1,
+              transform: isBranchTransitioning ? 'translateY(10px)' : 'translateY(0)',
+              transition: 'opacity 0.3s ease, transform 0.3s ease',
+            }}>
             {selectedBranch && (
               <>
                 {/* Branch Hero Image */}
@@ -914,7 +962,7 @@ const BranchesPage: React.FC = () => {
                   alignItems: 'flex-start',
                   padding: '1px',
                   width: '100%',
-                  height: '402px',
+                  height: isMobile ? '250px' : '402px',
                   background: '#FFFFFF',
                   border: '1px solid #F3F4F6',
                   boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.1), 0px 1px 2px -1px rgba(0, 0, 0, 0.1)',
@@ -924,8 +972,8 @@ const BranchesPage: React.FC = () => {
                   <div style={{
                     position: 'relative',
                     width: '100%',
-                    height: '400px',
-                    backgroundImage: `url(${selectedBranch.image_url || '/assets/img/branches/default-branch.jpg'})`,
+                    height: isMobile ? '248px' : '400px',
+                    backgroundImage: `url(${(isMobile && selectedBranch.mobile_image) ? selectedBranch.mobile_image : (selectedBranch.image_url || '/assets/img/branches/default-branch.jpg')})`,
                     backgroundSize: 'cover',
                     backgroundPosition: 'center',
                   }}>
@@ -940,21 +988,21 @@ const BranchesPage: React.FC = () => {
                     {/* Branch Info */}
                     <div style={{
                       position: 'absolute',
-                      left: '40px',
-                      bottom: '24px',
+                      left: isMobile ? '16px' : '40px',
+                      bottom: isMobile ? '16px' : '24px',
                     }}>
                       <div style={{
                         display: 'inline-block',
-                        padding: '4px 12px',
+                        padding: isMobile ? '3px 10px' : '4px 12px',
                         background: 'rgba(255, 255, 255, 0.9)',
                         borderRadius: '1000px',
-                        marginBottom: '8px',
+                        marginBottom: isMobile ? '6px' : '8px',
                       }}>
                         <span style={{
                           fontFamily: 'Inter, sans-serif',
                           fontWeight: 700,
-                          fontSize: '14px',
-                          lineHeight: '20px',
+                          fontSize: isMobile ? '11px' : '14px',
+                          lineHeight: isMobile ? '16px' : '20px',
                           letterSpacing: '0.55px',
                           textTransform: 'uppercase',
                           color: '#00ABDA',
@@ -965,8 +1013,8 @@ const BranchesPage: React.FC = () => {
                       <h2 style={{
                         fontFamily: 'Nunito, sans-serif',
                         fontWeight: 700,
-                        fontSize: '48px',
-                        lineHeight: '60px',
+                        fontSize: isMobile ? '24px' : '44px',
+                        lineHeight: isMobile ? '32px' : '60px',
                         color: '#FFFFFF',
                         margin: 0,
                         textShadow: '0px 4px 8px rgba(0, 0, 0, 0.15)',
@@ -975,42 +1023,7 @@ const BranchesPage: React.FC = () => {
                       </h2>
                     </div>
 
-                    {/* Contact Icons */}
-                    <div style={{
-                      position: 'absolute',
-                      right: '24px',
-                      bottom: '24px',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: '8px',
-                    }}>
-                      <a href={`tel:${selectedBranch.phone}`} style={{
-                        width: '48px',
-                        height: '48px',
-                        background: '#00ABDA',
-                        borderRadius: '12px',
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                      }}>
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                          <path d="M22 16.92V19.92C22 20.47 21.55 20.92 21 20.92C10.51 20.92 2 12.41 2 1.92C2 1.37 2.45 0.92 3 0.92H6C6.55 0.92 7 1.37 7 1.92C7 3.42 7.25 4.87 7.72 6.22C7.86 6.63 7.76 7.08 7.45 7.39L4.64 10.2C6.48 13.94 9.53 16.99 13.27 18.83L16.08 16.02C16.39 15.71 16.84 15.61 17.25 15.75C18.6 16.22 20.05 16.47 21.55 16.47C22.1 16.47 22.55 16.92 22.55 17.47V19.92" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        </svg>
-                      </a>
-                      <a href={`https://wa.me/${selectedBranch.phone?.replace(/[^0-9]/g, '')}`} style={{
-                        width: '48px',
-                        height: '48px',
-                        background: '#25D366',
-                        borderRadius: '12px',
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                      }}>
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
-                          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-                        </svg>
-                      </a>
-                    </div>
+  
                   </div>
                 </div>
 
@@ -1020,19 +1033,19 @@ const BranchesPage: React.FC = () => {
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'flex-start',
-                  padding: '33px 33px 1px',
+                  padding: isMobile ? '20px 20px 1px' : '33px 33px 1px',
                   gap: '16px',
                   width: '100%',
                   background: '#FFFFFF',
                   border: '1px solid #F3F4F6',
                   boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.1), 0px 1px 2px -1px rgba(0, 0, 0, 0.1)',
-                  borderRadius: '20px',
+                  borderRadius: isMobile ? '12px' : '20px',
                 }}>
                   <h3 style={{
                     fontFamily: 'Nunito, sans-serif',
                     fontWeight: 700,
-                    fontSize: '24px',
-                    lineHeight: '36px',
+                    fontSize: isMobile ? '20px' : '24px',
+                    lineHeight: isMobile ? '28px' : '36px',
                     color: '#061F42',
                     margin: 0,
                   }}>
@@ -1041,8 +1054,8 @@ const BranchesPage: React.FC = () => {
                   <p style={{
                     fontFamily: 'Varela, sans-serif',
                     fontWeight: 400,
-                    fontSize: '16px',
-                    lineHeight: '26px',
+                    fontSize: isMobile ? '14px' : '16px',
+                    lineHeight: isMobile ? '22px' : '26px',
                     color: '#4A5565',
                     margin: 0,
                   }}>
@@ -1051,10 +1064,10 @@ const BranchesPage: React.FC = () => {
                   <p style={{
                     fontFamily: 'Varela, sans-serif',
                     fontWeight: 400,
-                    fontSize: '16px',
-                    lineHeight: '26px',
+                    fontSize: isMobile ? '14px' : '16px',
+                    lineHeight: isMobile ? '22px' : '26px',
                     color: '#4A5565',
-                    margin: '0 0 24px 0',
+                    margin: isMobile ? '0 0 16px 0' : '0 0 24px 0',
                   }}>
                     Our facility is equipped with the latest diagnostic technology and staffed by a team of experienced consultants and specialists. Whether for routine check-ups or specialized treatments, the {selectedBranch.name} offers a comfortable and welcoming environment for you and your family.
                   </p>
@@ -1067,15 +1080,16 @@ const BranchesPage: React.FC = () => {
                   justifyContent: 'space-between',
                   alignItems: 'center',
                   width: '100%',
+                  padding: isMobile ? '0 8px' : '0',
                 }}>
                   <h3 style={{
                     fontFamily: 'Nunito, sans-serif',
                     fontWeight: 700,
-                    fontSize: '24px',
-                    lineHeight: '36px',
+                    fontSize: isMobile ? '20px' : '24px',
+                    lineHeight: isMobile ? '28px' : '36px',
                     color: '#061F42',
                     margin: 0,
-                    paddingLeft: '24px',
+                    paddingLeft: isMobile ? '8px' : '24px',
                   }}>
                     Gallery
                   </h3>
@@ -1085,14 +1099,14 @@ const BranchesPage: React.FC = () => {
                       style={{
                         fontFamily: 'Nunito, sans-serif',
                         fontWeight: 600,
-                        fontSize: '20px',
-                        lineHeight: '20px',
+                        fontSize: isMobile ? '16px' : '20px',
+                        lineHeight: isMobile ? '16px' : '20px',
                         textDecoration: 'underline',
                         color: '#0B67E7',
                         background: 'none',
                         border: 'none',
                         cursor: 'pointer',
-                        padding: 0,
+                        padding: isMobile ? '0 8px 0 0' : 0,
                       }}>
                       View all
                     </button>
@@ -1102,11 +1116,11 @@ const BranchesPage: React.FC = () => {
                 {/* Gallery Images */}
                 <div style={{
                   display: 'flex',
-                  flexDirection: 'row',
+                  flexDirection: isMobile ? 'column' : 'row',
                   justifyContent: 'center',
                   alignItems: 'flex-start',
                   padding: '0px',
-                  gap: '16px',
+                  gap: isMobile ? '12px' : '16px',
                   width: '100%',
                 }}>
                   {[0, 1, 2].map((i) => {
@@ -1117,7 +1131,8 @@ const BranchesPage: React.FC = () => {
                         onClick={() => galleryImage && openLightbox(i)}
                         style={{
                           flex: 1,
-                          height: '256px',
+                          height: isMobile ? '180px' : '256px',
+                          width: isMobile ? '100%' : 'auto',
                           background: '#E5E7EB',
                           backgroundImage: galleryImage ? `url(${galleryImage.image_url})` : 'none',
                           backgroundSize: 'cover',
@@ -1169,8 +1184,8 @@ const BranchesPage: React.FC = () => {
                   <h3 style={{
                     fontFamily: 'Nunito, sans-serif',
                     fontWeight: 700,
-                    fontSize: '24px',
-                    lineHeight: '36px',
+                    fontSize: isMobile ? '20px' : '24px',
+                    lineHeight: isMobile ? '28px' : '36px',
                     color: '#061F42',
                     margin: 0,
                   }}>
@@ -1178,8 +1193,8 @@ const BranchesPage: React.FC = () => {
                   </h3>
                   <div style={{
                     display: 'grid',
-                    gridTemplateColumns: 'repeat(4, 1fr)',
-                    gap: '16px 12px',
+                    gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)',
+                    gap: isMobile ? '12px 8px' : '16px 12px',
                     width: '100%',
                   }}>
                     {departments.length > 0 ? (
@@ -1201,19 +1216,19 @@ const BranchesPage: React.FC = () => {
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'flex-start',
-                  padding: '24px',
-                  gap: '24px',
+                  padding: isMobile ? '20px 16px' : '24px',
+                  gap: isMobile ? '16px' : '24px',
                   width: '100%',
                   background: '#FFFFFF',
                   border: '1px solid #F3F4F6',
                   boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.1), 0px 1px 2px -1px rgba(0, 0, 0, 0.1)',
-                  borderRadius: '20px',
+                  borderRadius: isMobile ? '12px' : '20px',
                 }}>
                   <h3 style={{
                     fontFamily: 'Nunito, sans-serif',
                     fontWeight: 700,
-                    fontSize: '24px',
-                    lineHeight: '36px',
+                    fontSize: isMobile ? '20px' : '24px',
+                    lineHeight: isMobile ? '28px' : '36px',
                     color: '#061F42',
                     margin: 0,
                   }}>
@@ -1221,11 +1236,11 @@ const BranchesPage: React.FC = () => {
                   </h3>
                   <div style={{
                     display: 'flex',
-                    flexDirection: 'row',
+                    flexDirection: isMobile ? 'column' : 'row',
                     justifyContent: 'center',
                     alignItems: 'flex-start',
                     padding: '0px',
-                    gap: '24px',
+                    gap: isMobile ? '16px' : '24px',
                     width: '100%',
                   }}>
                     <ContactItem
@@ -1235,16 +1250,19 @@ const BranchesPage: React.FC = () => {
                         selectedBranch.address || 'King Faisal Road, Ghulail District',
                         `Jeddah 21442, Saudi Arabia`
                       ]}
+                      isMobile={isMobile}
                     />
                     <ContactItem
                       icon="phone"
                       title="Phone"
                       lines={[selectedBranch.phone || '+966 12 345 6789']}
+                      isMobile={isMobile}
                     />
                     <ContactItem
                       icon="email"
                       title="Email"
                       lines={[selectedBranch.email || 'ghulail@medicalcenter.sa']}
+                      isMobile={isMobile}
                     />
                   </div>
                 </div>
@@ -1263,15 +1281,15 @@ const BranchesPage: React.FC = () => {
                     flexDirection: 'row',
                     justifyContent: 'center',
                     alignItems: 'center',
-                    padding: '0px 0px 0px 24px',
+                    padding: isMobile ? '0px 0px 0px 8px' : '0px 0px 0px 24px',
                     gap: '10px',
                     width: '100%',
                   }}>
                     <h3 style={{
                       fontFamily: 'Nunito, sans-serif',
                       fontWeight: 700,
-                      fontSize: '24px',
-                      lineHeight: '38px',
+                      fontSize: isMobile ? '20px' : '24px',
+                      lineHeight: isMobile ? '28px' : '38px',
                       color: '#061F42',
                       margin: 0,
                       flexGrow: 1,
@@ -1283,27 +1301,29 @@ const BranchesPage: React.FC = () => {
                   {/* Doctors List */}
                   <div style={{
                     position: 'relative',
-                    maxWidth: '1400px',
+                    maxWidth: '100%',
+                    width: '100%',
                     margin: '0 auto',
-                    padding: '0 60px',
+                    padding: isMobile ? '0' : '0 60px',
+                    overflow: 'hidden',
                   }}>
                     {/* Left Arrow */}
-                    {doctors.length > 4 && canScrollDoctorLeft && (
+                    {doctors.length > (isMobile ? 1 : 4) && canScrollDoctorLeft && (
                       <button 
                         onClick={() => scrollDoctors('left')}
                         style={{
                           position: 'absolute',
-                          left: '0',
+                          left: isMobile ? '-8px' : '0',
                           top: '50%',
                           transform: 'translateY(-50%)',
-                          width: '50px',
-                          height: '50px',
+                          width: isMobile ? '36px' : '50px',
+                          height: isMobile ? '36px' : '50px',
                           borderRadius: '50%',
                           backgroundColor: '#ffffff',
                           border: '2px solid #1a7a7a',
                           color: '#1a7a7a',
                           cursor: 'pointer',
-                          display: 'flex',
+                          display: isMobile ? 'none' : 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
                           zIndex: 100,
@@ -1332,22 +1352,29 @@ const BranchesPage: React.FC = () => {
                       position: 'relative',
                       overflow: 'hidden',
                       width: '100%',
+                      maxWidth: isMobile ? '100%' : '1180px',
+                      margin: '0 auto',
                     }}>
                       <div 
                         ref={doctorScrollRef}
                         style={{
                           display: 'flex',
-                          gap: '12px',
+                          gap: isMobile ? '12px' : '20px',
                           overflowX: 'auto',
                           overflowY: 'hidden',
                           scrollbarWidth: 'none',
                           msOverflowStyle: 'none',
-                          padding: '0',
+                          padding: isMobile ? '0 8px' : '0',
+                          WebkitOverflowScrolling: 'touch',
                         }}
                       >
                         {doctors.length > 0 ? (
                           doctors.map(doctor => (
-                            <div key={doctor.id} style={{ flex: '0 0 288px' }}>
+                            <div key={doctor.id} style={{ 
+                              flex: isMobile ? '0 0 calc(100vw - 48px)' : '0 0 280px',
+                              minWidth: isMobile ? 'calc(100vw - 48px)' : '280px',
+                              maxWidth: isMobile ? 'calc(100vw - 48px)' : '300px',
+                            }}>
                               <DoctorCard doctor={doctor} onLearnMore={handleLearnMore} onBookNow={handleBookNow} />
                             </div>
                           ))
@@ -1369,23 +1396,23 @@ const BranchesPage: React.FC = () => {
                     </div>
 
                     {/* Right Arrow */}
-                    {doctors.length > 4 && (
+                    {doctors.length > (isMobile ? 1 : 4) && (
                       <button 
                         onClick={() => scrollDoctors('right')}
                         disabled={!canScrollDoctorRight}
                         style={{
                           position: 'absolute',
-                          right: '0',
+                          right: isMobile ? '-8px' : '0',
                           top: '50%',
                           transform: 'translateY(-50%)',
-                          width: '50px',
-                          height: '50px',
+                          width: isMobile ? '36px' : '50px',
+                          height: isMobile ? '36px' : '50px',
                           borderRadius: '50%',
                           backgroundColor: '#ffffff',
                           border: '2px solid #1a7a7a',
                           color: '#1a7a7a',
                           cursor: canScrollDoctorRight ? 'pointer' : 'not-allowed',
-                          display: 'flex',
+                          display: isMobile ? 'none' : 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
                           zIndex: 100,
@@ -1442,10 +1469,10 @@ const BranchesPage: React.FC = () => {
             onClick={closeLightbox}
             style={{
               position: 'absolute',
-              top: '24px',
-              right: '24px',
-              width: '56px',
-              height: '56px',
+              top: isMobile ? '12px' : '24px',
+              right: isMobile ? '12px' : '24px',
+              width: isMobile ? '40px' : '56px',
+              height: isMobile ? '40px' : '56px',
               background: 'rgba(255, 255, 255, 0.1)',
               border: '2px solid rgba(255, 255, 255, 0.3)',
               borderRadius: '50%',
@@ -1473,18 +1500,18 @@ const BranchesPage: React.FC = () => {
           {/* Image Counter */}
           <div style={{
             position: 'absolute',
-            top: '32px',
+            top: isMobile ? '16px' : '32px',
             left: '50%',
             transform: 'translateX(-50%)',
             background: 'rgba(0, 0, 0, 0.6)',
-            padding: '8px 20px',
+            padding: isMobile ? '6px 14px' : '8px 20px',
             borderRadius: '24px',
             zIndex: 10001,
           }}>
             <span style={{
               fontFamily: 'Nunito, sans-serif',
               fontWeight: 600,
-              fontSize: '16px',
+              fontSize: isMobile ? '14px' : '16px',
               color: 'white',
             }}>
               {currentImageIndex + 1} / {selectedBranch.galleries.length}
@@ -1496,11 +1523,11 @@ const BranchesPage: React.FC = () => {
             onClick={(e) => { e.stopPropagation(); goToPrevious(); }}
             style={{
               position: 'absolute',
-              left: '24px',
+              left: isMobile ? '8px' : '24px',
               top: '50%',
               transform: 'translateY(-50%)',
-              width: '64px',
-              height: '64px',
+              width: isMobile ? '44px' : '64px',
+              height: isMobile ? '44px' : '64px',
               background: 'rgba(255, 255, 255, 0.1)',
               border: '2px solid rgba(255, 255, 255, 0.3)',
               borderRadius: '50%',
@@ -1584,11 +1611,11 @@ const BranchesPage: React.FC = () => {
             onClick={(e) => { e.stopPropagation(); goToNext(); }}
             style={{
               position: 'absolute',
-              right: '24px',
+              right: isMobile ? '8px' : '24px',
               top: '50%',
               transform: 'translateY(-50%)',
-              width: '64px',
-              height: '64px',
+              width: isMobile ? '44px' : '64px',
+              height: isMobile ? '44px' : '64px',
               background: 'rgba(255, 255, 255, 0.1)',
               border: '2px solid rgba(255, 255, 255, 0.3)',
               borderRadius: '50%',
@@ -1618,12 +1645,12 @@ const BranchesPage: React.FC = () => {
           {/* Thumbnail Strip */}
           <div style={{
             position: 'absolute',
-            bottom: '24px',
+            bottom: isMobile ? '12px' : '24px',
             left: '50%',
             transform: 'translateX(-50%)',
             display: 'flex',
-            gap: '12px',
-            padding: '12px 16px',
+            gap: isMobile ? '8px' : '12px',
+            padding: isMobile ? '8px 12px' : '12px 16px',
             background: 'rgba(0, 0, 0, 0.6)',
             borderRadius: '16px',
             maxWidth: '90vw',
@@ -1634,8 +1661,8 @@ const BranchesPage: React.FC = () => {
                 key={gallery.id}
                 onClick={(e) => { e.stopPropagation(); setCurrentImageIndex(index); }}
                 style={{
-                  width: '80px',
-                  height: '60px',
+                  width: isMobile ? '60px' : '80px',
+                  height: isMobile ? '45px' : '60px',
                   borderRadius: '8px',
                   backgroundImage: `url(${gallery.image_url})`,
                   backgroundSize: 'cover',

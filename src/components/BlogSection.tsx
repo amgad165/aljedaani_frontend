@@ -18,15 +18,41 @@ const BlogSection = () => {
   ];
 
   return (
-    <section className="blog-sec">
-      <div className="container">
-        <h2 
-          ref={titleRef}
-          className="text-center mb-5 fw-bold"
-          style={getAnimationStyle(titleVisible, 0)}
-        >
-          Latest News
-        </h2>
+    <>
+      <style>
+        {`
+          @media (max-width: 992px) {
+            .blog-title {
+              font-size: 32px !important;
+              line-height: 38px !important;
+            }
+          }
+          @media (max-width: 576px) {
+            .blog-title {
+              font-size: 28px !important;
+              line-height: 34px !important;
+            }
+          }
+        `}
+      </style>
+      <section className="blog-sec">
+        <div className="container">
+          <h2 
+            ref={titleRef}
+            className="blog-title"
+            style={{
+              fontFamily: 'Nunito, sans-serif',
+              fontWeight: 800,
+              fontSize: '48px',
+              lineHeight: '50px',
+              textAlign: 'center',
+              color: '#061F42',
+              marginBottom: '40px',
+              ...getAnimationStyle(titleVisible, 0)
+            }}
+          >
+            Latest News
+          </h2>
         <div 
           ref={contentRef}
           className="row g-3 mb-3 m-mb-0"
@@ -67,6 +93,7 @@ const BlogSection = () => {
         </a>
       </div>
     </section>
+    </>
   );
 };
 

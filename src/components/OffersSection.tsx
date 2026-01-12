@@ -28,15 +28,46 @@ const OffersSection = () => {
   };
 
   return (
-    <section className="service-sec pb-0">
-      <div className="container">
-        <h2 
-          ref={titleRef}
-          className="text-center fw-exbold mb-4"
-          style={getAnimationStyle(titleVisible, 0)}
-        >
-          Offers
-        </h2>
+    <>
+      <style>
+        {`
+          @media (max-width: 992px) {
+            .offers-title {
+              font-size: 32px !important;
+              line-height: 38px !important;
+                            marginBottom: '40px',
+
+            }
+          }
+          @media (max-width: 576px) {
+            .offers-title {
+              font-size: 28px !important;
+              line-height: 34px !important;
+                            marginBottom: '40px',
+
+            }
+          }
+        `}
+      </style>
+      <section className="service-sec pb-0">
+        <div className="container">
+          <h2 
+            ref={titleRef}
+            className="offers-title"
+            style={{
+              fontFamily: 'Nunito, sans-serif',
+              fontWeight: 800,
+              fontSize: '48px',
+              lineHeight: '50px',
+              textAlign: 'center',
+              color: '#061F42',
+              marginBottom: '60px',
+              ...getAnimationStyle(titleVisible, 0),
+              opacity: 1
+            }}
+          >
+            Offers
+          </h2>
         <div 
           ref={contentRef}
           className="service-wrapper mb-4"
@@ -45,7 +76,8 @@ const OffersSection = () => {
           {mainOffer && (
             <div style={{ backgroundImage: `url('${mainOffer.image_url}')` }} className="image-wrapper">
               <div className="content-wrapper resposive-justify-end">
-                <div className="icon roboto responsive-d-block">{mainOffer.discount}% OFF</div>
+                <div className="icon roboto responsive-d-block">{Math.floor(Number(mainOffer.discount))}%
+                  <br />OFF</div>
                 <div className="service-card">
                   <span className="h3 fw-exbold">{mainOffer.title}</span>
                   <div className="d-flex align-items-center gap-1">
@@ -117,7 +149,8 @@ const OffersSection = () => {
                             </div>
                           </div>
                         </div>
-                        <div className="icon roboto">{offer.discount}% OFF</div>
+                        <div className="icon roboto">{Math.floor(Number(offer.discount))}%
+                          <br />OFF</div>
                       </div>
                     </div>
                   </div>
@@ -133,6 +166,7 @@ const OffersSection = () => {
         )}
       </div>
     </section>
+    </>
   );
 };
 

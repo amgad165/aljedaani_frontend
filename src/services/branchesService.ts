@@ -21,6 +21,7 @@ export interface Branch {
   latitude?: number;
   longitude?: number;
   image_url?: string;
+  mobile_image?: string;
   is_active: boolean;
   doctors_count?: number;
   galleries?: Gallery[];

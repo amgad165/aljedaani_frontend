@@ -36,6 +36,7 @@ interface Doctor {
   specialization: string;
   status: 'available_today' | 'busy' | 'available_soon';
   is_active: boolean;
+  order: number;
   outpatient_services: ServiceItem[];
   inpatient_services: ServiceItem[];
 }
@@ -53,6 +54,7 @@ interface FormData {
   specialization: string;
   status: string;
   is_active: boolean;
+  order: string;
   outpatient_services: ServiceItem[];
   inpatient_services: ServiceItem[];
 }
@@ -70,6 +72,7 @@ const initialFormData: FormData = {
   specialization: '',
   status: 'available_today',
   is_active: true,
+  order: '0',
   outpatient_services: [],
   inpatient_services: [],
 };
@@ -219,6 +222,7 @@ const AdminDoctors: React.FC = () => {
         specialization: doctor.specialization || '',
         status: doctor.status,
         is_active: doctor.is_active,
+        order: doctor.order?.toString() || '0',
         outpatient_services: doctor.outpatient_services || [],
         inpatient_services: doctor.inpatient_services || [],
       };
@@ -391,6 +395,7 @@ const AdminDoctors: React.FC = () => {
       submitData.append('specialization', formData.specialization);
       submitData.append('status', formData.status);
       submitData.append('is_active', formData.is_active ? '1' : '0');
+      submitData.append('order', formData.order || '0');
       
       if (formData.branch_id) {
         submitData.append('branch_id', formData.branch_id);
@@ -1077,6 +1082,7 @@ const AdminDoctors: React.FC = () => {
       <table style={styles.table}>
         <thead>
           <tr>
+            <th style={styles.th}>Order</th>
             <th style={styles.th}>Image</th>
             <th style={styles.th}>Doctor Code</th>
             <th style={styles.th}>Name</th>
@@ -1090,6 +1096,16 @@ const AdminDoctors: React.FC = () => {
         <tbody>
           {doctors.map(doctor => (
             <tr key={doctor.id}>
+              <td style={styles.td}>
+                <div style={{ 
+                  fontSize: '16px', 
+                  fontWeight: '600', 
+                  color: '#0d9488',
+                  fontFamily: 'monospace'
+                }}>
+                  {doctor.order || 0}
+                </div>
+              </td>
               <td style={styles.td}>
                 {doctor.image_url ? (
                   <img src={doctor.image_url} alt={doctor.name} style={styles.doctorImage} />
@@ -1315,14 +1331,13 @@ const AdminDoctors: React.FC = () => {
 
                 {/* Email */}
                 <div style={styles.formGroup}>
-                  <label style={styles.label}>Email *</label>
+                  <label style={styles.label}>Email</label>
                   <input
                     type="email"
                     name="email"
                     value={formData.email}
                     onChange={handleInputChange}
                     style={styles.input}
-                    required
                   />
                 </div>
 
@@ -1339,14 +1354,13 @@ const AdminDoctors: React.FC = () => {
                     />
                   </div>
                   <div>
-                    <label style={styles.label}>Location *</label>
+                    <label style={styles.label}>Location</label>
                     <input
                       type="text"
                       name="location"
                       value={formData.location}
                       onChange={handleInputChange}
                       style={styles.input}
-                      required
                     />
                   </div>
                 </div>
@@ -1457,6 +1471,24 @@ const AdminDoctors: React.FC = () => {
                         Active
                       </label>
                     </div>
+                  </div>
+                </div>
+
+                {/* Display Order */}
+                <div style={styles.formGroup}>
+                  <label style={styles.label}>Display Order *</label>
+                  <input
+                    type="number"
+                    name="order"
+                    value={formData.order}
+                    onChange={handleInputChange}
+                    style={styles.input}
+                    required
+                    min="0"
+                    placeholder="0"
+                  />
+                  <div style={{ fontSize: '12px', color: '#64748b', marginTop: '4px' }}>
+                    Lower numbers appear first. Multiple doctors can have the same order.
                   </div>
                 </div>
               </>

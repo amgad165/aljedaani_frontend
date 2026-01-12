@@ -98,6 +98,7 @@ const TestimonialSection = () => {
               overflow-x: auto !important;
               -webkit-overflow-scrolling: touch !important;
               scroll-snap-type: x mandatory !important;
+              padding: 0 !important;
             }
             .testimonial-slider {
               transform: none !important;
@@ -105,7 +106,7 @@ const TestimonialSection = () => {
             }
             .testimonial-card {
               scroll-snap-align: center !important;
-              min-width: 280px !important;
+              min-width: 300px !important;
               max-width: 300px !important;
             }
             .nav-button {
@@ -121,10 +122,10 @@ const TestimonialSection = () => {
               line-height: 34px !important;
             }
             .testimonial-card {
-              min-width: 260px !important;
+              min-width: 280px !important;
               max-width: 280px !important;
               height: auto !important;
-              min-height: 350px !important;
+              min-height: 380px !important;
             }
           }
         `}

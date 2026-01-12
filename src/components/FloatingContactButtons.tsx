@@ -9,14 +9,18 @@ const FloatingContactButtons = () => {
         {`
           @media (max-width: 768px) {
             .floating-buttons {
-              right: 12px !important;
-              bottom: 20px !important;
+              right: 16px !important;
+              bottom: 80px !important;
               top: auto !important;
               transform: none !important;
             }
             .floating-buttons a {
-              width: 44px !important;
-              height: 44px !important;
+              width: 48px !important;
+              height: 48px !important;
+            }
+            .floating-buttons img {
+              width: 22px !important;
+              height: 22px !important;
             }
           }
         `}
@@ -28,7 +32,7 @@ const FloatingContactButtons = () => {
           right: '20px',
           top: '50%',
           transform: 'translateY(-50%)',
-          zIndex: 1000,
+          zIndex: 999,
           display: 'flex',
           flexDirection: 'column',
           gap: '12px',

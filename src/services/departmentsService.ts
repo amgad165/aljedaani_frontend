@@ -26,6 +26,7 @@ export interface ServiceItem {
 // Sub-section structure for Overview tab
 export interface SubSection {
   image?: string;
+  mobile_image?: string;
   title?: string;
   description?: string;
   position?: 'left' | 'right';
@@ -42,6 +43,7 @@ export interface SidebarItem {
   id: string;
   title: string;
   image?: string;
+  mobile_image?: string;
   description?: string;
   service_list?: ServiceListItem[];
   sort_order?: number;
@@ -53,6 +55,7 @@ export interface DepartmentTabContent {
   department_id: number;
   tab_type: 'overview' | 'opd_services' | 'inpatient_services' | 'investigations';
   main_image?: string;
+  mobile_image?: string;
   main_description?: string;
   quote_text?: string;
   sub_sections?: SubSection[];

@@ -26,7 +26,7 @@ const Footer = () => {
   const mainLinks = [
     { label: 'Overview', href: '/' },
     { label: 'Hospitals', href: '/branches' },
-    { label: 'Ibn Sina College', href: '/#ibn-sina-college' },
+    { label: 'Ibn Sina College', href: 'https://ibnsina.edu.sa/' },
     { label: 'Pharmacies', href: '/#pharmacies' },
     { label: 'Departments', href: '/departments' },
     { label: 'Doctors', href: '/doctors' },
@@ -133,14 +133,14 @@ const Footer = () => {
         }
       `}</style>
 
-      <div className="footer-container" style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 48px' }}>
+      <div className="footer-container" style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 0px' }}>
         {/* Logo Section */}
         <div className="footer-logo" style={{ marginBottom: '48px' }}>
           <a href="/" className='log' style={{ display: 'inline-block' }}>
             <img 
               src="/assets/img/footer-logo.webp" 
-              width="224" 
-              height="90" 
+              width="200" 
+              height="73" 
               alt="Jedaani Hospitals Logo"
               style={{ display: 'block' }}
             />

@@ -23,6 +23,7 @@ interface Branch {
   longitude: number | null;
   map_url: string | null;
   image_url: string | null;
+  mobile_image: string | null;
   is_active: boolean;
   created_at: string;
   updated_at: string;
@@ -41,6 +42,8 @@ interface FormData {
   map_url: string;
   image_url: string;
   image_file: File | null;
+  mobile_image: string;
+  mobile_image_file: File | null;
   is_active: boolean;
 }
 
@@ -84,6 +87,8 @@ const AdminBranches: React.FC = () => {
     map_url: '',
     image_url: '',
     image_file: null,
+    mobile_image: '',
+    mobile_image_file: null,
     is_active: true
   });
   const [galleryFormData, setGalleryFormData] = useState<GalleryFormData>({
@@ -153,6 +158,8 @@ const AdminBranches: React.FC = () => {
       map_url: '',
       image_url: '',
       image_file: null,
+      mobile_image: '',
+      mobile_image_file: null,
       is_active: true
     });
     setModalGalleryItems([]);
@@ -174,6 +181,8 @@ const AdminBranches: React.FC = () => {
       map_url: branch.map_url || '',
       image_url: branch.image_url || '',
       image_file: null,
+      mobile_image: branch.mobile_image || '',
+      mobile_image_file: null,
       is_active: branch.is_active
     });
     // Initialize gallery items from existing branch galleries
@@ -327,6 +336,11 @@ const AdminBranches: React.FC = () => {
         formDataToSend.append('image', formData.image_file);
       } else if (formData.image_url) {
         formDataToSend.append('image_url', formData.image_url);
+      }
+
+      // Handle mobile image: new file takes priority, otherwise keep existing URL
+      if (formData.mobile_image_file) {
+        formDataToSend.append('mobile_image', formData.mobile_image_file);
       }
 
       const url = modalMode === 'create' 
@@ -830,6 +844,69 @@ const AdminBranches: React.FC = () => {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
                         <p style={{ color: '#6B7280', fontSize: '14px', margin: 0 }}>Click to upload image</p>
+                      </label>
+                    )}
+                  </div>
+
+                  <div style={formGroupStyle}>
+                    <label style={labelStyle}>Mobile Branch Image (Optional)</label>
+                    {(formData.mobile_image_file || formData.mobile_image) ? (
+                      <div style={{ position: 'relative', width: 'fit-content' }}>
+                        <img 
+                          src={formData.mobile_image_file ? URL.createObjectURL(formData.mobile_image_file) : formData.mobile_image} 
+                          alt="Mobile branch preview" 
+                          style={{ width: '200px', height: '120px', objectFit: 'cover', borderRadius: '12px', border: '2px solid #E5E7EB' }} 
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setFormData({ ...formData, mobile_image_file: null, mobile_image: '' })}
+                          style={{
+                            position: 'absolute',
+                            top: '-8px',
+                            right: '-8px',
+                            width: '24px',
+                            height: '24px',
+                            borderRadius: '50%',
+                            backgroundColor: '#EF4444',
+                            color: 'white',
+                            border: 'none',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '16px',
+                            fontWeight: 'bold'
+                          }}
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ) : (
+                      <label htmlFor="branch-mobile-image-upload" style={{ 
+                        display: 'block',
+                        border: '2px dashed #E5E7EB', 
+                        borderRadius: '12px', 
+                        padding: '24px', 
+                        textAlign: 'center',
+                        backgroundColor: '#F9FAFB',
+                        cursor: 'pointer'
+                      }}>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              setFormData({ ...formData, mobile_image_file: file });
+                            }
+                          }}
+                          style={{ display: 'none' }}
+                          id="branch-mobile-image-upload"
+                        />
+                        <svg style={{ width: '40px', height: '40px', color: '#9CA3AF', margin: '0 auto 8px', display: 'block' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <p style={{ color: '#6B7280', fontSize: '14px', margin: 0 }}>Click to upload mobile image</p>
                       </label>
                     )}
                   </div>

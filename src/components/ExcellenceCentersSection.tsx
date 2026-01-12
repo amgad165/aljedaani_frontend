@@ -151,33 +151,51 @@ const ExcellenceCentersSection = () => {
   };
   
   return (
-    <section className="main-sec" style={{ backgroundColor: '#F3F3F3', paddingTop: '80px', paddingBottom: '80px' }}>
-      <section className="card-sec" style={{ paddingTop: 0 }}>
-        <div className="container" style={{ maxWidth: '1600px' }}>
-          {/* Title */}
-          <div 
-            ref={titleRef}
-            style={{
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              marginBottom: '40px',
-              ...getAnimationStyle(titleVisible, 0)
-            }}
-          >
-            <h2 
+    <>
+      <style>
+        {`
+          @media (max-width: 992px) {
+            .excellence-title {
+              font-size: 32px !important;
+              line-height: 38px !important;
+            }
+          }
+          @media (max-width: 576px) {
+            .excellence-title {
+              font-size: 28px !important;
+              line-height: 34px !important;
+            }
+          }
+        `}
+      </style>
+      <section className="main-sec" style={{ backgroundColor: '#F3F3F3', paddingTop: '80px', paddingBottom: '80px' }}>
+        <section className="card-sec" style={{ paddingTop: 0 }}>
+          <div className="container" style={{ maxWidth: '1600px' }}>
+            {/* Title */}
+            <div 
+              ref={titleRef}
               style={{
-                fontFamily: 'Nunito, sans-serif',
-                fontWeight: 800,
-                fontSize: '48px',
-                lineHeight: '50px',
-                textAlign: 'center',
-                color: '#061F42',
-                margin: 0
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                marginBottom: '40px',
+                ...getAnimationStyle(titleVisible, 0)
               }}
             >
-              Excellence Centers
-            </h2>
+              <h2 
+                className="excellence-title"
+                style={{
+                  fontFamily: 'Nunito, sans-serif',
+                  fontWeight: 800,
+                  fontSize: '48px',
+                  lineHeight: '50px',
+                  textAlign: 'center',
+                  color: '#061F42',
+                  margin: 0
+                }}
+              >
+                Excellence Centers
+              </h2>
           </div>
 
           {/* Carousel Container */}
@@ -228,6 +246,7 @@ const ExcellenceCentersSection = () => {
               onTouchEnd={handleTouchEnd}
               style={{
                 display: 'flex',
+                justifyContent: 'center',
                 gap: '24px',
                 overflowX: 'auto',
                 scrollbarWidth: 'none',
@@ -425,6 +444,7 @@ const ExcellenceCentersSection = () => {
         </div>
       </section>
     </section>
+    </>
   );
 };
 

@@ -129,9 +129,9 @@ const ContactPage: React.FC = () => {
             <h1 style={{
               fontFamily: 'Nunito, sans-serif',
               fontWeight: 700,
-              fontSize: window.innerWidth <= 768 ? '24px' : '24px',
+              fontSize: window.innerWidth <= 768 ? '24px' : '44px',
               lineHeight: '38px',
-              textAlign: 'center',
+              textAlign: 'left',
               color: '#061F42',
               margin: 0,
               flexGrow: 1,

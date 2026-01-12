@@ -411,6 +411,9 @@ const DoctorsPage: React.FC = () => {
   const [selectedBranch, setSelectedBranch] = useState<string>(searchParams.get('branch') || '');
   const [selectedDepartment, setSelectedDepartment] = useState<string>(searchParams.get('department') || '');
   
+  // Sort state
+  const [sortByName, setSortByName] = useState(false);
+  
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -506,6 +509,20 @@ const DoctorsPage: React.FC = () => {
     setSelectedDepartment(value);
     setCurrentPage(1);
   };
+
+  const toggleSortByName = () => {
+    setSortByName(!sortByName);
+  };
+
+  // Sort doctors by name if sorting is enabled
+  const sortedDoctors = React.useMemo(() => {
+    if (!doctors || !sortByName) return doctors;
+    
+    return {
+      ...doctors,
+      data: [...doctors.data].sort((a, b) => a.name.localeCompare(b.name))
+    };
+  }, [doctors, sortByName]);
 
   const renderPaginationButton = (page: number, isActive: boolean = false) => (
     <button
@@ -661,7 +678,7 @@ const DoctorsPage: React.FC = () => {
           fontFamily: 'Nunito, sans-serif',
           fontStyle: 'normal',
           fontWeight: 600,
-          fontSize: window.innerWidth <= 768 ? '28px' : '48px',
+          fontSize: window.innerWidth <= 768 ? '28px' : '44px',
           lineHeight: window.innerWidth <= 768 ? '32px' : '50px',
           color: '#061F42',
           margin: 0,
@@ -712,7 +729,9 @@ const DoctorsPage: React.FC = () => {
           </div>
 
           {/* Sort Button */}
-          <button style={{
+          <button 
+            onClick={toggleSortByName}
+            style={{
             display: 'flex',
             flexDirection: 'row',
             justifyContent: 'center',
@@ -720,12 +739,20 @@ const DoctorsPage: React.FC = () => {
             padding: '12px 16px',
             width: '200px',
             height: '40px',
-            background: '#061F42',
+            background: sortByName ? '#00ABDA' : '#061F42',
             borderRadius: '12px',
             border: 'none',
             cursor: 'pointer',
             gap: '8px',
-          }}>
+              transition: `all 0.3s ${EASINGS.smooth}`,
+          }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLElement).style.background = sortByName ? '#0096C4' : '#00ABDA';
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLElement).style.background = sortByName ? '#00ABDA' : '#061F42';
+            }}
+          >
             <img
               src="/assets/images/doctors/sort-up.png"
               alt="Sort"
@@ -733,6 +760,8 @@ const DoctorsPage: React.FC = () => {
                 width: '24px',
                 height: '24px',
                 objectFit: 'contain',
+                transform: sortByName ? 'rotate(0deg)' : 'rotate(0deg)',
+                transition: `transform 0.3s ${EASINGS.smooth}`,
               }}
             />
             <span style={{
@@ -743,7 +772,7 @@ const DoctorsPage: React.FC = () => {
               lineHeight: '20px',
               color: '#FFFFFF',
             }}>
-              Sort By Name
+              {sortByName ? 'Unsort' : 'Sort By Name'}
             </span>
           </button>
         </div>
@@ -823,7 +852,7 @@ const DoctorsPage: React.FC = () => {
         width: '100%',
         justifyContent: 'center',
       }}>
-        {doctors?.data.map((doctor, index) => (
+        {sortedDoctors?.data.map((doctor, index) => (
           <div
             key={doctor.id}
             style={{
@@ -837,7 +866,7 @@ const DoctorsPage: React.FC = () => {
       </div>
 
       {/* Pagination */}
-      {doctors && doctors.last_page > 1 && (
+      {sortedDoctors && sortedDoctors.last_page > 1 && (
         <div style={{
           display: 'flex',
           flexDirection: 'column',
@@ -889,12 +918,12 @@ const DoctorsPage: React.FC = () => {
             </button>
 
             {/* Page Numbers */}
-            {Array.from({ length: Math.min(5, doctors.last_page) }, (_, i) => {
+            {Array.from({ length: Math.min(5, sortedDoctors.last_page) }, (_, i) => {
               let page = i + 1;
-              if (doctors.last_page > 5 && currentPage > 3) {
+              if (sortedDoctors.last_page > 5 && currentPage > 3) {
                 page = currentPage - 2 + i;
-                if (page > doctors.last_page) {
-                  page = doctors.last_page - 4 + i;
+                if (page > sortedDoctors.last_page) {
+                  page = sortedDoctors.last_page - 4 + i;
                 }
               }
               return renderPaginationButton(page, page === currentPage);
@@ -902,8 +931,8 @@ const DoctorsPage: React.FC = () => {
 
             {/* Next Button */}
             <button
-              onClick={() => setCurrentPage(Math.min(doctors.last_page, currentPage + 1))}
-              disabled={currentPage === doctors.last_page}
+              onClick={() => setCurrentPage(Math.min(sortedDoctors.last_page, currentPage + 1))}
+              disabled={currentPage === sortedDoctors.last_page}
               style={{
                 display: 'flex',
                 flexDirection: 'row',
@@ -915,12 +944,12 @@ const DoctorsPage: React.FC = () => {
                 borderRadius: '24px',
                 border: 'none',
                 background: 'transparent',
-                cursor: currentPage === doctors.last_page ? 'not-allowed' : 'pointer',
-                opacity: currentPage === doctors.last_page ? 0.5 : 1,
+                cursor: currentPage === sortedDoctors.last_page ? 'not-allowed' : 'pointer',
+                opacity: currentPage === sortedDoctors.last_page ? 0.5 : 1,
                 transition: 'all 0.2s ease',
               }}
               onMouseEnter={(e) => {
-                if (currentPage !== doctors.last_page) {
+                if (currentPage !== sortedDoctors.last_page) {
                   (e.currentTarget as HTMLElement).style.background = '#F0F9FF';
                 }
               }}
@@ -937,7 +966,7 @@ const DoctorsPage: React.FC = () => {
       )}
 
       {/* No results message */}
-      {doctors && doctors.data.length === 0 && (
+      {sortedDoctors && sortedDoctors.data.length === 0 && (
         <div style={{
           display: 'flex',
           justifyContent: 'center',

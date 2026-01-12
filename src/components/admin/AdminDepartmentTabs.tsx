@@ -28,6 +28,7 @@ const AdminDepartmentTabs: React.FC = () => {
   const { departmentId } = useParams<{ departmentId: string }>();
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const mobileFileInputRef = useRef<HTMLInputElement | null>(null);
   const subSectionFileRefs = useRef<(HTMLInputElement | null)[]>([]);
   const sidebarItemFileRefs = useRef<(HTMLInputElement | null)[]>([]);
   
@@ -45,9 +46,14 @@ const AdminDepartmentTabs: React.FC = () => {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>('');
 
+  // Image file state for mobile image
+  const [mobileImageFile, setMobileImageFile] = useState<File | null>(null);
+  const [mobileImagePreview, setMobileImagePreview] = useState<string>('');
+
   // Form state for current tab
   const [formData, setFormData] = useState<{
     main_image: string;
+    mobile_image: string;
     main_description: string;
     quote_text: string;
     sub_sections: SubSectionWithFile[];
@@ -56,6 +62,7 @@ const AdminDepartmentTabs: React.FC = () => {
     is_active: boolean;
   }>({
     main_image: '',
+    mobile_image: '',
     main_description: '',
     quote_text: '',
     sub_sections: [],
@@ -198,6 +205,7 @@ const AdminDepartmentTabs: React.FC = () => {
       
       setFormData({
         main_image: currentContent.main_image || '',
+        mobile_image: currentContent.mobile_image || '',
         main_description: currentContent.main_description || '',
         quote_text: currentContent.quote_text || '',
         sub_sections: (currentContent.sub_sections || []).map(s => ({
@@ -211,9 +219,12 @@ const AdminDepartmentTabs: React.FC = () => {
       });
       setImageFile(null);
       setImagePreview(currentContent.main_image || '');
+      setMobileImageFile(null);
+      setMobileImagePreview(currentContent.mobile_image || '');
     } else {
       setFormData({
         main_image: '',
+        mobile_image: '',
         main_description: '',
         quote_text: '',
         sub_sections: [],
@@ -223,6 +234,8 @@ const AdminDepartmentTabs: React.FC = () => {
       });
       setImageFile(null);
       setImagePreview('');
+      setMobileImageFile(null);
+      setMobileImagePreview('');
     }
     setExpandedSidebarItem(null);
   }, [activeTab, tabContents]);
@@ -248,6 +261,21 @@ const AdminDepartmentTabs: React.FC = () => {
     setImagePreview('');
     setFormData(prev => ({ ...prev, main_image: '' }));
     if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const handleMobileFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setMobileImageFile(file);
+      setMobileImagePreview(URL.createObjectURL(file));
+    }
+  };
+
+  const handleRemoveMobileImage = () => {
+    setMobileImageFile(null);
+    setMobileImagePreview('');
+    setFormData(prev => ({ ...prev, mobile_image: '' }));
+    if (mobileFileInputRef.current) mobileFileInputRef.current.value = '';
   };
 
   // Generate unique ID for new sidebar items
@@ -280,6 +308,11 @@ const AdminDepartmentTabs: React.FC = () => {
       // Add main image file
       if (imageFile) {
         submitData.append('main_image', imageFile);
+      }
+
+      // Add mobile image file
+      if (mobileImageFile) {
+        submitData.append('mobile_image', mobileImageFile);
       }
 
       // Add sub-section image files
@@ -649,6 +682,13 @@ const AdminDepartmentTabs: React.FC = () => {
             <label style={labelStyle}>Main Image</label>
             {renderImageUpload(imagePreview, handleFileChange, handleRemoveImage, fileInputRef)}
             {imageFile && <p style={{ marginTop: '8px', fontSize: '12px', color: '#6B7280' }}>Selected: {imageFile.name}</p>}
+          </div>
+
+          {/* Mobile Image */}
+          <div style={{ marginBottom: '24px' }}>
+            <label style={labelStyle}>Mobile Image (Optional)</label>
+            {renderImageUpload(mobileImagePreview, handleMobileFileChange, handleRemoveMobileImage, mobileFileInputRef)}
+            {mobileImageFile && <p style={{ marginTop: '8px', fontSize: '12px', color: '#6B7280' }}>Selected: {mobileImageFile.name}</p>}
           </div>
 
           {/* Main Description */}

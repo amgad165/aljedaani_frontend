@@ -15,8 +15,18 @@ const DepartmentsPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [selectedBranchId, setSelectedBranchId] = useState<number | null>(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const branchesInitialized = useRef(false);
   const fetchInProgress = useRef(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     // Prevent duplicate fetches
@@ -148,12 +158,12 @@ const DepartmentsPage: React.FC = () => {
             {/* Departments Grid Skeleton */}
             <div style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(4, 1fr)',
-              gap: '24px',
+              gridTemplateColumns: isMobile ? '1fr' : 'repeat(5, 1fr)',
+              gap: isMobile ? '16px' : '24px',
               width: '100%',
               marginBottom: '40px',
             }}>
-              {[...Array(9)].map((_, index) => (
+              {[...Array(10)].map((_, index) => (
                 <DepartmentCardSkeleton key={index} />
               ))}
             </div>
@@ -219,13 +229,13 @@ const DepartmentsPage: React.FC = () => {
       {/* Title Section */}
       <div style={{
         display: 'flex',
-        flexDirection: window.innerWidth <= 768 ? 'column' : 'row',
+        flexDirection: isMobile ? 'column' : 'row',
         justifyContent: 'center',
-        alignItems: window.innerWidth <= 768 ? 'flex-start' : 'center',
-        padding: window.innerWidth <= 768 ? '8px 12px' : '8px 8px 8px 24px',
-        width: window.innerWidth <= 768 ? '100%' : '1400px',
+        alignItems: isMobile ? 'flex-start' : 'center',
+        padding: isMobile ? '16px' : '8px 8px 8px 24px',
+        width: isMobile ? '100%' : '1400px',
         maxWidth: '100%',
-        height: window.innerWidth <= 768 ? 'auto' : '80px',
+        height: isMobile ? 'auto' : '80px',
         background: '#FFFFFF',
         borderRadius: '15px',
         gap: '16px',
@@ -234,8 +244,8 @@ const DepartmentsPage: React.FC = () => {
           fontFamily: 'Nunito, sans-serif',
           fontStyle: 'normal',
           fontWeight: 600,
-          fontSize: window.innerWidth <= 768 ? '28px' : '48px',
-          lineHeight: window.innerWidth <= 768 ? '32px' : '50px',
+          fontSize: isMobile ? '28px' : '44px',
+          lineHeight: isMobile ? '32px' : '50px',
           color: '#061F42',
           margin: 0,
           flexGrow: 1,
@@ -248,13 +258,13 @@ const DepartmentsPage: React.FC = () => {
           display: 'flex',
           flexDirection: 'row',
           flexWrap: 'wrap',
-          justifyContent: 'flex-end',
+          justifyContent: isMobile ? 'flex-start' : 'flex-end',
           alignItems: 'center',
           alignContent: 'flex-end',
-          padding: '12px',
+          padding: isMobile ? '0' : '12px',
           gap: '8px',
-          width: '780px',
-          height: '64px',
+          width: isMobile ? '100%' : '780px',
+          height: isMobile ? 'auto' : '64px',
           background: 'rgba(0, 0, 0, 0.001)',
           borderRadius: '12px',
           flex: 'none',
@@ -268,7 +278,7 @@ const DepartmentsPage: React.FC = () => {
             alignItems: 'flex-start',
             padding: '0px',
             gap: '8px',
-            width: '708px',
+            width: isMobile ? '100%' : '708px',
             height: '40px',
             borderRadius: '0px',
             flex: 'none',
@@ -285,7 +295,7 @@ const DepartmentsPage: React.FC = () => {
                 alignItems: 'center',
                 padding: '8px 12px',
                 gap: '12px',
-                width: '708px',
+                width: '100%',
                 height: '40px',
                 border: '1.5px solid #DADADA',
                 borderRadius: '8px',
@@ -473,12 +483,13 @@ const DepartmentsPage: React.FC = () => {
 
       {/* Results Text */}
       <div style={{
-        width: '1330px',
-        height: '40px',
+        width: '100%',
+        maxWidth: '1330px',
+        height: 'auto',
         fontFamily: 'Nunito, sans-serif',
         fontStyle: 'normal',
         fontWeight: 600,
-        fontSize: '16px',
+        fontSize: isMobile ? '14px' : '16px',
         lineHeight: '40px',
       }}>
         <span style={{ color: '#A4A5A5' }}>Displaying results for </span>
@@ -505,12 +516,12 @@ const DepartmentsPage: React.FC = () => {
       {/* Section Title */}
       <h2 style={{
         width: '100%',
-        height: '40px',
+        height: 'auto',
         fontFamily: 'Nunito, sans-serif',
         fontStyle: 'normal',
         fontWeight: 600,
-        fontSize: '32px',
-        lineHeight: '40px',
+        fontSize: isMobile ? '24px' : '32px',
+        lineHeight: isMobile ? '32px' : '40px',
         color: '#061F42',
         margin: 0,
       }}>
@@ -520,10 +531,10 @@ const DepartmentsPage: React.FC = () => {
       {/* Departments Grid */}
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(4, 1fr)',
-        gap: '24px',
+        gridTemplateColumns: isMobile ? '1fr' : 'repeat(5, 1fr)',
+        gap: isMobile ? '16px' : '24px',
         width: '100%',
-        marginBottom: '40px',
+        marginBottom: isMobile ? '24px' : '40px',
       }}>
         {filteredDepartments.map((department, index) => (
           <div
@@ -534,8 +545,8 @@ const DepartmentsPage: React.FC = () => {
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
-              padding: '32px 24px',
-              gap: '16px',
+              padding: isMobile ? '24px 16px' : '32px 24px',
+              gap: isMobile ? '12px' : '16px',
               background: 'linear-gradient(135deg, #FFFFFF 0%, #F8FCFF 100%)',
               border: '1px solid #E5F4FF',
               borderRadius: '16px',
@@ -562,25 +573,15 @@ const DepartmentsPage: React.FC = () => {
               element.style.borderColor = '#E5F4FF';
             }}
           >
-            {/* Decorative Corner Element */}
-            <div style={{
-              position: 'absolute',
-              top: '-20px',
-              right: '-20px',
-              width: '80px',
-              height: '80px',
-              background: 'linear-gradient(135deg, rgba(0, 171, 218, 0.08) 0%, rgba(0, 171, 218, 0.02) 100%)',
-              borderRadius: '50%',
-              pointerEvents: 'none',
-            }} />
+
 
             {/* Icon Container */}
             <div style={{
               display: 'flex',
               justifyContent: 'center',
               alignItems: 'center',
-              width: '80px',
-              height: '80px',
+              width: isMobile ? '70px' : '100px',
+              height: isMobile ? '70px' : '100px',
               position: 'relative',
               transition: 'transform 0.3s ease',
             }}
@@ -598,8 +599,8 @@ const DepartmentsPage: React.FC = () => {
                 src={department.icon || '/assets/images/departments/icon.png'} 
                 alt={`${department.name} Icon`} 
                 style={{
-                  width: '48px',
-                  height: '48px',
+                  width: isMobile ? '56px' : '72px',
+                  height: isMobile ? '56px' : '72px',
                   objectFit: 'contain',
                   filter: 'drop-shadow(0 2px 4px rgba(0, 171, 218, 0.2))',
                 }} 
@@ -610,12 +611,12 @@ const DepartmentsPage: React.FC = () => {
             <h3 style={{
               fontFamily: 'Nunito, sans-serif',
               fontWeight: 700,
-              fontSize: '20px',
-              lineHeight: '26px',
+              fontSize: isMobile ? '18px' : '20px',
+              lineHeight: isMobile ? '24px' : '26px',
               color: '#061F42',
               margin: 0,
               textAlign: 'center',
-              minHeight: '48px',
+              minHeight: isMobile ? 'auto' : '48px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -645,32 +646,7 @@ const DepartmentsPage: React.FC = () => {
               </div>
             )}
 
-            {/* View Details Arrow */}
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              marginTop: '8px',
-              fontSize: '14px',
-              fontFamily: 'Nunito, sans-serif',
-              fontWeight: 600,
-              color: '#00ABDA',
-              transition: 'gap 0.3s ease',
-            }}
-            onMouseEnter={(e) => {
-              e.stopPropagation();
-              (e.currentTarget as HTMLElement).style.gap = '10px';
-            }}
-            onMouseLeave={(e) => {
-              e.stopPropagation();
-              (e.currentTarget as HTMLElement).style.gap = '6px';
-            }}
-            >
-              <span>View Details</span>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M5 12h14M12 5l7 7-7 7" />
-              </svg>
-            </div>
+
           </div>
         ))}
       </div>

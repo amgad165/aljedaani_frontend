@@ -202,7 +202,7 @@ const ProfilePage = () => {
           <div style={{
             display: 'flex',
             flexDirection: 'row',
-            justifyContent: 'flex-start',
+            justifyContent: 'center',
             alignItems: 'flex-start',
             padding: window.innerWidth <= 768 ? '8px' : '12px',
             gap: '12px',

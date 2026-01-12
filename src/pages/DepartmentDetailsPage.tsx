@@ -150,7 +150,7 @@ const DepartmentDetailsPage: React.FC = () => {
   const tabs: { key: TabType; label: string }[] = [
     { key: 'overview', label: 'Overview' },
     { key: 'doctors', label: 'Doctors' },
-    { key: 'opd_services', label: 'OPD Services' },
+    { key: 'opd_services', label: 'Outpatient Services' },
     { key: 'inpatient_services', label: 'Inpatient Services' },
     { key: 'investigations', label: 'Investigations' },
     { key: 'success_stories', label: 'Success Stories' },
@@ -214,21 +214,63 @@ const DepartmentDetailsPage: React.FC = () => {
     setSidebarContentKey(prev => prev + 1);
   }, [activeTab]);
 
+  // Re-check scroll when tab changes (for "Our Doctors" section)
+  useEffect(() => {
+    if (activeTab !== 'doctors' && doctors.length > 0) {
+      // Multiple checks to account for animation delay (0.2s delay + 0.5s animation)
+      setTimeout(() => {
+        if (doctorScrollRef.current) {
+          const { scrollLeft, scrollWidth, clientWidth } = doctorScrollRef.current;
+          const canScrollLeft = scrollLeft > 10;
+          const canScrollRight = scrollLeft < scrollWidth - clientWidth - 10;
+          
+          setCanScrollDoctorLeft(canScrollLeft);
+          setCanScrollDoctorRight(canScrollRight);
+          
+          console.log('Tab Change Scroll Check 300ms:', { scrollLeft, scrollWidth, clientWidth, canScrollLeft, canScrollRight });
+        }
+      }, 300);
+      
+      // Additional check after animation completes (700ms = 200ms delay + 500ms animation)
+      setTimeout(() => {
+        if (doctorScrollRef.current) {
+          const { scrollLeft, scrollWidth, clientWidth } = doctorScrollRef.current;
+          const canScrollLeft = scrollLeft > 10;
+          const canScrollRight = scrollLeft < scrollWidth - clientWidth - 10;
+          
+          setCanScrollDoctorLeft(canScrollLeft);
+          setCanScrollDoctorRight(canScrollRight);
+          
+          console.log('Tab Change Scroll Check 800ms:', { scrollLeft, scrollWidth, clientWidth, canScrollLeft, canScrollRight });
+        }
+      }, 800);
+    }
+  }, [activeTab, doctors.length]);
+
   // Check doctor scroll position
   useEffect(() => {
     const checkDoctorScroll = () => {
       if (doctorScrollRef.current) {
         const { scrollLeft, scrollWidth, clientWidth } = doctorScrollRef.current;
-        setCanScrollDoctorLeft(scrollLeft > 10);
-        setCanScrollDoctorRight(scrollLeft < scrollWidth - clientWidth - 10);
+        const canScrollLeft = scrollLeft > 10;
+        const canScrollRight = scrollLeft < scrollWidth - clientWidth - 10;
+        
+        setCanScrollDoctorLeft(canScrollLeft);
+        setCanScrollDoctorRight(canScrollRight);
+        
+        console.log('Scroll Check:', { scrollLeft, scrollWidth, clientWidth, canScrollLeft, canScrollRight, doctorsCount: doctors.length });
       }
     };
 
     const scrollElement = doctorScrollRef.current;
-    if (scrollElement) {
+    if (scrollElement && doctors.length > 0) {
       // Initial check
-      setTimeout(() => checkDoctorScroll(), 100);
       checkDoctorScroll();
+      // Delayed check after render
+      setTimeout(() => checkDoctorScroll(), 100);
+      // Another check to be sure
+      setTimeout(() => checkDoctorScroll(), 300);
+      
       scrollElement.addEventListener('scroll', checkDoctorScroll);
       window.addEventListener('resize', checkDoctorScroll);
       
@@ -241,8 +283,8 @@ const DepartmentDetailsPage: React.FC = () => {
 
   const scrollDoctors = (direction: 'left' | 'right') => {
     if (doctorScrollRef.current) {
-      const cardWidth = 270; // Width of one doctor card
-      const gap = 16; // Gap between cards
+      const cardWidth = 300; // Width of one doctor card
+      const gap = 20; // Gap between cards
       const scrollAmount = (cardWidth + gap) * 2; // Scroll 2 cards at a time
       
       const currentScroll = doctorScrollRef.current.scrollLeft;
@@ -296,7 +338,7 @@ const DepartmentDetailsPage: React.FC = () => {
           alignItems: 'center',
           padding: '12px',
           gap: '12px',
-          width: '270px',
+          width: '300px',
           background: '#FFFFFF',
           border: '1px solid #D8D8D8',
           borderRadius: '12px',
@@ -596,7 +638,7 @@ const DepartmentDetailsPage: React.FC = () => {
         alignItems: 'flex-start',
         padding: '8px',
         gap: '8px',
-        width: '287px',
+        width: window.innerWidth <= 768 ? '100%' : '287px',
         background: '#F3F4F6',
         borderRadius: '12px',
         flexShrink: 0,
@@ -623,7 +665,7 @@ const DepartmentDetailsPage: React.FC = () => {
                 justifyContent: 'center',
                 alignItems: (item.id === 'overview_main' || item.title === 'Overview') ? 'center' : 'flex-start',
                 padding: '12px',
-                width: '271px',
+                width: window.innerWidth <= 768 ? '100%' : '271px',
                 height: '44px',
                 background: isSelected ? '#DAF8FF' : '#FFFFFF',
                 border: isSelected ? '2px solid #15C9FA' : '1px solid #D8D8D8',
@@ -692,7 +734,7 @@ const DepartmentDetailsPage: React.FC = () => {
         {content.main_image && (
           <div style={{
             width: '100%',
-            height: '438px',
+            height: window.innerWidth <= 768 ? 'auto' : '438px',
             borderRadius: '12px',
             overflow: 'hidden',
             boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)',
@@ -707,7 +749,7 @@ const DepartmentDetailsPage: React.FC = () => {
           }}
           >
             <img
-              src={content.main_image}
+              src={(window.innerWidth <= 768 && content.mobile_image) ? content.mobile_image : content.main_image}
               alt="Department"
               style={{
                 width: '100%',
@@ -778,7 +820,7 @@ const DepartmentDetailsPage: React.FC = () => {
                 key={index}
                 style={{
                   display: 'flex',
-                  flexDirection: section.position === 'right' ? 'row-reverse' : 'row',
+                  flexDirection: window.innerWidth <= 768 ? 'column' : (section.position === 'right' ? 'row-reverse' : 'row'),
                   alignItems: 'center',
                   gap: '24px',
                   width: '100%',
@@ -787,8 +829,8 @@ const DepartmentDetailsPage: React.FC = () => {
               >
                 {section.image && (
                   <div style={{
-                    width: '524px',
-                    height: '239px',
+                    width: window.innerWidth <= 768 ? '100%' : '524px',
+                    height: window.innerWidth <= 768 ? 'auto' : '239px',
                     borderRadius: '12px',
                     overflow: 'hidden',
                     flexShrink: 0,
@@ -809,7 +851,7 @@ const DepartmentDetailsPage: React.FC = () => {
                   }}
                   >
                     <img
-                      src={section.image}
+                      src={(window.innerWidth <= 768 && section.mobile_image) ? section.mobile_image : section.image}
                       alt={section.title || ''}
                       style={{
                         width: '100%',
@@ -822,15 +864,31 @@ const DepartmentDetailsPage: React.FC = () => {
                 )}
                 <div style={{
                   flex: 1,
-                  fontFamily: 'Inter, sans-serif',
-                  fontSize: '16px',
-                  lineHeight: '120%',
-                  color: '#061F42',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '2px',
                 }}>
                   {section.title && (
-                    <strong>{section.title}: </strong>
+                    <h4 style={{
+                      fontFamily: 'Nunito, sans-serif',
+                      fontWeight: 700,
+                      fontSize: '20px',
+                      lineHeight: '26px',
+                      color: '#061F42',
+                      margin: 0,
+                    }}>
+                      {section.title}
+                    </h4>
                   )}
-                  {section.description}
+                  <p style={{
+                    fontFamily: 'Inter, sans-serif',
+                    fontSize: '16px',
+                    lineHeight: '120%',
+                    color: '#061F42',
+                    margin: 0,
+                  }}>
+                    {section.description}
+                  </p>
                 </div>
               </div>
             ))}
@@ -947,7 +1005,7 @@ const DepartmentDetailsPage: React.FC = () => {
         {/* Top Row: Sidebar + Image */}
         <div style={{
           display: 'flex',
-          flexDirection: 'row',
+          flexDirection: window.innerWidth <= 768 ? 'column' : 'row',
           alignItems: 'flex-start',
           gap: '16px',
           width: '100%',
@@ -960,6 +1018,7 @@ const DepartmentDetailsPage: React.FC = () => {
             key={sidebarContentKey}
             style={{
               flex: 1,
+              width: window.innerWidth <= 768 ? '100%' : 'auto',
               opacity: isSidebarTransitioning ? 0 : 1,
               transform: isSidebarTransitioning ? 'translateX(20px)' : 'translateX(0)',
               transition: 'opacity 0.3s ease, transform 0.3s ease',
@@ -967,7 +1026,7 @@ const DepartmentDetailsPage: React.FC = () => {
           >
             {displayImage && (
               <div style={{
-                height: '400px',
+                height: window.innerWidth <= 768 ? 'auto' : '400px',
                 borderRadius: '12px',
                 overflow: 'hidden',
                 boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)',
@@ -981,7 +1040,9 @@ const DepartmentDetailsPage: React.FC = () => {
               }}
               >
                 <img
-                  src={displayImage}
+                  src={(window.innerWidth <= 768 && (actualSidebarItem?.mobile_image || content.mobile_image)) 
+                    ? (actualSidebarItem?.mobile_image || content.mobile_image) 
+                    : displayImage}
                   alt={isOverviewSelected ? 'Overview' : (activeSidebarItem?.title || 'Service')}
                   style={{
                     width: '100%',
@@ -2176,12 +2237,12 @@ const DepartmentDetailsPage: React.FC = () => {
 
               <div style={{
                 position: 'relative',
-                maxWidth: '1248px', // Container + space for arrows
+                maxWidth: '1400px',
                 margin: '0 auto',
-                padding: '0 60px', // Space for arrows on sides
+                padding: '0 60px',
               }}>
                 {/* Left Arrow */}
-                {canScrollDoctorLeft && doctors.length > 4 && (
+                {doctors.length > 4 && canScrollDoctorLeft && (
                   <button 
                     onClick={() => scrollDoctors('left')}
                     style={{
@@ -2234,7 +2295,7 @@ const DepartmentDetailsPage: React.FC = () => {
                   ref={doctorScrollRef}
                   style={{
                     display: 'flex',
-                    gap: '16px',
+                    gap: '20px',
                     overflowX: 'auto',
                     overflowY: 'hidden',
                     scrollbarWidth: 'none',
@@ -2243,7 +2304,7 @@ const DepartmentDetailsPage: React.FC = () => {
                   }}
                 >
                   {doctors.map((doctor, index) => (
-                    <div key={doctor.id} style={{ flex: '0 0 270px' }}>
+                    <div key={doctor.id} style={{ flex: '0 0 300px' }}>
                       {renderDoctorCard(doctor, index)}
                     </div>
                   ))}
@@ -2251,9 +2312,10 @@ const DepartmentDetailsPage: React.FC = () => {
                 </div>
 
                 {/* Right Arrow */}
-                {canScrollDoctorRight && doctors.length > 4 && (
+                {doctors.length > 4 && (
                   <button 
                     onClick={() => scrollDoctors('right')}
+                    disabled={!canScrollDoctorRight}
                     style={{
                       position: 'absolute',
                       right: '0',
@@ -2265,7 +2327,7 @@ const DepartmentDetailsPage: React.FC = () => {
                       backgroundColor: '#ffffff',
                       border: '2px solid #1a7a7a',
                       color: '#1a7a7a',
-                      cursor: 'pointer',
+                      cursor: canScrollDoctorRight ? 'pointer' : 'not-allowed',
                       fontSize: '24px',
                       display: 'flex',
                       alignItems: 'center',
@@ -2273,18 +2335,23 @@ const DepartmentDetailsPage: React.FC = () => {
                       zIndex: 100,
                       transition: 'all 0.3s ease',
                       boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+                      opacity: canScrollDoctorRight ? 1 : 0.5,
                     }}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = '#1a7a7a';
-                      e.currentTarget.style.color = '#ffffff';
-                      e.currentTarget.style.transform = 'translateY(-50%) scale(1.1)';
-                      e.currentTarget.style.boxShadow = '0 6px 20px rgba(26,122,122,0.4)';
+                      if (canScrollDoctorRight) {
+                        e.currentTarget.style.backgroundColor = '#1a7a7a';
+                        e.currentTarget.style.color = '#ffffff';
+                        e.currentTarget.style.transform = 'translateY(-50%) scale(1.1)';
+                        e.currentTarget.style.boxShadow = '0 6px 20px rgba(26,122,122,0.4)';
+                      }
                     }}
                     onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = '#ffffff';
-                      e.currentTarget.style.color = '#1a7a7a';
-                      e.currentTarget.style.transform = 'translateY(-50%) scale(1)';
-                      e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+                      if (canScrollDoctorRight) {
+                        e.currentTarget.style.backgroundColor = '#ffffff';
+                        e.currentTarget.style.color = '#1a7a7a';
+                        e.currentTarget.style.transform = 'translateY(-50%) scale(1)';
+                        e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+                      }
                     }}
                   >
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
