@@ -102,7 +102,7 @@ const ForgotPasswordPage = () => {
     const identifier = nationalId || medicalRecordNumber;
     
     if (!identifier) {
-      setError('Please enter National ID or Medical Record Number');
+      setError('Please enter ID Number or Medical Record Number');
       return;
     }
     
@@ -290,7 +290,7 @@ const ForgotPasswordPage = () => {
               lineHeight: '20px',
               color: '#6B7280',
             }}>
-              {currentStep === 1 && 'Enter your National ID or Medical Record Number'}
+              {currentStep === 1 && 'Enter your ID Number or Medical Record Number'}
               {currentStep === 2 && `Enter the OTP sent to ${maskedPhone}`}
               {currentStep === 3 && 'Enter your new password'}
             </p>
@@ -344,8 +344,8 @@ const ForgotPasswordPage = () => {
               gap: '24px',
             }}>
               <InputField
-                label="National ID"
-                placeholder="Enter your National ID"
+                label="ID Number"
+                placeholder="Enter your ID Number"
                 value={nationalId}
                 onChange={handleNationalIdChange}
                 disabled={!!medicalRecordNumber}

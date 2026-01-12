@@ -330,7 +330,7 @@ const Navbar = () => {
           <div className="container">
             <div className="middle-header-wrapper">
               <a href="/" className="logo">
-                <img src="/assets/images/Logo/Logo.svg" width="162" height="57" alt="Logo" />
+                <img src="/assets/images/Logo/logo_white.svg" width="162" height="57" alt="Logo" />
               </a>
               <div className="button-wrapper">
                 <a href="#">

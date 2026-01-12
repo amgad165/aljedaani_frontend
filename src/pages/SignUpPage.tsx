@@ -324,7 +324,7 @@ const SignUpPage = () => {
       return;
     }
     if (!profileData.medicalRecordNumber && !profileData.nationalId) {
-      warning('Please enter either Medical Record Number (MR) or National ID');
+      warning('Please enter either Medical Record Number (MR) or ID Number');
       return;
     }
     if (profileData.password !== profileData.confirmPassword) {
@@ -914,8 +914,8 @@ const SignUpPage = () => {
               required={!profileData.nationalId}
             />
             <InputField
-              label="National ID"
-              placeholder="Enter your National ID number"
+              label="ID Number"
+              placeholder="Enter your ID number"
               value={profileData.nationalId}
               onChange={(value) => handleInputChange('nationalId', value)}
               required={!profileData.medicalRecordNumber}

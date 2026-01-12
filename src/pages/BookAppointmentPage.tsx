@@ -2099,7 +2099,7 @@ const BookAppointmentPage = () => {
                 flexDirection: 'row',
                 justifyContent: 'center',
                 alignItems: 'center',
-                padding: '8px 12px',
+                padding: '13px 30px',
                 background: isFormValid ? '#061F42' : '#E5E7EA',
                 borderRadius: '8px',
                 border: 'none',
@@ -2237,7 +2237,7 @@ const BookAppointmentPage = () => {
                 lineHeight: '19px',
                 color: '#061F42',
               }}>
-                Your appointment is scheduled appointment at {selectedBranch?.name} - {selectedDepartment?.name} - {selectedDoctor?.name} - {formatAppointmentDate(doctorSelection.selectedDate, doctorSelection.selectedSlot)}
+                Your appointment is scheduled at {selectedBranch?.name} - {selectedDepartment?.name} - {selectedDoctor?.name} - {formatAppointmentDate(doctorSelection.selectedDate, doctorSelection.selectedSlot)}
               </div>
               
               {/* Warning Badge */}
@@ -2265,7 +2265,7 @@ const BookAppointmentPage = () => {
                   color: '#061F42',
                   flex: 1,
                 }}>
-                  If for any reason you couldn't attend your appointment, please reschedule through your app, or call the hospital.
+                  If you couldn't attend for any reason, please reschedule your appointment through my bookings or call 920022404.
                 </span>
               </div>
             </div>
@@ -2351,7 +2351,7 @@ const BookAppointmentPage = () => {
               flexDirection: 'row',
               justifyContent: 'center',
               alignItems: 'center',
-              padding: '8px 12px',
+              padding: '13px 30px',
               background: isSubmitting ? '#6B7280' : '#061F42',
               borderRadius: '8px',
               border: 'none',
@@ -2407,8 +2407,37 @@ const BookAppointmentPage = () => {
               color: '#0155CB',
               margin: 0,
             }}>
-              Booking Successful
+              Booking Confirmed
             </h2>
+            
+            {/* Info Badge */}
+            <div style={{
+              display: 'flex',
+              flexDirection: 'row',
+              justifyContent: 'center',
+              alignItems: 'center',
+              padding: '6px 8px',
+              gap: '8px',
+              width: '100%',
+              background: '#DADADA',
+              borderRadius: '8px',
+            }}>
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <circle cx="8" cy="8" r="6.5" stroke="#061F42" strokeWidth="1.5"/>
+                <path d="M8 4.5V8.5" stroke="#061F42" strokeWidth="1.5" strokeLinecap="round"/>
+                <circle cx="8" cy="11" r="0.75" fill="#061F42"/>
+              </svg>
+              <span style={{
+                fontFamily: 'Nunito, sans-serif',
+                fontWeight: 600,
+                fontSize: '12px',
+                lineHeight: '16px',
+                color: '#061F42',
+                flex: 1,
+              }}>
+                Please arrive 15 minutes before your appointment time.
+              </span>
+            </div>
             
             {/* Success Icon with Animation */}
             <div style={{

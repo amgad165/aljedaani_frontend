@@ -94,7 +94,7 @@ const LoginPage = () => {
     const identifier = nationalId || medicalRecordNumber;
     
     if (!identifier || !password) {
-      setError('Please fill in National ID or Medical Record Number and password');
+      setError('Please fill in ID Number or Medical Record Number and password');
       return;
     }
     
@@ -258,7 +258,7 @@ const LoginPage = () => {
               lineHeight: '24px',
               color: '#6B7280',
             }}>
-              Welcome back to Jedaani Hospitals
+              Welcome to Jedaani Hospitals
             </p>
           </div>
 
@@ -304,7 +304,7 @@ const LoginPage = () => {
                     lineHeight: '24px',
                     color: '#061F42',
                   }}>
-                    National ID
+                   ID Number
                   </label>
                   <div style={{
                     boxSizing: 'border-box',
@@ -321,7 +321,7 @@ const LoginPage = () => {
                   }}>
                     <input
                       type="text"
-                      placeholder="Enter your National ID"
+                      placeholder="Enter your ID Number"
                       value={nationalId}
                       onChange={(e) => handleNationalIdChange(e.target.value)}
                       disabled={!!medicalRecordNumber}

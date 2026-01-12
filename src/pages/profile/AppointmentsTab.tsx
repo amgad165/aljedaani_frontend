@@ -277,14 +277,7 @@ const AppointmentsTab = () => {
           width: '612px',
           height: '127.2px',
         }}>
-          {/* Upcoming Appointments */}
-          <AppointmentCard
-            title="Upcoming Appointments"
-            count={upcomingCount}
-            color="#00ABDA"
-            icon={<CalendarAddIcon />}
-            onClick={() => setCurrentView('upcoming')}
-          />
+
 
           {/* Past Appointments */}
           <AppointmentCard
@@ -293,6 +286,15 @@ const AppointmentsTab = () => {
             color="#1F57A4"
             icon={<CalendarLateIcon />}
             onClick={() => setCurrentView('past')}
+          />
+
+           {/* Upcoming Appointments */}
+          <AppointmentCard
+            title="Upcoming Appointments"
+            count={upcomingCount}
+            color="#00ABDA"
+            icon={<CalendarAddIcon />}
+            onClick={() => setCurrentView('upcoming')}
           />
         </div>
       )}
