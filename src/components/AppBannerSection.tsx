@@ -7,34 +7,128 @@ const AppBannerSection = () => {
     <>
       <style>{`
         @media (min-width: 768px) {
-          .banner-wrapper {
+          .banner-sec .banner-wrapper {
             min-height: 400px !important;
           }
         }
 
         @media (min-width: 992px) {
-          .banner-wrapper {
+          .banner-sec .banner-wrapper {
             min-height: 450px !important;
           }
         }
 
         @media (max-width: 992px) {
-          .banner-title {
+          .banner-sec .banner-title {
             font-size: 32px !important;
             line-height: 38px !important;
           }
-          .banner-subtitle {
+          .banner-sec .banner-subtitle {
             font-size: 18px !important;
           }
         }
 
-        @media (max-width: 576px) {
-          .banner-title {
-            font-size: 28px !important;
-            line-height: 34px !important;
+        @media (max-width: 768px) {
+          .banner-sec .banner-wrapper {
+            background-position: left center !important;
+            background-size: cover !important;
+            min-height: 420px !important;
+            padding: 30px 20px !important;
+            position: relative !important;
           }
-          .banner-subtitle {
-            font-size: 16px !important;
+          
+          .banner-sec .content-wrapper {
+            padding-right: 150px !important;
+          }
+          
+          .banner-sec .image-wrapper {
+            position: absolute !important;
+            right: 10px !important;
+            top: 50% !important;
+            transform: translateY(-50%) !important;
+            width: 140px !important;
+          }
+          
+          .banner-sec .image-wrapper img {
+            width: 100% !important;
+            max-width: 140px !important;
+            height: auto !important;
+          }
+          
+          .banner-sec .banner-wrapper .store {
+            bottom: 20px !important;
+            flex-wrap: nowrap !important;
+            gap: 8px !important;
+          }
+          
+          .banner-sec .banner-wrapper .store img {
+            width: 100px !important;
+            height: auto !important;
+          }
+        }
+
+        @media (max-width: 576px) {
+          .banner-sec .banner-title {
+            font-size: 24px !important;
+            line-height: 30px !important;
+            text-align: left !important;
+            margin-bottom: 6px !important;
+          }
+          .banner-sec .banner-subtitle {
+            font-size: 15px !important;
+            text-align: left !important;
+            margin-bottom: 12px !important;
+          }
+          
+          .banner-sec .banner-wrapper {
+            min-height: 380px !important;
+            padding: 25px 15px !important;
+          }
+          
+          .banner-sec .content-wrapper {
+            padding-right: 130px !important;
+          }
+          
+          .banner-sec .image-wrapper {
+            width: 120px !important;
+          }
+          
+          .banner-sec .image-wrapper img {
+            max-width: 120px !important;
+          }
+          
+          .banner-sec .banner-wrapper .store {
+            gap: 6px !important;
+          }
+          
+          .banner-sec .banner-wrapper .store img {
+            width: 90px !important;
+          }
+        }
+
+        @media (max-width: 400px) {
+          .banner-sec .banner-title {
+            font-size: 20px !important;
+            line-height: 26px !important;
+          }
+          .banner-sec .banner-subtitle {
+            font-size: 13px !important;
+          }
+          
+          .banner-sec .content-wrapper {
+            padding-right: 110px !important;
+          }
+          
+          .banner-sec .image-wrapper {
+            width: 100px !important;
+          }
+          
+          .banner-sec .image-wrapper img {
+            max-width: 100px !important;
+          }
+          
+          .banner-sec .banner-wrapper .store img {
+            width: 80px !important;
           }
         }
       `}</style>
@@ -42,7 +136,9 @@ const AppBannerSection = () => {
         <div className="container">
           <div 
             style={{ 
-              backgroundImage: "url('/assets/img/banner1.png')",
+              backgroundImage: "url('/assets/img/banner2.png')",
+              backgroundPosition: 'center center',
+              backgroundSize: 'cover'
             }} 
             className="banner-wrapper"
           >
@@ -57,10 +153,11 @@ const AppBannerSection = () => {
                 style={{
                   fontFamily: 'Nunito, sans-serif',
                   fontWeight: 800,
-                  fontSize: '48px',
+                  fontSize: '62px',
                   lineHeight: '50px',
                   color: '#061F42',
-                  marginBottom: '8px'
+                  marginBottom: '8px',
+                  textAlign: 'center'
                 }}
               >
                 Download our mobile app
@@ -70,9 +167,11 @@ const AppBannerSection = () => {
                 style={{
                   fontFamily: 'Nunito, sans-serif',
                   fontWeight: 600,
-                  fontSize: '20px',
+                  fontSize: '27px',
                   color: '#061F42',
-                  marginBottom: '16px'
+                  marginBottom: '16px',
+                   textAlign: 'center'
+
                 }}
               >
                 For a more personalised experience!
