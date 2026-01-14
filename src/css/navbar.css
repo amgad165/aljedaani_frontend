@@ -201,8 +201,8 @@
   padding: 8px;
   width: 40px;
   height: 40px;
-  background: #F9FAFB;
-  border: 1px solid #A4A5A5;
+  background: transparent;
+  border: none;
   border-radius: 8px;
 }
 

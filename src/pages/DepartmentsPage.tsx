@@ -583,15 +583,32 @@ const DepartmentsPage: React.FC = () => {
               width: isMobile ? '70px' : '100px',
               height: isMobile ? '70px' : '100px',
               position: 'relative',
-              transition: 'transform 0.3s ease',
+              transition: 'all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
+              zIndex: 1,
             }}
             onMouseEnter={(e) => {
               e.stopPropagation();
-              (e.currentTarget as HTMLElement).style.transform = 'scale(1.1) rotate(5deg)';
+              const element = e.currentTarget as HTMLElement;
+              element.style.transform = 'scale(1.3)';
+              element.style.filter = 'drop-shadow(0 8px 24px rgba(0, 171, 218, 0.4))';
+              
+              // Add backdrop effect
+              const img = element.querySelector('img') as HTMLElement;
+              if (img) {
+                img.style.filter = 'drop-shadow(0 4px 16px rgba(0, 171, 218, 0.5)) brightness(1.1)';
+              }
             }}
             onMouseLeave={(e) => {
               e.stopPropagation();
-              (e.currentTarget as HTMLElement).style.transform = 'scale(1) rotate(0deg)';
+              const element = e.currentTarget as HTMLElement;
+              element.style.transform = 'scale(1)';
+              element.style.filter = 'none';
+              
+              // Remove backdrop effect
+              const img = element.querySelector('img') as HTMLElement;
+              if (img) {
+                img.style.filter = 'drop-shadow(0 2px 4px rgba(0, 171, 218, 0.2))';
+              }
             }}
             >
               {/* Department Icon */}
@@ -599,10 +616,11 @@ const DepartmentsPage: React.FC = () => {
                 src={department.icon || '/assets/images/departments/icon.png'} 
                 alt={`${department.name} Icon`} 
                 style={{
-                  width: isMobile ? '56px' : '72px',
-                  height: isMobile ? '56px' : '72px',
+                  width: isMobile ? '56px' : '85px',
+                  height: isMobile ? '56px' : '85px',
                   objectFit: 'contain',
                   filter: 'drop-shadow(0 2px 4px rgba(0, 171, 218, 0.2))',
+                  transition: 'all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
                 }} 
               />
             </div>

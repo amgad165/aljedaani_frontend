@@ -1,6 +1,6 @@
 const FloatingContactButtons = () => {
   const phoneNumber = '920022404';
-  const internationalPhone = '00966920022404';
+  const internationalPhone = '920022404';
   const whatsappNumber = '966920022404';
 
   return (

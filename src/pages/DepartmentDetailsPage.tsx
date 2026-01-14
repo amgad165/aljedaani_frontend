@@ -990,6 +990,17 @@ const DepartmentDetailsPage: React.FC = () => {
       displayServiceList = content.service_list;
     }
 
+    // Calculate dynamic image height based on sidebar items count
+    const sidebarItemsCount = normalizeSidebarItems(content.sidebar_items, true, content.tab_type).length;
+    const baseHeight = 400;
+    // Match exact sidebar height: for 10 items = 528px
+    const itemHeight = 44; // Each item height  
+    const gap = 8; // Gap between items
+    const containerPadding = 16; // 8px top + 8px bottom
+    const calculatedHeight = sidebarItemsCount > 7 
+      ? (sidebarItemsCount * itemHeight + (sidebarItemsCount - 1) * gap + containerPadding) 
+      : baseHeight;
+
     return (
       <div style={{
         display: 'flex',
@@ -1026,11 +1037,11 @@ const DepartmentDetailsPage: React.FC = () => {
           >
             {displayImage && (
               <div style={{
-                height: window.innerWidth <= 768 ? 'auto' : '400px',
+                height: window.innerWidth <= 768 ? 'auto' : `${calculatedHeight}px`,
                 borderRadius: '12px',
                 overflow: 'hidden',
                 boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)',
-                transition: 'box-shadow 0.3s ease',
+                transition: 'box-shadow 0.3s ease, height 0.3s ease',
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.15)';
