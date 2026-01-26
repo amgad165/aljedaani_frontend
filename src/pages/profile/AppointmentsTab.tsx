@@ -38,15 +38,15 @@ const AppointmentCard = ({
       alignItems: 'center',
       padding: '12px',
       gap: '12px',
-      width: '300px',
-      minWidth: '270px',
-      maxWidth: '300px',
+      width: window.innerWidth <= 768 ? '100%' : '300px',
+      minWidth: window.innerWidth <= 768 ? '100%' : '270px',
+      maxWidth: window.innerWidth <= 768 ? '100%' : '300px',
       height: '127.2px',
       background: '#FFFFFF',
       border: '1px solid #D8D8D8',
       borderRadius: '12px',
       cursor: onClick ? 'pointer' : 'default',
-      transition: 'all 0.2s ease',
+      transition: 'all 0.2s ease'
     }}
     onMouseEnter={(e) => {
       if (onClick) {
@@ -68,26 +68,26 @@ const AppointmentCard = ({
       alignItems: 'center',
       padding: '0px',
       gap: '4px',
-      width: '276px',
-      height: '55.2px',
+      width: '100%',
+      height: '55.2px'
     }}>
       {/* Icon */}
       <div style={{
         width: '31.2px',
-        height: '31.2px',
+        height: '31.2px'
       }}>
         {icon}
       </div>
       {/* Title */}
       <div style={{
-        width: '276px',
+        width: '100%',
         height: '20px',
         fontFamily: 'Nunito, sans-serif',
         fontWeight: 700,
         fontSize: '16px',
         lineHeight: '20px',
         textAlign: 'center',
-        color: color,
+        color: color
       }}>
         {title}
       </div>
@@ -100,13 +100,13 @@ const AppointmentCard = ({
       alignItems: 'flex-start',
       padding: '8px',
       gap: '8px',
-      width: '276px',
+      width: '100%',
       height: '36px',
       background: '#F8F8F8',
-      borderRadius: '12px',
+      borderRadius: '12px'
     }}>
       <div style={{
-        width: '260px',
+        width: '100%',
         height: '20px',
         fontFamily: 'Nunito, sans-serif',
         fontWeight: 700,
@@ -133,13 +133,14 @@ const BookAppointmentCard = ({ onClick }: { onClick: () => void }) => (
     alignItems: 'center',
     padding: '12px',
     gap: '12px',
-    width: '612px',
+    width: '100%',
+    maxWidth: window.innerWidth <= 768 ? '100%' : '612px',
     height: '79.2px',
     background: '#FFFFFF',
     border: '1px solid #D8D8D8',
     borderRadius: '12px',
     cursor: 'pointer',
-    transition: 'all 0.2s ease',
+    transition: 'all 0.2s ease'
   }}
   onMouseEnter={(e) => {
     e.currentTarget.style.transform = 'translateY(-2px)';
@@ -157,19 +158,19 @@ const BookAppointmentCard = ({ onClick }: { onClick: () => void }) => (
       alignItems: 'center',
       padding: '0px',
       gap: '4px',
-      width: '588px',
-      height: '55.2px',
+      width: '100%',
+      height: '55.2px'
     }}>
       {/* Icon */}
       <div style={{
         width: '31.2px',
-        height: '31.2px',
+        height: '31.2px'
       }}>
         <img src="/assets/images/profile/Calendar_black.png" alt="Book Appointment" style={{ width: '31.2px', height: '31.2px' }} />
       </div>
       {/* Title */}
       <div style={{
-        width: '588px',
+        width: '100%',
         height: '20px',
         fontFamily: 'Nunito, sans-serif',
         fontWeight: 700,
@@ -270,12 +271,13 @@ const AppointmentsTab = () => {
         /* Upcoming and Past Appointments Cards */
         <div style={{
           display: 'flex',
-          flexDirection: 'row',
+          flexDirection: window.innerWidth <= 768 ? 'column' : 'row',
           alignItems: 'flex-start',
           padding: '0px',
           gap: '12px',
-          width: '612px',
-          height: '127.2px',
+          width: '100%',
+          maxWidth: window.innerWidth <= 768 ? '100%' : '612px',
+          height: window.innerWidth <= 768 ? 'auto' : '127.2px'
         }}>
 
 

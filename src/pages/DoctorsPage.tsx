@@ -17,6 +17,7 @@ interface DoctorCardProps {
 
 const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onLearnMore, onBookNow }) => {
   const [isHovered, setIsHovered] = useState(false);
+  const navigate = useNavigate();
   
   const getStatusStyle = (status: string) => {
     switch (status) {
@@ -44,9 +45,8 @@ const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onLearnMore, onBookNow 
         padding: '10px',
         gap: '12px',
         width: '100%',
-        maxWidth: window.innerWidth <= 768 ? '100%' : '300px',
+        maxWidth: '100%',
         height: window.innerWidth <= 768 ? 'auto' : '368px',
-        minHeight: window.innerWidth <= 768 ? '320px' : 'auto',
         background: '#FFFFFF',
         border: '1px solid #D8D8D8',
         borderRadius: '12px',
@@ -64,7 +64,7 @@ const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onLearnMore, onBookNow 
         alignItems: 'flex-start',
         padding: '0px 0px 8px',
         width: '100%',
-        maxWidth: '251px',
+        maxWidth: '100%',
         height: '32px',
       }}>
         <div style={{
@@ -129,12 +129,11 @@ const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onLearnMore, onBookNow 
         alignItems: 'flex-start',
         padding: '0px',
         width: '100%',
-        maxWidth: '251px',
+        maxWidth: '100%',
         minHeight: '36px',
       }}>
         <h3 style={{
           width: '100%',
-          maxWidth: '251px',
           minHeight: '20px',
           fontFamily: 'Nunito, sans-serif',
           fontStyle: 'normal',
@@ -149,7 +148,6 @@ const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onLearnMore, onBookNow 
         </h3>
         <div style={{
           width: '100%',
-          maxWidth: '251px',
           minHeight: '16px',
           fontFamily: 'Nunito, sans-serif',
           fontStyle: 'normal',
@@ -172,7 +170,6 @@ const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onLearnMore, onBookNow 
         padding: '8px',
         gap: '4px',
         width: '100%',
-        maxWidth: '251px',
         minHeight: '84px',
         background: '#F8F8F8',
         borderRadius: '12px',
@@ -184,11 +181,18 @@ const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onLearnMore, onBookNow 
           alignItems: 'flex-start',
           padding: '0px',
           gap: '4px',
-          width: '235px',
-          height: '24px',
+          width: '100%',
+          minHeight: '24px',
         }}>
           {/* Location Pill */}
-          <div style={{
+          <div 
+            onClick={(e) => {
+              e.stopPropagation();
+              if (doctor.branch?.id) {
+                navigate(`/branches?id=${doctor.branch.id}`);
+              }
+            }}
+            style={{
             boxSizing: 'border-box',
             display: 'flex',
             flexDirection: 'row',
@@ -200,6 +204,18 @@ const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onLearnMore, onBookNow 
             border: '1px solid #D9D9D9',
             borderRadius: '24px',
             flex: '0 0 auto',
+            cursor: doctor.branch?.id ? 'pointer' : 'default',
+            transition: 'all 0.2s ease',
+          }}
+          onMouseEnter={(e) => {
+            if (doctor.branch?.id) {
+              e.currentTarget.style.background = '#F0F0F0';
+              e.currentTarget.style.borderColor = '#0155CB';
+            }
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = '#FFFFFF';
+            e.currentTarget.style.borderColor = '#D9D9D9';
           }}>
             {/* Location icon */}
             <img
@@ -224,7 +240,14 @@ const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onLearnMore, onBookNow 
           </div>
 
           {/* Department Pill */}
-          <div style={{
+          <div 
+            onClick={(e) => {
+              e.stopPropagation();
+              if (doctor.department?.id) {
+                navigate(`/departments/${doctor.department.id}`);
+              }
+            }}
+            style={{
             display: 'flex',
             flexDirection: 'row',
             justifyContent: 'center',
@@ -234,6 +257,16 @@ const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onLearnMore, onBookNow 
             background: '#A7FAFC',
             borderRadius: '24px',
             flex: '1 1 auto',
+            cursor: doctor.department?.id ? 'pointer' : 'default',
+            transition: 'all 0.2s ease',
+          }}
+          onMouseEnter={(e) => {
+            if (doctor.department?.id) {
+              e.currentTarget.style.background = '#8FF0F2';
+            }
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = '#A7FAFC';
           }}>
             <span style={{
               fontFamily: 'Nunito, sans-serif',
@@ -256,8 +289,8 @@ const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onLearnMore, onBookNow 
           justifyContent: 'center',
           alignItems: 'center',
           padding: '4px 8px',
-          width: '235px',
-          height: '40px',
+          width: '100%',
+          minHeight: '40px',
           borderRadius: '12px',
         }}>
           <div style={{
@@ -284,8 +317,7 @@ const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onLearnMore, onBookNow 
             }} />
           </div>
           <div style={{
-            width: '209px',
-            height: '32px',
+            flex: 1,
             fontFamily: 'Nunito, sans-serif',
             fontStyle: 'normal',
             fontWeight: 400,
@@ -307,8 +339,8 @@ const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onLearnMore, onBookNow 
         alignItems: 'flex-start',
         padding: '0px',
         gap: '8px',
-        width: '251px',
-        height: '32px',
+        width: '100%',
+        minHeight: '32px',
       }}>
         <button 
           onClick={() => doctor.status !== 'busy' && onBookNow(doctor)}
@@ -318,7 +350,7 @@ const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onLearnMore, onBookNow 
           justifyContent: 'center',
           alignItems: 'center',
           padding: '8px 12px',
-          width: '121.5px',
+          minWidth: '100px',
           height: '32px',
           background: doctor.status === 'busy' ? '#E5E7EA' : '#061F42',
           borderRadius: '8px',
@@ -361,7 +393,7 @@ const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onLearnMore, onBookNow 
             justifyContent: 'center',
             alignItems: 'center',
             padding: '8px 12px',
-            width: '121.5px',
+            minWidth: '100px',
             height: '32px',
             background: '#15C9FA',
             borderRadius: '8px',
@@ -560,7 +592,10 @@ const DoctorsPage: React.FC = () => {
     return (
       <div style={{
         minHeight: '100vh',
+        width: '100vw',
         background: '#C9F3FF',
+        overflowX: 'hidden',
+        position: 'relative',
       }}>
         {ResponsiveNavbar}
         <div style={{
@@ -572,8 +607,9 @@ const DoctorsPage: React.FC = () => {
         }}>
           <div style={{
             width: '100%',
-            maxWidth: '1170px',
-            padding: '12px',
+            maxWidth: window.innerWidth <= 768 ? '100%' : '1170px',
+            padding: window.innerWidth <= 768 ? '4px' : '12px',
+            boxSizing: 'border-box',
           }}>
             {/* Title Section Skeleton */}
             <div style={{
@@ -621,7 +657,10 @@ const DoctorsPage: React.FC = () => {
     return (
       <div style={{
         minHeight: '100vh',
+        width: '100vw',
         background: '#C9F3FF',
+        overflowX: 'hidden',
+        position: 'relative',
       }}>
         {ResponsiveNavbar}
         <div style={{
@@ -642,9 +681,12 @@ const DoctorsPage: React.FC = () => {
   return (
     <div style={{
       minHeight: '100vh',
+      width: '100vw',
       background: '#C9F3FF',
       display: 'flex',
       flexDirection: 'column',
+      overflowX: 'hidden',
+      position: 'relative',
     }}>
       <FloatingContactButtons />
       {ResponsiveNavbar}
@@ -653,12 +695,17 @@ const DoctorsPage: React.FC = () => {
         display: 'flex',
         alignItems: 'flex-start',
         justifyContent: 'center',
-        padding: window.innerWidth <= 768 ? '90px 16px 20px 16px' : '170px 20px 20px 20px',
+        padding: window.innerWidth <= 768 ? '90px 12px 20px 12px' : '121px 20px 20px 20px',
+        overflowX: 'hidden',
+        boxSizing: 'border-box',
+        width: '100%',
       }}>
         <div style={{
           width: '100%',
-          maxWidth: '1400px',
-          padding: window.innerWidth <= 768 ? '8px' : '12px',
+          maxWidth: window.innerWidth <= 768 ? '100%' : '1400px',
+          padding: window.innerWidth <= 768 ? '4px' : '12px',
+          boxSizing: 'border-box',
+          overflowX: 'hidden',
         }}>
       {/* Title Section */}
       <div style={{
@@ -673,6 +720,7 @@ const DoctorsPage: React.FC = () => {
         borderRadius: '15px',
         marginBottom: '5px',
         gap: window.innerWidth <= 768 ? '12px' : '0',
+        boxSizing: 'border-box',
       }}>
         <h1 style={{
           fontFamily: 'Nunito, sans-serif',
@@ -737,7 +785,7 @@ const DoctorsPage: React.FC = () => {
             justifyContent: 'center',
             alignItems: 'center',
             padding: '12px 16px',
-            width: '200px',
+            width: window.innerWidth <= 768 ? '100%' : '200px',
             height: '40px',
             background: sortByName ? '#00ABDA' : '#061F42',
             borderRadius: '12px',
@@ -780,14 +828,15 @@ const DoctorsPage: React.FC = () => {
 
       {/* Results Text */}
       <div style={{
-        width: '1120px',
-        height: '40px',
+        width: '100%',
+        minHeight: '40px',
         fontFamily: 'Nunito, sans-serif',
         fontStyle: 'normal',
         fontWeight: 400,
-        fontSize: '16px',
-        lineHeight: '40px',
+        fontSize: window.innerWidth <= 768 ? '14px' : '16px',
+        lineHeight: window.innerWidth <= 768 ? '20px' : '40px',
         marginBottom: '10px',
+        padding: window.innerWidth <= 768 ? '8px 0' : '0',
       }}>
         <span style={{ color: '#A4A5A5' }}>Displaying results for </span>
         <span style={{ color: '#061F42' }}>

@@ -1104,9 +1104,10 @@ const UpcomingAppointmentsView = ({ onBack }: { onBack: () => void }) => {
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
-          gap: '16px',
+          gap: '40px',
           width: '100%',
           padding: '12px 0',
+          justifyContent: 'center',
         }}>
           {appointments.map((appointment) => (
             <AppointmentCard 

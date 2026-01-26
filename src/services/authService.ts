@@ -78,11 +78,17 @@ export const authService = {
       if (data.national_id) formData.append('national_id', data.national_id);
       if (data.address) formData.append('address', data.address);
       formData.append('phone', data.phone);
+      
+      // Add verification_token if provided (required for secure registration)
+      if (data.verification_token) {
+        formData.append('verification_token', data.verification_token);
+      }
+      
       if (data.profile_photo && data.profile_photo instanceof File) {
         formData.append('profile_photo', data.profile_photo, data.profile_photo.name);
       }
 
-      const response = await fetch(`${API_BASE_URL}/auth/register`, {
+      const response = await fetch(`${API_BASE_URL}/auth/register/secure`, {
         method: 'POST',
         headers: {
           'Accept': 'application/json',

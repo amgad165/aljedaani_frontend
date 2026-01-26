@@ -15,13 +15,11 @@ const Navbar = () => {
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isBranchesDropdownOpen, setIsBranchesDropdownOpen] = useState(false);
   const [branches, setBranches] = useState<Branch[]>([]);
   const [loadingBranches, setLoadingBranches] = useState(false);
   const branchesDropdownRef = useRef<HTMLLIElement>(null);
   const userMenuTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const profileMenuTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { isAuthenticated, user, logout } = useAuth();
 
   // Fetch branches when dropdown opens
@@ -66,7 +64,6 @@ const Navbar = () => {
     { label: 'Pharmacies', href: '#' },
     { label: 'Patient experience', href: '#' },
     { label: 'Media', href: '#'},
-    { label: 'Offers', href: '#'},
     { label: 'Careers', href: '#'},
     { label: 'Contact', href: '/contact'},
   ];
@@ -131,12 +128,12 @@ const Navbar = () => {
                       borderRadius: '50%',
                       overflow: 'hidden',
                       cursor: 'pointer',
-                      border: '3px solid #0155CB',
+                      border: '3px solid #12b1dd',
                       boxShadow: '0 2px 8px rgba(1, 85, 203, 0.15)',
                       transition: 'all 0.3s ease',
                       background: user.profile_photo 
                         ? `url(${user.profile_photo}) center/cover no-repeat`
-                        : 'linear-gradient(135deg, #0155CB 0%, #00ABDA 100%)',
+                        : '#14C8F9',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -284,145 +281,10 @@ const Navbar = () => {
                     )}
                   </div>
                 ) : (
-                  <div 
-                    style={{ 
-                      position: 'relative',
-                      display: 'inline-block',
-                    }}
-                    onMouseEnter={() => {
-                      if (profileMenuTimeoutRef.current) {
-                        clearTimeout(profileMenuTimeoutRef.current);
-                        profileMenuTimeoutRef.current = null;
-                      }
-                      setIsProfileMenuOpen(true);
-                    }}
-                    onMouseLeave={() => {
-                      profileMenuTimeoutRef.current = setTimeout(() => {
-                        setIsProfileMenuOpen(false);
-                      }, 200);
-                    }}
-                  >
-                    <Link to="/profile" style={{ cursor: 'pointer' }}>
-                      <img src="/assets/img/icons/profile-circle.svg" className="d-block" width="24" height="24" alt="Profile Icon" style={{ filter: 'brightness(0) invert(1)' }} />
-                    </Link>
-                    
-                    {/* Auth Dropdown Menu */}
-                    {isProfileMenuOpen && (
-                      <div style={{
-                        position: 'absolute',
-                        right: 0,
-                        top: 'calc(100% + 12px)',
-                        minWidth: '200px',
-                        background: '#FFFFFF',
-                        borderRadius: '16px',
-                        boxShadow: '0 10px 40px rgba(0, 0, 0, 0.15)',
-                        border: '1px solid #E5E7EB',
-                        zIndex: 1000,
-                        overflow: 'hidden',
-                        animation: 'fadeSlideDown 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                      }}>
-                        {/* Arrow pointer */}
-                        <div style={{
-                          position: 'absolute',
-                          top: '-8px',
-                          right: '20px',
-                          width: '16px',
-                          height: '16px',
-                          background: '#FFFFFF',
-                          borderLeft: '1px solid #E5E7EB',
-                          borderTop: '1px solid #E5E7EB',
-                          transform: 'rotate(45deg)',
-                        }} />
-                        
-                        {/* Header */}
-                        <div style={{
-                          padding: '16px 20px 12px',
-                          borderBottom: '1px solid #F3F4F6',
-                          background: 'linear-gradient(135deg, #E0F7FA 0%, #FFFFFF 100%)',
-                        }}>
-                          <span style={{
-                            fontFamily: 'Nunito, sans-serif',
-                            fontWeight: 700,
-                            fontSize: '14px',
-                            color: '#061F42',
-                            textTransform: 'uppercase',
-                            letterSpacing: '0.5px',
-                          }}>
-                            Account
-                          </span>
-                        </div>
-                        
-                        {/* Menu Items */}
-                        <div style={{ padding: '8px' }}>
-                          <Link to="/login" style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '12px',
-                            padding: '12px 16px',
-                            fontFamily: 'Nunito, sans-serif',
-                            fontWeight: 600,
-                            fontSize: '14px',
-                            color: '#061F42',
-                            textDecoration: 'none',
-                            borderRadius: '10px',
-                            transition: 'all 0.2s ease',
-                            marginBottom: '4px',
-                          }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.background = 'linear-gradient(135deg, #E3F2FD 0%, #F3F4F6 100%)';
-                            e.currentTarget.style.transform = 'translateX(4px)';
-                            e.currentTarget.style.paddingLeft = '20px';
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.background = 'transparent';
-                            e.currentTarget.style.transform = 'translateX(0)';
-                            e.currentTarget.style.paddingLeft = '16px';
-                          }}>
-                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                              <path d="M10 10C12.7614 10 15 7.76142 15 5C15 2.23858 12.7614 0 10 0C7.23858 0 5 2.23858 5 5C5 7.76142 7.23858 10 10 10Z" fill="#00ABDA"/>
-                              <path d="M10 11C4.47715 11 0 13.6863 0 17V19C0 19.5523 0.447715 20 1 20H19C19.5523 20 20 19.5523 20 19V17C20 13.6863 15.5228 11 10 11Z" fill="#00ABDA"/>
-                            </svg>
-                            <span>Sign In</span>
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ marginLeft: 'auto' }}>
-                              <path d="M6 12L10 8L6 4" stroke="#00ABDA" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                            </svg>
-                          </Link>
-                          
-                          <Link to="/signup" style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '12px',
-                            padding: '12px 16px',
-                            fontFamily: 'Nunito, sans-serif',
-                            fontWeight: 600,
-                            fontSize: '14px',
-                            color: '#061F42',
-                            textDecoration: 'none',
-                            borderRadius: '10px',
-                            transition: 'all 0.2s ease',
-                          }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.background = 'linear-gradient(135deg, #E0F7FA 0%, #F3F4F6 100%)';
-                            e.currentTarget.style.transform = 'translateX(4px)';
-                            e.currentTarget.style.paddingLeft = '20px';
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.background = 'transparent';
-                            e.currentTarget.style.transform = 'translateX(0)';
-                            e.currentTarget.style.paddingLeft = '16px';
-                          }}>
-                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                              <path d="M10 0C4.48 0 0 4.48 0 10C0 15.52 4.48 20 10 20C15.52 20 20 15.52 20 10C20 4.48 15.52 0 10 0ZM10 3C11.66 3 13 4.34 13 6C13 7.66 11.66 9 10 9C8.34 9 7 7.66 7 6C7 4.34 8.34 3 10 3ZM10 17.2C7.5 17.2 5.29 15.92 4 13.98C4.03 11.99 8 10.9 10 10.9C11.99 10.9 15.97 11.99 16 13.98C14.71 15.92 12.5 17.2 10 17.2Z" fill="#15C9FA"/>
-                            </svg>
-                            <span>Sign Up</span>
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ marginLeft: 'auto' }}>
-                              <path d="M6 12L10 8L6 4" stroke="#15C9FA" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                            </svg>
-                          </Link>
-                        </div>
-                      </div>
-                    )}
-                  </div>
+                  <>
+                    <Link to="/login" className="btn btn-outline">Sign In</Link>
+                    <Link to="/signup" className="btn btn-outline">Sign Up</Link>
+                  </>
                 )}
                 <Link to="/book-appointment" className="btn btn-outline">Book appointment</Link>
                 <a href="#" className="" style={{ 

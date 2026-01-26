@@ -18,6 +18,7 @@ interface DoctorCardProps {
 
 const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onLearnMore, onBookNow }) => {
   const [isHovered, setIsHovered] = useState(false);
+  const navigate = useNavigate();
   
   const getStatusStyle = (status: string) => {
     switch (status) {
@@ -185,7 +186,14 @@ const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onLearnMore, onBookNow 
           height: '24px',
         }}>
           {/* Location Pill */}
-          <div style={{
+          <div 
+            onClick={(e) => {
+              e.stopPropagation();
+              if (doctor.branch?.id) {
+                navigate(`/branches?id=${doctor.branch.id}`);
+              }
+            }}
+            style={{
             boxSizing: 'border-box',
             display: 'flex',
             flexDirection: 'row',
@@ -197,6 +205,18 @@ const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onLearnMore, onBookNow 
             border: '1px solid #D9D9D9',
             borderRadius: '24px',
             flex: '0 0 auto',
+            cursor: doctor.branch?.id ? 'pointer' : 'default',
+            transition: 'all 0.2s ease',
+          }}
+          onMouseEnter={(e) => {
+            if (doctor.branch?.id) {
+              e.currentTarget.style.background = '#F0F0F0';
+              e.currentTarget.style.borderColor = '#0155CB';
+            }
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = '#FFFFFF';
+            e.currentTarget.style.borderColor = '#D9D9D9';
           }}>
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
               <circle cx="8" cy="6" r="2.5" stroke="#6A6A6A" strokeWidth="1.5"/>
@@ -215,7 +235,14 @@ const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onLearnMore, onBookNow 
           </div>
 
           {/* Department Pill */}
-          <div style={{
+          <div 
+            onClick={(e) => {
+              e.stopPropagation();
+              if (doctor.department?.id) {
+                navigate(`/departments/${doctor.department.id}`);
+              }
+            }}
+            style={{
             display: 'flex',
             flexDirection: 'row',
             justifyContent: 'center',
@@ -225,6 +252,16 @@ const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onLearnMore, onBookNow 
             background: '#A7FAFC',
             borderRadius: '24px',
             flex: '1 1 auto',
+            cursor: doctor.department?.id ? 'pointer' : 'default',
+            transition: 'all 0.2s ease',
+          }}
+          onMouseEnter={(e) => {
+            if (doctor.department?.id) {
+              e.currentTarget.style.background = '#8FF0F2';
+            }
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = '#A7FAFC';
           }}>
             <span style={{
               fontFamily: 'Nunito, sans-serif',
@@ -528,6 +565,9 @@ const BranchesPage: React.FC = () => {
   // Mobile state
   const [isMobile, setIsMobile] = useState(false);
 
+  // Mobile branch selector dropdown state
+  const [isBranchDropdownOpen, setIsBranchDropdownOpen] = useState(false);
+
   // Doctor carousel state
   const [canScrollDoctorLeft, setCanScrollDoctorLeft] = useState(false);
   const [canScrollDoctorRight, setCanScrollDoctorRight] = useState(true);
@@ -783,7 +823,7 @@ const BranchesPage: React.FC = () => {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'flex-start',
-        padding: isMobile ? '90px 16px 0px' : '180px 0px 0px',
+        padding: isMobile ? '90px 16px 0px' : '131px 0px 0px',
         gap: '10px',
         maxWidth: isMobile ? '100%' : '1400px',
         margin: '0 auto',
@@ -892,48 +932,219 @@ const BranchesPage: React.FC = () => {
           padding: '0px',
           width: '100%',
         }}>
-          {/* Branch Tabs */}
-          <div style={{
-            display: 'flex',
-            flexDirection: 'row',
-            alignItems: 'flex-start',
-            padding: '0px',
-            overflowX: isMobile ? 'auto' : 'visible',
-            gap: isMobile ? '8px' : '0px',
-          }}>
-            {branches.map((branch) => (
+          {/* Branch Tabs - Desktop & Mobile */}
+          {isMobile ? (
+            // Mobile: Custom Dropdown Selector
+            <div style={{
+              position: 'relative',
+              width: '100%',
+              marginBottom: '0',
+            }}>
               <button
-                key={branch.id}
-                onClick={() => handleBranchSelect(branch)}
+                onClick={() => setIsBranchDropdownOpen(!isBranchDropdownOpen)}
                 style={{
                   display: 'flex',
                   flexDirection: 'row',
-                  justifyContent: 'center',
+                  justifyContent: 'space-between',
                   alignItems: 'center',
-                  padding: isMobile ? '10px 14px' : '12px 16px',
-                  height: isMobile ? '36px' : '40px',
-                  background: selectedBranch?.id === branch.id ? '#FCFCFC' : '#E6E6E6',
-                  boxShadow: selectedBranch?.id === branch.id ? '0px 0px 5px rgba(0, 0, 0, 0.25)' : 'none',
+                  padding: '12px 16px',
+                  width: '100%',
+                  height: '48px',
+                  background: '#FCFCFC',
+                  boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.15)',
                   borderRadius: '12px 12px 0px 0px',
                   border: 'none',
                   cursor: 'pointer',
-                  whiteSpace: 'nowrap',
-                  flexShrink: 0,
+                }}
+              >
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
                 }}>
-                <span style={{
-                  fontFamily: 'Nunito, sans-serif',
-                  fontStyle: 'normal',
-                  fontWeight: 600,
-                  fontSize: isMobile ? '16px' : '20px',
-                  lineHeight: isMobile ? '16px' : '20px',
-                  textAlign: 'center',
-                  color: selectedBranch?.id === branch.id ? '#061F42' : '#A4A5A5',
-                }}>
-                  {branch.name}
-                </span>
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                    <path d="M3 5H17M3 10H17M3 15H17" stroke="#061F42" strokeWidth="2" strokeLinecap="round"/>
+                  </svg>
+                  <span style={{
+                    fontFamily: 'Nunito, sans-serif',
+                    fontWeight: 700,
+                    fontSize: '16px',
+                    lineHeight: '20px',
+                    color: '#061F42',
+                  }}>
+                    {selectedBranch?.name || 'Select Branch'}
+                  </span>
+                </div>
+                <svg 
+                  width="20" 
+                  height="20" 
+                  viewBox="0 0 20 20" 
+                  fill="none"
+                  style={{
+                    transform: isBranchDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                    transition: 'transform 0.3s ease',
+                  }}
+                >
+                  <path d="M5 7.5L10 12.5L15 7.5" stroke="#061F42" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
               </button>
-            ))}
-          </div>
+
+              {/* Dropdown Menu */}
+              {isBranchDropdownOpen && (
+                <>
+                  {/* Backdrop */}
+                  <div 
+                    onClick={() => setIsBranchDropdownOpen(false)}
+                    style={{
+                      position: 'fixed',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      background: 'rgba(0, 0, 0, 0.3)',
+                      zIndex: 999,
+                    }}
+                  />
+                  
+                  {/* Dropdown List */}
+                  <div style={{
+                    position: 'absolute',
+                    top: '48px',
+                    left: 0,
+                    right: 0,
+                    background: '#FFFFFF',
+                    boxShadow: '0px 8px 16px rgba(0, 0, 0, 0.2)',
+                    borderRadius: '0px 0px 12px 12px',
+                    zIndex: 1000,
+                    maxHeight: '300px',
+                    overflowY: 'auto',
+                  }}>
+                    {branches.map((branch, index) => (
+                      <button
+                        key={branch.id}
+                        onClick={() => {
+                          handleBranchSelect(branch);
+                          setIsBranchDropdownOpen(false);
+                        }}
+                        style={{
+                          display: 'flex',
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          padding: '14px 16px',
+                          width: '100%',
+                          background: selectedBranch?.id === branch.id ? '#E1F9FF' : '#FFFFFF',
+                          border: 'none',
+                          borderTop: index > 0 ? '1px solid #F0F0F0' : 'none',
+                          cursor: 'pointer',
+                          transition: 'background 0.2s ease',
+                        }}
+                        onTouchStart={(e) => {
+                          if (selectedBranch?.id !== branch.id) {
+                            e.currentTarget.style.background = '#F5F5F5';
+                          }
+                        }}
+                        onTouchEnd={(e) => {
+                          if (selectedBranch?.id !== branch.id) {
+                            e.currentTarget.style.background = '#FFFFFF';
+                          }
+                        }}
+                      >
+                        <div style={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'flex-start',
+                          gap: '2px',
+                        }}>
+                          <span style={{
+                            fontFamily: 'Nunito, sans-serif',
+                            fontWeight: 600,
+                            fontSize: '15px',
+                            lineHeight: '20px',
+                            color: '#061F42',
+                            textAlign: 'left',
+                          }}>
+                            {branch.name}
+                          </span>
+                          {branch.region && (
+                            <span style={{
+                              fontFamily: 'Nunito, sans-serif',
+                              fontWeight: 400,
+                              fontSize: '12px',
+                              lineHeight: '16px',
+                              color: '#6B7280',
+                              textAlign: 'left',
+                            }}>
+                              {branch.region}
+                            </span>
+                          )}
+                        </div>
+                        {selectedBranch?.id === branch.id && (
+                          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                            <path d="M16.25 5L7.5 13.75L3.75 10" stroke="#00ABDA" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+          ) : (
+            // Desktop: Original Tab Layout
+            <div style={{
+              display: 'flex',
+              flexDirection: 'row',
+              alignItems: 'flex-start',
+              padding: '0px',
+              gap: '0px',
+            }}>
+              {branches.map((branch) => (
+                <button
+                  key={branch.id}
+                  onClick={() => handleBranchSelect(branch)}
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'row',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    padding: '12px 16px',
+                    height: '40px',
+                    background: selectedBranch?.id === branch.id ? '#FCFCFC' : '#E6E6E6',
+                    boxShadow: selectedBranch?.id === branch.id ? '0px 0px 5px rgba(0, 0, 0, 0.25)' : 'none',
+                    borderRadius: '12px 12px 0px 0px',
+                    border: 'none',
+                    cursor: 'pointer',
+                    whiteSpace: 'nowrap',
+                    flexShrink: 0,
+                    transition: 'all 0.2s ease',
+                  }}
+                  onMouseEnter={(e) => {
+                    if (selectedBranch?.id !== branch.id) {
+                      e.currentTarget.style.background = '#D8D8D8';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (selectedBranch?.id !== branch.id) {
+                      e.currentTarget.style.background = '#E6E6E6';
+                    }
+                  }}
+                >
+                  <span style={{
+                    fontFamily: 'Nunito, sans-serif',
+                    fontStyle: 'normal',
+                    fontWeight: 600,
+                    fontSize: '20px',
+                    lineHeight: '20px',
+                    textAlign: 'center',
+                    color: selectedBranch?.id === branch.id ? '#061F42' : '#A4A5A5',
+                  }}>
+                    {branch.name}
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
 
           {/* Main Content Panel */}
           <div 

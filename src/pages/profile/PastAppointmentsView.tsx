@@ -431,8 +431,7 @@ const PastAppointmentsView = ({ onBack }: { onBack: () => void }) => {
           gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
           gap: '16px',
           width: '100%',
-          padding: '12px 0',
-        }}>
+          padding: '12px 0',          justifyContent: 'center',        }}>
           {appointments.map((appointment) => (
             <AppointmentCard key={appointment.id} appointment={appointment} />
           ))}

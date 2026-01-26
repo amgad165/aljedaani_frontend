@@ -43,8 +43,8 @@ const Footer = () => {
         .footer-link {
           color: #FFFFFF;
           text-decoration: none;
-          font-family: 'Inter', sans-serif;
-          font-size: 14px;
+          font-family: 'Nunito', sans-serif;
+          font-size: 15px;
           font-weight: 400;
           line-height: 20px;
           letter-spacing: -0.150391px;
@@ -73,7 +73,7 @@ const Footer = () => {
           border: 1px solid #FFFFFF;
           background: #061F42;
           font-family: 'Nunito', sans-serif;
-          font-size: 14px;
+          font-size: 15px;
           font-weight: 600;
           line-height: 16px;
           color: #FFFFFF;

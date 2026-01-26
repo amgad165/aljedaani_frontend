@@ -210,7 +210,7 @@ const DepartmentsPage: React.FC = () => {
         display: 'flex',
         alignItems: 'flex-start',
         justifyContent: 'center',
-        marginTop: '170px',
+        marginTop: '124px',
       }}>
         <div style={{
           display: 'flex',

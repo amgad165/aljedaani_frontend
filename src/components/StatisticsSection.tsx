@@ -38,8 +38,8 @@ const StatisticsSection = () => {
   const { ref: statsRef, isVisible: statsVisible } = useScrollAnimation();
   
   const stats: Stat[] = [
-    { id: 1, number: 2250, label: 'Beds', icon: '/assets/images/care_section/bed.png' },
-    { id: 2, number: 60, label: 'Specialties', icon: '/assets/images/care_section/plus.png' },
+    { id: 1, number: 300, label: 'Beds', icon: '/assets/images/care_section/bed.png' },
+    { id: 2, number: 22, label: 'Specialties', icon: '/assets/images/care_section/plus.png' },
     { id: 3, number: 216, label: 'Doctors', icon: '/assets/images/care_section/doctor_plus.png' },
     { id: 4, number: 3500, label: 'Patients', icon: '/assets/images/care_section/lying_person.png' }
   ];
@@ -59,22 +59,22 @@ const StatisticsSection = () => {
               gap: 12px !important;
             }
             .stat-card {
-              width: calc(50% - 6px) !important;
-              height: 160px !important;
-              padding: 16px !important;
+              width: calc(50% - 10px) !important;
+              height: 200px !important;
+              padding: 24px 20px !important;
             }
             .stat-number {
-              font-size: 36px !important;
-              line-height: 42px !important;
+              font-size: 32px !important;
+              line-height: 38px !important;
               height: 60px !important;
             }
             .stat-icon {
-              width: 40px !important;
-              height: 28px !important;
+              width: 48px !important;
+              height: 33px !important;
             }
             .stat-label {
-              font-size: 16px !important;
-              line-height: 18px !important;
+              font-size: 34px !important;
+              line-height: 38px !important;
             }
           }
           @media (max-width: 576px) {
@@ -93,21 +93,21 @@ const StatisticsSection = () => {
             }
             .stat-card {
               width: 100% !important;
-              height: 140px !important;
-              padding: 16px 12px !important;
+              height: 180px !important;
+              padding: 24px 20px !important;
             }
             .stat-number {
-              font-size: 32px !important;
-              line-height: 38px !important;
+              font-size: 28px !important;
+              line-height: 34px !important;
               height: 50px !important;
             }
             .stat-icon {
-              width: 36px !important;
-              height: 26px !important;
+              width: 44px !important;
+              height: 30px !important;
             }
             .stat-label {
-              font-size: 16px !important;
-              line-height: 20px !important;
+              font-size: 30px !important;
+              line-height: 34px !important;
             }
             .stat-number-container {
               width: 100% !important;
@@ -126,9 +126,7 @@ const StatisticsSection = () => {
               width: 35px !important;
               height: 24px !important;
             }
-            .stat-label {
-              font-size: 14px !important;
-            }
+
           }
         `}
       </style>
@@ -192,7 +190,7 @@ const StatisticsSection = () => {
             flexWrap: 'nowrap',
             alignItems: 'center',
             alignContent: 'flex-start',
-            gap: '18px',
+            gap: '20px',
             width: '100%',
             justifyContent: 'center'
           }}
@@ -205,16 +203,30 @@ const StatisticsSection = () => {
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
-                padding: '24px',
-                width: '268.5px',
-                height: '188px',
-                background: 'rgba(0, 0, 0, 0.001)',
-                borderRadius: '12px',
-                border: '1px solid rgba(143, 245, 247, 0.3)',
+                justifyContent: 'center',
+                padding: '32px 28px',
+                width: '280px',
+                height: '220px',
+                background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%)',
+                backdropFilter: 'blur(10px)',
+                borderRadius: '16px',
+                border: '1.5px solid rgba(143, 245, 247, 0.35)',
+                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
                 flex: 'none',
                 order: 0,
                 flexGrow: 1,
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                 ...getAnimationStyle(statsVisible, index * 0.1)
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-8px)';
+                e.currentTarget.style.boxShadow = '0 12px 48px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.15)';
+                e.currentTarget.style.borderColor = 'rgba(143, 245, 247, 0.6)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 8px 32px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.1)';
+                e.currentTarget.style.borderColor = 'rgba(143, 245, 247, 0.35)';
               }}
             >
               {/* Number */}
@@ -224,9 +236,10 @@ const StatisticsSection = () => {
                   display: 'flex',
                   flexDirection: 'row',
                   alignItems: 'center',
+                  justifyContent: 'center',
                   padding: '10px 4px',
                   width: '100%',
-                  height: '86px',
+                  height: '70px',
                   flex: 'none',
                   order: 0,
                   alignSelf: 'stretch',
@@ -237,79 +250,84 @@ const StatisticsSection = () => {
                   className="stat-number"
                   style={{
                     width: '100%',
-                    height: '66px',
+                    height: '60px',
                     fontFamily: 'Nunito, sans-serif',
                     fontStyle: 'normal',
                     fontWeight: 800,
-                    fontSize: '48px',
-                    lineHeight: '50px',
+                    fontSize: '35px',
+                    lineHeight: '44px',
                     color: '#FFFFFF',
                     flex: 'none',
                     order: 0,
                     alignSelf: 'stretch',
-                    flexGrow: 0
+                    flexGrow: 0,
+                    textAlign: 'center'
                   }}
                 >
                   <Counter target={stat.number} isVisible={statsVisible} />
                 </span>
               </div>
 
-              {/* Icon and Label */}
+              {/* Icon */}
+              <div 
+                style={{
+                  display: 'flex',
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: '10px 4px',
+                  width: '100%',
+                  height: '70px',
+                  flex: 'none',
+                  order: 1,
+                  flexGrow: 0
+                }}
+              >
+                <img 
+                  src={stat.icon} 
+                  alt={stat.label}
+                  className="stat-icon"
+                  style={{
+                    width: '60px',
+                    height: '41px',
+                    flex: 'none',
+                    order: 0,
+                    flexGrow: 0,
+                    objectFit: 'contain'
+                  }}
+                />
+              </div>
+
+              {/* Label */}
               <div 
                 className="stat-icon-label-container"
                 style={{
                   display: 'flex',
                   flexDirection: 'row',
                   alignItems: 'center',
+                  justifyContent: 'center',
                   padding: '10px 4px',
-                  gap: '10px',
                   width: '100%',
-                  height: '54px',
+                  height: '70px',
                   flex: 'none',
-                  order: 1,
+                  order: 2,
                   flexGrow: 0
                 }}
               >
-                <div 
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    padding: 0,
-                    width: '50px',
-                    height: '34px',
-                    flex: 'none',
-                    order: 0,
-                    flexGrow: 0
-                  }}
-                >
-                  <img 
-                    src={stat.icon} 
-                    alt={stat.label}
-                    className="stat-icon"
-                    style={{
-                      width: '50px',
-                      height: '34px',
-                      flex: 'none',
-                      order: 0,
-                      flexGrow: 0
-                    }}
-                  />
-                </div>
                 <span 
                   className="stat-label"
                   style={{
-                    width: '46px',
-                    height: '20px',
                     fontFamily: 'Nunito, sans-serif',
                     fontStyle: 'normal',
-                    fontWeight: 600,
-                    fontSize: '20px',
-                    lineHeight: '20px',
+                    fontWeight: 800,
+                    fontSize: '33px',
+                    lineHeight: '46px',
                     color: '#8FF5F7',
                     flex: 'none',
-                    order: 1,
-                    flexGrow: 0
+                    order: 0,
+                    flexGrow: 0,
+                    whiteSpace: 'nowrap',
+                    textAlign: 'center'
                   }}
                 >
                   {stat.label}

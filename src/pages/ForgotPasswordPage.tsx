@@ -94,6 +94,7 @@ const ForgotPasswordPage = () => {
   const [success, setSuccess] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [maskedPhone, setMaskedPhone] = useState('');
+  const [verificationToken, setVerificationToken] = useState('');
 
   const handleIdentifierSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -145,16 +146,54 @@ const ForgotPasswordPage = () => {
     }
   };
 
-  const handleOtpSubmit = (e: React.FormEvent) => {
+  const handleOtpSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!otpCode || otpCode.length !== 6) {
       setError('Please enter a valid 6-digit OTP');
       return;
     }
     
+    const idType = nationalId ? 'national_id' : 'medical_record';
+    const identifier = nationalId || medicalRecordNumber;
+    
     setError('');
     setSuccess('');
-    setCurrentStep(3);
+    setIsLoading(true);
+    
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/forgot-password/verify-otp`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({
+          id_type: idType,
+          identifier: identifier,
+          otp: otpCode,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.message || 'Invalid OTP. Please try again.');
+        return;
+      }
+
+      if (data.success) {
+        setVerificationToken(data.verification_token);
+        showSuccess('OTP verified successfully!');
+        setCurrentStep(3);
+      } else {
+        setError(data.message || 'OTP verification failed');
+      }
+    } catch (err) {
+      setError('Network error. Please try again.');
+      console.error('OTP verification error:', err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handlePasswordReset = async (e: React.FormEvent) => {
@@ -187,7 +226,7 @@ const ForgotPasswordPage = () => {
         body: JSON.stringify({
           id_type: idType,
           identifier: identifier,
-          otp: otpCode,
+          verification_token: verificationToken,
           password: password,
           password_confirmation: passwordConfirmation,
         }),

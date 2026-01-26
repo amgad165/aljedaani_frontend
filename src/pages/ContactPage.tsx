@@ -106,14 +106,14 @@ const ContactPage: React.FC = () => {
         display: 'flex',
         alignItems: 'flex-start',
         justifyContent: 'center',
-        padding: window.innerWidth <= 768 ? '90px 16px 40px' : '180px 20px 40px',
+        padding: window.innerWidth <= 768 ? '90px 16px 40px' : '131px 20px 40px',
       }}>
         <div style={{
           width: '100%',
-          maxWidth: '1120px',
+          maxWidth: '1400px',
           display: 'flex',
           flexDirection: 'column',
-          gap: '32px',
+          gap: '16px',
         }}>
           {/* Page Title */}
           <div style={{
@@ -128,9 +128,9 @@ const ContactPage: React.FC = () => {
           }}>
             <h1 style={{
               fontFamily: 'Nunito, sans-serif',
-              fontWeight: 700,
+              fontWeight: 600,
               fontSize: window.innerWidth <= 768 ? '24px' : '44px',
-              lineHeight: '38px',
+              lineHeight: '50px',
               textAlign: 'left',
               color: '#061F42',
               margin: 0,

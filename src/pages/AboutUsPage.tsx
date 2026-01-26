@@ -118,7 +118,7 @@ Our leaders believe in leading by example, maintaining open communication, and e
       <div style={{
         minHeight: '100vh',
         background: '#C9F3FF',
-        paddingTop: '180px',
+        paddingTop: '131px',
         paddingBottom: '60px',
       }}>
         <div style={{
@@ -130,12 +130,11 @@ Our leaders believe in leading by example, maintaining open communication, and e
           <div style={{
             background: '#FFFFFF',
             borderRadius: '15px',
-            padding: '8px 8px 8px 24px',
+            padding: '10px 32px',
             marginBottom: '12px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'left',
-            minHeight: '80px',
           }}>
             <h1 style={{
               fontFamily: 'Nunito, sans-serif',

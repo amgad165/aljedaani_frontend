@@ -87,6 +87,9 @@ const ExcellenceCentersSection = () => {
   };
 
   const handleMouseDown = (e: React.MouseEvent) => {
+    // Disable drag on mobile for native scrolling
+    if (window.innerWidth <= 992) return;
+    
     const container = scrollContainerRef.current;
     if (!container) return;
     
@@ -126,28 +129,19 @@ const ExcellenceCentersSection = () => {
     }
   };
 
-  const handleTouchStart = (e: React.TouchEvent) => {
-    const container = scrollContainerRef.current;
-    if (!container) return;
-    
-    setIsDragging(true);
-    setStartX(e.touches[0].pageX - container.offsetLeft);
-    setScrollLeft(container.scrollLeft);
+  const handleTouchStart = () => {
+    // Let native mobile scrolling handle touch events
+    return;
   };
 
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (!isDragging) return;
-    
-    const container = scrollContainerRef.current;
-    if (!container) return;
-    
-    const x = e.touches[0].pageX - container.offsetLeft;
-    const walk = (x - startX) * 2;
-    container.scrollLeft = scrollLeft - walk;
+  const handleTouchMove = () => {
+    // Let native mobile scrolling handle touch events
+    return;
   };
 
   const handleTouchEnd = () => {
-    setIsDragging(false);
+    // Let native mobile scrolling handle touch events
+    return;
   };
   
   return (
@@ -159,16 +153,52 @@ const ExcellenceCentersSection = () => {
               font-size: 32px !important;
               line-height: 38px !important;
             }
+            .excellence-carousel-container {
+              position: relative;
+            }
+            .excellence-carousel-container button {
+              display: none !important;
+            }
+            .excellence-grid {
+              padding: 0 20px !important;
+              scroll-snap-type: x mandatory;
+              -webkit-overflow-scrolling: touch;
+              scroll-padding: 0 20px;
+              justify-content: flex-start !important;
+            }
+            .excellence-card {
+              scroll-snap-align: center;
+              min-width: 280px !important;
+              max-width: 280px !important;
+            }
           }
           @media (max-width: 576px) {
             .excellence-title {
               font-size: 28px !important;
               line-height: 34px !important;
             }
+            .excellence-grid {
+              padding: 0 16px !important;
+              scroll-padding: 0 16px;
+            }
+            .excellence-card {
+              min-width: 260px !important;
+              max-width: 260px !important;
+            }
+          }
+          @media (max-width: 400px) {
+            .excellence-grid {
+              padding: 0 12px !important;
+              scroll-padding: 0 12px;
+            }
+            .excellence-card {
+              min-width: calc(100vw - 48px) !important;
+              max-width: calc(100vw - 48px) !important;
+            }
           }
         `}
       </style>
-      <section className="main-sec" style={{ backgroundColor: '#F3F3F3', paddingTop: '80px', paddingBottom: '80px' }}>
+      <section className="" style={{ backgroundColor: '#F3F3F3', paddingTop: '40px', paddingBottom: '80px' }}>
         <section className="card-sec" style={{ paddingTop: 0 }}>
           <div className="container" style={{ maxWidth: '1600px' }}>
             {/* Title */}
@@ -199,7 +229,7 @@ const ExcellenceCentersSection = () => {
           </div>
 
           {/* Carousel Container */}
-          <div style={{ position: 'relative' }}>
+          <div className="excellence-carousel-container" style={{ position: 'relative' }}>
             {/* Left Arrow */}
             {canScrollLeft && (
               <button
@@ -233,6 +263,7 @@ const ExcellenceCentersSection = () => {
 
             {/* Scrollable Grid */}
             <div 
+              className="excellence-grid hide-scrollbar"
               ref={(el) => {
                 scrollContainerRef.current = el;
                 gridRef.current = el;
@@ -246,21 +277,22 @@ const ExcellenceCentersSection = () => {
               onTouchEnd={handleTouchEnd}
               style={{
                 display: 'flex',
-                justifyContent: 'center',
+                justifyContent: window.innerWidth > 992 ? 'center' : 'flex-start',
                 gap: '24px',
                 overflowX: 'auto',
                 scrollbarWidth: 'none',
                 msOverflowStyle: 'none',
-                cursor: isDragging ? 'grabbing' : 'grab',
-                userSelect: 'none',
+                cursor: window.innerWidth <= 992 ? 'default' : (isDragging ? 'grabbing' : 'grab'),
+                userSelect: window.innerWidth <= 992 ? 'auto' : 'none',
                 scrollBehavior: 'smooth',
-                paddingBottom: '10px'
+                paddingBottom: '10px',
+                WebkitOverflowScrolling: 'touch'
               }}
-              className="hide-scrollbar"
             >
               {centers.map((center, index) => (
                 <div
                   key={center.id}
+                  className="excellence-card"
                   style={{
                     minWidth: '280px',
                     maxWidth: '280px',

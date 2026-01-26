@@ -95,7 +95,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
       ref={containerRef}
       style={{
         position: 'relative',
-        width: '220px',
+        width: window.innerWidth <= 768 ? '100%' : '220px',
       }}
     >
       {/* Select Trigger */}
@@ -480,16 +480,17 @@ const DoctorFilters: React.FC<DoctorFiltersProps> = ({
 
   const defaultContainerStyle: React.CSSProperties = {
     display: 'flex',
-    flexDirection: 'row',
+    flexDirection: window.innerWidth <= 768 ? 'column' : 'row',
     justifyContent: showTitle ? 'space-between' : 'flex-end',
-    alignItems: 'center',
-    padding: '12px 16px 12px 24px',
+    alignItems: window.innerWidth <= 768 ? 'stretch' : 'center',
+    padding: window.innerWidth <= 768 ? '12px 16px' : '12px 16px 12px 24px',
     width: '100%',
-    minHeight: '80px',
+    minHeight: window.innerWidth <= 768 ? 'auto' : '80px',
     background: '#FFFFFF',
     borderRadius: '16px',
     boxSizing: 'border-box',
     boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
+    gap: window.innerWidth <= 768 ? '12px' : '0',
   };
 
   return (
@@ -499,8 +500,8 @@ const DoctorFilters: React.FC<DoctorFiltersProps> = ({
           fontFamily: 'Nunito, sans-serif',
           fontStyle: 'normal',
           fontWeight: 600,
-          fontSize: '48px',
-          lineHeight: '50px',
+          fontSize: window.innerWidth <= 768 ? '32px' : '48px',
+          lineHeight: window.innerWidth <= 768 ? '36px' : '50px',
           color: '#061F42',
           margin: 0,
         }}>
@@ -510,9 +511,11 @@ const DoctorFilters: React.FC<DoctorFiltersProps> = ({
 
       <div style={{
         display: 'flex',
-        flexDirection: 'row',
-        alignItems: 'center',
+        flexDirection: window.innerWidth <= 768 ? 'column' : 'row',
+        alignItems: window.innerWidth <= 768 ? 'stretch' : 'center',
         gap: '12px',
+        width: '100%',
+        flex: window.innerWidth <= 768 ? undefined : 1,
       }}>
         {/* Branch Filter */}
         <CustomSelect
@@ -567,7 +570,7 @@ const DoctorFilters: React.FC<DoctorFiltersProps> = ({
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
-            width: '52px',
+            width: window.innerWidth <= 768 ? '100%' : '52px',
             height: '52px',
             background: selectedDoctorId 
               ? 'linear-gradient(135deg, #00ABDA 0%, #0088B0 100%)' 

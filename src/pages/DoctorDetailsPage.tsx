@@ -178,9 +178,12 @@ const DoctorDetailsPage: React.FC = () => {
   return (
     <div style={{
       minHeight: '100vh',
+      width: '100vw',
       background: '#C9F3FF',
       display: 'flex',
       flexDirection: 'column',
+      overflowX: 'hidden',
+      position: 'relative',
     }}>
       <FloatingContactButtons />
       {ResponsiveNavbar}
@@ -191,11 +194,13 @@ const DoctorDetailsPage: React.FC = () => {
         display: 'flex',
         alignItems: 'flex-start',
         justifyContent: 'center',
-        padding: '180px 20px 40px 20px',
+        padding: window.innerWidth <= 768 ? '90px 12px 20px 12px' : '180px 20px 40px 20px',
+        boxSizing: 'border-box',
       }}>
         <div style={{
           width: '100%',
-          maxWidth: '1120px',
+          maxWidth: window.innerWidth <= 768 ? '100%' : '1120px',
+          boxSizing: 'border-box',
         }}>
           {/* Title Section with Filters */}
           <DoctorFilters 
@@ -209,8 +214,8 @@ const DoctorDetailsPage: React.FC = () => {
           <div style={{
             fontFamily: 'Nunito, sans-serif',
             fontWeight: 600,
-            fontSize: '16px',
-            lineHeight: '40px',
+            fontSize: window.innerWidth <= 768 ? '14px' : '16px',
+            lineHeight: window.innerWidth <= 768 ? '20px' : '40px',
             marginBottom: '8px',
           }}>
             <span style={{ color: '#A4A5A5' }}>Displaying results for </span>
@@ -257,15 +262,15 @@ const DoctorDetailsPage: React.FC = () => {
             flexDirection: 'column',
             background: '#FFFFFF',
             borderRadius: '16px',
-            padding: '24px',
+            padding: window.innerWidth <= 768 ? '16px' : '24px',
             width: '100%',
             boxSizing: 'border-box',
           }}>
             {/* Main Content Row - Image & Info | Services */}
             <div style={{
               display: 'flex',
-              flexDirection: 'row',
-              gap: '32px',
+              flexDirection: window.innerWidth <= 768 ? 'column' : 'row',
+              gap: window.innerWidth <= 768 ? '24px' : '32px',
               width: '100%',
             }}>
               {/* Left Side - Doctor Image and Info */}
@@ -275,7 +280,7 @@ const DoctorDetailsPage: React.FC = () => {
                 alignItems: 'center',
                 padding: '0px',
                 gap: '12px',
-                width: '280px',
+                width: window.innerWidth <= 768 ? '100%' : '280px',
                 flexShrink: 0,
               }}>
                 {/* Status Badge / Pill */}
@@ -284,7 +289,8 @@ const DoctorDetailsPage: React.FC = () => {
                   flexDirection: 'column',
                   alignItems: 'flex-start',
                   padding: '0px',
-                  width: '280px',
+                  width: '100%',
+                  maxWidth: window.innerWidth <= 768 ? '100%' : '280px',
                   height: '24px',
                 }}>
                   <div style={{
@@ -325,8 +331,10 @@ const DoctorDetailsPage: React.FC = () => {
 
                 {/* Doctor Photo */}
                 <div style={{
-                  width: '280px',
-                  height: '362px',
+                  width: '100%',
+                  maxWidth: window.innerWidth <= 768 ? '100%' : '280px',
+                  height: window.innerWidth <= 768 ? 'auto' : '362px',
+                  aspectRatio: window.innerWidth <= 768 ? '1 / 1' : undefined,
                   borderRadius: '12px',
                   overflow: 'hidden',
                 }}>
@@ -347,11 +355,12 @@ const DoctorDetailsPage: React.FC = () => {
                   flexDirection: 'column',
                   alignItems: 'flex-start',
                   padding: '0px',
-                  width: '280px',
+                  width: '100%',
+                  maxWidth: window.innerWidth <= 768 ? '100%' : '280px',
                 }}>
                   {/* Title - Doctor Name */}
                   <div style={{
-                    width: '280px',
+                    width: '100%',
                     fontFamily: 'Nunito, sans-serif',
                     fontStyle: 'normal',
                     fontWeight: 700,
@@ -364,7 +373,7 @@ const DoctorDetailsPage: React.FC = () => {
                   </div>
                   {/* Sub title - Specialization */}
                   <div style={{
-                    width: '280px',
+                    width: '100%',
                     fontFamily: 'Nunito, sans-serif',
                     fontStyle: 'normal',
                     fontWeight: 400,
@@ -386,7 +395,8 @@ const DoctorDetailsPage: React.FC = () => {
                   alignItems: 'flex-start',
                   padding: '8px',
                   gap: '4px',
-                  width: '280px',
+                  width: '100%',
+                  maxWidth: window.innerWidth <= 768 ? '100%' : '280px',
                   background: '#F8F8F8',
                   borderRadius: '12px',
                   boxSizing: 'border-box',
@@ -398,8 +408,9 @@ const DoctorDetailsPage: React.FC = () => {
                     alignItems: 'flex-start',
                     padding: '0px',
                     gap: '4px',
-                    width: '264px',
-                    height: '24px',
+                    width: '100%',
+                    minHeight: '24px',
+                    flexWrap: 'wrap',
                   }}>
                     {/* Location Badge */}
                     <div style={{
@@ -475,7 +486,7 @@ const DoctorDetailsPage: React.FC = () => {
                     justifyContent: 'flex-start',
                     alignItems: 'flex-start',
                     padding: '4px 8px',
-                    width: '264px',
+                    width: '100%',
                     maxHeight: '158px',
                     borderRadius: '12px',
                     boxSizing: 'border-box',
@@ -519,7 +530,8 @@ const DoctorDetailsPage: React.FC = () => {
                   alignItems: 'flex-start',
                   padding: '0px',
                   gap: '8px',
-                  width: '280px',
+                  width: '100%',
+                  maxWidth: window.innerWidth <= 768 ? '100%' : '280px',
                   height: '32px',
                 }}>
                   <button
@@ -530,7 +542,7 @@ const DoctorDetailsPage: React.FC = () => {
                       justifyContent: 'center',
                       alignItems: 'center',
                       padding: '8px 12px',
-                      width: '280px',
+                      width: '100%',
                       height: '32px',
                       background: doctor.status === 'busy' ? '#E5E7EA' : '#061F42',
                       borderRadius: '8px',
@@ -571,8 +583,10 @@ const DoctorDetailsPage: React.FC = () => {
                   flexDirection: 'row',
                   alignItems: 'flex-start',
                   padding: '0px',
-                  width: '440px',
+                  width: '100%',
+                  maxWidth: window.innerWidth <= 768 ? '100%' : '440px',
                   height: '40px',
+                  gap: window.innerWidth <= 768 ? '4px' : '0',
                 }}>
                   {/* Outpatient Services Tab */}
                   <button
@@ -582,8 +596,9 @@ const DoctorDetailsPage: React.FC = () => {
                       flexDirection: 'row',
                       justifyContent: 'center',
                       alignItems: 'center',
-                      padding: '12px 16px',
-                      width: '229px',
+                      padding: window.innerWidth <= 768 ? '8px 12px' : '12px 16px',
+                      flex: 1,
+                      minWidth: 0,
                       height: '40px',
                       background: activeTab === 'outpatient' ? '#FCFCFC' : '#E6E6E6',
                       boxShadow: activeTab === 'outpatient' ? '0px 0px 5px rgba(0, 0, 0, 0.25)' : 'none',
@@ -598,13 +613,16 @@ const DoctorDetailsPage: React.FC = () => {
                       fontFamily: 'Nunito, sans-serif',
                       fontStyle: 'normal',
                       fontWeight: 600,
-                      fontSize: '20px',
+                      fontSize: window.innerWidth <= 768 ? '14px' : '20px',
                       lineHeight: '20px',
                       display: 'flex',
                       alignItems: 'center',
                       textAlign: 'center',
                       color: activeTab === 'outpatient' ? '#061F42' : '#A4A5A5',
                       transition: `color 0.3s ${EASINGS.smooth}`,
+                      whiteSpace: window.innerWidth <= 768 ? 'nowrap' : 'normal',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
                     }}>
                       Outpatient Services
                     </span>
@@ -618,8 +636,9 @@ const DoctorDetailsPage: React.FC = () => {
                       flexDirection: 'row',
                       justifyContent: 'center',
                       alignItems: 'center',
-                      padding: '12px 16px',
-                      width: '211px',
+                      padding: window.innerWidth <= 768 ? '8px 12px' : '12px 16px',
+                      flex: 1,
+                      minWidth: 0,
                       height: '40px',
                       background: activeTab === 'inpatient' ? '#FCFCFC' : '#E6E6E6',
                       boxShadow: activeTab === 'inpatient' ? '0px 0px 5px rgba(0, 0, 0, 0.25)' : 'none',
@@ -634,13 +653,16 @@ const DoctorDetailsPage: React.FC = () => {
                       fontFamily: 'Nunito, sans-serif',
                       fontStyle: 'normal',
                       fontWeight: 600,
-                      fontSize: '20px',
+                      fontSize: window.innerWidth <= 768 ? '14px' : '20px',
                       lineHeight: '20px',
                       display: 'flex',
                       alignItems: 'center',
                       textAlign: 'center',
                       color: activeTab === 'inpatient' ? '#061F42' : '#A4A5A5',
                       transition: `color 0.3s ${EASINGS.smooth}`,
+                      whiteSpace: window.innerWidth <= 768 ? 'nowrap' : 'normal',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
                     }}>
                       Inpatient Services
                     </span>
@@ -652,11 +674,11 @@ const DoctorDetailsPage: React.FC = () => {
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'flex-start',
-                  padding: '12px 24px',
+                  padding: window.innerWidth <= 768 ? '12px 16px' : '12px 24px',
                   gap: '4px',
                   width: '100%',
-                  minHeight: '400px',
-                  maxHeight: '656px',
+                  minHeight: window.innerWidth <= 768 ? '300px' : '400px',
+                  maxHeight: window.innerWidth <= 768 ? '500px' : '656px',
                   background: '#FCFCFC',
                   boxShadow: '0px 4px 5px rgba(0, 0, 0, 0.25)',
                   borderRadius: '0px 12px 12px 12px',

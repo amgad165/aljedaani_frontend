@@ -160,7 +160,7 @@ const AppBannerSection = () => {
                   textAlign: 'center'
                 }}
               >
-                Download our mobile app
+                Download Mobile App
               </h2>
               <h3 
                 className="banner-subtitle"

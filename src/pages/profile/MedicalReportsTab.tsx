@@ -27,8 +27,9 @@ const ReportCard = ({ report, onViewPdf, onDownloadPdf }: ReportCardProps) => {
     alignItems: 'center',
     padding: '12px',
     gap: '12px',
-    width: '284px',
-    height: '199.67px',
+    width: '100%',
+    maxWidth: window.innerWidth <= 768 ? '100%' : '284px',
+    height: window.innerWidth <= 768 ? 'auto' : '199.67px',
     background: '#FFFFFF',
     border: '1px solid #D8D8D8',
     borderRadius: '12px',
@@ -38,7 +39,7 @@ const ReportCard = ({ report, onViewPdf, onDownloadPdf }: ReportCardProps) => {
     
     {/* Title */}
     <div style={{
-      width: '260px',
+      width: '100%',
       fontFamily: 'Nunito',
       fontWeight: 700,
       fontSize: '16px',
@@ -52,7 +53,7 @@ const ReportCard = ({ report, onViewPdf, onDownloadPdf }: ReportCardProps) => {
     {/* Technician - Only show if technician exists */}
     {technicianName && (
       <div style={{
-        width: '260px',
+        width: '100%',
         fontFamily: 'Varela Round',
         fontWeight: 400,
         fontSize: '12px',
@@ -71,13 +72,13 @@ const ReportCard = ({ report, onViewPdf, onDownloadPdf }: ReportCardProps) => {
       alignItems: 'flex-start',
       padding: '8px',
       gap: '4px',
-      width: '260px',
+      width: '100%',
       height: '36px',
       background: '#F8F8F8',
       borderRadius: '12px',
     }}>
       <div style={{
-        width: '244px',
+        width: '100%',
         fontFamily: 'Nunito',
         fontWeight: 700,
         fontSize: '16px',
@@ -96,8 +97,8 @@ const ReportCard = ({ report, onViewPdf, onDownloadPdf }: ReportCardProps) => {
       alignItems: 'flex-start',
       padding: '0px',
       gap: '8px',
-      width: '260px',
-      height: '32px',
+      width: '100%',
+      height: '32px'
     }}>
       <button 
         onClick={onDownloadPdf}
@@ -107,7 +108,7 @@ const ReportCard = ({ report, onViewPdf, onDownloadPdf }: ReportCardProps) => {
           justifyContent: 'center',
           alignItems: 'center',
           padding: '8px 12px',
-          width: '126px',
+          flex: 1,
           height: '32px',
           background: '#061F42',
           borderRadius: '8px',
@@ -130,7 +131,7 @@ const ReportCard = ({ report, onViewPdf, onDownloadPdf }: ReportCardProps) => {
           justifyContent: 'center',
           alignItems: 'center',
           padding: '8px 12px',
-          width: '126px',
+          flex: 1,
           height: '32px',
           background: '#15C9FA',
           borderRadius: '8px',
@@ -244,8 +245,9 @@ const MedicalReportsTab = () => {
         alignItems: 'center',
         padding: '0px',
         gap: '24px',
-        width: '612px',
-        height: '595.33px',
+        width: '100%',
+        maxWidth: window.innerWidth <= 768 ? '100%' : '612px',
+        height: window.innerWidth <= 768 ? 'auto' : '595.33px'
       }}>
       {/* Search and Filter Bar */}
       <div style={{
@@ -253,18 +255,18 @@ const MedicalReportsTab = () => {
         flexDirection: 'column',
         alignItems: 'flex-start',
         padding: '0px',
-        width: '612px',
-        height: '64px',
+        width: '100%',
+        height: window.innerWidth <= 768 ? 'auto' : '64px'
       }}>
         <div style={{
           boxSizing: 'border-box',
           display: 'flex',
-          flexDirection: 'row',
+          flexDirection: window.innerWidth <= 768 ? 'column' : 'row',
           alignItems: 'center',
-          padding: '12px',
+          padding: window.innerWidth <= 768 ? '8px' : '12px',
           gap: '8px',
-          width: '612px',
-          height: '64px',
+          width: '100%',
+          height: window.innerWidth <= 768 ? 'auto' : '64px',
           background: '#FFFFFF',
           borderBottom: '1px solid #DADADA',
           borderRadius: '0px',
@@ -276,7 +278,7 @@ const MedicalReportsTab = () => {
             justifyContent: 'center',
             alignItems: 'center',
             padding: '12px 16px',
-            width: '117px',
+            width: window.innerWidth <= 768 ? '100%' : '117px',
             height: '40px',
             borderRadius: '12px',
             border: 'none',
@@ -300,9 +302,9 @@ const MedicalReportsTab = () => {
             flexDirection: 'column',
             alignItems: 'flex-start',
             padding: '0px',
-            width: '323px',
+            width: '100%',
             height: '40px',
-            flexGrow: 1,
+            flexGrow: 1
           }}>
             <div style={{
               display: 'flex',
@@ -347,7 +349,7 @@ const MedicalReportsTab = () => {
             onChange={handleDateChange}
             style={{
               boxSizing: 'border-box',
-              width: '132px',
+              width: window.innerWidth <= 768 ? '100%' : '132px',
               height: '40px',
               padding: '8px 12px',
               background: '#FFFFFF',
@@ -367,10 +369,12 @@ const MedicalReportsTab = () => {
       {/* Reports Grid */}
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(2, 284px)',
-        gap: '28px 44px',
-        width: '612px',
-        minHeight: '411.33px',
+        gridTemplateColumns: window.innerWidth <= 768 ? '1fr' : 'repeat(2, 284px)',
+        gap: window.innerWidth <= 768 ? '12px' : '28px 44px',
+        width: '100%',
+        maxWidth: window.innerWidth <= 768 ? '100%' : '612px',
+        minHeight: window.innerWidth <= 768 ? 'auto' : '411.33px',
+        padding: window.innerWidth <= 768 ? '0 12px' : '0'
       }}>
         {loading ? (
           <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '40px' }}>
@@ -403,8 +407,8 @@ const MedicalReportsTab = () => {
         justifyContent: 'center',
         alignItems: 'center',
         padding: '12px 0px',
-        width: '612px',
-        height: '72px',
+        width: '100%',
+        height: window.innerWidth <= 768 ? 'auto' : '72px'
       }}>
         <div style={{
           display: 'flex',
@@ -412,8 +416,10 @@ const MedicalReportsTab = () => {
           alignItems: 'flex-start',
           padding: '0px',
           gap: '8px',
-          width: '328px',
+          width: window.innerWidth <= 768 ? '100%' : '328px',
+          maxWidth: '100%',
           height: '48px',
+          justifyContent: 'center'
         }}>
           {/* Previous Button */}
           <button 

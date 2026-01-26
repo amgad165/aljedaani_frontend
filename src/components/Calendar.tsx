@@ -154,9 +154,9 @@ const Calendar: React.FC<CalendarProps> = ({
             flexDirection: 'row',
             justifyContent: 'flex-start',
             alignItems: 'flex-start',
-            padding: '0px 24px',
-            gap: '14px',
-            width: '308px',
+            padding: window.innerWidth <= 768 ? '0px 8px' : '0px 24px',
+            gap: window.innerWidth <= 768 ? '10px' : '14px',
+            width: '100%',
             height: '24px',
           }}
         >
@@ -170,7 +170,8 @@ const Calendar: React.FC<CalendarProps> = ({
 
   return (
     <div style={{
-      width: '308px',
+      width: window.innerWidth <= 768 ? '100%' : '308px',
+      maxWidth: '308px',
       height: '321px',
       background: '#FFFFFF',
       boxShadow: '8px 3px 22px 10px rgba(150, 150, 150, 0.11)',
@@ -184,7 +185,7 @@ const Calendar: React.FC<CalendarProps> = ({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        padding: '0px 24px',
+        padding: window.innerWidth <= 768 ? '0px 8px' : '0px 24px',
         marginBottom: '17px',
       }}>
         <span style={{
@@ -201,9 +202,9 @@ const Calendar: React.FC<CalendarProps> = ({
         
         <div style={{
           display: 'flex',
-          gap: '24px',
+          gap: window.innerWidth <= 768 ? '12px' : '24px',
           position: 'absolute',
-          right: '24px',
+          right: window.innerWidth <= 768 ? '8px' : '24px',
         }}>
           <button
             onClick={handlePrevMonth}
@@ -241,7 +242,7 @@ const Calendar: React.FC<CalendarProps> = ({
       
       {/* Divider */}
       <div style={{
-        width: '251px',
+        width: window.innerWidth <= 768 ? '90%' : '251px',
         height: '0.8px',
         background: '#DADADA',
         margin: '0 auto 16px',
@@ -253,8 +254,8 @@ const Calendar: React.FC<CalendarProps> = ({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'flex-start',
-        padding: '0px 24px',
-        gap: '6px',
+        padding: window.innerWidth <= 768 ? '0px 8px' : '0px 24px',
+        gap: window.innerWidth <= 768 ? '4px' : '6px',
         marginBottom: '16px',
       }}>
         {daysOfWeek.map((day) => (

@@ -50,7 +50,8 @@ const DashboardCard = ({
     alignItems: 'center',
     padding: '12px',
     gap: '12px',
-    width: '496px',
+    width: '100%',
+    maxWidth: window.innerWidth <= 768 ? '100%' : '496px',
     height: '172px',
     background: '#FFFFFF',
     border: '1px solid #D8D8D8',
@@ -97,7 +98,7 @@ const DashboardCard = ({
         </div>
         {/* Name */}
         <div style={{
-          width: '472px',
+          width: '100%',
           fontFamily: 'Nunito, sans-serif',
           fontWeight: 700,
           fontSize: '16px',
@@ -118,7 +119,7 @@ const DashboardCard = ({
         )}
         {/* Title */}
         <div style={{
-          width: '472px',
+          width: '100%',
           fontFamily: 'Nunito, sans-serif',
           fontWeight: 700,
           fontSize: '16px',
@@ -227,14 +228,14 @@ const DashboardTab = ({ profileData }: DashboardTabProps) => {
             alignItems: 'center',
             gap: '8px',
             padding: '8px 16px',
-            marginBottom: '24px',
+            marginBottom: window.innerWidth <= 768 ? '16px' : '24px',
             borderRadius: '8px',
             border: '1px solid #D8D8D8',
             background: '#FFFFFF',
             cursor: 'pointer',
             fontFamily: 'Nunito, sans-serif',
             fontWeight: 600,
-            fontSize: '16px',
+            fontSize: window.innerWidth <= 768 ? '14px' : '16px',
             color: '#061F42',
             transition: 'all 0.2s ease',
             alignSelf: 'flex-start',
@@ -272,14 +273,14 @@ const DashboardTab = ({ profileData }: DashboardTabProps) => {
             alignItems: 'center',
             gap: '8px',
             padding: '8px 16px',
-            marginBottom: '24px',
+            marginBottom: window.innerWidth <= 768 ? '16px' : '24px',
             borderRadius: '8px',
             border: '1px solid #D8D8D8',
             background: '#FFFFFF',
             cursor: 'pointer',
             fontFamily: 'Nunito, sans-serif',
             fontWeight: 600,
-            fontSize: '16px',
+            fontSize: window.innerWidth <= 768 ? '14px' : '16px',
             color: '#061F42',
             transition: 'all 0.2s ease',
             alignSelf: 'flex-start',
@@ -317,14 +318,14 @@ const DashboardTab = ({ profileData }: DashboardTabProps) => {
             alignItems: 'center',
             gap: '8px',
             padding: '8px 16px',
-            marginBottom: '24px',
+            marginBottom: window.innerWidth <= 768 ? '16px' : '24px',
             borderRadius: '8px',
             border: '1px solid #D8D8D8',
             background: '#FFFFFF',
             cursor: 'pointer',
             fontFamily: 'Nunito, sans-serif',
             fontWeight: 600,
-            fontSize: '16px',
+            fontSize: window.innerWidth <= 768 ? '14px' : '16px',
             color: '#061F42',
             transition: 'all 0.2s ease',
             alignSelf: 'flex-start',
@@ -391,9 +392,11 @@ const DashboardTab = ({ profileData }: DashboardTabProps) => {
   return (
     <div style={{
       display: 'grid',
-      gridTemplateColumns: '496px 496px',
+      gridTemplateColumns: window.innerWidth <= 768 ? '1fr' : '496px 496px',
       gap: '12px',
-      padding: '12px 16px',
+      padding: window.innerWidth <= 768 ? '8px' : '12px 16px',
+      width: '100%',
+      boxSizing: 'border-box',
     }}>
       {/* Profile Card */}
       <DashboardCard 

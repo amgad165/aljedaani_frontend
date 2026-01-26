@@ -22,8 +22,9 @@ const ReportCard = ({ report, onDownload, onView }: ReportCardProps) => (
     alignItems: 'center',
     padding: '12px',
     gap: '12px',
-    width: '284px',
-    height: '199.67px',
+    width: '100%',
+    maxWidth: window.innerWidth <= 768 ? '100%' : '284px',
+    height: window.innerWidth <= 768 ? 'auto' : '199.67px',
     background: '#FFFFFF',
     border: '1px solid #D8D8D8',
     borderRadius: '12px',
@@ -33,7 +34,7 @@ const ReportCard = ({ report, onDownload, onView }: ReportCardProps) => (
     
     {/* Title */}
     <div style={{
-      width: '260px',
+      width: '100%',
       fontFamily: 'Nunito',
       fontWeight: 700,
       fontSize: '16px',
@@ -44,20 +45,7 @@ const ReportCard = ({ report, onDownload, onView }: ReportCardProps) => (
       {report.service_name || 'Lab Test'}
     </div>
     
-    {/* Technician - Only show if technician exists */}
-    {report.technician && (
-      <div style={{
-        width: '260px',
-        fontFamily: 'Varela Round',
-        fontWeight: 400,
-        fontSize: '12px',
-        lineHeight: '16px',
-        textAlign: 'center',
-        color: '#061F42',
-      }}>
-        Lab Technician: {report.technician}
-      </div>
-    )}
+
     
     {/* Date Badge */}
     <div style={{
@@ -66,13 +54,13 @@ const ReportCard = ({ report, onDownload, onView }: ReportCardProps) => (
       alignItems: 'flex-start',
       padding: '8px',
       gap: '4px',
-      width: '260px',
+      width: '100%',
       height: '36px',
       background: '#F8F8F8',
       borderRadius: '12px',
     }}>
       <div style={{
-        width: '244px',
+        width: '100%',
         fontFamily: 'Nunito',
         fontWeight: 700,
         fontSize: '16px',
@@ -91,8 +79,8 @@ const ReportCard = ({ report, onDownload, onView }: ReportCardProps) => (
       alignItems: 'flex-start',
       padding: '0px',
       gap: '8px',
-      width: '260px',
-      height: '32px',
+      width: '100%',
+      height: '32px'
     }}>
       <button 
         onClick={() => onDownload(report.slno)}
@@ -102,7 +90,7 @@ const ReportCard = ({ report, onDownload, onView }: ReportCardProps) => (
           justifyContent: 'center',
           alignItems: 'center',
           padding: '8px 12px',
-          width: '126px',
+          flex: 1,
           height: '32px',
           background: '#061F42',
           borderRadius: '8px',
@@ -125,7 +113,7 @@ const ReportCard = ({ report, onDownload, onView }: ReportCardProps) => (
           justifyContent: 'center',
           alignItems: 'center',
           padding: '8px 12px',
-          width: '126px',
+          flex: 1,
           height: '32px',
           background: '#15C9FA',
           borderRadius: '8px',
@@ -239,8 +227,9 @@ const LabReportsTab = () => {
         alignItems: 'center',
         padding: '0px',
         gap: '24px',
-        width: '612px',
-        height: '595.33px',
+        width: '100%',
+        maxWidth: window.innerWidth <= 768 ? '100%' : '612px',
+        height: window.innerWidth <= 768 ? 'auto' : '595.33px'
       }}>
       {/* Search and Filter Bar */}
       <div style={{
@@ -248,18 +237,18 @@ const LabReportsTab = () => {
         flexDirection: 'column',
         alignItems: 'flex-start',
         padding: '0px',
-        width: '612px',
-        height: '64px',
+        width: '100%',
+        height: window.innerWidth <= 768 ? 'auto' : '64px'
       }}>
         <div style={{
           boxSizing: 'border-box',
           display: 'flex',
-          flexDirection: 'row',
+          flexDirection: window.innerWidth <= 768 ? 'column' : 'row',
           alignItems: 'center',
-          padding: '12px',
+          padding: window.innerWidth <= 768 ? '8px' : '12px',
           gap: '8px',
-          width: '612px',
-          height: '64px',
+          width: '100%',
+          height: window.innerWidth <= 768 ? 'auto' : '64px',
           background: '#FFFFFF',
           borderBottom: '1px solid #DADADA',
           borderRadius: '0px',
@@ -271,7 +260,7 @@ const LabReportsTab = () => {
             justifyContent: 'center',
             alignItems: 'center',
             padding: '12px 16px',
-            width: '117px',
+            width: window.innerWidth <= 768 ? '100%' : '117px',
             height: '40px',
             borderRadius: '12px',
             border: 'none',
@@ -295,9 +284,9 @@ const LabReportsTab = () => {
             flexDirection: 'column',
             alignItems: 'flex-start',
             padding: '0px',
-            width: '323px',
+            width: '100%',
             height: '40px',
-            flexGrow: 1,
+            flexGrow: 1
           }}>
             <div style={{
               display: 'flex',
@@ -342,7 +331,7 @@ const LabReportsTab = () => {
             onChange={handleDateChange}
             style={{
               boxSizing: 'border-box',
-              width: '132px',
+              width: window.innerWidth <= 768 ? '100%' : '132px',
               height: '40px',
               padding: '8px 12px',
               background: '#FFFFFF',
@@ -365,11 +354,12 @@ const LabReportsTab = () => {
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
-          width: '612px',
-          height: '411.33px',
+          width: '100%',
+          height: window.innerWidth <= 768 ? 'auto' : '411.33px',
+          padding: '40px 12px',
           fontFamily: 'Nunito',
           fontSize: '16px',
-          color: '#666',
+          color: '#666'
         }}>
           Loading lab reports...
         </div>
@@ -378,11 +368,12 @@ const LabReportsTab = () => {
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
-          width: '612px',
-          height: '411.33px',
+          width: '100%',
+          height: window.innerWidth <= 768 ? 'auto' : '411.33px',
+          padding: '40px 12px',
           fontFamily: 'Nunito',
           fontSize: '16px',
-          color: '#CB0729',
+          color: '#CB0729'
         }}>
           {error}
         </div>
@@ -391,21 +382,24 @@ const LabReportsTab = () => {
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
-          width: '612px',
-          height: '411.33px',
+          width: '100%',
+          height: window.innerWidth <= 768 ? 'auto' : '411.33px',
+          padding: '40px 12px',
           fontFamily: 'Nunito',
           fontSize: '16px',
-          color: '#666',
+          color: '#666'
         }}>
           No lab reports found
         </div>
       ) : (
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(2, 284px)',
-          gap: '28px 44px',
-          width: '612px',
-          height: '411.33px',
+          gridTemplateColumns: window.innerWidth <= 768 ? '1fr' : 'repeat(2, 284px)',
+          gap: window.innerWidth <= 768 ? '12px' : '28px 44px',
+          width: '100%',
+          maxWidth: window.innerWidth <= 768 ? '100%' : '612px',
+          height: window.innerWidth <= 768 ? 'auto' : '411.33px',
+          padding: window.innerWidth <= 768 ? '0 12px' : '0'
         }}>
           {reports.map((report) => (
             <ReportCard
@@ -425,8 +419,8 @@ const LabReportsTab = () => {
         justifyContent: 'center',
         alignItems: 'center',
         padding: '12px 0px',
-        width: '612px',
-        height: '72px',
+        width: '100%',
+        height: window.innerWidth <= 768 ? 'auto' : '72px'
       }}>
         <div style={{
           display: 'flex',
@@ -434,8 +428,10 @@ const LabReportsTab = () => {
           alignItems: 'flex-start',
           padding: '0px',
           gap: '8px',
-          width: '328px',
+          width: window.innerWidth <= 768 ? '100%' : '328px',
+          maxWidth: '100%',
           height: '48px',
+          justifyContent: 'center'
         }}>
           {/* Previous Button */}
           <button 

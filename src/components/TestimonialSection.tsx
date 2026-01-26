@@ -95,19 +95,29 @@ const TestimonialSection = () => {
               line-height: 38px !important;
             }
             .testimonial-carousel {
+              padding: 0 !important;
+              overflow: visible !important;
+            }
+            .testimonial-viewport {
+              width: 100% !important;
               overflow-x: auto !important;
+              overflow-y: hidden !important;
               -webkit-overflow-scrolling: touch !important;
               scroll-snap-type: x mandatory !important;
-              padding: 0 !important;
+              height: auto !important;
             }
             .testimonial-slider {
               transform: none !important;
               width: auto !important;
+              display: flex !important;
+              gap: 16px !important;
+              padding: 0 20px;
             }
             .testimonial-card {
               scroll-snap-align: center !important;
               min-width: 300px !important;
               max-width: 300px !important;
+              flex: 0 0 auto !important;
             }
             .nav-button {
               display: none !important;
@@ -126,6 +136,19 @@ const TestimonialSection = () => {
               max-width: 280px !important;
               height: auto !important;
               min-height: 380px !important;
+              flex: 0 0 auto !important;
+            }
+            .testimonial-slider {
+              padding: 0 16px;
+            }
+          }
+          @media (max-width: 400px) {
+            .testimonial-card {
+              min-width: calc(100vw - 48px) !important;
+              max-width: calc(100vw - 48px) !important;
+            }
+            .testimonial-slider {
+              padding: 0 12px;
             }
           }
         `}
@@ -189,6 +212,7 @@ const TestimonialSection = () => {
         >
           {/* Sliding Container */}
           <div
+            className="testimonial-viewport"
             style={{
               width: `${3 * (300 + 24)}px`,
               height: '376px',

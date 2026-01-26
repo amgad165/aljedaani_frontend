@@ -33,13 +33,13 @@ const UserInfoRow = ({
       alignItems: 'center',
       padding: '0px',
       gap: '8px',
-      width: '244px',
-      height: '26px',
+      width: '100%',
+      minHeight: '26px',
     }}>
       {icon}
       <span style={{
-        width: '218px',
-        height: '16px',
+        flex: 1,
+        minHeight: '16px',
         fontFamily: 'Nunito, sans-serif',
         fontWeight: 600,
         fontSize: '14px',
@@ -51,7 +51,7 @@ const UserInfoRow = ({
     </div>
     {/* Divider */}
     <div style={{
-      width: '260px',
+      width: '100%',
       height: '0px',
       border: '1px solid #DADADA',
     }} />
@@ -86,7 +86,8 @@ const InputField = ({
     alignItems: 'flex-start',
     padding: '0px',
     gap: '8px',
-    width: '368px',
+    width: '100%',
+    maxWidth: window.innerWidth <= 768 ? '100%' : '368px',
   }}>
     {/* Label */}
     <div style={{
@@ -94,12 +95,12 @@ const InputField = ({
       flexDirection: 'row',
       alignItems: 'center',
       padding: '0px',
-      width: '368px',
-      height: '24px',
+      width: '100%',
+      minHeight: '24px',
     }}>
       <span style={{
-        width: '368px',
-        height: '24px',
+        width: '100%',
+        minHeight: '24px',
         fontFamily: 'Nunito, sans-serif',
         fontWeight: 700,
         fontSize: '16px',
@@ -119,7 +120,7 @@ const InputField = ({
       alignItems: 'center',
       padding: '12px',
       gap: '12px',
-      width: '368px',
+      width: '100%',
       height: multiline ? '72px' : '40px',
       border: '1.5px solid #A4A5A5',
       borderRadius: hasDropdown || hasEyeIcon ? '8px' : '12px',
@@ -401,7 +402,7 @@ const EditProfileTab = ({ profileData, onSave, onUpdate }: EditProfileTabProps) 
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'flex-start',
-      padding: '12px',
+      padding: window.innerWidth <= 768 ? '8px' : '12px',
       gap: '12px',
       width: '100%',
       position: 'relative',
@@ -427,7 +428,7 @@ const EditProfileTab = ({ profileData, onSave, onUpdate }: EditProfileTabProps) 
       
       <div style={{
         display: 'flex',
-        flexDirection: 'row',
+        flexDirection: window.innerWidth <= 768 ? 'column' : 'row',
         alignItems: 'flex-start',
         gap: '12px',
         width: '100%',
@@ -440,11 +441,13 @@ const EditProfileTab = ({ profileData, onSave, onUpdate }: EditProfileTabProps) 
         alignItems: 'center',
         padding: '12px',
         gap: '12px',
-        width: '300px',
-        minWidth: '270px',
-        maxWidth: '300px',
+        width: window.innerWidth <= 768 ? '100%' : '300px',
+        minWidth: window.innerWidth <= 768 ? '100%' : '270px',
+        maxWidth: window.innerWidth <= 768 ? '100%' : '300px',
         background: '#F8F8F8',
         borderRadius: '12px',
+        boxSizing: 'border-box',
+        border: '1px solid #E0E0E0'
       }}>
         {/* Profile Avatar */}
         <div style={{
@@ -475,7 +478,7 @@ const EditProfileTab = ({ profileData, onSave, onUpdate }: EditProfileTabProps) 
           alignItems: 'flex-start',
           padding: '0px',
           gap: '8px',
-          width: '276px',
+          width: '100%',
           height: '32px',
         }}>
           <label style={{
@@ -540,7 +543,7 @@ const EditProfileTab = ({ profileData, onSave, onUpdate }: EditProfileTabProps) 
 
         {/* Name */}
         <div style={{
-          width: '276px',
+          width: '100%',
           fontFamily: 'Nunito, sans-serif',
           fontWeight: 700,
           fontSize: '16px',
@@ -558,9 +561,10 @@ const EditProfileTab = ({ profileData, onSave, onUpdate }: EditProfileTabProps) 
           alignItems: 'flex-start',
           padding: '8px',
           gap: '4px',
-          width: '276px',
+          width: '100%',
           background: '#F8F8F8',
           borderRadius: '12px',
+          boxSizing: 'border-box',
         }}>
           <UserInfoRow 
             icon={<IdCardIcon color="#A4A5A5" />} 
@@ -584,32 +588,33 @@ const EditProfileTab = ({ profileData, onSave, onUpdate }: EditProfileTabProps) 
         alignItems: 'flex-end',
         padding: '0px',
         gap: '16px',
-        flex: 1,
+        width: '100%'
       }}>
         {/* Form Container */}
         <div style={{
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'flex-start',
-          padding: '16px',
+          padding: window.innerWidth <= 768 ? '12px' : '16px',
           gap: '12px',
           width: '100%',
           background: '#F8F8F8',
           borderRadius: '12px',
+          border: '1px solid #E0E0E0'
         }}>
           <div style={{
             display: 'flex',
-            flexDirection: 'row',
+            flexDirection: window.innerWidth <= 768 ? 'column' : 'row',
             alignItems: 'flex-start',
             padding: '0px',
-            gap: '16px',
+            gap: window.innerWidth <= 768 ? '12px' : '16px',
             width: '100%',
           }}>
             {/* Left Column */}
             <div style={{
               display: 'flex',
               flexDirection: 'column',
-              alignItems: 'flex-end',
+              alignItems: window.innerWidth <= 768 ? 'flex-start' : 'flex-end',
               padding: '0px',
               gap: '12px',
               flex: 1,
@@ -618,10 +623,11 @@ const EditProfileTab = ({ profileData, onSave, onUpdate }: EditProfileTabProps) 
               <div style={{
                 display: 'flex',
                 flexDirection: 'column',
-                alignItems: 'flex-end',
+                alignItems: window.innerWidth <= 768 ? 'flex-start' : 'flex-end',
                 padding: '0px',
                 gap: '4px',
-                width: '368px',
+                width: '100%',
+                maxWidth: window.innerWidth <= 768 ? '100%' : '368px',
               }}>
                 <InputField
                   label="Change Email"
@@ -637,10 +643,11 @@ const EditProfileTab = ({ profileData, onSave, onUpdate }: EditProfileTabProps) 
               <div style={{
                 display: 'flex',
                 flexDirection: 'column',
-                alignItems: 'flex-end',
+                alignItems: window.innerWidth <= 768 ? 'flex-start' : 'flex-end',
                 padding: '0px',
                 gap: '4px',
-                width: '368px',
+                width: '100%',
+                maxWidth: window.innerWidth <= 768 ? '100%' : '368px',
               }}>
                 <InputField
                   label="Change Mobile Number"
@@ -678,7 +685,7 @@ SAU"
                 placeholder="Select your marital status"
                 value={formData.maritalStatus}
                 onChange={(value) => handleInputChange('maritalStatus', value)}
-                width="368px"
+                width={window.innerWidth <= 768 ? '100%' : '368px'}
                 options={[
                   { value: 'single', label: 'Single' },
                   { value: 'married', label: 'Married' },
@@ -693,7 +700,7 @@ SAU"
                 placeholder="Select your religion"
                 value={formData.religion}
                 onChange={(value) => handleInputChange('religion', value)}
-                width="368px"
+                width={window.innerWidth <= 768 ? '100%' : '368px'}
                 options={[
                   { value: 'islam', label: 'Islam' },
                   { value: 'christianity', label: 'Christianity' },
@@ -746,18 +753,18 @@ SAU"
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'flex-start',
-          padding: '16px',
+          padding: window.innerWidth <= 768 ? '12px' : '16px',
           gap: '12px',
           width: '100%',
           background: '#F8F8F8',
           borderRadius: '12px',
-          border: '2px solid #00ABDA',
+          border: '1px solid #E0E0E0'
         }}>
           {/* Section Title */}
           <div style={{
             fontFamily: 'Nunito, sans-serif',
             fontWeight: 700,
-            fontSize: '18px',
+            fontSize: window.innerWidth <= 768 ? '16px' : '18px',
             lineHeight: '24px',
             color: '#061F42',
             marginBottom: '4px',
@@ -767,11 +774,11 @@ SAU"
 
           <div style={{
             display: 'flex',
-            flexDirection: 'row',
+            flexDirection: window.innerWidth <= 768 ? 'column' : 'row',
             alignItems: 'flex-start',
             padding: '0px',
-            gap: '16px',
-            width: '100%',
+            gap: window.innerWidth <= 768 ? '12px' : '16px',
+            width: '100%'
           }}>
             {/* Current Password */}
             <div style={{
@@ -780,7 +787,7 @@ SAU"
               alignItems: 'flex-start',
               padding: '0px',
               gap: '8px',
-              flex: 1,
+              flex: 1
             }}>
               <div style={{
                 fontFamily: 'Nunito, sans-serif',
@@ -832,7 +839,7 @@ SAU"
               alignItems: 'flex-start',
               padding: '0px',
               gap: '8px',
-              flex: 1,
+              flex: 1
             }}>
               <div style={{
                 fontFamily: 'Nunito, sans-serif',
@@ -884,7 +891,7 @@ SAU"
               alignItems: 'flex-start',
               padding: '0px',
               gap: '8px',
-              flex: 1,
+              flex: 1
             }}>
               <div style={{
                 fontFamily: 'Nunito, sans-serif',

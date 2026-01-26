@@ -110,6 +110,11 @@ const animationStyles = `
   .image-zoom:hover img {
     transform: scale(1.05);
   }
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
 `;
 
 const DepartmentDetailsPage: React.FC = () => {
@@ -147,6 +152,15 @@ const DepartmentDetailsPage: React.FC = () => {
   const [canScrollDoctorRight, setCanScrollDoctorRight] = useState(false);
   const doctorScrollRef = React.useRef<HTMLDivElement>(null);
 
+  // Sidebar carousel states (for mobile)
+  const [canScrollSidebarLeft, setCanScrollSidebarLeft] = useState(false);
+  const [canScrollSidebarRight, setCanScrollSidebarRight] = useState(false);
+  const sidebarScrollRef = React.useRef<HTMLDivElement>(null);
+
+  // Image loading state for sidebar images
+  const [sidebarImageLoading, setSidebarImageLoading] = useState(true);
+  const [currentSidebarImageUrl, setCurrentSidebarImageUrl] = useState<string>('');
+
   const tabs: { key: TabType; label: string }[] = [
     { key: 'overview', label: 'Overview' },
     { key: 'doctors', label: 'Doctors' },
@@ -172,6 +186,7 @@ const DepartmentDetailsPage: React.FC = () => {
   const handleSidebarItemChange = useCallback((item: SidebarItem) => {
     if (activeSidebarItem?.id === item.id) return;
     
+    setSidebarImageLoading(true);
     setIsSidebarTransitioning(true);
     setTimeout(() => {
       setActiveSidebarItem(item);
@@ -212,7 +227,73 @@ const DepartmentDetailsPage: React.FC = () => {
   useEffect(() => {
     setActiveSidebarItem(null);
     setSidebarContentKey(prev => prev + 1);
+    setSidebarImageLoading(true);
+    setCurrentSidebarImageUrl('');
+    // Reset sidebar scroll position
+    if (sidebarScrollRef.current) {
+      sidebarScrollRef.current.scrollLeft = 0;
+    }
   }, [activeTab]);
+
+  // Check sidebar scroll position (for mobile)
+  useEffect(() => {
+    const checkSidebarScroll = () => {
+      if (sidebarScrollRef.current && window.innerWidth <= 768) {
+        const { scrollLeft, scrollWidth, clientWidth } = sidebarScrollRef.current;
+        const canScrollLeft = scrollLeft > 10;
+        const canScrollRight = scrollLeft < scrollWidth - clientWidth - 10;
+        
+        setCanScrollSidebarLeft(canScrollLeft);
+        setCanScrollSidebarRight(canScrollRight);
+
+        // Auto-select the item in view based on scroll position
+        const container = sidebarScrollRef.current;
+        const containerWidth = container.clientWidth;
+        const itemWidth = containerWidth - 80 + 8 + 40; // Full width item + gap + margins
+        const currentIndex = Math.round(scrollLeft / itemWidth);
+        
+        // Get current tab content
+        const currentContent = tabContents.find(tc => tc.tab_type === activeTab);
+        if (currentContent && currentContent.sidebar_items) {
+          // Simple normalization for auto-scroll
+          const items = Array.isArray(currentContent.sidebar_items) 
+            ? currentContent.sidebar_items 
+            : Object.values(currentContent.sidebar_items);
+          
+          if (items[currentIndex]) {
+            const item = items[currentIndex];
+            const itemId = typeof item === 'object' && item !== null && 'id' in item 
+              ? item.id 
+              : `item_${currentIndex}`;
+            
+            if (activeSidebarItem?.id !== itemId) {
+              const sidebarItem = typeof item === 'string'
+                ? { id: `item_${currentIndex}`, title: item, sort_order: currentIndex }
+                : { ...item, id: itemId };
+              setActiveSidebarItem(sidebarItem as SidebarItem);
+            }
+          }
+        }
+      }
+    };
+
+    const scrollElement = sidebarScrollRef.current;
+    if (scrollElement && window.innerWidth <= 768) {
+      // Initial check
+      checkSidebarScroll();
+      // Delayed checks after render
+      setTimeout(() => checkSidebarScroll(), 100);
+      setTimeout(() => checkSidebarScroll(), 300);
+      
+      scrollElement.addEventListener('scroll', checkSidebarScroll);
+      window.addEventListener('resize', checkSidebarScroll);
+      
+      return () => {
+        scrollElement.removeEventListener('scroll', checkSidebarScroll);
+        window.removeEventListener('resize', checkSidebarScroll);
+      };
+    }
+  }, [activeTab, tabContents, activeSidebarItem]);
 
   // Re-check scroll when tab changes (for "Our Doctors" section)
   useEffect(() => {
@@ -303,6 +384,35 @@ const DepartmentDetailsPage: React.FC = () => {
           const { scrollLeft, scrollWidth, clientWidth } = doctorScrollRef.current;
           setCanScrollDoctorLeft(scrollLeft > 10);
           setCanScrollDoctorRight(scrollLeft < scrollWidth - clientWidth - 10);
+        }
+      }, 400);
+    }
+  };
+
+  const scrollSidebar = (direction: 'left' | 'right') => {
+    if (sidebarScrollRef.current) {
+      const container = sidebarScrollRef.current;
+      const containerWidth = container.clientWidth;
+      const itemWidth = containerWidth - 80; // Account for arrow space (40px each side)
+      const gap = 8;
+      const scrollAmount = itemWidth + gap + 40; // Item + gap + half margins
+      
+      const currentScroll = container.scrollLeft;
+      const targetScroll = direction === 'left' 
+        ? currentScroll - scrollAmount 
+        : currentScroll + scrollAmount;
+      
+      container.scrollTo({
+        left: targetScroll,
+        behavior: 'smooth'
+      });
+
+      // Update arrows after scroll animation completes
+      setTimeout(() => {
+        if (sidebarScrollRef.current) {
+          const { scrollLeft, scrollWidth, clientWidth } = sidebarScrollRef.current;
+          setCanScrollSidebarLeft(scrollLeft > 10);
+          setCanScrollSidebarRight(scrollLeft < scrollWidth - clientWidth - 10);
         }
       }, 400);
     }
@@ -448,7 +558,14 @@ const DepartmentDetailsPage: React.FC = () => {
           flexWrap: 'wrap',
           justifyContent: 'center',
         }}>
-          <div style={{
+          <div 
+            onClick={(e) => {
+              e.stopPropagation();
+              if (doctor.branch?.id) {
+                navigate(`/branches?id=${doctor.branch.id}`);
+              }
+            }}
+            style={{
             padding: '4px 8px',
             background: '#FFFFFF',
             border: '1px solid #D9D9D9',
@@ -456,10 +573,29 @@ const DepartmentDetailsPage: React.FC = () => {
             fontSize: '12px',
             color: '#6A6A6A',
             fontFamily: 'Nunito, sans-serif',
+            cursor: doctor.branch?.id ? 'pointer' : 'default',
+            transition: 'all 0.2s ease',
+          }}
+          onMouseEnter={(e) => {
+            if (doctor.branch?.id) {
+              e.currentTarget.style.background = '#F0F0F0';
+              e.currentTarget.style.borderColor = '#0155CB';
+            }
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = '#FFFFFF';
+            e.currentTarget.style.borderColor = '#D9D9D9';
           }}>
             {doctor.branch?.name || doctor.location}
           </div>
-          <div style={{
+          <div 
+            onClick={(e) => {
+              e.stopPropagation();
+              if (department?.id) {
+                navigate(`/departments/${department.id}`);
+              }
+            }}
+            style={{
             padding: '4px 8px',
             background: '#A7FAFC',
             borderRadius: '24px',
@@ -467,6 +603,16 @@ const DepartmentDetailsPage: React.FC = () => {
             color: '#061F42',
             fontFamily: 'Nunito, sans-serif',
             fontWeight: 600,
+            cursor: department?.id ? 'pointer' : 'default',
+            transition: 'all 0.2s ease',
+          }}
+          onMouseEnter={(e) => {
+            if (department?.id) {
+              e.currentTarget.style.background = '#8FF0F2';
+            }
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = '#A7FAFC';
           }}>
             {department?.name}
           </div>
@@ -631,19 +777,111 @@ const DepartmentDetailsPage: React.FC = () => {
     const normalizedItems = normalizeSidebarItems(items, includeOverview, tabType);
     if (normalizedItems.length === 0) return null;
     
+    const isMobile = window.innerWidth <= 768;
+    
     return (
       <div style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'flex-start',
-        padding: '8px',
-        gap: '8px',
-        width: window.innerWidth <= 768 ? '100%' : '287px',
-        background: '#F3F4F6',
-        borderRadius: '12px',
+        position: 'relative',
+        width: isMobile ? '100%' : '287px',
         flexShrink: 0,
       }}>
-        {normalizedItems.map((item, index) => {
+        {/* Left Arrow (Mobile Only) */}
+        {isMobile && canScrollSidebarLeft && (
+          <button
+            onClick={() => scrollSidebar('left')}
+            style={{
+              position: 'absolute',
+              left: '0',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              zIndex: 10,
+              width: '32px',
+              height: '32px',
+              borderRadius: '50%',
+              background: 'rgba(255, 255, 255, 0.95)',
+              border: '2px solid #15C9FA',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
+              transition: 'all 0.2s ease',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = '#15C9FA';
+              e.currentTarget.style.transform = 'translateY(-50%) scale(1.1)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.95)';
+              e.currentTarget.style.transform = 'translateY(-50%) scale(1)';
+            }}
+          >
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+              <path d="M7.5 2L3.5 6L7.5 10" stroke="#061F42" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
+        )}
+
+        {/* Right Arrow (Mobile Only) */}
+        {isMobile && canScrollSidebarRight && (
+          <button
+            onClick={() => scrollSidebar('right')}
+            style={{
+              position: 'absolute',
+              right: '0',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              zIndex: 10,
+              width: '32px',
+              height: '32px',
+              borderRadius: '50%',
+              background: 'rgba(255, 255, 255, 0.95)',
+              border: '2px solid #15C9FA',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
+              transition: 'all 0.2s ease',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = '#15C9FA';
+              e.currentTarget.style.transform = 'translateY(-50%) scale(1.1)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.95)';
+              e.currentTarget.style.transform = 'translateY(-50%) scale(1)';
+            }}
+          >
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+              <path d="M4.5 2L8.5 6L4.5 10" stroke="#061F42" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
+        )}
+
+        {/* Sidebar Items Container */}
+        <div 
+          ref={sidebarScrollRef}
+          style={{
+            display: 'flex',
+            flexDirection: isMobile ? 'row' : 'column',
+            alignItems: 'flex-start',
+            padding: isMobile ? '8px' : '8px',
+            gap: '8px',
+            width: '100%',
+            background: '#F3F4F6',
+            borderRadius: '12px',
+            overflowX: isMobile ? 'auto' : 'visible',
+            overflowY: 'visible',
+            WebkitOverflowScrolling: 'touch',
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none',
+            scrollSnapType: isMobile ? 'x mandatory' : 'none',
+            scrollPaddingLeft: isMobile ? '40px' : '0',
+            scrollPaddingRight: isMobile ? '40px' : '0',
+          }}
+        >
+          {normalizedItems.map((item, index) => {
           // Determine if this item is selected
           let isSelected = false;
           if (item.id === 'overview_main' || item.title === 'Overview') {
@@ -657,24 +895,29 @@ const DepartmentDetailsPage: React.FC = () => {
           return (
             <div
               key={item.id || `sidebar-${index}`}
-              onClick={() => handleSidebarItemChange(item)}
+              onClick={() => !isMobile && handleSidebarItemChange(item)}
               style={{
                 boxSizing: 'border-box',
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'center',
-                alignItems: (item.id === 'overview_main' || item.title === 'Overview') ? 'center' : 'flex-start',
+                alignItems: isMobile ? 'center' : ((item.id === 'overview_main' || item.title === 'Overview') ? 'center' : 'flex-start'),
                 padding: '12px',
-                width: window.innerWidth <= 768 ? '100%' : '271px',
+                width: isMobile ? 'calc(100% - 80px)' : '271px',
+                minWidth: isMobile ? 'calc(100% - 80px)' : 'auto',
                 height: '44px',
                 background: isSelected ? '#DAF8FF' : '#FFFFFF',
                 border: isSelected ? '2px solid #15C9FA' : '1px solid #D8D8D8',
                 borderRadius: '12px',
-                cursor: 'pointer',
+                cursor: isMobile ? 'default' : 'pointer',
                 transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                 transform: isSelected ? 'translateX(4px)' : 'translateX(0)',
                 boxShadow: isSelected ? '0 4px 12px rgba(21, 201, 250, 0.2)' : '0 1px 3px rgba(0, 0, 0, 0.05)',
                 animation: `fadeInLeft 0.3s ease-out ${index * 0.05}s both`,
+                flexShrink: 0,
+                scrollSnapAlign: isMobile ? 'center' : 'none',
+                marginLeft: isMobile && index === 0 ? '40px' : '0',
+                marginRight: isMobile ? '40px' : '0',
               }}
               onMouseEnter={(e) => {
                 if (!isSelected) {
@@ -696,7 +939,7 @@ const DepartmentDetailsPage: React.FC = () => {
                 fontWeight: isSelected ? 700 : 600,
                 fontSize: '16px',
                 lineHeight: '14px',
-                textAlign: (item.id === 'overview_main' || item.title === 'Overview') ? 'center' : 'left',
+                textAlign: isMobile ? 'center' : ((item.id === 'overview_main' || item.title === 'Overview') ? 'center' : 'left'),
                 color: '#061F42',
                 transition: 'font-weight 0.2s ease',
               }}>
@@ -705,6 +948,7 @@ const DepartmentDetailsPage: React.FC = () => {
             </div>
           );
         })}
+        </div>
       </div>
     );
   };
@@ -990,17 +1234,6 @@ const DepartmentDetailsPage: React.FC = () => {
       displayServiceList = content.service_list;
     }
 
-    // Calculate dynamic image height based on sidebar items count
-    const sidebarItemsCount = normalizeSidebarItems(content.sidebar_items, true, content.tab_type).length;
-    const baseHeight = 400;
-    // Match exact sidebar height: for 10 items = 528px
-    const itemHeight = 44; // Each item height  
-    const gap = 8; // Gap between items
-    const containerPadding = 16; // 8px top + 8px bottom
-    const calculatedHeight = sidebarItemsCount > 7 
-      ? (sidebarItemsCount * itemHeight + (sidebarItemsCount - 1) * gap + containerPadding) 
-      : baseHeight;
-
     return (
       <div style={{
         display: 'flex',
@@ -1037,11 +1270,12 @@ const DepartmentDetailsPage: React.FC = () => {
           >
             {displayImage && (
               <div style={{
-                height: window.innerWidth <= 768 ? 'auto' : `${calculatedHeight}px`,
+                position: 'relative',
                 borderRadius: '12px',
                 overflow: 'hidden',
                 boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)',
-                transition: 'box-shadow 0.3s ease, height 0.3s ease',
+                transition: 'box-shadow 0.3s ease',
+                background: '#F5F5F5',
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.15)';
@@ -1050,6 +1284,25 @@ const DepartmentDetailsPage: React.FC = () => {
                 e.currentTarget.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.1)';
               }}
               >
+                {sidebarImageLoading && (
+                  <div style={{
+                    width: '100%',
+                    padding: '100px 0',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    background: '#F5F5F5',
+                  }}>
+                    <div style={{
+                      width: '48px',
+                      height: '48px',
+                      border: '4px solid #E5E7EB',
+                      borderTop: '4px solid #15C9FA',
+                      borderRadius: '50%',
+                      animation: 'spin 1s linear infinite',
+                    }} />
+                  </div>
+                )}
                 <img
                   src={(window.innerWidth <= 768 && (actualSidebarItem?.mobile_image || content.mobile_image)) 
                     ? (actualSidebarItem?.mobile_image || content.mobile_image) 
@@ -1060,6 +1313,18 @@ const DepartmentDetailsPage: React.FC = () => {
                     height: '100%',
                     objectFit: 'cover',
                     transition: 'transform 0.5s ease',
+                    display: sidebarImageLoading ? 'none' : 'block',
+                  }}
+                  onLoad={(e) => {
+                    const imgElement = e.target as HTMLImageElement;
+                    const newImageUrl = imgElement.src;
+                    if (newImageUrl !== currentSidebarImageUrl) {
+                      setCurrentSidebarImageUrl(newImageUrl);
+                      setSidebarImageLoading(false);
+                    }
+                  }}
+                  onError={() => {
+                    setSidebarImageLoading(false);
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.transform = 'scale(1.03)';
@@ -2057,7 +2322,7 @@ const DepartmentDetailsPage: React.FC = () => {
         display: 'flex',
         alignItems: 'flex-start',
         justifyContent: 'center',
-        padding: window.innerWidth <= 768 ? '90px 16px 20px 16px' : '180px 20px 40px 20px',
+        padding: window.innerWidth <= 768 ? '90px 16px 20px 16px' : '131px 20px 40px 20px',
       }}>
         <div style={{
           width: '100%',
@@ -2238,7 +2503,7 @@ const DepartmentDetailsPage: React.FC = () => {
               <h3 style={{
                 fontFamily: 'Nunito, sans-serif',
                 fontWeight: 600,
-                fontSize: '32px',
+                fontSize: window.innerWidth <= 768 ? '24px' : '32px',
                 lineHeight: '40px',
                 color: '#061F42',
                 margin: '0 0 24px 0',
@@ -2248,12 +2513,13 @@ const DepartmentDetailsPage: React.FC = () => {
 
               <div style={{
                 position: 'relative',
-                maxWidth: '1400px',
+                maxWidth: window.innerWidth <= 768 ? '100%' : '1400px',
                 margin: '0 auto',
-                padding: '0 60px',
+                padding: window.innerWidth <= 768 ? '0' : '0 60px',
+                overflow: 'hidden',
               }}>
                 {/* Left Arrow */}
-                {doctors.length > 4 && canScrollDoctorLeft && (
+                {doctors.length > (window.innerWidth <= 768 ? 1 : 4) && canScrollDoctorLeft && window.innerWidth > 768 && (
                   <button 
                     onClick={() => scrollDoctors('left')}
                     style={{
@@ -2306,16 +2572,21 @@ const DepartmentDetailsPage: React.FC = () => {
                   ref={doctorScrollRef}
                   style={{
                     display: 'flex',
-                    gap: '20px',
+                    gap: window.innerWidth <= 768 ? '12px' : '20px',
                     overflowX: 'auto',
                     overflowY: 'hidden',
                     scrollbarWidth: 'none',
                     msOverflowStyle: 'none',
-                    padding: '0',
+                    padding: window.innerWidth <= 768 ? '0 8px' : '0',
+                    WebkitOverflowScrolling: 'touch',
                   }}
                 >
                   {doctors.map((doctor, index) => (
-                    <div key={doctor.id} style={{ flex: '0 0 300px' }}>
+                    <div key={doctor.id} style={{ 
+                      flex: window.innerWidth <= 768 ? '0 0 calc(100vw - 48px)' : '0 0 300px',
+                      minWidth: window.innerWidth <= 768 ? 'calc(100vw - 48px)' : '300px',
+                      maxWidth: window.innerWidth <= 768 ? 'calc(100vw - 48px)' : '300px',
+                    }}>
                       {renderDoctorCard(doctor, index)}
                     </div>
                   ))}
@@ -2323,7 +2594,7 @@ const DepartmentDetailsPage: React.FC = () => {
                 </div>
 
                 {/* Right Arrow */}
-                {doctors.length > 4 && (
+                {doctors.length > (window.innerWidth <= 768 ? 1 : 4) && window.innerWidth > 768 && (
                   <button 
                     onClick={() => scrollDoctors('right')}
                     disabled={!canScrollDoctorRight}

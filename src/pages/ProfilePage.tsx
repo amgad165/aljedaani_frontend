@@ -19,6 +19,7 @@ const ProfilePage = () => {
   const { isAuthenticated, user, isLoading, refreshUser } = useAuth();
   const [searchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState<TabType>('dashboard');
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   // Handle tab parameter from URL
   useEffect(() => {
@@ -147,8 +148,19 @@ const ProfilePage = () => {
       display: 'flex', 
       flexDirection: 'column', 
       minHeight: '100vh',
+      width: '100vw',
       background: 'linear-gradient(180deg, #B1E8F4 0%, #B1E8F4 100%)',
+      overflowX: 'hidden',
+      position: 'relative',
     }}>
+      <style>{`
+        /* Hide scrollbar for tabs on mobile */
+        @media (max-width: 768px) {
+          div::-webkit-scrollbar {
+            display: none;
+          }
+        }
+      `}</style>
       <FloatingContactButtons />
       {ResponsiveNavbar}
 
@@ -157,16 +169,19 @@ const ProfilePage = () => {
         flex: 1,
         display: 'flex',
         justifyContent: 'center',
-        padding: window.innerWidth <= 768 ? '0 16px 20px 16px' : '0 40px 40px 40px',
+        padding: window.innerWidth <= 768 ? '0 12px 20px 12px' : '0 40px 40px 40px',
         marginTop: window.innerWidth <= 768 ? '90px' : '170px',
+        boxSizing: 'border-box',
+        width: '100%',
       }}>
         <div style={{
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'flex-start',
           padding: '0px',
-          width: window.innerWidth <= 768 ? '100%' : '1400px',
-          maxWidth: '100%',
+          width: '100%',
+          maxWidth: window.innerWidth <= 768 ? '100%' : '1400px',
+          boxSizing: 'border-box',
         }}>
           {/* Page Title */}
           <h1 style={{
@@ -181,22 +196,153 @@ const ProfilePage = () => {
           </h1>
 
           {/* Tabs */}
-          <div style={{
-            display: 'flex',
-            flexDirection: 'row',
-            alignItems: 'flex-start',
-            padding: '0px',
-            width: '100%',
-            height: window.innerWidth <= 768 ? 'auto' : '40px',
-            flexWrap: window.innerWidth <= 768 ? 'wrap' : 'nowrap',
-            gap: '1px',
-            overflowX: window.innerWidth <= 768 ? 'auto' : 'visible',
-            WebkitOverflowScrolling: 'touch',
-          }}>
-            {tabs.map((tab) => (
-              <TabButton key={tab.id} tab={tab} isActive={activeTab === tab.id} />
-            ))}
-          </div>
+          {window.innerWidth <= 768 ? (
+            // Mobile: Dropdown Selector
+            <div style={{
+              position: 'relative',
+              width: '100%',
+              marginBottom: '0',
+            }}>
+              <button
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                style={{
+                  display: 'flex',
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  padding: '12px 16px',
+                  width: '100%',
+                  height: '48px',
+                  background: '#FFFFFF',
+                  border: '2px solid #00ABDA',
+                  borderRadius: isDropdownOpen ? '12px 12px 0 0' : '12px',
+                  cursor: 'pointer',
+                  boxSizing: 'border-box',
+                  transition: 'all 0.2s ease',
+                }}
+              >
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                }}>
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                    <path d="M3 6h14M3 10h14M3 14h14" stroke="#061F42" strokeWidth="2" strokeLinecap="round"/>
+                  </svg>
+                  <span style={{
+                    fontFamily: 'Nunito, sans-serif',
+                    fontWeight: 600,
+                    fontSize: '16px',
+                    color: '#061F42',
+                  }}>
+                    {tabs.find(t => t.id === activeTab)?.label}
+                  </span>
+                </div>
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 20 20"
+                  fill="none"
+                  style={{
+                    transform: isDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                    transition: 'transform 0.2s ease',
+                  }}
+                >
+                  <path d="M5 7.5L10 12.5L15 7.5" stroke="#061F42" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </button>
+
+              {/* Dropdown Menu */}
+              {isDropdownOpen && (
+                <>
+                  {/* Backdrop */}
+                  <div
+                    onClick={() => setIsDropdownOpen(false)}
+                    style={{
+                      position: 'fixed',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      zIndex: 998,
+                    }}
+                  />
+                  {/* Menu */}
+                  <div style={{
+                    position: 'absolute',
+                    top: '48px',
+                    left: 0,
+                    right: 0,
+                    background: '#FFFFFF',
+                    border: '2px solid #00ABDA',
+                    borderTop: 'none',
+                    borderRadius: '0 0 12px 12px',
+                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                    zIndex: 999,
+                    maxHeight: '300px',
+                    overflowY: 'auto',
+                  }}>
+                    {tabs.map((tab) => (
+                      <div
+                        key={tab.id}
+                        onClick={() => {
+                          setActiveTab(tab.id);
+                          setIsDropdownOpen(false);
+                        }}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          padding: '12px 16px',
+                          cursor: 'pointer',
+                          background: activeTab === tab.id ? '#E0F7FA' : 'transparent',
+                          borderBottom: '1px solid #F0F0F0',
+                          transition: 'background 0.2s ease',
+                        }}
+                        onMouseEnter={(e) => {
+                          if (activeTab !== tab.id) {
+                            e.currentTarget.style.background = '#F5F5F5';
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = activeTab === tab.id ? '#E0F7FA' : 'transparent';
+                        }}
+                      >
+                        <span style={{
+                          fontFamily: 'Nunito, sans-serif',
+                          fontWeight: activeTab === tab.id ? 600 : 400,
+                          fontSize: '15px',
+                          color: activeTab === tab.id ? '#00838F' : '#061F42',
+                        }}>
+                          {tab.label}
+                        </span>
+                        {activeTab === tab.id && (
+                          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                            <path d="M16.6667 5L7.50004 14.1667L3.33337 10" stroke="#00ABDA" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+          ) : (
+            // Desktop: Horizontal Tabs
+            <div style={{
+              display: 'flex',
+              flexDirection: 'row',
+              alignItems: 'flex-start',
+              padding: '0px',
+              width: '100%',
+              height: '40px',
+              gap: '1px',
+            }}>
+              {tabs.map((tab) => (
+                <TabButton key={tab.id} tab={tab} isActive={activeTab === tab.id} />
+              ))}
+            </div>
+          )}
 
           {/* Content Area */}
           <div style={{
@@ -206,12 +352,13 @@ const ProfilePage = () => {
             alignItems: 'flex-start',
             padding: window.innerWidth <= 768 ? '8px' : '12px',
             gap: '12px',
-            width: window.innerWidth <= 768 ? '100%' : '1400px',
-            maxWidth: '100%',
+            width: '100%',
             minHeight: '460px',
             background: '#FCFCFC',
             boxShadow: '0px 4px 5px rgba(0, 0, 0, 0.25)',
-            borderRadius: '0px 12px 12px 12px',
+            borderRadius: window.innerWidth <= 768 ? '12px' : '0px 12px 12px 12px',
+            boxSizing: 'border-box',
+            marginTop: window.innerWidth <= 768 ? '8px' : '0',
           }}>
             {renderTabContent()}
           </div>

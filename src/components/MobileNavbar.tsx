@@ -24,7 +24,7 @@ const MobileNavbar = () => {
       left: 0,
       right: 0,
       width: '100%',
-      backgroundColor: '#FFFFFF',
+      backgroundColor: '#061F42',
       boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
       zIndex: 1000,
     }}>
@@ -39,7 +39,7 @@ const MobileNavbar = () => {
         {/* Logo */}
         <a href="/" style={{ display: 'flex', alignItems: 'center' }}>
           <img 
-            src="/assets/images/Logo/Logo.svg" 
+            src="/assets/images/Logo/logo_white.svg" 
             width="120" 
             height="42" 
             alt="Logo" 
@@ -65,7 +65,7 @@ const MobileNavbar = () => {
           <span style={{
             width: '100%',
             height: '3px',
-            background: '#061F42',
+            background: '#FFFFFF',
             borderRadius: '3px',
             transition: 'all 0.3s',
             transform: isMenuOpen ? 'translateY(8px) rotate(45deg)' : 'none',
@@ -73,7 +73,7 @@ const MobileNavbar = () => {
           <span style={{
             width: '100%',
             height: '3px',
-            background: '#061F42',
+            background: '#FFFFFF',
             borderRadius: '3px',
             transition: 'all 0.3s',
             opacity: isMenuOpen ? 0 : 1,
@@ -81,7 +81,7 @@ const MobileNavbar = () => {
           <span style={{
             width: '100%',
             height: '3px',
-            background: '#061F42',
+            background: '#FFFFFF',
             borderRadius: '3px',
             transition: 'all 0.3s',
             transform: isMenuOpen ? 'translateY(-10px) rotate(-45deg)' : 'none',
@@ -97,7 +97,7 @@ const MobileNavbar = () => {
           left: 0,
           right: 0,
           bottom: 0,
-          backgroundColor: '#FFFFFF',
+          backgroundColor: '#061F42',
           overflowY: 'auto',
           zIndex: 999,
         }}>
@@ -114,13 +114,13 @@ const MobileNavbar = () => {
                   fontFamily: 'Nunito, sans-serif',
                   fontWeight: 600,
                   fontSize: '16px',
-                  color: '#061F42',
+                  color: '#FFFFFF',
                   textDecoration: 'none',
                   borderRadius: '8px',
                   marginBottom: '4px',
                   transition: 'background 0.2s',
                 }}
-                onMouseEnter={(e) => e.currentTarget.style.background = '#F0F9FF'}
+                onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)'}
                 onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
               >
                 {item.label}
@@ -131,7 +131,7 @@ const MobileNavbar = () => {
           {/* User Actions */}
           <div style={{
             padding: '16px',
-            borderTop: '1px solid #E5E7EB',
+            borderTop: '1px solid rgba(255, 255, 255, 0.2)',
             marginTop: '8px',
           }}>
             {isAuthenticated && user ? (
@@ -151,7 +151,7 @@ const MobileNavbar = () => {
                     textDecoration: 'none',
                     borderRadius: '8px',
                     marginBottom: '8px',
-                    background: '#F3F4F6',
+                    background: '#FFFFFF',
                   }}
                 >
                   <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -200,9 +200,9 @@ const MobileNavbar = () => {
                     fontFamily: 'Nunito, sans-serif',
                     fontWeight: 600,
                     fontSize: '16px',
-                    color: '#061F42',
+                    color: '#FFFFFF',
                     textDecoration: 'none',
-                    border: '2px solid #061F42',
+                    border: '2px solid #FFFFFF',
                     borderRadius: '8px',
                     textAlign: 'center',
                     marginBottom: '12px',
@@ -219,9 +219,9 @@ const MobileNavbar = () => {
                     fontFamily: 'Nunito, sans-serif',
                     fontWeight: 600,
                     fontSize: '16px',
-                    color: '#FFFFFF',
+                    color: '#0B67E7',
                     textDecoration: 'none',
-                    background: '#061F42',
+                    background: '#FFFFFF',
                     borderRadius: '8px',
                     textAlign: 'center',
                     marginBottom: '12px',
@@ -243,7 +243,8 @@ const MobileNavbar = () => {
                 fontSize: '16px',
                 color: '#FFFFFF',
                 textDecoration: 'none',
-                background: '#00ABDA',
+                background: 'rgba(255, 255, 255, 0.25)',
+                border: '2px solid #FFFFFF',
                 borderRadius: '8px',
                 textAlign: 'center',
               }}

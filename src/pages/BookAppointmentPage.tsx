@@ -43,6 +43,8 @@ interface StepInfo {
 interface VerificationData {
   mobileNumber: string;
   otpCode: string;
+  verificationId: number | null;
+  verificationToken: string | null;
 }
 
 interface ProfileData {
@@ -220,6 +222,8 @@ const BookAppointmentPage = () => {
   const [verificationData, setVerificationData] = useState<VerificationData>({
     mobileNumber: '',
     otpCode: '',
+    verificationId: null,
+    verificationToken: null,
   });
   
   const [profileData, setProfileData] = useState<ProfileData>({
@@ -461,10 +465,23 @@ const BookAppointmentPage = () => {
     setIsSubmitting(true);
     try {
       const { authService } = await import('../services/authService');
-      await authService.sendRegistrationOtp(verificationData.mobileNumber);
+      const response = await authService.sendPhoneVerificationOtp(verificationData.mobileNumber, 'registration');
+      
+      // Store the verification_id for later verification
+      setVerificationData(prev => ({ 
+        ...prev, 
+        verificationId: response.verification_id 
+      }));
+      
       setIsOtpSent(true);
       setResendCountdown(30); // 30 second countdown
-      success('OTP sent to your mobile number!');
+      
+      // Show OTP in development mode
+      if (response.debug && response.otp) {
+        success(`OTP sent: ${response.otp}`);
+      } else {
+        success(`OTP sent to ${response.phone_masked}`);
+      }
     } catch (err: unknown) {
       if (typeof err === 'object' && err !== null && 'message' in err) {
         showError((err as { message: string }).message);
@@ -482,9 +499,22 @@ const BookAppointmentPage = () => {
     setIsSubmitting(true);
     try {
       const { authService } = await import('../services/authService');
-      await authService.sendRegistrationOtp(verificationData.mobileNumber);
+      const response = await authService.sendPhoneVerificationOtp(verificationData.mobileNumber, 'registration');
+      
+      // Update the verification_id with the new one
+      setVerificationData(prev => ({ 
+        ...prev, 
+        verificationId: response.verification_id 
+      }));
+      
       setResendCountdown(30); // Reset countdown
-      success('OTP resent to your mobile number!');
+      
+      // Show OTP in development mode
+      if (response.debug && response.otp) {
+        success(`OTP resent: ${response.otp}`);
+      } else {
+        success(`OTP resent to ${response.phone_masked}`);
+      }
     } catch (err: unknown) {
       if (typeof err === 'object' && err !== null && 'message' in err) {
         showError((err as { message: string }).message);
@@ -502,15 +532,28 @@ const BookAppointmentPage = () => {
       return;
     }
 
+    if (!verificationData.verificationId) {
+      showError('Verification session expired. Please request a new OTP.');
+      setIsOtpSent(false);
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const { authService } = await import('../services/authService');
-      const result = await authService.verifyRegistrationOtp(
+      const result = await authService.verifyPhoneOtp(
         verificationData.mobileNumber,
-        verificationData.otpCode
+        verificationData.otpCode,
+        verificationData.verificationId
       );
       
-      if (result.verified) {
+      if (result.success) {
+        // Store the verification token for registration
+        setVerificationData(prev => ({ 
+          ...prev, 
+          verificationToken: result.verification_token 
+        }));
+        success('Phone verified successfully!');
         setCurrentStep(2);
       } else {
         showError('Invalid OTP. Please try again.');
@@ -518,6 +561,10 @@ const BookAppointmentPage = () => {
     } catch (err: unknown) {
       if (typeof err === 'object' && err !== null && 'message' in err) {
         showError((err as { message: string }).message);
+      } else if (typeof err === 'object' && err !== null && 'errors' in err) {
+        const errors = (err as { errors: Record<string, string[]> }).errors;
+        const errorMessages = Object.values(errors).flat().join('\n');
+        showError(errorMessages);
       } else {
         showError('OTP verification failed. Please try again.');
       }
@@ -578,6 +625,7 @@ const BookAppointmentPage = () => {
         national_id: profileData.nationalId || undefined,
         address: profileData.address || undefined,
         phone: verificationData.mobileNumber,
+        verification_token: verificationData.verificationToken || undefined,
         profile_photo: profileData.profilePhoto || undefined,
       });
       
@@ -1189,7 +1237,7 @@ const BookAppointmentPage = () => {
           {/* Form Fields Grid */}
           <div style={{
             display: 'flex',
-            flexDirection: 'row',
+            flexDirection: window.innerWidth <= 768 ? 'column' : 'row',
             gap: '16px',
             width: '100%',
           }}>
@@ -1199,6 +1247,7 @@ const BookAppointmentPage = () => {
               flexDirection: 'column',
               gap: '24px',
               flex: 1,
+              width: window.innerWidth <= 768 ? '100%' : 'auto',
             }}>
               <InputField
                 label="First Name"
@@ -1257,6 +1306,7 @@ const BookAppointmentPage = () => {
               flexDirection: 'column',
               gap: '24px',
               flex: 1,
+              width: window.innerWidth <= 768 ? '100%' : 'auto',
             }}>
               <InputField
                 label="Gender"
@@ -1323,10 +1373,11 @@ const BookAppointmentPage = () => {
           {/* Email Row */}
           <div style={{
             display: 'flex',
+            flexDirection: window.innerWidth <= 768 ? 'column' : 'row',
             gap: '24px',
             width: '100%',
           }}>
-            <div style={{ flex: 1 }}>
+            <div style={{ flex: 1, width: window.innerWidth <= 768 ? '100%' : 'auto' }}>
               <InputField
                 label="Email"
                 placeholder="Type your email"
@@ -1336,16 +1387,17 @@ const BookAppointmentPage = () => {
                 required
               />
             </div>
-            <div style={{ flex: 1 }} />
+            {window.innerWidth > 768 && <div style={{ flex: 1 }} />}
           </div>
           
           {/* Password Row */}
           <div style={{
             display: 'flex',
+            flexDirection: window.innerWidth <= 768 ? 'column' : 'row',
             gap: '24px',
             width: '100%',
           }}>
-            <div style={{ flex: 1 }}>
+            <div style={{ flex: 1, width: window.innerWidth <= 768 ? '100%' : 'auto' }}>
               <InputField
                 label="Enter Password"
                 placeholder="Type your password"
@@ -1355,7 +1407,7 @@ const BookAppointmentPage = () => {
                 required
               />
             </div>
-            <div style={{ flex: 1 }}>
+            <div style={{ flex: 1, width: window.innerWidth <= 768 ? '100%' : 'auto' }}>
               <InputField
                 label="Re-enter Password"
                 placeholder="Confirm password"
@@ -1713,7 +1765,8 @@ const BookAppointmentPage = () => {
                 }}>
                   {/* Loading Calendar Placeholder */}
                   <div style={{
-                    width: '308px',
+                    width: window.innerWidth <= 768 ? '100%' : '308px',
+                    maxWidth: '308px',
                     height: '321px',
                     background: '#F9FAFB',
                     borderRadius: '12px',
@@ -1763,9 +1816,11 @@ const BookAppointmentPage = () => {
               {!loadingSlots && doctorSelection.doctor && (
                 <div style={{
                   display: 'flex',
+                  flexDirection: window.innerWidth <= 768 ? 'column' : 'row',
                   gap: '24px',
                   width: '100%',
                   justifyContent: 'center',
+                  alignItems: window.innerWidth <= 768 ? 'center' : 'flex-start',
                 }}>
                   {/* Calendar */}
                   <Calendar
@@ -1781,7 +1836,9 @@ const BookAppointmentPage = () => {
                       display: 'flex',
                       flexDirection: 'column',
                       gap: '16px',
-                      minWidth: '260px',
+                      width: window.innerWidth <= 768 ? '100%' : 'auto',
+                      minWidth: window.innerWidth <= 768 ? 'auto' : '260px',
+                      maxWidth: window.innerWidth <= 768 ? '308px' : 'none',
                     }}>
                       <div style={{
                         padding: '20px',
@@ -1819,14 +1876,15 @@ const BookAppointmentPage = () => {
                           display: 'flex',
                           flexDirection: 'column',
                           gap: '8px',
-                          width: '308px',
+                          width: '100%',
+                          maxWidth: '308px',
                         }}>
                           <div style={{
                             boxSizing: 'border-box',
                             position: 'relative',
                             display: 'flex',
                             alignItems: 'center',
-                            width: '308px',
+                            width: '100%',
                             height: '40px',
                             border: '1.5px solid #A4A5A5',
                             borderRadius: '8px',
@@ -1971,7 +2029,7 @@ const BookAppointmentPage = () => {
                     display: 'flex',
                     flexDirection: 'row',
                     alignItems: 'flex-start',
-                    gap: '4px',
+                    gap: '8px',
                     flexWrap: 'wrap',
                   }}>
                     {doctorSelection.branch && (
@@ -1979,13 +2037,13 @@ const BookAppointmentPage = () => {
                         display: 'flex',
                         justifyContent: 'center',
                         alignItems: 'center',
-                        padding: '4px 8px',
+                        padding: '8px 14px',
                         background: '#FFFFFF',
                         border: '1px solid #D9D9D9',
-                        borderRadius: '24px',
+                        borderRadius: '6px',
                         fontFamily: 'Nunito, sans-serif',
-                        fontWeight: 500,
-                        fontSize: '12px',
+                        fontWeight: 600,
+                        fontSize: '14px',
                         color: '#061F42',
                       }}>
                         {branches.find(b => b.id === parseInt(doctorSelection.branch))?.name || 'Branch'}
@@ -1996,12 +2054,12 @@ const BookAppointmentPage = () => {
                         display: 'flex',
                         justifyContent: 'center',
                         alignItems: 'center',
-                        padding: '4px 8px',
+                        padding: '8px 14px',
                         background: '#A7FAFC',
-                        borderRadius: '24px',
+                        borderRadius: '6px',
                         fontFamily: 'Nunito, sans-serif',
-                        fontWeight: 500,
-                        fontSize: '12px',
+                        fontWeight: 600,
+                        fontSize: '14px',
                         color: '#061F42',
                       }}>
                         {departments.find(d => d.id === parseInt(doctorSelection.specialty))?.name || 'Specialty'}
@@ -2012,12 +2070,12 @@ const BookAppointmentPage = () => {
                         display: 'flex',
                         justifyContent: 'center',
                         alignItems: 'center',
-                        padding: '4px 8px',
+                        padding: '8px 14px',
                         background: '#1F57A4',
-                        borderRadius: '24px',
+                        borderRadius: '6px',
                         fontFamily: 'Nunito, sans-serif',
-                        fontWeight: 500,
-                        fontSize: '12px',
+                        fontWeight: 600,
+                        fontSize: '14px',
                         color: '#FFFFFF',
                       }}>
                         {doctors.find(d => d.id === parseInt(doctorSelection.doctor))?.name || 'Doctor'}
@@ -2028,12 +2086,12 @@ const BookAppointmentPage = () => {
                         display: 'flex',
                         justifyContent: 'center',
                         alignItems: 'center',
-                        padding: '4px 8px',
+                        padding: '8px 14px',
                         background: '#E8F5E9',
-                        borderRadius: '24px',
+                        borderRadius: '6px',
                         fontFamily: 'Nunito, sans-serif',
-                        fontWeight: 500,
-                        fontSize: '12px',
+                        fontWeight: 600,
+                        fontSize: '14px',
                         color: '#2E7D32',
                       }}>
                         {new Date(doctorSelection.selectedDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} at {doctorSelection.selectedSlot}
@@ -2049,12 +2107,13 @@ const BookAppointmentPage = () => {
           <div style={{
             boxSizing: 'border-box',
             display: 'flex',
-            flexDirection: 'row',
+            flexDirection: window.innerWidth <= 768 ? 'column' : 'row',
             justifyContent: 'space-between',
-            alignItems: 'flex-start',
+            alignItems: window.innerWidth <= 768 ? 'stretch' : 'flex-start',
             padding: '12px 0px',
-            gap: '8px',
-            width: '612px',
+            gap: window.innerWidth <= 768 ? '12px' : '8px',
+            width: '100%',
+            maxWidth: window.innerWidth <= 768 ? '100%' : '612px',
             borderTop: '1px solid #DADADA',
           }}>
             <button
@@ -2145,7 +2204,7 @@ const BookAppointmentPage = () => {
         alignItems: 'center',
         gap: '24px',
         width: '100%',
-        maxWidth: '1072px',
+        maxWidth: window.innerWidth <= 768 ? '100%' : '1072px',
       }}>
         {/* Header Section */}
         <div style={{
@@ -2153,7 +2212,8 @@ const BookAppointmentPage = () => {
           flexDirection: 'column',
           alignItems: 'center',
           gap: '24px',
-          width: '612px',
+          width: '100%',
+          maxWidth: window.innerWidth <= 768 ? '100%' : '612px',
         }}>
           <div style={{
             display: 'flex',
@@ -2181,11 +2241,12 @@ const BookAppointmentPage = () => {
             width: '100%',
             fontFamily: 'Nunito, sans-serif',
             fontWeight: 600,
-            fontSize: '16px',
-            lineHeight: '20px',
+            fontSize: window.innerWidth <= 768 ? '14px' : '16px',
+            lineHeight: window.innerWidth <= 768 ? '18px' : '20px',
             textAlign: 'center',
             color: '#061F42',
             margin: 0,
+            padding: window.innerWidth <= 768 ? '0 8px' : '0',
           }}>
             Confirm your appointment
           </p>
@@ -2196,9 +2257,10 @@ const BookAppointmentPage = () => {
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'flex-start',
-          padding: '16px',
+          padding: window.innerWidth <= 768 ? '12px' : '16px',
           gap: '12px',
-          width: '612px',
+          width: '100%',
+          maxWidth: window.innerWidth <= 768 ? '100%' : '612px',
           background: '#F8F8F8',
           borderRadius: '12px',
         }}>
@@ -2305,12 +2367,13 @@ const BookAppointmentPage = () => {
         <div style={{
           boxSizing: 'border-box',
           display: 'flex',
-          flexDirection: 'row',
+          flexDirection: window.innerWidth <= 768 ? 'column' : 'row',
           justifyContent: 'space-between',
-          alignItems: 'flex-start',
+          alignItems: window.innerWidth <= 768 ? 'stretch' : 'flex-start',
           padding: '12px 0px',
-          gap: '8px',
-          width: '612px',
+          gap: window.innerWidth <= 768 ? '12px' : '8px',
+          width: '100%',
+          maxWidth: window.innerWidth <= 768 ? '100%' : '612px',
           borderTop: '1px solid #DADADA',
         }}>
           <button
@@ -2383,7 +2446,7 @@ const BookAppointmentPage = () => {
           alignItems: 'center',
           gap: '24px',
           width: '100%',
-          maxWidth: '612px',
+          maxWidth: window.innerWidth <= 768 ? '100%' : '612px',
         }}>
           {/* Content Card */}
           <div style={{
@@ -2391,9 +2454,9 @@ const BookAppointmentPage = () => {
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            padding: '32px',
+            padding: window.innerWidth <= 768 ? '24px 16px' : '32px',
             gap: '24px',
-            width: '612px',
+            width: '100%',
             background: '#FFFFFF',
             borderRadius: '12px',
           }}>
