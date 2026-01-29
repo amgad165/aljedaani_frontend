@@ -14,11 +14,12 @@ const AdminHisMedical: React.FC = () => {
   const [perPage] = useState(15);
   const [selectedReport, setSelectedReport] = useState<HisMedicalReport | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const [searchColumn, setSearchColumn] = useState('FILENUMBER');
 
   useEffect(() => {
     fetchData();
     fetchReports();
-  }, [currentPage, searchTerm]);
+  }, [currentPage]);
 
   const fetchData = async () => {
     try {
@@ -34,6 +35,7 @@ const AdminHisMedical: React.FC = () => {
     try {
       const data = await getHisMedicalReports(currentPage, perPage, {
         search: searchTerm || undefined,
+        search_column: searchColumn,
       });
       setReports(data.data);
       setTotalPages(data.pagination?.last_page || 1);
@@ -48,7 +50,11 @@ const AdminHisMedical: React.FC = () => {
 
   const handleSearchChange = (value: string) => {
     setSearchTerm(value);
+  };
+
+  const handleSearch = () => {
     setCurrentPage(1);
+    fetchReports();
   };
 
   const formatDate = (dateString: string | null) => {
@@ -175,11 +181,30 @@ const AdminHisMedical: React.FC = () => {
           boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
         }}>
           <div style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
+            <select
+              value={searchColumn}
+              onChange={(e) => setSearchColumn(e.target.value)}
+              style={{
+                padding: '12px 16px',
+                border: '2px solid #e5e7eb',
+                borderRadius: '8px',
+                fontSize: '16px',
+                outline: 'none',
+                cursor: 'pointer',
+                background: 'white',
+              }}
+            >
+              <option value="FILENUMBER">File Number</option>
+              <option value="CODE">CODE</option>
+              <option value="PATNAME">Patient Name</option>
+              <option value="DRNAME">Doctor</option>
+            </select>
             <input
               type="text"
-              placeholder="Search by File Number, CODE, Patient Name, Doctor..."
+              placeholder={`Search by ${searchColumn}...`}
               value={searchTerm}
               onChange={(e) => handleSearchChange(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
               style={{
                 flex: 1,
                 minWidth: '300px',
@@ -193,6 +218,24 @@ const AdminHisMedical: React.FC = () => {
               onFocus={(e) => e.target.style.borderColor = '#088395'}
               onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
             />
+            <button
+              onClick={handleSearch}
+              style={{
+                padding: '12px 24px',
+                background: '#05bfdb',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                fontSize: '16px',
+                fontWeight: '500',
+                cursor: 'pointer',
+                transition: 'background 0.2s',
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.background = '#088395'}
+              onMouseLeave={(e) => e.currentTarget.style.background = '#05bfdb'}
+            >
+              Search
+            </button>
             <button
               onClick={fetchReports}
               style={{

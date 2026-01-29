@@ -15,11 +15,12 @@ const AdminHisRadiology: React.FC = () => {
   const [selectedReport, setSelectedReport] = useState<HisRadiologyReport | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [panicOnly, setPanicOnly] = useState(false);
+  const [searchColumn, setSearchColumn] = useState('FILENUMBER');
 
   useEffect(() => {
     fetchData();
     fetchReports();
-  }, [currentPage, searchTerm, panicOnly]);
+  }, [currentPage, panicOnly]);
 
   const fetchData = async () => {
     try {
@@ -35,6 +36,7 @@ const AdminHisRadiology: React.FC = () => {
     try {
       const data = await getHisRadiologyReports(currentPage, perPage, {
         search: searchTerm || undefined,
+        search_column: searchColumn,
         panic_only: panicOnly || undefined,
       });
       setReports(data.data);
@@ -50,7 +52,11 @@ const AdminHisRadiology: React.FC = () => {
 
   const handleSearchChange = (value: string) => {
     setSearchTerm(value);
+  };
+
+  const handleSearch = () => {
     setCurrentPage(1);
+    fetchReports();
   };
 
   const formatDate = (dateString: string | null) => {
@@ -177,11 +183,30 @@ const AdminHisRadiology: React.FC = () => {
           boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
         }}>
           <div style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
+            <select
+              value={searchColumn}
+              onChange={(e) => setSearchColumn(e.target.value)}
+              style={{
+                padding: '12px 16px',
+                border: '2px solid #e5e7eb',
+                borderRadius: '8px',
+                fontSize: '16px',
+                outline: 'none',
+                cursor: 'pointer',
+                background: 'white',
+              }}
+            >
+              <option value="FILENUMBER">File Number</option>
+              <option value="SLNO">SLNO</option>
+              <option value="INVOICENO">Invoice No</option>
+              <option value="PATIENTCODE">Patient Code</option>
+            </select>
             <input
               type="text"
-              placeholder="Search by File Number, SLNO, Invoice, Patient Code..."
+              placeholder={`Search by ${searchColumn}...`}
               value={searchTerm}
               onChange={(e) => handleSearchChange(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
               style={{
                 flex: 1,
                 minWidth: '300px',
@@ -195,6 +220,24 @@ const AdminHisRadiology: React.FC = () => {
               onFocus={(e) => e.target.style.borderColor = '#088395'}
               onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
             />
+            <button
+              onClick={handleSearch}
+              style={{
+                padding: '12px 24px',
+                background: '#05bfdb',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                fontSize: '16px',
+                fontWeight: '500',
+                cursor: 'pointer',
+                transition: 'background 0.2s',
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.background = '#088395'}
+              onMouseLeave={(e) => e.currentTarget.style.background = '#05bfdb'}
+            >
+              Search
+            </button>
             <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
               <input
                 type="checkbox"

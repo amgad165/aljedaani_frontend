@@ -22,6 +22,20 @@ interface VerificationData {
   otpCode: string;
   verificationId: number | null;
   verificationToken: string | null;
+  nationalId: string;
+  medicalRecordNumber: string;
+  userExists: boolean;
+  hisPatientExists: boolean;
+  hisPatientData: {
+    first_name?: string;
+    middle_name?: string;
+    last_name?: string;
+    gender?: string;
+    date_of_birth?: string;
+    nationality?: string;
+    medical_record_number?: string;
+    national_id?: string;
+  } | null;
 }
 
 interface ProfileData {
@@ -52,6 +66,7 @@ const InputField = ({
   required = false,
   hasDropdown = false,
   options = [],
+  disabled = false,
 }: {
   label: string;
   placeholder: string;
@@ -61,6 +76,7 @@ const InputField = ({
   required?: boolean;
   hasDropdown?: boolean;
   options?: { value: string; label: string }[];
+  disabled?: boolean;
 }) => {
   if (hasDropdown) {
     return (
@@ -68,9 +84,10 @@ const InputField = ({
         label={label}
         placeholder={placeholder}
         value={value}
-        onChange={onChange}
+        onChange={disabled ? () => {} : onChange}
         options={options}
         required={required}
+        disabled={disabled}
       />
     );
   }
@@ -102,12 +119,15 @@ const InputField = ({
         height: type === 'textarea' ? '72px' : '44px',
         border: '1.5px solid #D1D5DB',
         borderRadius: '10px',
-        background: '#FFFFFF',
+        background: disabled ? '#F9FAFB' : '#FFFFFF',
         transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
+        opacity: disabled ? 0.7 : 1,
       }}
       onFocus={(e) => {
-        e.currentTarget.style.borderColor = '#0155CB';
-        e.currentTarget.style.boxShadow = '0 0 0 3px rgba(1, 85, 203, 0.1)';
+        if (!disabled) {
+          e.currentTarget.style.borderColor = '#0155CB';
+          e.currentTarget.style.boxShadow = '0 0 0 3px rgba(1, 85, 203, 0.1)';
+        }
       }}
       onBlur={(e) => {
         e.currentTarget.style.borderColor = '#D1D5DB';
@@ -119,6 +139,7 @@ const InputField = ({
             value={value}
             onChange={(e) => onChange(e.target.value)}
             placeholder={placeholder}
+            disabled={disabled}
             style={{
               flex: 1,
               border: 'none',
@@ -131,6 +152,7 @@ const InputField = ({
               resize: 'none',
               height: '100%',
               background: 'transparent',
+              cursor: disabled ? 'not-allowed' : 'text',
             }}
           />
         ) : (
@@ -139,6 +161,7 @@ const InputField = ({
             value={value}
             onChange={(e) => onChange(e.target.value)}
             placeholder={placeholder}
+            disabled={disabled}
             style={{
               flex: 1,
               border: 'none',
@@ -150,6 +173,7 @@ const InputField = ({
               color: '#061F42',
               background: 'transparent',
               width: '100%',
+              cursor: disabled ? 'not-allowed' : 'text',
             }}
           />
         )}
@@ -165,7 +189,7 @@ const SignUpPage = () => {
   const { toasts, removeToast, success, error: showError, warning } = useToast();
   
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [currentStep, setCurrentStep] = useState(1);
+  const [currentStep, setCurrentStep] = useState(1); // 1: Phone, 2: ID/MR Check, 3: Profile
   const [isOtpSent, setIsOtpSent] = useState(false);
   const [resendCountdown, setResendCountdown] = useState(0);
   
@@ -174,6 +198,11 @@ const SignUpPage = () => {
     otpCode: '',
     verificationId: null,
     verificationToken: null,
+    nationalId: '',
+    medicalRecordNumber: '',
+    userExists: false,
+    hisPatientExists: false,
+    hisPatientData: null,
   });
   
   const [profileData, setProfileData] = useState<ProfileData>({
@@ -204,8 +233,9 @@ const SignUpPage = () => {
 
   const getSteps = (): StepInfo[] => {
     return [
-      { id: 1, title: 'Verification', status: currentStep > 1 ? 'completed' : currentStep === 1 ? 'current' : 'upcoming' },
-      { id: 2, title: 'Create Profile', status: currentStep === 2 ? 'current' : 'upcoming' },
+      { id: 1, title: 'Phone Verification', status: currentStep > 1 ? 'completed' : currentStep === 1 ? 'current' : 'upcoming' },
+      { id: 2, title: 'Identity Verification', status: currentStep > 2 ? 'completed' : currentStep === 2 ? 'current' : 'upcoming' },
+      { id: 3, title: 'Create Profile', status: currentStep === 3 ? 'current' : currentStep > 3 ? 'completed' : 'upcoming' },
     ];
   };
 
@@ -289,7 +319,7 @@ const SignUpPage = () => {
           ...prev,
           verificationToken: result.verification_token,
         }));
-        setCurrentStep(2);
+        setCurrentStep(2); // Move to ID/MR verification step
         success(result.message);
       } else {
         showError('Invalid OTP. Please try again.');
@@ -303,6 +333,98 @@ const SignUpPage = () => {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleCheckUserByPhoneAndId = async () => {
+    // Validate that at least one ID is provided
+    if (!verificationData.nationalId && !verificationData.medicalRecordNumber) {
+      warning('Please enter either ID Number or Medical Record Number');
+      return;
+    }
+
+    const idType = verificationData.nationalId ? 'national_id' : 'medical_record';
+    const identifier = verificationData.nationalId || verificationData.medicalRecordNumber;
+
+    setIsSubmitting(true);
+    try {
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
+      const response = await fetch(`${API_BASE_URL}/auth/check-user-by-phone-id`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({
+          phone: verificationData.mobileNumber,
+          id_type: idType,
+          identifier: identifier,
+          verification_token: verificationData.verificationToken,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        showError(data.message || 'Failed to verify identity.');
+        return;
+      }
+
+      if (data.success) {
+        // HIS patient exists - pre-fill the form
+        if (data.his_patient_exists) {
+          // Pre-fill profile data from HIS
+          if (data.patient_data) {
+            setProfileData(prev => ({
+              ...prev,
+              firstName: data.patient_data.first_name || '',
+              middleName: data.patient_data.middle_name || '',
+              lastName: data.patient_data.last_name || '',
+              gender: data.patient_data.gender || '',
+              dateOfBirth: data.patient_data.date_of_birth || '',
+              nationality: data.patient_data.nationality || '',
+              medicalRecordNumber: data.patient_data.medical_record_number || verificationData.medicalRecordNumber,
+              nationalId: data.patient_data.national_id || verificationData.nationalId,
+            }));
+          }
+          success('Record found! Your information has been pre-filled.');
+        } else {
+          // New patient - no pre-fill needed
+          success('Ready to create your profile.');
+        }
+
+        setVerificationData(prev => ({
+          ...prev,
+          hisPatientExists: data.his_patient_exists,
+          hisPatientData: data.patient_data || null,
+        }));
+        setCurrentStep(3); // Move to profile creation step
+      } else {
+        showError(data.message || 'Failed to verify identity.');
+      }
+    } catch (err) {
+      showError('Network error. Please try again.');
+      console.error('ID verification error:', err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Handle National ID change with mutual exclusion
+  const handleNationalIdChange = (value: string) => {
+    setVerificationData(prev => ({
+      ...prev,
+      nationalId: value,
+      medicalRecordNumber: value ? '' : prev.medicalRecordNumber, // Clear MR if National ID is entered
+    }));
+  };
+
+  // Handle Medical Record Number change with mutual exclusion
+  const handleMedicalRecordNumberChange = (value: string) => {
+    setVerificationData(prev => ({
+      ...prev,
+      medicalRecordNumber: value,
+      nationalId: value ? '' : prev.nationalId, // Clear National ID if MR is entered
+    }));
   };
 
   const handleProfileSubmit = async () => {
@@ -410,6 +532,7 @@ const SignUpPage = () => {
         height: '80px',
         marginTop: '16px',
       }}>
+        {/* Connection Lines */}
         <div style={{
           position: 'absolute',
           display: 'flex',
@@ -420,12 +543,23 @@ const SignUpPage = () => {
           right: '51px',
           top: 'calc(50% - 2.5px)',
           zIndex: 0,
+          gap: '0',
         }}>
+          {/* Line 1 to 2 */}
           <div
             style={{
               flex: 1,
               height: '5px',
               background: currentStep > 1 ? '#0155CB' : '#DADADA',
+              transition: 'background 0.3s ease',
+            }}
+          />
+          {/* Line 2 to 3 */}
+          <div
+            style={{
+              flex: 1,
+              height: '5px',
+              background: currentStep > 2 ? '#0155CB' : '#DADADA',
               transition: 'background 0.3s ease',
             }}
           />
@@ -505,7 +639,7 @@ const SignUpPage = () => {
               color: '#0155CB',
               margin: 0,
             }}>
-              Verification
+              Phone Verification
             </h2>
             
             {renderProgressBar()}
@@ -519,7 +653,7 @@ const SignUpPage = () => {
               color: '#061F42',
               margin: '24px 0 0 0',
             }}>
-              Enter the mobile number and click on 'Send OTP', we will send you an OTP code
+              Enter your mobile number and verify with OTP
             </p>
           </div>
           
@@ -648,6 +782,276 @@ const SignUpPage = () => {
       );
     }
     
+    if (currentStep === 2) {
+      return (
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: '24px',
+          width: '100%',
+          maxWidth: '612px',
+        }}>
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            width: '100%',
+          }}>
+            <h2 style={{
+              fontFamily: 'Nunito, sans-serif',
+              fontWeight: 700,
+              fontSize: '20px',
+              lineHeight: '30px',
+              textAlign: 'center',
+              color: '#0155CB',
+              margin: 0,
+            }}>
+              Identity Verification
+            </h2>
+            
+            {renderProgressBar()}
+            
+            <p style={{
+              fontFamily: 'Nunito, sans-serif',
+              fontWeight: 600,
+              fontSize: '16px',
+              lineHeight: '20px',
+              textAlign: 'center',
+              color: '#061F42',
+              margin: '24px 0 0 0',
+              maxWidth: '500px',
+            }}>
+              Enter either your ID Number or Medical Record Number to verify your identity
+            </p>
+          </div>
+          
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '12px',
+            width: '400px',
+          }}>
+            {/* National ID Input */}
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'flex-start',
+              gap: '8px',
+              width: '100%',
+            }}>
+              <label style={{
+                fontFamily: 'Nunito, sans-serif',
+                fontWeight: 700,
+                fontSize: '16px',
+                lineHeight: '24px',
+                color: '#061F42',
+              }}>
+                ID Number
+              </label>
+              <div style={{
+                boxSizing: 'border-box',
+                display: 'flex',
+                alignItems: 'center',
+                padding: '12px',
+                gap: '12px',
+                width: '100%',
+                height: '44px',
+                border: '1.5px solid #D1D5DB',
+                borderRadius: '10px',
+                backgroundColor: verificationData.medicalRecordNumber ? '#F3F4F6' : '#FFFFFF',
+                opacity: verificationData.medicalRecordNumber ? 0.6 : 1,
+              }}>
+                <input
+                  type="text"
+                  placeholder="Enter your ID Number"
+                  value={verificationData.nationalId}
+                  onChange={(e) => handleNationalIdChange(e.target.value)}
+                  disabled={!!verificationData.medicalRecordNumber}
+                  style={{
+                    flex: 1,
+                    fontFamily: 'Nunito, sans-serif',
+                    fontWeight: 400,
+                    fontSize: '14px',
+                    lineHeight: '20px',
+                    color: '#061F42',
+                    border: 'none',
+                    outline: 'none',
+                    backgroundColor: 'transparent',
+                    cursor: verificationData.medicalRecordNumber ? 'not-allowed' : 'text',
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* OR Divider */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '16px',
+              width: '100%',
+              margin: '8px 0',
+            }}>
+              <div style={{
+                flex: 1,
+                height: '1px',
+                backgroundColor: '#E5E7EB',
+              }} />
+              <span style={{
+                fontFamily: 'Nunito, sans-serif',
+                fontSize: '14px',
+                fontWeight: 600,
+                color: '#6B7280',
+              }}>
+                OR
+              </span>
+              <div style={{
+                flex: 1,
+                height: '1px',
+                backgroundColor: '#E5E7EB',
+              }} />
+            </div>
+
+            {/* Medical Record Number Input */}
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'flex-start',
+              gap: '8px',
+              width: '100%',
+            }}>
+              <label style={{
+                fontFamily: 'Nunito, sans-serif',
+                fontWeight: 700,
+                fontSize: '16px',
+                lineHeight: '24px',
+                color: '#061F42',
+              }}>
+                Medical Record Number
+              </label>
+              <div style={{
+                boxSizing: 'border-box',
+                display: 'flex',
+                alignItems: 'center',
+                padding: '12px',
+                gap: '12px',
+                width: '100%',
+                height: '44px',
+                border: '1.5px solid #D1D5DB',
+                borderRadius: '10px',
+                backgroundColor: verificationData.nationalId ? '#F3F4F6' : '#FFFFFF',
+                opacity: verificationData.nationalId ? 0.6 : 1,
+              }}>
+                <input
+                  type="text"
+                  placeholder="Enter your Medical Record Number"
+                  value={verificationData.medicalRecordNumber}
+                  onChange={(e) => handleMedicalRecordNumberChange(e.target.value)}
+                  disabled={!!verificationData.nationalId}
+                  style={{
+                    flex: 1,
+                    fontFamily: 'Nunito, sans-serif',
+                    fontWeight: 400,
+                    fontSize: '14px',
+                    lineHeight: '20px',
+                    color: '#061F42',
+                    border: 'none',
+                    outline: 'none',
+                    backgroundColor: 'transparent',
+                    cursor: verificationData.nationalId ? 'not-allowed' : 'text',
+                  }}
+                />
+              </div>
+            </div>
+
+            <div style={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              gap: '4px',
+              marginTop: '8px',
+            }}>
+              <span style={{
+                fontFamily: 'Nunito, sans-serif',
+                fontWeight: 600,
+                fontSize: '14px',
+                color: '#A4A5A5',
+              }}>
+                Already registered?
+              </span>
+              <Link to="/login" style={{
+                fontFamily: 'Nunito, sans-serif',
+                fontWeight: 600,
+                fontSize: '14px',
+                color: '#0B67E7',
+                textDecoration: 'underline',
+              }}>
+                Sign in
+              </Link>
+            </div>
+            
+            <div style={{
+              width: '100%',
+              paddingTop: '12px',
+              borderTop: '1px solid #DADADA',
+              display: 'flex',
+              justifyContent: 'space-between',
+              marginTop: '24px',
+            }}>
+              <button
+                onClick={() => setCurrentStep(1)}
+                disabled={isSubmitting}
+                style={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  padding: '8px 12px',
+                  background: '#FFFFFF',
+                  border: '1px solid #061F42',
+                  borderRadius: '8px',
+                  cursor: isSubmitting ? 'not-allowed' : 'pointer',
+                }}
+              >
+                <span style={{
+                  fontFamily: 'Nunito, sans-serif',
+                  fontWeight: 600,
+                  fontSize: '14px',
+                  color: '#061F42',
+                }}>
+                  Back
+                </span>
+              </button>
+
+              <button
+                onClick={handleCheckUserByPhoneAndId}
+                disabled={isSubmitting || (!verificationData.nationalId && !verificationData.medicalRecordNumber)}
+                style={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  padding: '8px 12px',
+                  background: (isSubmitting || (!verificationData.nationalId && !verificationData.medicalRecordNumber)) ? '#A4A5A5' : '#061F42',
+                  borderRadius: '8px',
+                  border: 'none',
+                  cursor: (isSubmitting || (!verificationData.nationalId && !verificationData.medicalRecordNumber)) ? 'not-allowed' : 'pointer',
+                }}
+              >
+                <span style={{
+                  fontFamily: 'Nunito, sans-serif',
+                  fontWeight: 600,
+                  fontSize: '14px',
+                  color: '#FFFFFF',
+                }}>
+                  Continue
+                </span>
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    
     return (
       <div style={{
         display: 'flex',
@@ -690,6 +1094,47 @@ const SignUpPage = () => {
             Fill in your information to create your profile and verify your identity
           </p>
         </div>
+        
+        {/* HIS Data Info Banner */}
+        {verificationData.hisPatientExists && verificationData.hisPatientData && (
+          <div style={{
+            display: 'flex',
+            alignItems: 'flex-start',
+            gap: '12px',
+            padding: '16px',
+            width: '100%',
+            background: '#EFF6FF',
+            border: '1px solid #BFDBFE',
+            borderRadius: '10px',
+          }}>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
+              <circle cx="12" cy="12" r="10" stroke="#3B82F6" strokeWidth="2"/>
+              <path d="M12 16V12M12 8H12.01" stroke="#3B82F6" strokeWidth="2" strokeLinecap="round"/>
+            </svg>
+            <div style={{ flex: 1 }}>
+              <p style={{
+                fontFamily: 'Nunito, sans-serif',
+                fontWeight: 700,
+                fontSize: '14px',
+                lineHeight: '20px',
+                color: '#1E40AF',
+                margin: '0 0 4px 0',
+              }}>
+                HIS Record Found
+              </p>
+              <p style={{
+                fontFamily: 'Nunito, sans-serif',
+                fontWeight: 400,
+                fontSize: '14px',
+                lineHeight: '20px',
+                color: '#1E40AF',
+                margin: 0,
+              }}>
+                Your information from our hospital system has been pre-filled. Pre-filled fields (shown with gray background) cannot be edited. Please complete the remaining fields.
+              </p>
+            </div>
+          </div>
+        )}
         
         {/* Upload Profile Photo */}
         <div style={{
@@ -877,12 +1322,14 @@ const SignUpPage = () => {
               value={profileData.firstName}
               onChange={(value) => handleInputChange('firstName', value)}
               required
+              disabled={!!verificationData.hisPatientData?.first_name}
             />
             <InputField
               label="Middle Name(s)"
               placeholder="Type your middle name(s)"
               value={profileData.middleName}
               onChange={(value) => handleInputChange('middleName', value)}
+              disabled={!!verificationData.hisPatientData?.middle_name}
             />
             <InputField
               label="Last Name"
@@ -890,6 +1337,7 @@ const SignUpPage = () => {
               value={profileData.lastName}
               onChange={(value) => handleInputChange('lastName', value)}
               required
+              disabled={!!verificationData.hisPatientData?.last_name}
             />
             <InputField
               label="Nationality"
@@ -905,6 +1353,7 @@ const SignUpPage = () => {
                 { value: 'other', label: 'Other' },
               ]}
               required
+              disabled={!!verificationData.hisPatientData?.nationality && ['saudi', 'uae', 'egypt', 'jordan', 'other'].includes(verificationData.hisPatientData.nationality.toLowerCase())}
             />
             <InputField
               label="MR (Medical Record Number)"
@@ -912,6 +1361,7 @@ const SignUpPage = () => {
               value={profileData.medicalRecordNumber}
               onChange={(value) => handleInputChange('medicalRecordNumber', value)}
               required={!profileData.nationalId}
+              disabled={!!verificationData.hisPatientData?.medical_record_number}
             />
             <InputField
               label="ID Number"
@@ -919,6 +1369,7 @@ const SignUpPage = () => {
               value={profileData.nationalId}
               onChange={(value) => handleInputChange('nationalId', value)}
               required={!profileData.medicalRecordNumber}
+              disabled={!!verificationData.hisPatientData?.national_id}
             />
           </div>
           
@@ -939,6 +1390,7 @@ const SignUpPage = () => {
                 { value: 'female', label: 'Female' },
               ]}
               required
+              disabled={!!verificationData.hisPatientData?.gender}
             />
             <InputField
               label="Date of Birth"
@@ -947,6 +1399,7 @@ const SignUpPage = () => {
               onChange={(value) => handleInputChange('dateOfBirth', value)}
               type="date"
               required
+              disabled={!!verificationData.hisPatientData?.date_of_birth}
             />
             <InputField
               label="Marital Status"

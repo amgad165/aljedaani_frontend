@@ -75,6 +75,7 @@ export const getHisRadiologyReports = async (
   perPage: number = 15,
   filters?: {
     search?: string;
+    search_column?: string;
     file_number?: string;
     status?: string;
     department?: string;

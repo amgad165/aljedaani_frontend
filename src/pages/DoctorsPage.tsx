@@ -896,8 +896,8 @@ const DoctorsPage: React.FC = () => {
       {/* Doctors Grid */}
       <div style={{
         display: 'grid',
-        gridTemplateColumns: window.innerWidth <= 768 ? '1fr' : window.innerWidth <= 1024 ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)',
-        gap: window.innerWidth <= 768 ? '16px' : '12px',
+        gridTemplateColumns: window.innerWidth <= 550 ? '1fr' : window.innerWidth <= 768 ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)',
+        gap: window.innerWidth <= 768 ? '16px' : '36px',
         width: '100%',
         justifyContent: 'center',
       }}>

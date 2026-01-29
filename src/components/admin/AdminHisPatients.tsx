@@ -14,6 +14,7 @@ const AdminHisPatients: React.FC = () => {
   const [perPage] = useState(15);
   const [selectedPatient, setSelectedPatient] = useState<HisPatient | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const [searchColumn, setSearchColumn] = useState('FileNumber');
 
   useEffect(() => {
     fetchData();
@@ -21,7 +22,7 @@ const AdminHisPatients: React.FC = () => {
 
   useEffect(() => {
     fetchPatients();
-  }, [currentPage, searchTerm]);
+  }, [currentPage]);
 
   const fetchData = async () => {
     try {
@@ -35,7 +36,7 @@ const AdminHisPatients: React.FC = () => {
   const fetchPatients = async () => {
     setLoading(true);
     try {
-      const data = await getHisPatients(currentPage, perPage, searchTerm);
+      const data = await getHisPatients(currentPage, perPage, searchTerm, searchColumn);
       setPatients(data.data);
       setTotalPages(data.pagination?.last_page || 1);
       setTotalPatients(data.pagination?.total || 0);
@@ -49,7 +50,11 @@ const AdminHisPatients: React.FC = () => {
 
   const handleSearchChange = (value: string) => {
     setSearchTerm(value);
+  };
+
+  const handleSearch = () => {
     setCurrentPage(1);
+    fetchPatients();
   };
 
   const formatDate = (dateString: string | null) => {
@@ -185,14 +190,34 @@ const AdminHisPatients: React.FC = () => {
           overflow: 'hidden',
         }}>
           {/* Search Bar */}
-          <div style={{ padding: '24px', borderBottom: '1px solid #E5E7EB' }}>
+          <div style={{ padding: '24px', borderBottom: '1px solid #E5E7EB', display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
+            <select
+              value={searchColumn}
+              onChange={(e) => setSearchColumn(e.target.value)}
+              style={{
+                padding: '12px 16px',
+                border: '2px solid #e5e7eb',
+                borderRadius: '8px',
+                fontSize: '16px',
+                outline: 'none',
+                cursor: 'pointer',
+                background: 'white',
+              }}
+            >
+              <option value="FileNumber">File Number</option>
+              <option value="Name">Name</option>
+              <option value="Telephone">Phone</option>
+              <option value="NationalID">National ID</option>
+            </select>
             <input
               type="text"
-              placeholder="Search by name, file number, or phone..."
+              placeholder={`Search by ${searchColumn.replace(/([A-Z])/g, ' $1').trim()}...`}
               value={searchTerm}
               onChange={(e) => handleSearchChange(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
               style={{
-                width: '100%',
+                flex: 1,
+                minWidth: '300px',
                 padding: '12px 16px',
                 fontSize: '16px',
                 border: '2px solid #088395',
@@ -203,6 +228,24 @@ const AdminHisPatients: React.FC = () => {
               onFocus={(e) => e.target.style.borderColor = '#0a4d68'}
               onBlur={(e) => e.target.style.borderColor = '#088395'}
             />
+            <button
+              onClick={handleSearch}
+              style={{
+                padding: '12px 24px',
+                background: '#05bfdb',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                fontSize: '16px',
+                fontWeight: '500',
+                cursor: 'pointer',
+                transition: 'background 0.2s',
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.background = '#088395'}
+              onMouseLeave={(e) => e.currentTarget.style.background = '#05bfdb'}
+            >
+              Search
+            </button>
           </div>
 
           {/* Table */}

@@ -45,6 +45,20 @@ interface VerificationData {
   otpCode: string;
   verificationId: number | null;
   verificationToken: string | null;
+  nationalId: string;
+  medicalRecordNumber: string;
+  userExists: boolean;
+  hisPatientExists: boolean;
+  hisPatientData: {
+    first_name?: string;
+    middle_name?: string;
+    last_name?: string;
+    gender?: string;
+    date_of_birth?: string;
+    nationality?: string;
+    medical_record_number?: string;
+    national_id?: string;
+  } | null;
 }
 
 interface ProfileData {
@@ -89,6 +103,7 @@ const InputField = ({
   required = false,
   hasDropdown = false,
   options = [],
+  disabled = false,
 }: {
   label: string;
   placeholder: string;
@@ -100,6 +115,7 @@ const InputField = ({
   options?: { value: string; label: string }[];
   hasIcon?: boolean;
   iconType?: string;
+  disabled?: boolean;
 }) => {
   // For dropdown fields, use CustomSelect component
   if (hasDropdown) {
@@ -108,9 +124,10 @@ const InputField = ({
         label={label}
         placeholder={placeholder}
         value={value}
-        onChange={onChange}
+        onChange={disabled ? () => {} : onChange}
         options={options}
         required={required}
+        disabled={disabled}
       />
     );
   }
@@ -142,12 +159,15 @@ const InputField = ({
         height: type === 'textarea' ? '72px' : '44px',
         border: '1.5px solid #D1D5DB',
         borderRadius: '10px',
-        background: '#FFFFFF',
+        background: disabled ? '#F9FAFB' : '#FFFFFF',
         transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
+        opacity: disabled ? 0.7 : 1,
       }}
       onFocus={(e) => {
-        e.currentTarget.style.borderColor = '#0155CB';
-        e.currentTarget.style.boxShadow = '0 0 0 3px rgba(1, 85, 203, 0.1)';
+        if (!disabled) {
+          e.currentTarget.style.borderColor = '#0155CB';
+          e.currentTarget.style.boxShadow = '0 0 0 3px rgba(1, 85, 203, 0.1)';
+        }
       }}
       onBlur={(e) => {
         e.currentTarget.style.borderColor = '#D1D5DB';
@@ -159,6 +179,7 @@ const InputField = ({
             value={value}
             onChange={(e) => onChange(e.target.value)}
             placeholder={placeholder}
+            disabled={disabled}
             style={{
               flex: 1,
               border: 'none',
@@ -171,6 +192,7 @@ const InputField = ({
               resize: 'none',
               height: '100%',
               background: 'transparent',
+              cursor: disabled ? 'not-allowed' : 'text',
             }}
           />
         ) : (
@@ -179,6 +201,7 @@ const InputField = ({
             value={value}
             onChange={(e) => onChange(e.target.value)}
             placeholder={placeholder}
+            disabled={disabled}
             style={{
               flex: 1,
               border: 'none',
@@ -190,6 +213,7 @@ const InputField = ({
               color: '#061F42',
               background: 'transparent',
               width: '100%',
+              cursor: disabled ? 'not-allowed' : 'text',
             }}
           />
         )}
@@ -224,6 +248,11 @@ const BookAppointmentPage = () => {
     otpCode: '',
     verificationId: null,
     verificationToken: null,
+    nationalId: '',
+    medicalRecordNumber: '',
+    userExists: false,
+    hisPatientExists: false,
+    hisPatientData: null,
   });
   
   const [profileData, setProfileData] = useState<ProfileData>({
@@ -327,8 +356,8 @@ const BookAppointmentPage = () => {
 
   // Update step when authentication status changes (e.g., after page refresh)
   useEffect(() => {
-    if (isAuthenticated && user && currentStep < 3) {
-      setCurrentStep(3);
+    if (isAuthenticated && user && currentStep < 4) {
+      setCurrentStep(4);
     }
   }, [isAuthenticated, user]);
 
@@ -439,20 +468,22 @@ const BookAppointmentPage = () => {
   // Steps configuration
   const getSteps = (): StepInfo[] => {
     // For success step, show all steps as completed
-    if (currentStep === 5) {
+    if (currentStep === 6) {
       return [
-        { id: 1, title: 'Verification', status: 'completed' },
-        { id: 2, title: 'Create Profile', status: 'completed' },
-        { id: 3, title: 'Choose Doctor', status: 'completed' },
-        { id: 4, title: 'Confirmation', status: 'completed' },
+        { id: 1, title: 'Phone Verification', status: 'completed' },
+        { id: 2, title: 'Identity Verification', status: 'completed' },
+        { id: 3, title: 'Create Profile', status: 'completed' },
+        { id: 4, title: 'Choose Doctor', status: 'completed' },
+        { id: 5, title: 'Confirmation', status: 'completed' },
       ];
     }
     
     return [
-      { id: 1, title: 'Verification', status: currentStep > 1 ? 'completed' : currentStep === 1 ? 'current' : 'upcoming' },
-      { id: 2, title: 'Create Profile', status: currentStep > 2 ? 'completed' : currentStep === 2 ? 'current' : 'upcoming' },
-      { id: 3, title: 'Choose Doctor', status: currentStep > 3 ? 'completed' : currentStep === 3 ? 'current' : 'upcoming' },
-      { id: 4, title: 'Confirmation', status: currentStep === 4 ? 'current' : 'upcoming' },
+      { id: 1, title: 'Phone Verification', status: currentStep > 1 ? 'completed' : currentStep === 1 ? 'current' : 'upcoming' },
+      { id: 2, title: 'Identity Verification', status: currentStep > 2 ? 'completed' : currentStep === 2 ? 'current' : 'upcoming' },
+      { id: 3, title: 'Create Profile', status: currentStep > 3 ? 'completed' : currentStep === 3 ? 'current' : 'upcoming' },
+      { id: 4, title: 'Choose Doctor', status: currentStep > 4 ? 'completed' : currentStep === 4 ? 'current' : 'upcoming' },
+      { id: 5, title: 'Confirmation', status: currentStep === 5 ? 'current' : 'upcoming' },
     ];
   };
 
@@ -554,7 +585,7 @@ const BookAppointmentPage = () => {
           verificationToken: result.verification_token 
         }));
         success('Phone verified successfully!');
-        setCurrentStep(2);
+        setCurrentStep(2); // Move to ID/MR verification step
       } else {
         showError('Invalid OTP. Please try again.');
       }
@@ -571,6 +602,98 @@ const BookAppointmentPage = () => {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleCheckUserByPhoneAndId = async () => {
+    // Validate that at least one ID is provided
+    if (!verificationData.nationalId && !verificationData.medicalRecordNumber) {
+      warning('Please enter either ID Number or Medical Record Number');
+      return;
+    }
+
+    const idType = verificationData.nationalId ? 'national_id' : 'medical_record';
+    const identifier = verificationData.nationalId || verificationData.medicalRecordNumber;
+
+    setIsSubmitting(true);
+    try {
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
+      const response = await fetch(`${API_BASE_URL}/auth/check-user-by-phone-id`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({
+          phone: verificationData.mobileNumber,
+          id_type: idType,
+          identifier: identifier,
+          verification_token: verificationData.verificationToken,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        showError(data.message || 'Failed to verify identity.');
+        return;
+      }
+
+      if (data.success) {
+        // HIS patient exists - pre-fill the form
+        if (data.his_patient_exists) {
+          // Pre-fill profile data from HIS
+          if (data.patient_data) {
+            setProfileData(prev => ({
+              ...prev,
+              firstName: data.patient_data.first_name || '',
+              middleName: data.patient_data.middle_name || '',
+              lastName: data.patient_data.last_name || '',
+              gender: data.patient_data.gender || '',
+              dateOfBirth: data.patient_data.date_of_birth || '',
+              nationality: data.patient_data.nationality || '',
+              medicalRecordNumber: data.patient_data.medical_record_number || verificationData.medicalRecordNumber,
+              nationalId: data.patient_data.national_id || verificationData.nationalId,
+            }));
+          }
+          success('Record found! Your information has been pre-filled.');
+        } else {
+          // New patient - no pre-fill needed
+          success('Ready to create your profile.');
+        }
+
+        setVerificationData(prev => ({
+          ...prev,
+          hisPatientExists: data.his_patient_exists,
+          hisPatientData: data.patient_data || null,
+        }));
+        setCurrentStep(3); // Move to profile creation step
+      } else {
+        showError(data.message || 'Failed to verify identity.');
+      }
+    } catch (err) {
+      showError('Network error. Please try again.');
+      console.error('ID verification error:', err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Handle National ID change with mutual exclusion
+  const handleNationalIdChange = (value: string) => {
+    setVerificationData(prev => ({
+      ...prev,
+      nationalId: value,
+      medicalRecordNumber: value ? '' : prev.medicalRecordNumber,
+    }));
+  };
+
+  // Handle Medical Record Number change with mutual exclusion
+  const handleMedicalRecordNumberChange = (value: string) => {
+    setVerificationData(prev => ({
+      ...prev,
+      medicalRecordNumber: value,
+      nationalId: value ? '' : prev.nationalId,
+    }));
   };
 
   const handleProfileSubmit = async () => {
@@ -630,7 +753,7 @@ const BookAppointmentPage = () => {
       });
       
       // Registration successful - proceed to next step
-      setCurrentStep(3);
+      setCurrentStep(4);
     } catch (err: unknown) {
       // Handle validation errors from the backend
       if (typeof err === 'object' && err !== null && 'errors' in err) {
@@ -711,10 +834,10 @@ const BookAppointmentPage = () => {
       console.log('API Response:', response);
 
       if (response.success) {
-        console.log('Appointment created successfully, moving to step 5');
+        console.log('Appointment created successfully, moving to step 6');
         setAppointmentId(response.data.appointment.id);
-        setCurrentStep(5);
-        console.log('Current step set to 5');
+        setCurrentStep(6);
+        console.log('Current step set to 6');
       } else {
         console.error('API returned success: false');
         throw new Error(response.message || 'Failed to create appointment');
@@ -1013,7 +1136,203 @@ const BookAppointmentPage = () => {
     }
     
     if (currentStep === 2) {
-      // Step 2: Create Profile
+      // Step 2: Identity Verification (ID/MR Number)
+      return (
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: '24px',
+          width: '100%',
+          maxWidth: '612px',
+        }}>
+          {/* Header */}
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            width: '100%',
+          }}>
+            <h2 style={{
+              fontFamily: 'Nunito, sans-serif',
+              fontWeight: 700,
+              fontSize: '20px',
+              lineHeight: '30px',
+              textAlign: 'center',
+              color: '#0155CB',
+              margin: 0,
+            }}>
+              Identity Verification
+            </h2>
+            
+            {renderProgressBar()}
+            
+            <p style={{
+              fontFamily: 'Nunito, sans-serif',
+              fontWeight: 600,
+              fontSize: '16px',
+              lineHeight: '20px',
+              textAlign: 'center',
+              color: '#061F42',
+              margin: '24px 0 0 0',
+            }}>
+              Enter either your ID Number or Medical Record Number to verify your identity
+            </p>
+          </div>
+          
+          {/* Form */}
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '12px',
+            width: window.innerWidth <= 768 ? '100%' : '300px',
+            maxWidth: '100%',
+          }}>
+            <InputField
+              label="ID Number"
+              placeholder="Enter your ID Number"
+              value={verificationData.nationalId}
+              onChange={handleNationalIdChange}
+              disabled={!!verificationData.medicalRecordNumber}
+            />
+            
+            {/* OR Divider */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              width: '100%',
+              gap: '12px',
+              margin: '8px 0',
+            }}>
+              <div style={{ flex: 1, height: '1px', background: '#DADADA' }} />
+              <span style={{
+                fontFamily: 'Nunito, sans-serif',
+                fontWeight: 700,
+                fontSize: '14px',
+                color: '#A4A5A5',
+              }}>
+                OR
+              </span>
+              <div style={{ flex: 1, height: '1px', background: '#DADADA' }} />
+            </div>
+            
+            <InputField
+              label="Medical Record Number (MR)"
+              placeholder="Enter your Medical Record Number"
+              value={verificationData.medicalRecordNumber}
+              onChange={handleMedicalRecordNumberChange}
+              disabled={!!verificationData.nationalId}
+            />
+            
+            {/* Info banner for HIS patient data */}
+            {verificationData.hisPatientExists && verificationData.hisPatientData && (
+              <div style={{
+                display: 'flex',
+                flexDirection: 'row',
+                alignItems: 'flex-start',
+                padding: '12px 16px',
+                gap: '12px',
+                background: '#EFF6FF',
+                border: '1px solid #BFDBFE',
+                borderRadius: '8px',
+                width: '100%',
+                boxSizing: 'border-box',
+                marginTop: '12px',
+              }}>
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" style={{ flexShrink: 0, marginTop: '2px' }}>
+                  <path d="M10 18C14.4183 18 18 14.4183 18 10C18 5.58172 14.4183 2 10 2C5.58172 2 2 5.58172 2 10C2 14.4183 5.58172 18 10 18Z" fill="#3B82F6"/>
+                  <path d="M10 6V10M10 14H10.01" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+                </svg>
+                <div style={{ flex: 1 }}>
+                  <p style={{
+                    fontFamily: 'Nunito, sans-serif',
+                    fontWeight: 700,
+                    fontSize: '14px',
+                    lineHeight: '20px',
+                    color: '#1E40AF',
+                    margin: '0 0 4px 0',
+                  }}>
+                    Patient Record Found
+                  </p>
+                  <p style={{
+                    fontFamily: 'Nunito, sans-serif',
+                    fontWeight: 400,
+                    fontSize: '13px',
+                    lineHeight: '18px',
+                    color: '#1E40AF',
+                    margin: 0,
+                  }}>
+                    Your information has been pre-filled from hospital records. Pre-filled fields cannot be edited.
+                  </p>
+                </div>
+              </div>
+            )}
+            
+            {/* Action Buttons */}
+            <div style={{
+              width: '100%',
+              paddingTop: '12px',
+              borderTop: '1px solid #DADADA',
+              display: 'flex',
+              justifyContent: 'space-between',
+              marginTop: '24px',
+            }}>
+              <button
+                onClick={() => setCurrentStep(1)}
+                disabled={isSubmitting}
+                style={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  padding: '8px 12px',
+                  background: '#F3F4F6',
+                  border: '1px solid #D1D5DB',
+                  borderRadius: '8px',
+                  cursor: isSubmitting ? 'not-allowed' : 'pointer',
+                }}
+              >
+                <span style={{
+                  fontFamily: 'Nunito, sans-serif',
+                  fontWeight: 600,
+                  fontSize: '14px',
+                  color: '#374151',
+                }}>
+                  Back
+                </span>
+              </button>
+              
+              <button
+                onClick={handleCheckUserByPhoneAndId}
+                disabled={isSubmitting || (!verificationData.nationalId && !verificationData.medicalRecordNumber)}
+                style={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  padding: '8px 12px',
+                  background: isSubmitting || (!verificationData.nationalId && !verificationData.medicalRecordNumber) ? '#A4A5A5' : '#061F42',
+                  borderRadius: '8px',
+                  border: 'none',
+                  cursor: isSubmitting || (!verificationData.nationalId && !verificationData.medicalRecordNumber) ? 'not-allowed' : 'pointer',
+                }}
+              >
+                <span style={{
+                  fontFamily: 'Nunito, sans-serif',
+                  fontWeight: 600,
+                  fontSize: '14px',
+                  color: '#FFFFFF',
+                }}>
+                  Next
+                </span>
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    
+    if (currentStep === 3) {
+      // Step 3: Create Profile
       return (
         <div style={{
           display: 'flex',
@@ -1234,6 +1553,49 @@ const BookAppointmentPage = () => {
             </Link>
           </div>
           
+          {/* HIS Patient Data Info Banner */}
+          {verificationData.hisPatientExists && verificationData.hisPatientData && (
+            <div style={{
+              display: 'flex',
+              flexDirection: 'row',
+              alignItems: 'flex-start',
+              padding: '12px 16px',
+              gap: '12px',
+              background: '#EFF6FF',
+              border: '1px solid #BFDBFE',
+              borderRadius: '8px',
+              width: '100%',
+              boxSizing: 'border-box',
+            }}>
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" style={{ flexShrink: 0, marginTop: '2px' }}>
+                <path d="M10 18C14.4183 18 18 14.4183 18 10C18 5.58172 14.4183 2 10 2C5.58172 2 2 5.58172 2 10C2 14.4183 5.58172 18 10 18Z" fill="#3B82F6"/>
+                <path d="M10 6V10M10 14H10.01" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+              </svg>
+              <div style={{ flex: 1 }}>
+                <p style={{
+                  fontFamily: 'Nunito, sans-serif',
+                  fontWeight: 700,
+                  fontSize: '14px',
+                  lineHeight: '20px',
+                  color: '#1E40AF',
+                  margin: '0 0 4px 0',
+                }}>
+                  Hospital Records Found
+                </p>
+                <p style={{
+                  fontFamily: 'Nunito, sans-serif',
+                  fontWeight: 400,
+                  fontSize: '13px',
+                  lineHeight: '18px',
+                  color: '#1E40AF',
+                  margin: 0,
+                }}>
+                  Your information has been pre-filled from hospital records. Pre-filled fields cannot be edited.
+                </p>
+              </div>
+            </div>
+          )}
+          
           {/* Form Fields Grid */}
           <div style={{
             display: 'flex',
@@ -1254,6 +1616,7 @@ const BookAppointmentPage = () => {
                 placeholder="Type your first name"
                 value={profileData.firstName}
                 onChange={(value) => handleInputChange('firstName', value)}
+                disabled={!!verificationData.hisPatientData?.first_name}
                 required
               />
               <InputField
@@ -1261,12 +1624,14 @@ const BookAppointmentPage = () => {
                 placeholder="Type your middle name(s)"
                 value={profileData.middleName}
                 onChange={(value) => handleInputChange('middleName', value)}
+                disabled={!!verificationData.hisPatientData?.middle_name}
               />
               <InputField
                 label="Last Name"
                 placeholder="Type your last name"
                 value={profileData.lastName}
                 onChange={(value) => handleInputChange('lastName', value)}
+                disabled={!!verificationData.hisPatientData?.last_name}
                 required
               />
               <InputField
@@ -1274,6 +1639,7 @@ const BookAppointmentPage = () => {
                 placeholder="Select your nationality"
                 value={profileData.nationality}
                 onChange={(value) => handleInputChange('nationality', value)}
+                disabled={!!verificationData.hisPatientData?.nationality && ['saudi', 'uae', 'egypt', 'jordan', 'other'].includes(verificationData.hisPatientData.nationality.toLowerCase())}
                 hasDropdown
                 options={[
                   { value: 'saudi', label: 'Saudi Arabia' },
@@ -1289,6 +1655,7 @@ const BookAppointmentPage = () => {
                 placeholder="Enter your hospital MR number"
                 value={profileData.medicalRecordNumber}
                 onChange={(value) => handleInputChange('medicalRecordNumber', value)}
+                disabled={!!verificationData.hisPatientData?.medical_record_number}
                 required={!profileData.nationalId}
               />
               <InputField
@@ -1296,6 +1663,7 @@ const BookAppointmentPage = () => {
                 placeholder="Enter your National ID number"
                 value={profileData.nationalId}
                 onChange={(value) => handleInputChange('nationalId', value)}
+                disabled={!!verificationData.hisPatientData?.national_id}
                 required={!profileData.medicalRecordNumber}
               />
             </div>
@@ -1313,6 +1681,7 @@ const BookAppointmentPage = () => {
                 placeholder="Select your gender"
                 value={profileData.gender}
                 onChange={(value) => handleInputChange('gender', value)}
+                disabled={!!verificationData.hisPatientData?.gender}
                 hasDropdown
                 options={[
                   { value: 'male', label: 'Male' },
@@ -1325,6 +1694,7 @@ const BookAppointmentPage = () => {
                 placeholder="DD/MM/YYYY"
                 value={profileData.dateOfBirth}
                 onChange={(value) => handleInputChange('dateOfBirth', value)}
+                disabled={!!verificationData.hisPatientData?.date_of_birth}
                 type="date"
                 required
               />
@@ -1429,7 +1799,7 @@ const BookAppointmentPage = () => {
             alignItems: 'center',
           }}>
             <button
-              onClick={() => setCurrentStep(1)}
+              onClick={() => setCurrentStep(2)}
               style={{
                 boxSizing: 'border-box',
                 display: 'flex',
@@ -1485,8 +1855,8 @@ const BookAppointmentPage = () => {
       );
     }
     
-    if (currentStep === 3) {
-      // Step 3: Choose Doctor
+    if (currentStep === 4) {
+      // Step 4: Choose Doctor
       const isFormValid = doctorSelection.branch && doctorSelection.specialty && doctorSelection.doctor && doctorSelection.selectedDate && doctorSelection.selectedSlot;
       
       return (
@@ -2117,7 +2487,7 @@ const BookAppointmentPage = () => {
             borderTop: '1px solid #DADADA',
           }}>
             <button
-              onClick={() => setCurrentStep(isAuthenticated ? 3 : 2)}
+              onClick={() => setCurrentStep(isAuthenticated ? 4 : 3)}
               style={{
                 boxSizing: 'border-box',
                 display: 'flex',
@@ -2149,7 +2519,7 @@ const BookAppointmentPage = () => {
             <button
               onClick={() => {
                 if (isFormValid) {
-                  setCurrentStep(4);
+                  setCurrentStep(5);
                 }
               }}
               disabled={!isFormValid}
@@ -2180,8 +2550,8 @@ const BookAppointmentPage = () => {
       );
     }
     
-    if (currentStep === 4) {
-      // Step 4: Confirmation
+    if (currentStep === 5) {
+      // Step 5: Confirmation
       const selectedBranch = branches.find(b => b.id === parseInt(doctorSelection.branch));
       const selectedDepartment = departments.find(d => d.id === parseInt(doctorSelection.specialty));
       const selectedDoctor = doctors.find(d => d.id === parseInt(doctorSelection.doctor));
@@ -2377,7 +2747,7 @@ const BookAppointmentPage = () => {
           borderTop: '1px solid #DADADA',
         }}>
           <button
-            onClick={() => setCurrentStep(3)}
+            onClick={() => setCurrentStep(4)}
             style={{
               boxSizing: 'border-box',
               display: 'flex',
@@ -2437,8 +2807,8 @@ const BookAppointmentPage = () => {
       );
     }
     
-    if (currentStep === 5) {
-      // Step 5: Success
+    if (currentStep === 6) {
+      // Step 6: Success
       return (
         <div style={{
           display: 'flex',

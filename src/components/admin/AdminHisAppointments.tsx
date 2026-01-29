@@ -14,11 +14,12 @@ const AdminHisAppointments: React.FC = () => {
   const [perPage] = useState(15);
   const [selectedAppointment, setSelectedAppointment] = useState<HisAppointment | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const [searchColumn, setSearchColumn] = useState('file_number');
 
   useEffect(() => {
     fetchData();
     fetchAppointments();
-  }, [currentPage, searchTerm]);
+  }, [currentPage]);
 
   const fetchData = async () => {
     try {
@@ -32,7 +33,7 @@ const AdminHisAppointments: React.FC = () => {
   const fetchAppointments = async () => {
     setLoading(true);
     try {
-      const data = await getHisAppointments(currentPage, perPage, searchTerm);
+      const data = await getHisAppointments(currentPage, perPage, searchTerm, searchColumn);
       setAppointments(data.data);
       setTotalPages(data.pagination?.last_page || 1);
       setTotalAppointments(data.pagination?.total || 0);
@@ -46,7 +47,11 @@ const AdminHisAppointments: React.FC = () => {
 
   const handleSearchChange = (value: string) => {
     setSearchTerm(value);
+  };
+
+  const handleSearch = () => {
     setCurrentPage(1);
+    fetchAppointments();
   };
 
   const formatDate = (dateString: string | null) => {
@@ -172,14 +177,35 @@ const AdminHisAppointments: React.FC = () => {
           marginBottom: '24px',
           boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
         }}>
-          <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
+            <select
+              value={searchColumn}
+              onChange={(e) => setSearchColumn(e.target.value)}
+              style={{
+                padding: '12px 16px',
+                border: '2px solid #e5e7eb',
+                borderRadius: '8px',
+                fontSize: '16px',
+                outline: 'none',
+                cursor: 'pointer',
+                background: 'white',
+              }}
+            >
+              <option value="file_number">File Number</option>
+              <option value="app_code">App Code</option>
+              <option value="doctor_code">Doctor Code</option>
+              <option value="department">Department</option>
+              <option value="phone">Phone</option>
+            </select>
             <input
               type="text"
-              placeholder="Search by App Code, File Number, Doctor, Department, Phone..."
+              placeholder={`Search by ${searchColumn.replace('_', ' ')}...`}
               value={searchTerm}
               onChange={(e) => handleSearchChange(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
               style={{
                 flex: 1,
+                minWidth: '300px',
                 padding: '12px 16px',
                 border: '2px solid #e5e7eb',
                 borderRadius: '8px',
@@ -190,6 +216,24 @@ const AdminHisAppointments: React.FC = () => {
               onFocus={(e) => e.target.style.borderColor = '#088395'}
               onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
             />
+            <button
+              onClick={handleSearch}
+              style={{
+                padding: '12px 24px',
+                background: '#05bfdb',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                fontSize: '16px',
+                fontWeight: '500',
+                cursor: 'pointer',
+                transition: 'background 0.2s',
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.background = '#088395'}
+              onMouseLeave={(e) => e.currentTarget.style.background = '#05bfdb'}
+            >
+              Search
+            </button>
             <button
               onClick={fetchAppointments}
               style={{

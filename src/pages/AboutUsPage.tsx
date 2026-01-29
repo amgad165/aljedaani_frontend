@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useResponsiveNavbar } from '../hooks/useResponsiveNavbar';
 import Footer from '../components/Footer';
 import FloatingContactButtons from '../components/FloatingContactButtons';
 
-type TabType = 'history' | 'overview' | 'mission' | 'values' | 'awards' | 'leadership';
+type TabType = 'overview' | 'mission' | 'values' | 'awards' | 'leadership';
 
 interface TabContent {
   id: TabType;
@@ -17,39 +17,35 @@ interface TabContent {
 const AboutUsPage = () => {
   const ResponsiveNavbar = useResponsiveNavbar();
   const [activeTab, setActiveTab] = useState<TabType>('overview');
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const tabs = [
-    { id: 'history' as TabType, title: 'History' },
     { id: 'overview' as TabType, title: 'Overview' },
     { id: 'mission' as TabType, title: 'Mission & Vision' },
     { id: 'values' as TabType, title: 'Values' },
     { id: 'awards' as TabType, title: 'Awards & Accreditations' },
-    { id: 'leadership' as TabType, title: 'Leadership' },
+
+    // hidden for now don't delete
+    // { id: 'leadership' as TabType, title: 'Leadership' },
   ];
 
   const tabContent: Record<TabType, TabContent> = {
-    history: {
-      id: 'history',
-      title: 'History',
-      tagline: 'SINCE 1992',
-      subtitle: 'Our Journey Since 1992',
-      content: `Al Jedaani Group of Hospitals was founded in 1992 by Sheikh Abdullah Al Jedaani with a vision to provide world-class healthcare services to the Kingdom of Saudi Arabia. Starting with a single facility in Jeddah, we have grown into a comprehensive network of hospitals and medical centers.
-
-Throughout our journey, we have remained committed to excellence in patient care, constantly evolving to meet the healthcare needs of our community. Our growth has been guided by the principles of compassion, innovation, and dedication to improving lives.
-
-Over the decades, we have invested in state-of-the-art medical technology, attracted world-renowned medical professionals, and established ourselves as a trusted name in Saudi healthcare. Today, we continue to honor our founder's vision while embracing modern healthcare practices.`,
-      imageUrl: '/assets/img/about/history-image.jpg',
-    },
     overview: {
       id: 'overview',
       title: 'Overview',
       tagline: 'SINCE 1992',
       subtitle: 'Al Jedaani Group of Hospitals',
-      content: `Al Jedaani Group of Hospitals is a prominent healthcare provider in the Kingdom of Saudi Arabia, particularly in Jeddah. Founded by Sheikh Abdullah Al Jedaani, the group has grown to become a symbol of trust and medical excellence in the region.
-
-With multiple branches including Ghulail, Al Salama, and others, we have dedicated ourselves to providing comprehensive medical services to all segments of society. Our journey is defined by a relentless commitment to patient care, supported by modern medical technology and a highly qualified team of professionals.
-
-We continue to expand our reach and enhance our services, ensuring that high-quality healthcare is accessible to every member of our community. Our vision extends beyond treatment to encompass prevention, wellness, and holistic patient care.`,
+      content: ``,
       imageUrl: '/assets/img/about/overview-image.jpg',
     },
     mission: {
@@ -118,19 +114,19 @@ Our leaders believe in leading by example, maintaining open communication, and e
       <div style={{
         minHeight: '100vh',
         background: '#C9F3FF',
-        paddingTop: '131px',
-        paddingBottom: '60px',
+        paddingTop: isMobile ? '80px' : '131px',
+        paddingBottom: isMobile ? '30px' : '60px',
       }}>
         <div style={{
           maxWidth: '1760px',
           margin: '0 auto',
-          padding: '0 160px',
+          padding: isMobile ? '0 16px' : '0 160px',
         }}>
           {/* Page Title */}
           <div style={{
             background: '#FFFFFF',
             borderRadius: '15px',
-            padding: '10px 32px',
+            padding: isMobile ? '10px 16px' : '10px 32px',
             marginBottom: '12px',
             display: 'flex',
             alignItems: 'center',
@@ -140,8 +136,8 @@ Our leaders believe in leading by example, maintaining open communication, and e
               fontFamily: 'Nunito, sans-serif',
               fontStyle: 'normal',
               fontWeight: 600,
-              fontSize: '48px',
-              lineHeight: '50px',
+              fontSize: isMobile ? '28px' : '48px',
+              lineHeight: isMobile ? '32px' : '50px',
               color: '#061F42',
               margin: 0,
             }}>
@@ -153,12 +149,12 @@ Our leaders believe in leading by example, maintaining open communication, and e
           <div style={{
             width: '100%',
             maxWidth: '1400px',
-            height: '40px',
+            height: isMobile ? 'auto' : '40px',
             fontFamily: 'Nunito, sans-serif',
             fontStyle: 'normal',
             fontWeight: 600,
-            fontSize: '16px',
-            lineHeight: '40px',
+            fontSize: isMobile ? '14px' : '16px',
+            lineHeight: isMobile ? '24px' : '40px',
             marginBottom: '12px',
           }}>
             <span style={{ color: '#A4A5A5' }}>Displaying results for </span>
@@ -180,8 +176,8 @@ Our leaders believe in leading by example, maintaining open communication, and e
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'flex-start',
-              padding: '24px',
-              gap: '24px',
+              padding: isMobile ? '12px' : '24px',
+              gap: isMobile ? '16px' : '24px',
               width: '100%',
               background: '#FCFCFC',
               boxShadow: '0px 4px 5px rgba(0, 0, 0, 0.25)',
@@ -190,8 +186,8 @@ Our leaders believe in leading by example, maintaining open communication, and e
               {/* Content Section - Sidebar + Image */}
               <div style={{
                 display: 'flex',
-                flexDirection: 'row',
-                alignItems: 'center',
+                flexDirection: isMobile ? 'column' : 'row',
+                alignItems: isMobile ? 'stretch' : 'center',
                 padding: '0px',
                 gap: '16px',
                 width: '100%',
@@ -199,14 +195,15 @@ Our leaders believe in leading by example, maintaining open communication, and e
                 {/* Sidebar */}
                 <div style={{
                   display: 'flex',
-                  flexDirection: 'column',
+                  flexDirection: isMobile ? 'row' : 'column',
                   alignItems: 'flex-start',
                   padding: '8px',
                   gap: '8px',
-                  width: '287px',
-                  minWidth: '287px',
+                  width: isMobile ? '100%' : '287px',
+                  minWidth: isMobile ? 'auto' : '287px',
                   background: '#F3F4F6',
                   borderRadius: '12px',
+                  overflowX: isMobile ? 'auto' : 'visible',
                 }}>
                   {tabs.map((tab) => (
                     <button
@@ -218,15 +215,17 @@ Our leaders believe in leading by example, maintaining open communication, and e
                         flexDirection: 'column',
                         justifyContent: 'center',
                         alignItems: 'center',
-                        padding: '12px',
+                        padding: isMobile ? '8px 12px' : '12px',
                         gap: '12px',
-                        width: '100%',
+                        width: isMobile ? 'auto' : '100%',
+                        minWidth: isMobile ? '120px' : 'auto',
                         minHeight: '44px',
                         background: activeTab === tab.id ? '#DAF8FF' : '#FFFFFF',
                         border: '1px solid #D8D8D8',
                         borderRadius: '12px',
                         cursor: 'pointer',
                         transition: 'all 0.3s ease',
+                        flexShrink: isMobile ? 0 : 1,
                       }}
                       onMouseEnter={(e) => {
                         if (activeTab !== tab.id) {
@@ -243,10 +242,11 @@ Our leaders believe in leading by example, maintaining open communication, and e
                         fontFamily: 'Nunito',
                         fontStyle: 'normal',
                         fontWeight: activeTab === tab.id ? 700 : 600,
-                        fontSize: '16px',
-                        lineHeight: '20px',
+                        fontSize: isMobile ? '14px' : '16px',
+                        lineHeight: isMobile ? '18px' : '20px',
                         textAlign: 'center',
                         color: '#061F42',
+                        whiteSpace: isMobile ? 'nowrap' : 'normal',
                       }}>
                         {tab.title}
                       </span>
@@ -260,10 +260,10 @@ Our leaders believe in leading by example, maintaining open communication, and e
                   flexDirection: 'column',
                   justifyContent: 'flex-end',
                   alignItems: 'flex-start',
-                  padding: '24px',
+                  padding: isMobile ? '16px' : '24px',
                   gap: '10px',
                   flex: '1',
-                  minHeight: '320px',
+                  minHeight: isMobile ? '200px' : '320px',
                   background: `linear-gradient(90deg, rgba(6, 31, 66, 0.5) 0%, rgba(0, 0, 0, 0) 100%), url(${currentContent.imageUrl})`,
                   backgroundSize: 'cover',
                   backgroundPosition: 'center',
@@ -319,8 +319,8 @@ Our leaders believe in leading by example, maintaining open communication, and e
                         fontFamily: 'Inter',
                         fontStyle: 'normal',
                         fontWeight: 700,
-                        fontSize: '24px',
-                        lineHeight: '32px',
+                        fontSize: isMobile ? '18px' : '24px',
+                        lineHeight: isMobile ? '24px' : '32px',
                         letterSpacing: '0.0703125px',
                         color: '#FFFFFF',
                       }}>
@@ -342,7 +342,7 @@ Our leaders believe in leading by example, maintaining open communication, and e
                 borderRadius: '0px',
               }}>
                 {/* Render different content based on active tab */}
-                {(activeTab === 'overview' || activeTab === 'history') && (
+                {activeTab === 'overview' && (
                   <p style={{
                     fontFamily: 'Nunito, sans-serif',
                     fontStyle: 'normal',
@@ -357,9 +357,179 @@ Our leaders believe in leading by example, maintaining open communication, and e
                   </p>
                 )}
 
+                {/* Overview Tab */}
+                {activeTab === 'overview' && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? '16px' : '24px', width: '100%' }}>
+                    <h1 style={{
+                      fontFamily: 'Nunito, sans-serif',
+                      fontWeight: 700,
+                      fontSize: isMobile ? '24px' : '31px',
+                      lineHeight: isMobile ? '32px' : '42px',
+                      color: '#061F42',
+                      margin: 0,
+                    }}>
+                      Jedaani Hospitals, Over 30 Years of Clinical Excellence
+                    </h1>
+                    <p style={{
+                      fontFamily: 'Nunito, sans-serif',
+                      fontWeight: 400,
+                      fontSize: isMobile ? '16px' : '18px',
+                      lineHeight: isMobile ? '24px' : '29px',
+                      color: '#4A5565',
+                      margin: 0,
+                    }}>
+                      With over three decades of clinical expertise, <strong>Jedaani Hospitals stand as a cornerstone of healthcare in Jeddah.</strong>
+                    </p>
+                    <p style={{
+                      fontFamily: 'Nunito, sans-serif',
+                      fontWeight: 400,
+                      fontSize: isMobile ? '16px' : '18px',
+                      lineHeight: isMobile ? '24px' : '29px',
+                      color: '#4A5565',
+                      margin: 0,
+                    }}>
+                      Our practice is governed by a rigorous professional methodology summarized in our slogan, <strong>"Experienced Care"</strong>
+                    </p>
+                    <p style={{
+                      fontFamily: 'Nunito, sans-serif',
+                      fontWeight: 400,
+                      fontSize: isMobile ? '16px' : '18px',
+                      lineHeight: isMobile ? '24px' : '29px',
+                      color: '#4A5565',
+                      margin: 0,
+                    }}>
+                      We are dedicated to merging long-standing clinical heritage with evidence-based medical advancements to provide a safe, reliable, and patient-centric environment that enhances the quality of life for every individual we serve.
+                    </p>
+
+                    <h2 style={{
+                      fontFamily: 'Nunito, sans-serif',
+                      fontWeight: 700,
+                      fontSize: isMobile ? '20px' : '24px',
+                      lineHeight: isMobile ? '28px' : '32px',
+                      color: '#061F42',
+                      margin: '16px 0 0 0',
+                    }}>
+                      Comprehensive Medical Specialties
+                    </h2>
+                    <p style={{
+                      fontFamily: 'Nunito, sans-serif',
+                      fontWeight: 400,
+                      fontSize: isMobile ? '16px' : '18px',
+                      lineHeight: isMobile ? '24px' : '29px',
+                      color: '#4A5565',
+                      margin: 0,
+                    }}>
+                      Jedaani Hospitals relies on a distinguished faculty of <strong>high-caliber consultants and experts</strong> across more than <strong>20 medical specialties</strong>.
+                    </p>
+                    <p style={{
+                      fontFamily: 'Nunito, sans-serif',
+                      fontWeight: 400,
+                      fontSize: isMobile ? '16px' : '18px',
+                      lineHeight: isMobile ? '24px' : '29px',
+                      color: '#4A5565',
+                      margin: 0,
+                    }}>
+                      Our primary clinical focus centers on Pediatrics, Obstetrics, Gynecology, Cardiology, Neurology and Internal Medicine. We extend this expertise into advanced surgical and specialized domains, including General Surgery, Orthopedics, Urology, Ophthalmology, and Pediatric Surgery.
+                    </p>
+                    <p style={{
+                      fontFamily: 'Nunito, sans-serif',
+                      fontWeight: 400,
+                      fontSize: isMobile ? '16px' : '18px',
+                      lineHeight: isMobile ? '24px' : '29px',
+                      color: '#4A5565',
+                      margin: 0,
+                    }}>
+                      This multidisciplinary framework integrates expert management in Pulmonology, Nephrology, and Psychiatry, complemented by specialized services in Dermatology, Dentistry, and Physical Therapy to deliver accurate, diagnostic-driven treatment solutions.
+                    </p>
+
+                    <h2 style={{
+                      fontFamily: 'Nunito, sans-serif',
+                      fontWeight: 700,
+                      fontSize: isMobile ? '20px' : '24px',
+                      lineHeight: isMobile ? '28px' : '32px',
+                      color: '#061F42',
+                      margin: '16px 0 0 0',
+                    }}>
+                      Advanced Infrastructure
+                    </h2>
+                    <p style={{
+                      fontFamily: 'Nunito, sans-serif',
+                      fontWeight: 400,
+                      fontSize: isMobile ? '16px' : '18px',
+                      lineHeight: isMobile ? '24px' : '29px',
+                      color: '#4A5565',
+                      margin: 0,
+                    }}>
+                      We maintain a robust intensive care network, providing specialized Adult, Pediatric, and Neonatal <strong>Intensive Care units</strong> with full technical readiness.
+                    </p>
+                    <p style={{
+                      fontFamily: 'Nunito, sans-serif',
+                      fontWeight: 400,
+                      fontSize: isMobile ? '16px' : '18px',
+                      lineHeight: isMobile ? '24px' : '29px',
+                      color: '#4A5565',
+                      margin: 0,
+                    }}>
+                      Our facilities are equipped with state-of-the-art medical technologies across <strong>all laboratory, diagnostic, and imaging services</strong> to ensure rapid and precise clinical results.
+                    </p>
+                    <p style={{
+                      fontFamily: 'Nunito, sans-serif',
+                      fontWeight: 400,
+                      fontSize: isMobile ? '16px' : '18px',
+                      lineHeight: isMobile ? '24px' : '29px',
+                      color: '#4A5565',
+                      margin: 0,
+                    }}>
+                      Integrated within our healthcare ecosystem is the <strong>Baher Al-Arbaeen Pharmacy group</strong>, delivering seamless pharmaceutical care and retail services to both inpatients and outpatients under the highest international standards.
+                    </p>
+
+                    <h2 style={{
+                      fontFamily: 'Nunito, sans-serif',
+                      fontWeight: 700,
+                      fontSize: isMobile ? '20px' : '24px',
+                      lineHeight: isMobile ? '28px' : '32px',
+                      color: '#061F42',
+                      margin: '16px 0 0 0',
+                    }}>
+                      Strategic Regional Presence
+                    </h2>
+                    <p style={{
+                      fontFamily: 'Nunito, sans-serif',
+                      fontWeight: 400,
+                      fontSize: isMobile ? '16px' : '18px',
+                      lineHeight: isMobile ? '24px' : '29px',
+                      color: '#4A5565',
+                      margin: 0,
+                    }}>
+                      Strategically located across <strong>3 major hospitals in Jeddah</strong> with a total capacity of 300 beds, our infrastructure provides comprehensive healthcare coverage for the entire Western Region of Saudi Arabia. We ensure streamlined access to <strong>advanced medical interventions and 24/7 emergency</strong> management. Our operational effectiveness is designed to handle high patient volumes while maintaining the rapid response times essential for acute and inpatient care.
+                    </p>
+
+                    <h2 style={{
+                      fontFamily: 'Nunito, sans-serif',
+                      fontWeight: 700,
+                      fontSize: isMobile ? '20px' : '24px',
+                      lineHeight: isMobile ? '28px' : '32px',
+                      color: '#061F42',
+                      margin: '16px 0 0 0',
+                    }}>
+                      Specialized Excellence Centers
+                    </h2>
+                    <p style={{
+                      fontFamily: 'Nunito, sans-serif',
+                      fontWeight: 400,
+                      fontSize: isMobile ? '16px' : '18px',
+                      lineHeight: isMobile ? '24px' : '29px',
+                      color: '#4A5565',
+                      margin: 0,
+                    }}>
+                      Al Jedaani Hospitals is distinguished by five specialized Centers of Excellence designed to provide focused, high-tier medical care. This system includes the <strong>Women's Health Center, the Pediatrics Center, the Center of Excellence for Men's Health, the Advanced Cardiac Catheterization Lab, and the Mental Health Center</strong>. These centers utilize advanced diagnostic and therapeutic tools to implement the world's most precise medical protocols, ensuring superior clinical outcomes through directed and professional expertise.
+                    </p>
+                  </div>
+                )}
+
                 {/* Mission & Vision Tab */}
                 {activeTab === 'mission' && (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', width: '100%' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? '16px' : '24px', width: '100%' }}>
                     {/* Our Mission */}
                     <div style={{
                       boxSizing: 'border-box',
@@ -505,10 +675,10 @@ Our leaders believe in leading by example, maintaining open communication, and e
                     <h3 style={{
                       fontFamily: 'Nunito, sans-serif',
                       fontWeight: 700,
-                      fontSize: '28px',
-                      lineHeight: '36px',
+                      fontSize: isMobile ? '24px' : '28px',
+                      lineHeight: isMobile ? '32px' : '36px',
                       color: '#061F42',
-                      margin: '0 0 24px 0',
+                      margin: isMobile ? '0 0 16px 0' : '0 0 24px 0',
                     }}>
                       Our Core Values
                     </h3>
@@ -528,9 +698,9 @@ Our leaders believe in leading by example, maintaining open communication, and e
                       ].map((value, index) => (
                         <div key={index} style={{
                           display: 'flex',
-                          gap: '16px',
+                          gap: isMobile ? '12px' : '16px',
                           alignItems: 'flex-start',
-                          padding: '20px',
+                          padding: isMobile ? '16px' : '20px',
                           background: '#F9FAFB',
                           borderRadius: '12px',
                           border: '1px solid #E5E7EB',
@@ -553,8 +723,8 @@ Our leaders believe in leading by example, maintaining open communication, and e
                             <h4 style={{
                               fontFamily: 'Nunito, sans-serif',
                               fontWeight: 700,
-                              fontSize: '18px',
-                              lineHeight: '24px',
+                              fontSize: isMobile ? '16px' : '18px',
+                              lineHeight: isMobile ? '22px' : '24px',
                               color: '#061F42',
                               margin: '0 0 8px 0',
                             }}>
@@ -563,8 +733,8 @@ Our leaders believe in leading by example, maintaining open communication, and e
                             <p style={{
                               fontFamily: 'Nunito, sans-serif',
                               fontWeight: 400,
-                              fontSize: '14px',
-                              lineHeight: '22px',
+                              fontSize: isMobile ? '13px' : '14px',
+                              lineHeight: isMobile ? '20px' : '22px',
                               color: '#6B7280',
                               margin: 0,
                             }}>
@@ -583,27 +753,27 @@ Our leaders believe in leading by example, maintaining open communication, and e
                     <h3 style={{
                       fontFamily: 'Nunito, sans-serif',
                       fontWeight: 700,
-                      fontSize: '28px',
-                      lineHeight: '36px',
+                      fontSize: isMobile ? '24px' : '28px',
+                      lineHeight: isMobile ? '32px' : '36px',
                       color: '#061F42',
-                      margin: '0 0 16px 0',
+                      margin: isMobile ? '0 0 12px 0' : '0 0 16px 0',
                     }}>
                       Awards & Accreditations
                     </h3>
                     <p style={{
                       fontFamily: 'Nunito, sans-serif',
                       fontWeight: 400,
-                      fontSize: '16px',
-                      lineHeight: '24px',
+                      fontSize: isMobile ? '14px' : '16px',
+                      lineHeight: isMobile ? '22px' : '24px',
                       color: '#6B7280',
-                      margin: '0 0 32px 0',
+                      margin: isMobile ? '0 0 24px 0' : '0 0 32px 0',
                     }}>
                       Al Jedaani Hospitals are proud to be accredited by national and international healthcare bodies, reflecting our unwavering commitment to quality.
                     </p>
                     <div style={{
                       display: 'grid',
-                      gridTemplateColumns: 'repeat(2, 1fr)',
-                      gap: '24px',
+                      gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)',
+                      gap: isMobile ? '16px' : '24px',
                       width: '100%',
                     }}>
                       {[
@@ -668,8 +838,8 @@ Our leaders believe in leading by example, maintaining open communication, and e
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'flex-start',
-                    padding: '24px 33px 1px 24px',
-                    gap: '24px',
+                    padding: isMobile ? '16px' : '24px 33px 1px 24px',
+                    gap: isMobile ? '16px' : '24px',
                     width: '100%',
                     background: '#FFFFFF',
                     border: '1px solid #F3F4F6',
@@ -681,14 +851,14 @@ Our leaders believe in leading by example, maintaining open communication, and e
                       boxSizing: 'border-box',
                       width: '100%',
                       borderBottom: '1px solid #F3F4F6',
-                      paddingBottom: '16px',
+                      paddingBottom: isMobile ? '12px' : '16px',
                     }}>
                       <h3 style={{
                         fontFamily: 'Nunito, sans-serif',
                         fontStyle: 'normal',
                         fontWeight: 700,
-                        fontSize: '28px',
-                        lineHeight: '42px',
+                        fontSize: isMobile ? '24px' : '28px',
+                        lineHeight: isMobile ? '32px' : '42px',
                         color: '#061F42',
                         margin: 0,
                       }}>
@@ -699,8 +869,8 @@ Our leaders believe in leading by example, maintaining open communication, and e
                     {/* Leaders Grid */}
                     <div style={{
                       display: 'grid',
-                      gridTemplateColumns: 'repeat(2, 1fr)',
-                      gap: '24px',
+                      gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)',
+                      gap: isMobile ? '16px' : '24px',
                       width: '100%',
                     }}>
                       {[
@@ -714,9 +884,10 @@ Our leaders believe in leading by example, maintaining open communication, and e
                           display: 'flex',
                           flexDirection: 'row',
                           alignItems: 'center',
-                          padding: '0px 0px 0px 16px',
-                          gap: '16px',
-                          height: '114px',
+                          padding: isMobile ? '12px' : '0px 0px 0px 16px',
+                          gap: isMobile ? '12px' : '16px',
+                          height: isMobile ? 'auto' : '114px',
+                          minHeight: isMobile ? '90px' : 'auto',
                           background: '#FFFFFF',
                           border: '1px solid #F3F4F6',
                           borderRadius: '15px',
@@ -728,15 +899,15 @@ Our leaders believe in leading by example, maintaining open communication, and e
                             flexDirection: 'column',
                             alignItems: 'flex-start',
                             padding: '2px',
-                            width: '80px',
-                            height: '80px',
+                            width: isMobile ? '60px' : '80px',
+                            height: isMobile ? '60px' : '80px',
                             border: '2px solid #F3F4F6',
                             borderRadius: '50%',
                             flexShrink: 0,
                           }}>
                             <div style={{
-                              width: '76px',
-                              height: '76px',
+                              width: isMobile ? '56px' : '76px',
+                              height: isMobile ? '56px' : '76px',
                               background: `linear-gradient(135deg, #E0F7FA 0%, #B2EBF2 100%), url(${leader.image})`,
                               backgroundSize: 'cover',
                               backgroundPosition: 'center',
@@ -757,8 +928,8 @@ Our leaders believe in leading by example, maintaining open communication, and e
                               fontFamily: 'Nunito, sans-serif',
                               fontStyle: 'normal',
                               fontWeight: 700,
-                              fontSize: '18px',
-                              lineHeight: '27px',
+                              fontSize: isMobile ? '16px' : '18px',
+                              lineHeight: isMobile ? '22px' : '27px',
                               color: '#061F42',
                               margin: 0,
                             }}>
@@ -768,8 +939,8 @@ Our leaders believe in leading by example, maintaining open communication, and e
                               fontFamily: 'Nunito, sans-serif',
                               fontStyle: 'normal',
                               fontWeight: 600,
-                              fontSize: '14px',
-                              lineHeight: '21px',
+                              fontSize: isMobile ? '13px' : '14px',
+                              lineHeight: isMobile ? '18px' : '21px',
                               color: '#00ABDA',
                               margin: 0,
                             }}>

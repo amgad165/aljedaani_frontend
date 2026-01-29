@@ -75,7 +75,8 @@ export type PaginatedResponse<T> = {
 export const getHisPatients = async (
   page: number = 1,
   perPage: number = 50,
-  search?: string
+  search?: string,
+  searchColumn: string = 'FileNumber'
 ): Promise<PaginatedResponse<HisPatient>> => {
   const token = localStorage.getItem('auth_token');
   
@@ -86,6 +87,7 @@ export const getHisPatients = async (
 
   if (search) {
     queryParams.append('search', search);
+    queryParams.append('search_column', searchColumn);
   }
 
   const response = await fetch(

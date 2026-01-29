@@ -64,6 +64,7 @@ export const getHisMedicalReports = async (
   perPage: number = 15,
   filters?: {
     search?: string;
+    search_column?: string;
     file_number?: string;
     report_type?: string;
     doctor_code?: string;
@@ -80,6 +81,7 @@ export const getHisMedicalReports = async (
   });
 
   if (filters?.search) params.append('search', filters.search);
+  if (filters?.search_column) params.append('search_column', filters.search_column);
   if (filters?.file_number) params.append('file_number', filters.file_number);
   if (filters?.report_type) params.append('report_type', filters.report_type);
   if (filters?.doctor_code) params.append('doctor_code', filters.doctor_code);

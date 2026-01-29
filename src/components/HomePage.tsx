@@ -1,12 +1,12 @@
 import { useEffect } from 'react';
 import HeroSection from './HeroSection';
 import LocationCards from './LocationCards';
-import OffersSection from './OffersSection';
+// import OffersSection from './OffersSection';
 import AppBannerSection from './AppBannerSection';
 import StatisticsSection from './StatisticsSection';
 import TestimonialSection from './TestimonialSection';
 import ExcellenceCentersSection from './ExcellenceCentersSection';
-import BlogSection from './BlogSection';
+// import BlogSection from './BlogSection';
 import Footer from './Footer';
 import HomepageLoading from './HomepageLoading';
 import FloatingContactButtons from './FloatingContactButtons';
@@ -38,13 +38,18 @@ const HomePageContent = () => {
         <HeroSection />
         <section className="main-sec">
           <LocationCards />
-          <OffersSection />
+
+          {/* hidden offers section for now don't delete */}
+          {/* <OffersSection /> */}
           <AppBannerSection />
           <StatisticsSection />
         </section>
         <TestimonialSection />
         <ExcellenceCentersSection />
-        <BlogSection />
+
+
+        {/* hidden blog section for now don't delete */}
+        {/* <BlogSection /> */}
       </div>
       <Footer />
     </>

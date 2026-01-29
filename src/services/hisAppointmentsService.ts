@@ -87,7 +87,8 @@ export interface PaginatedResponse<T> {
 export const getHisAppointments = async (
   page: number = 1,
   perPage: number = 15,
-  search: string = ''
+  search: string = '',
+  searchColumn: string = 'file_number'
 ): Promise<PaginatedResponse<HisAppointment>> => {
   const token = localStorage.getItem('auth_token');
   
@@ -98,6 +99,7 @@ export const getHisAppointments = async (
   
   if (search) {
     params.append('search', search);
+    params.append('search_column', searchColumn);
   }
 
   const response = await fetch(`${API_BASE_URL}/admin/his-appointments?${params}`, {

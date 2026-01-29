@@ -82,6 +82,7 @@ export const getHisLabReports = async (
   perPage: number = 15,
   filters?: {
     search?: string;
+    search_column?: string;
     file_number?: string;
     category?: string;
     department?: string;
@@ -98,6 +99,7 @@ export const getHisLabReports = async (
   });
 
   if (filters?.search) params.append('search', filters.search);
+  if (filters?.search_column) params.append('search_column', filters.search_column);
   if (filters?.file_number) params.append('file_number', filters.file_number);
   if (filters?.category) params.append('category', filters.category);
   if (filters?.department) params.append('department', filters.department);
