@@ -272,31 +272,6 @@ const RadReportsTab = () => {
           borderBottom: '1px solid #DADADA',
           borderRadius: '0px',
         }}>
-          {/* Back Button */}
-          <button style={{
-            display: 'flex',
-            flexDirection: 'row',
-            justifyContent: 'center',
-            alignItems: 'center',
-            padding: '12px 16px',
-            width: window.innerWidth <= 768 ? '100%' : '117px',
-            height: '40px',
-            borderRadius: '12px',
-            border: 'none',
-            background: 'transparent',
-            cursor: 'pointer',
-            fontFamily: 'Nunito',
-            fontWeight: 600,
-            fontSize: '20px',
-            lineHeight: '20px',
-            color: '#061F42',
-          }}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ marginRight: '8px' }}>
-              <path d="M15 18L9 12L15 6" stroke="#061F42" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-            Back
-          </button>
-          
           {/* Search Input */}
           <div style={{
             display: 'flex',
