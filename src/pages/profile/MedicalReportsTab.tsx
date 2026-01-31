@@ -157,6 +157,7 @@ const MedicalReportsTab = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [totalPages, setTotalPages] = useState(1);
+  const [inputValue, setInputValue] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [dateFilter, setDateFilter] = useState<string | null>(null);
   const perPage = 4;
@@ -213,8 +214,12 @@ const MedicalReportsTab = () => {
     }
   };
 
-  const handleSearch = (value: string) => {
-    setSearchTerm(value);
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInputValue(e.target.value);
+  };
+
+  const handleSearchClick = () => {
+    setSearchTerm(inputValue);
     setCurrentPage(1);
   };
 
@@ -295,8 +300,9 @@ const MedicalReportsTab = () => {
             }}>
               <input
                 type="text"
-                value={searchTerm}
-                onChange={(e) => handleSearch(e.target.value)}
+                value={inputValue}
+                onChange={handleInputChange}
+                onKeyDown={(e) => e.key === 'Enter' && handleSearchClick()}
                 placeholder="Search for documents"
                 style={{
                   width: '100%',
@@ -310,12 +316,31 @@ const MedicalReportsTab = () => {
                   outline: 'none',
                 }}
               />
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="11" cy="11" r="7" stroke="#061F42" strokeWidth="1.5"/>
-                <path d="M20 20L17 17" stroke="#131927" strokeWidth="1.5" strokeLinecap="round"/>
-              </svg>
             </div>
           </div>
+          
+          {/* Search Button */}
+          <button
+            onClick={handleSearchClick}
+            style={{
+              boxSizing: 'border-box',
+              width: window.innerWidth <= 768 ? '100%' : 'auto',
+              height: '40px',
+              padding: '8px 16px',
+              background: '#061F42',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontFamily: 'Nunito',
+              fontWeight: 600,
+              fontSize: '14px',
+              lineHeight: '16px',
+              color: '#FFFFFF',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            Search
+          </button>
           
           {/* Date Input */}
           <input

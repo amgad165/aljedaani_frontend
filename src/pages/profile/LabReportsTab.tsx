@@ -138,6 +138,7 @@ const LabReportsTab = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [totalPages, setTotalPages] = useState(1);
+  const [inputValue, setInputValue] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [dateFilter, setDateFilter] = useState<string | null>(null);
 
@@ -145,18 +146,11 @@ const LabReportsTab = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await getUserHisLabReports(currentPage, 4);
+      const filters = searchQuery ? { search: searchQuery } : {};
+      const response = await getUserHisLabReports(currentPage, 4, filters);
       let filteredReports = response.data;
       
-      // Apply search filter
-      if (searchQuery) {
-        filteredReports = filteredReports.filter(report =>
-          report.service_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          report.technician?.toLowerCase().includes(searchQuery.toLowerCase())
-        );
-      }
-      
-      // Apply date filter
+      // Apply date filter on client side (backend doesn't support date filter yet)
       if (dateFilter) {
         filteredReports = filteredReports.filter(report =>
           report.date === dateFilter
@@ -195,8 +189,12 @@ const LabReportsTab = () => {
     }
   };
 
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(e.target.value);
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInputValue(e.target.value);
+  };
+
+  const handleSearchClick = () => {
+    setSearchQuery(inputValue);
     setCurrentPage(1); // Reset to first page on search
   };
 
@@ -278,8 +276,9 @@ const LabReportsTab = () => {
               <input
                 type="text"
                 placeholder="Search for documents"
-                value={searchQuery}
-                onChange={handleSearchChange}
+                value={inputValue}
+                onChange={handleInputChange}
+                onKeyDown={(e) => e.key === 'Enter' && handleSearchClick()}
                 style={{
                   width: '100%',
                   border: 'none',
@@ -292,12 +291,31 @@ const LabReportsTab = () => {
                   outline: 'none',
                 }}
               />
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="11" cy="11" r="7" stroke="#061F42" strokeWidth="1.5"/>
-                <path d="M20 20L17 17" stroke="#131927" strokeWidth="1.5" strokeLinecap="round"/>
-              </svg>
             </div>
           </div>
+          
+          {/* Search Button */}
+          <button
+            onClick={handleSearchClick}
+            style={{
+              boxSizing: 'border-box',
+              width: window.innerWidth <= 768 ? '100%' : 'auto',
+              height: '40px',
+              padding: '8px 16px',
+              background: '#061F42',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontFamily: 'Nunito',
+              fontWeight: 600,
+              fontSize: '14px',
+              lineHeight: '16px',
+              color: '#FFFFFF',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            Search
+          </button>
           
           {/* Date Input */}
           <input

@@ -156,6 +156,7 @@ const RadReportsTab = () => {
   const [, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [inputValue, setInputValue] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [dateFilter, setDateFilter] = useState<string | null>(null);
   const perPage = 4; // 2x2 grid
@@ -205,10 +206,13 @@ const RadReportsTab = () => {
     }
   };
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInputValue(e.target.value);
+  };
+
+  const handleSearchClick = () => {
+    setSearchQuery(inputValue);
     setCurrentPage(1); // Reset to first page on new search
-    fetchReports();
   };
 
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -282,45 +286,61 @@ const RadReportsTab = () => {
             height: '40px',
             flexGrow: 1
           }}>
-            <form onSubmit={handleSearch} style={{ width: '100%' }}>
-              <div style={{
-                display: 'flex',
-                flexDirection: 'row',
-                alignItems: 'center',
-                padding: '8px 12px',
-                gap: '12px',
-                width: '100%',
-                height: '40px',
-                background: '#F9FAFB',
-                border: '1px solid #A4A5A5',
-                borderRadius: '8px',
-              }}>
-                <input
-                  type="text"
-                  placeholder="Search for documents"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  style={{
-                    width: '100%',
-                    border: 'none',
-                    background: 'transparent',
-                    fontFamily: 'Nunito',
-                    fontWeight: 500,
-                    fontSize: '14px',
-                    lineHeight: '16px',
-                    color: '#9EA2AE',
-                    outline: 'none',
-                  }}
-                />
-                <button type="submit" style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}>
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="11" cy="11" r="7" stroke="#061F42" strokeWidth="1.5"/>
-                    <path d="M20 20L17 17" stroke="#131927" strokeWidth="1.5" strokeLinecap="round"/>
-                  </svg>
-                </button>
-              </div>
-            </form>
+            <div style={{
+              display: 'flex',
+              flexDirection: 'row',
+              alignItems: 'center',
+              padding: '8px 12px',
+              gap: '12px',
+              width: '100%',
+              height: '40px',
+              background: '#F9FAFB',
+              border: '1px solid #A4A5A5',
+              borderRadius: '8px',
+            }}>
+              <input
+                type="text"
+                placeholder="Search for documents"
+                value={inputValue}
+                onChange={handleInputChange}
+                onKeyDown={(e) => e.key === 'Enter' && handleSearchClick()}
+                style={{
+                  width: '100%',
+                  border: 'none',
+                  background: 'transparent',
+                  fontFamily: 'Nunito',
+                  fontWeight: 500,
+                  fontSize: '14px',
+                  lineHeight: '16px',
+                  color: '#9EA2AE',
+                  outline: 'none',
+                }}
+              />
+            </div>
           </div>
+          
+          {/* Search Button */}
+          <button
+            onClick={handleSearchClick}
+            style={{
+              boxSizing: 'border-box',
+              width: window.innerWidth <= 768 ? '100%' : 'auto',
+              height: '40px',
+              padding: '8px 16px',
+              background: '#061F42',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontFamily: 'Nunito',
+              fontWeight: 600,
+              fontSize: '14px',
+              lineHeight: '16px',
+              color: '#FFFFFF',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            Search
+          </button>
           
           {/* Date Input */}
           <input
