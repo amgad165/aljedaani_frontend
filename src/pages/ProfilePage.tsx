@@ -9,9 +9,11 @@ import {
   EditProfileTab,
   AppointmentsTab,
   LabReportsTab,
+  LabPendingTab,
   RadReportsTab,
   MedicalReportsTab,
 } from './profile';
+import LabPendingTab from './profile/LabPendingTab';
 import type { TabType, TabInfo, ProfileData } from './profile';
 
 const ProfilePage = () => {
@@ -24,7 +26,7 @@ const ProfilePage = () => {
   // Handle tab parameter from URL
   useEffect(() => {
     const tabParam = searchParams.get('tab');
-    if (tabParam && ['dashboard', 'edit-profile', 'appointments', 'lab-reports', 'rad-reports', 'medical-reports'].includes(tabParam)) {
+    if (tabParam && ['dashboard', 'edit-profile', 'appointments', 'lab-reports', 'lab-pending', 'rad-reports', 'medical-reports'].includes(tabParam)) {
       setActiveTab(tabParam as TabType);
     }
   }, [searchParams]);
@@ -34,6 +36,7 @@ const ProfilePage = () => {
     { id: 'edit-profile', label: 'Edit Profile', width: '149px' },
     { id: 'appointments', label: 'My Appointments', width: '211px' },
     { id: 'lab-reports', label: 'Lab. Results', width: '164px' },
+    { id: 'lab-pending', label: 'Lab. Pending', width: '170px' },
     { id: 'rad-reports', label: 'Rad. Reports', width: '167px' },
     { id: 'medical-reports', label: 'Medical Reports', width: '197px' },
   ];
@@ -120,6 +123,8 @@ const ProfilePage = () => {
         return <AppointmentsTab />;
       case 'lab-reports':
         return <LabReportsTab />;
+      case 'lab-pending':
+        return <LabPendingTab />;
       case 'rad-reports':
         return <RadReportsTab />;
       case 'medical-reports':

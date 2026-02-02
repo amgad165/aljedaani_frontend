@@ -35,6 +35,7 @@ import AdminHisRadiology from './components/admin/AdminHisRadiology';
 import AdminHisLab from './components/admin/AdminHisLab';
 import AdminHisLabCustResults from './components/admin/AdminHisLabCustResults';
 import AdminHisLabResultCommons from './components/admin/AdminHisLabResultCommons';
+import AdminHisLabPending from './components/admin/AdminHisLabPending';
 import AdminHisMedical from './components/admin/AdminHisMedical';
 import AdminHisConsultations from './components/admin/AdminHisConsultations';
 import AdminHisShifts from './components/admin/AdminHisShifts';
@@ -154,6 +155,11 @@ function App() {
           <Route path="/admin/his-lab-result-commons" element={
             <ProtectedRoute>
               <AdminHisLabResultCommons />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/his-lab-pending" element={
+            <ProtectedRoute>
+              <AdminHisLabPending />
             </ProtectedRoute>
           } />
           <Route path="/admin/his-medical" element={

@@ -57,6 +57,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
         { path: '/admin/his-lab', label: 'Lab Reports' },
         { path: '/admin/his-lab-cust-results', label: 'Lab Custom Results' },
         { path: '/admin/his-lab-result-commons', label: 'Lab Result Commons' },
+        { path: '/admin/his-lab-pending', label: 'Lab Pending' },
         { path: '/admin/his-medical', label: 'Medical Reports' },
         { path: '/admin/his-consultations', label: 'Consultations' },
         { path: '/admin/his-shifts', label: 'Shifts' },

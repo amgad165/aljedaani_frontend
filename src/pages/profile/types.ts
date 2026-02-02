@@ -1,5 +1,5 @@
 // Profile Tab Types
-export type TabType = 'dashboard' | 'edit-profile' | 'appointments' | 'lab-reports' | 'rad-reports' | 'medical-reports';
+export type TabType = 'dashboard' | 'edit-profile' | 'appointments' | 'lab-reports' | 'lab-pending' | 'rad-reports' | 'medical-reports';
 
 export interface TabInfo {
   id: TabType;
