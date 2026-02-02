@@ -33,7 +33,7 @@ const AboutUsPage = () => {
     { id: 'overview' as TabType, title: 'Overview' },
     { id: 'mission' as TabType, title: 'Mission & Vision' },
     { id: 'values' as TabType, title: 'Values' },
-    { id: 'awards' as TabType, title: 'Awards & Accreditations' },
+    // { id: 'awards' as TabType, title: 'Awards & Accreditations' },
 
     // hidden for now don't delete
     // { id: 'leadership' as TabType, title: 'Leadership' },
@@ -65,17 +65,15 @@ Our mission and vision guide every decision we make, from the technology we inve
       title: 'Values',
       tagline: 'OUR PRINCIPLES',
       subtitle: 'Core Values',
-      content: `Compassion: We treat every patient with empathy, kindness, and understanding, recognizing that healing extends beyond medical treatment.
+      content: `Perfection: Always striving for improvement of effective medical care for the patients with the best utilization of the available resources, with emphasis on health maintenance and promotion.
 
-Excellence: We strive for the highest standards in everything we do, continuously seeking to improve our services and capabilities.
+Honesty: Always acting with integrity and in accordance with society's cultural values and Islamic principles that provide the basis for sound trans-cultural medical practice in corporation with multi-national medical staff background and expertise.
 
-Integrity: We conduct ourselves with honesty, transparency, and ethical behavior in all our interactions.
+Creativity: Always looking for new ways to do things and solve problems with caring attitude, responsible and critical thinking generalist and responsive to patient's needs.
 
-Innovation: We embrace new technologies and methodologies to enhance patient care and outcomes.
+Respect: For patient, staff and community via inculcate ethical, moral, legal and spiritual values and develop respect for human dignity by abiding faith in Allah.
 
-Teamwork: We believe in the power of collaboration, working together across disciplines to deliver comprehensive care.
-
-Respect: We value the dignity of every individual – patients, families, and staff – creating an environment of mutual respect and trust.`,
+Teamwork: Always a set of interacting relationship among different groups of individuals who share some mutual goals are expected to follow an organized system of behavioral pattern.`,
       imageUrl: '/assets/img/about/values-image.jpg',
     },
     awards: {
@@ -214,7 +212,7 @@ Our leaders believe in leading by example, maintaining open communication, and e
                         display: 'flex',
                         flexDirection: 'column',
                         justifyContent: 'center',
-                        alignItems: 'center',
+                        alignItems: isMobile ? 'center' : (tab.id === 'overview' ? 'center' : 'flex-start'),
                         padding: isMobile ? '8px 12px' : '12px',
                         gap: '12px',
                         width: isMobile ? 'auto' : '100%',
@@ -595,8 +593,7 @@ Our leaders believe in leading by example, maintaining open communication, and e
                         margin: 0,
                         width: '100%',
                       }}>
-                        To provide distinguished healthcare services with the highest quality standards, ensuring patient safety and satisfaction through a dedicated professional team and advanced technology.
-                      </p>
+Jedaani Hospitals are committed to provide high quality patient Care for all ages of the citizens, visitors & as well as the residents.   <br /> <br /> The Hospital staff demonstrates professional competence in providing effective medical services with dedication to face society challenges all over the year.                   </p>
                     </div>
 
                     {/* Our Vision */}
@@ -663,7 +660,7 @@ Our leaders believe in leading by example, maintaining open communication, and e
                         margin: 0,
                         width: '100%',
                       }}>
-                        To be the leading healthcare provider in the region, recognized for our comprehensive care, community service, and commitment to medical excellence.
+                       Jedaani Hospitals shall create an authentic name in the world of medical services.
                       </p>
                     </div>
                   </div>
@@ -684,17 +681,16 @@ Our leaders believe in leading by example, maintaining open communication, and e
                     </h3>
                     <div style={{
                       display: 'grid',
-                      gridTemplateColumns: 'repeat(2, 1fr)',
+                      gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)',
                       gap: '24px',
                       width: '100%',
                     }}>
                       {[
-                        { title: 'Patient Focus', description: 'Our patients are at the heart of everything we do, receiving personalized care and attention.' },
-                        { title: 'Excellence', description: 'We are committed to delivering the highest standards of medical care and safety.' },
-                        { title: 'Integrity', description: 'We operate with honesty, transparency, and ethical conduct in all our dealings.' },
-                        { title: 'Compassion', description: 'We treat every individual with kindness, dignity, and respect.' },
-                        { title: 'Teamwork', description: 'We collaborate as a unified team to achieve the best outcomes for our patients.' },
-                        { title: 'Community Service', description: 'We are dedicated to serving and improving the health of our local community.' },
+                        { title: 'Perfection', description: 'Always striving for improvement of effective medical care, economical utilization of available resources and health promotion, prevention and rehabilitation services.' },
+                        { title: 'Honesty', description: 'Always acting with integrity and in accordance with society\'s cultural values and Islamic principles with trans-cultural practice in mind.' },
+                        { title: 'Creativity', description: 'Always looking for new ways to do things and solve problems through a caring attitude that is responsive to people\'s needs.' },
+                        { title: 'Respect', description: 'For patient, staff and community via inculcate ethical, moral, legal and spiritual values which uphold human dignity and faith in Allah.' },
+                        { title: 'Teamwork', description: 'Always a set of interacting relationship among different groups of multi-national staff working together and having mutual goals and organized behavioral patterns.' },
                       ].map((value, index) => (
                         <div key={index} style={{
                           display: 'flex',

@@ -3,7 +3,6 @@ export { default as DashboardTab } from './DashboardTab';
 export { default as EditProfileTab } from './EditProfileTab';
 export { default as AppointmentsTab } from './AppointmentsTab';
 export { default as LabReportsTab } from './LabReportsTab';
-export { default as LabPendingTab } from './LabPendingTab';
 export { default as RadReportsTab } from './RadReportsTab';
 export { default as MedicalReportsTab } from './MedicalReportsTab';
 export { default as VitalsTab } from './VitalsTab';

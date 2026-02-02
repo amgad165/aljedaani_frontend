@@ -227,7 +227,7 @@ background: linear-gradient(180deg, #8FF5F7 0%, #14C8F9 100%);
 .main-sec .banner-sec .banner-wrapper {
   background: top/cover no-repeat;
   padding: 222px 0 204px 0px;
-  border-radius: 0 48px 48px 0;
+  border-radius: 24px;
   position: relative;
 }
 .main-sec .banner-sec .banner-wrapper .image-wrapper {

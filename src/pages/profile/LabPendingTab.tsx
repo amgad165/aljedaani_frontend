@@ -4,7 +4,6 @@ import {
   downloadHisLabPendingReportPdf, 
   viewHisLabPendingReportPdf,
   formatReportDate,
-  formatReportTime,
   type HisLabPendingReport 
 } from '../../services/hisLabPendingService';
 
