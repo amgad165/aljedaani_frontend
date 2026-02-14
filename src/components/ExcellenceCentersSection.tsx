@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { useScrollAnimation, getAnimationStyle } from '../hooks/useScrollAnimation';
 import { useHomepageData } from '../context/HomepageContext';
+import { getTranslatedField } from '../utils/localeHelpers';
+import { useTranslation } from 'react-i18next';
 
 interface ExcellenceCenter {
   id: number;
@@ -29,6 +31,7 @@ const ExcellenceCentersSection = () => {
   const { ref: titleRef, isVisible: titleVisible } = useScrollAnimation();
   const { ref: gridRef, isVisible: gridVisible } = useScrollAnimation();
   const { data } = useHomepageData();
+  const { t } = useTranslation('pages');
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
@@ -224,7 +227,7 @@ const ExcellenceCentersSection = () => {
                   margin: 0
                 }}
               >
-                Excellence Centers
+                {t('excellenceCenters')}
               </h2>
           </div>
 
@@ -381,7 +384,7 @@ const ExcellenceCentersSection = () => {
                         textAlign: 'left',
                         transition: 'transform 0.3s ease'
                       }}>
-                        {center.name}
+                        {getTranslatedField(center.name, '')}
                       </span>
 
                       {/* View Location Button - Hidden by default */}
@@ -434,7 +437,7 @@ const ExcellenceCentersSection = () => {
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                           <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" fill="currentColor"/>
                         </svg>
-                        View location
+                        {t('viewLocation')}
                       </a>
                     </div>
                   </div>

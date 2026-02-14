@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { branchesService, type Branch } from '../services/branchesService';
+import { getTranslatedField } from '../utils/localeHelpers';
 import { departmentsService, type Department } from '../services/departmentsService';
 import { doctorsService, type Doctor } from '../services/doctorsService';
 import { useResponsiveNavbar } from '../hooks/useResponsiveNavbar';
@@ -8,6 +9,7 @@ import Footer from '../components/Footer';
 import { CardSkeleton } from '../components/LoadingComponents';
 import { EASINGS } from '../utils/animations';
 import FloatingContactButtons from '../components/FloatingContactButtons';
+import { useTranslation } from 'react-i18next';
 
 // Doctor Card Component (reused from DoctorsPage)
 interface DoctorCardProps {
@@ -19,17 +21,18 @@ interface DoctorCardProps {
 const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onLearnMore, onBookNow }) => {
   const [isHovered, setIsHovered] = useState(false);
   const navigate = useNavigate();
+  const { t } = useTranslation('pages');
   
   const getStatusStyle = (status: string) => {
     switch (status) {
       case 'available_today':
-        return { background: '#CFF5FF', color: '#061F42', text: 'Available Today' };
+        return { background: '#CFF5FF', color: '#061F42', text: t('availableToday') };
       case 'busy':
-        return { background: '#EE443F', color: '#FFFFFF', text: 'Busy' };
+        return { background: '#EE443F', color: '#FFFFFF', text: t('busy') };
       case 'available_soon':
-        return { background: '#FFD75D', color: '#061F42', text: 'Available Soon' };
+        return { background: '#FFD75D', color: '#061F42', text: t('availableSoon') };
       default:
-        return { background: '#CFF5FF', color: '#061F42', text: 'Available Today' };
+        return { background: '#CFF5FF', color: '#061F42', text: t('availableToday') };
     }
   };
 
@@ -114,7 +117,7 @@ const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onLearnMore, onBookNow 
       }}>
         <img
           src={doctor.image_url || '/assets/images/general/person_template.png'}
-          alt={doctor.name}
+          alt={getTranslatedField(doctor.name, '')}
           style={{
             width: '100%',
             height: '100%',
@@ -145,7 +148,7 @@ const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onLearnMore, onBookNow 
           color: '#061F42',
           margin: 0,
         }}>
-          {doctor.name}
+          {getTranslatedField(doctor.name, '')}
         </h3>
         <div style={{
           width: '100%',
@@ -159,7 +162,7 @@ const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onLearnMore, onBookNow 
           color: '#061F42',
           margin: 0,
         }}>
-          {doctor.specialization || doctor.department?.name || 'Specialist'}
+          {getTranslatedField(doctor.specialization, '') || getTranslatedField(doctor.department?.name, '') || 'Specialist'}
         </div>
       </div>
 
@@ -194,30 +197,30 @@ const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onLearnMore, onBookNow 
               }
             }}
             style={{
-            boxSizing: 'border-box',
-            display: 'flex',
-            flexDirection: 'row',
-            justifyContent: 'center',
-            alignItems: 'center',
-            padding: '4px 8px',
-            gap: '4px',
-            background: '#FFFFFF',
-            border: '1px solid #D9D9D9',
-            borderRadius: '24px',
-            flex: '0 0 auto',
-            cursor: doctor.branch?.id ? 'pointer' : 'default',
-            transition: 'all 0.2s ease',
-          }}
-          onMouseEnter={(e) => {
-            if (doctor.branch?.id) {
-              e.currentTarget.style.background = '#F0F0F0';
-              e.currentTarget.style.borderColor = '#0155CB';
-            }
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = '#FFFFFF';
-            e.currentTarget.style.borderColor = '#D9D9D9';
-          }}>
+              boxSizing: 'border-box',
+              display: 'flex',
+              flexDirection: 'row',
+              justifyContent: 'center',
+              alignItems: 'center',
+              padding: '4px 8px',
+              gap: '4px',
+              background: '#FFFFFF',
+              border: '1px solid #D9D9D9',
+              borderRadius: '24px',
+              flex: '0 0 auto',
+              cursor: doctor.branch?.id ? 'pointer' : 'default',
+              transition: 'all 0.2s ease',
+            }}
+            onMouseEnter={(e) => {
+              if (doctor.branch?.id) {
+                e.currentTarget.style.background = '#F0F0F0';
+                e.currentTarget.style.borderColor = '#0155CB';
+              }
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = '#FFFFFF';
+              e.currentTarget.style.borderColor = '#D9D9D9';
+            }}>
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
               <circle cx="8" cy="6" r="2.5" stroke="#6A6A6A" strokeWidth="1.5"/>
               <path d="M8 14C8 14 13 9.5 13 6C13 3.23858 10.7614 1 8 1C5.23858 1 3 3.23858 3 6C3 9.5 8 14 8 14Z" stroke="#6A6A6A" strokeWidth="1.5"/>
@@ -230,7 +233,7 @@ const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onLearnMore, onBookNow 
               lineHeight: '16px',
               color: '#6A6A6A',
             }}>
-              {doctor.branch?.name || doctor.location}
+              {getTranslatedField(doctor.branch?.name, '') || getTranslatedField(doctor.location, '')}
             </span>
           </div>
 
@@ -243,26 +246,26 @@ const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onLearnMore, onBookNow 
               }
             }}
             style={{
-            display: 'flex',
-            flexDirection: 'row',
-            justifyContent: 'center',
-            alignItems: 'center',
-            padding: '4px 8px',
-            gap: '4px',
-            background: '#A7FAFC',
-            borderRadius: '24px',
-            flex: '1 1 auto',
-            cursor: doctor.department?.id ? 'pointer' : 'default',
-            transition: 'all 0.2s ease',
-          }}
-          onMouseEnter={(e) => {
-            if (doctor.department?.id) {
-              e.currentTarget.style.background = '#8FF0F2';
-            }
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = '#A7FAFC';
-          }}>
+              display: 'flex',
+              flexDirection: 'row',
+              justifyContent: 'center',
+              alignItems: 'center',
+              padding: '4px 8px',
+              gap: '4px',
+              background: '#A7FAFC',
+              borderRadius: '24px',
+              flex: '1 1 auto',
+              cursor: doctor.department?.id ? 'pointer' : 'default',
+              transition: 'all 0.2s ease',
+            }}
+            onMouseEnter={(e) => {
+              if (doctor.department?.id) {
+                e.currentTarget.style.background = '#8FF0F2';
+              }
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = '#A7FAFC';
+            }}>
             <span style={{
               fontFamily: 'Nunito, sans-serif',
               fontStyle: 'normal',
@@ -275,7 +278,7 @@ const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onLearnMore, onBookNow 
               textOverflow: 'ellipsis',
               whiteSpace: 'nowrap',
             }}>
-              {doctor.department?.name || 'Department'}
+              {getTranslatedField(doctor.department?.name, '') || 'Department'}
             </span>
           </div>
         </div>
@@ -316,7 +319,7 @@ const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onLearnMore, onBookNow 
             marginLeft: '8px',
           }}>
             {doctor.experience_years} Years Of Experience<br />
-            {doctor.education}
+            {getTranslatedField(doctor.education, '')}
           </div>
         </div>
       </div>
@@ -334,19 +337,19 @@ const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onLearnMore, onBookNow 
         <button 
           onClick={() => doctor.status !== 'busy' && onBookNow(doctor)}
           style={{
-          display: 'flex',
-          flexDirection: 'row',
-          justifyContent: 'center',
-          alignItems: 'center',
-          padding: '8px 12px',
-          width: '130px',
-          height: '32px',
-          background: doctor.status === 'busy' ? '#E5E7EA' : '#061F42',
-          borderRadius: '8px',
-          border: 'none',
-          cursor: doctor.status === 'busy' ? 'not-allowed' : 'pointer',
-          flex: 1,
-        }}>
+            display: 'flex',
+            flexDirection: 'row',
+            justifyContent: 'center',
+            alignItems: 'center',
+            padding: '8px 12px',
+            width: '130px',
+            height: '32px',
+            background: doctor.status === 'busy' ? '#E5E7EA' : '#061F42',
+            borderRadius: '8px',
+            border: 'none',
+            cursor: doctor.status === 'busy' ? 'not-allowed' : 'pointer',
+            flex: 1,
+          }}>
           <span style={{
             fontFamily: 'Nunito, sans-serif',
             fontWeight: 600,
@@ -354,7 +357,7 @@ const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onLearnMore, onBookNow 
             lineHeight: '16px',
             color: doctor.status === 'busy' ? '#9EA2AE' : '#FFFFFF',
           }}>
-            Book Now
+            {t('bookNow')}
           </span>
         </button>
 
@@ -381,7 +384,7 @@ const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onLearnMore, onBookNow 
             lineHeight: '16px',
             color: '#FFFFFF',
           }}>
-            Learn More
+            {t('readMore')}
           </span>
         </button>
       </div>
@@ -546,6 +549,7 @@ const BranchesPage: React.FC = () => {
   const ResponsiveNavbar = useResponsiveNavbar();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+  const { t } = useTranslation('pages');
   
   const [branches, setBranches] = useState<Branch[]>([]);
   const [selectedBranch, setSelectedBranch] = useState<Branch | null>(null);
@@ -851,7 +855,7 @@ const BranchesPage: React.FC = () => {
             margin: 0,
             flexGrow: 1,
           }}>
-            Branches
+            {t('branches')}
           </h1>
         </div>
 
@@ -891,7 +895,7 @@ const BranchesPage: React.FC = () => {
               lineHeight: '16px',
               color: '#061F42',
             }}>
-              Back
+              {t('back')}
             </span>
           </Link>
           <span style={{
@@ -904,7 +908,7 @@ const BranchesPage: React.FC = () => {
             textOverflow: 'ellipsis',
             whiteSpace: isMobile ? 'normal' : 'nowrap',
           }}>
-            Displaying results for{' '}
+            {t('displayingResultsFor')}{' '}
             <span style={{ color: '#061F42' }}>
               <span 
                 onClick={() => navigate('/branches')}
@@ -917,9 +921,9 @@ const BranchesPage: React.FC = () => {
                 onMouseEnter={(e) => (e.currentTarget as HTMLElement).style.color = '#00ABDA'}
                 onMouseLeave={(e) => (e.currentTarget as HTMLElement).style.color = '#061F42'}
               >
-                Branches
+                {t('branches')}
               </span>
-              {selectedBranch && ` > ${selectedBranch.name}`}
+              {selectedBranch && ` > ${getTranslatedField(selectedBranch.name, '')}`}
             </span>
           </span>
         </div>
@@ -972,7 +976,7 @@ const BranchesPage: React.FC = () => {
                     lineHeight: '20px',
                     color: '#061F42',
                   }}>
-                    {selectedBranch?.name || 'Select Branch'}
+                    {selectedBranch?.name || t('selectBranch')}
                   </span>
                 </div>
                 <svg 
@@ -1064,7 +1068,7 @@ const BranchesPage: React.FC = () => {
                             color: '#061F42',
                             textAlign: 'left',
                           }}>
-                            {branch.name}
+                            {getTranslatedField(branch.name, '')}
                           </span>
                           {branch.region && (
                             <span style={{
@@ -1075,7 +1079,7 @@ const BranchesPage: React.FC = () => {
                               color: '#6B7280',
                               textAlign: 'left',
                             }}>
-                              {branch.region}
+                              {getTranslatedField(branch.region, '')}
                             </span>
                           )}
                         </div>
@@ -1139,7 +1143,7 @@ const BranchesPage: React.FC = () => {
                     textAlign: 'center',
                     color: selectedBranch?.id === branch.id ? '#061F42' : '#A4A5A5',
                   }}>
-                    {branch.name}
+                    {getTranslatedField(branch.name, '')}
                   </span>
                 </button>
               ))}
@@ -1218,7 +1222,7 @@ const BranchesPage: React.FC = () => {
                           textTransform: 'uppercase',
                           color: '#00ABDA',
                         }}>
-                          {selectedBranch.region || 'JEDDAH REGION'}
+                          {getTranslatedField(selectedBranch.region, '') || 'JEDDAH REGION'}
                         </span>
                       </div>
                       <h2 style={{
@@ -1230,29 +1234,27 @@ const BranchesPage: React.FC = () => {
                         margin: 0,
                         textShadow: '0px 4px 8px rgba(0, 0, 0, 0.15)',
                       }}>
-                        {selectedBranch.name}
-                      </h2>
-                    </div>
-
-  
+                      {getTranslatedField(selectedBranch.name, '')}
+                    </h2>
                   </div>
                 </div>
+              </div>
 
-                {/* About Section */}
-                <div style={{
-                  boxSizing: 'border-box',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'flex-start',
-                  padding: isMobile ? '20px 20px 1px' : '33px 33px 1px',
-                  gap: '16px',
-                  width: '100%',
-                  background: '#FFFFFF',
-                  border: '1px solid #F3F4F6',
-                  boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.1), 0px 1px 2px -1px rgba(0, 0, 0, 0.1)',
-                  borderRadius: isMobile ? '12px' : '20px',
-                }}>
-                  <h3 style={{
+              {/* About Section */}
+              <div style={{
+                boxSizing: 'border-box',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'flex-start',
+                padding: isMobile ? '20px 20px 1px' : '33px 33px 1px',
+                gap: '16px',
+                width: '100%',
+                background: '#FFFFFF',
+                border: '1px solid #F3F4F6',
+                boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.1), 0px 1px 2px -1px rgba(0, 0, 0, 0.1)',
+                borderRadius: isMobile ? '12px' : '20px',
+              }}>
+                <h3 style={{
                     fontFamily: 'Nunito, sans-serif',
                     fontWeight: 700,
                     fontSize: isMobile ? '20px' : '24px',
@@ -1260,7 +1262,7 @@ const BranchesPage: React.FC = () => {
                     color: '#061F42',
                     margin: 0,
                   }}>
-                    About {selectedBranch.name}
+                    {t('about')} {getTranslatedField(selectedBranch.name, '')}
                   </h3>
                   <p style={{
                     fontFamily: 'Varela, sans-serif',
@@ -1270,7 +1272,7 @@ const BranchesPage: React.FC = () => {
                     color: '#4A5565',
                     margin: 0,
                   }}>
-                    {selectedBranch.description || `Located in the historic and vibrant district of ${selectedBranch.region || 'Jeddah'}, our medical center stands as a beacon of advanced healthcare. We are dedicated to serving the local community with a patient-centric approach, ensuring that every individual receives personalized care of the highest standard.`}
+                    {getTranslatedField(selectedBranch.description, '') || `Located in the historic and vibrant district of ${getTranslatedField(selectedBranch.region, '') || 'Jeddah'}, our medical center stands as a beacon of advanced healthcare. We are dedicated to serving the local community with a patient-centric approach, ensuring that every individual receives personalized care of the highest standard.`}
                   </p>
                   <p style={{
                     fontFamily: 'Varela, sans-serif',
@@ -1280,7 +1282,7 @@ const BranchesPage: React.FC = () => {
                     color: '#4A5565',
                     margin: isMobile ? '0 0 16px 0' : '0 0 24px 0',
                   }}>
-                    Our facility is equipped with the latest diagnostic technology and staffed by a team of experienced consultants and specialists. Whether for routine check-ups or specialized treatments, the {selectedBranch.name} offers a comfortable and welcoming environment for you and your family.
+                    Our facility is equipped with the latest diagnostic technology and staffed by a team of experienced consultants and specialists. Whether for routine check-ups or specialized treatments, the {getTranslatedField(selectedBranch.name, '')} offers a comfortable and welcoming environment for you and your family.
                   </p>
                 </div>
 
@@ -1302,7 +1304,7 @@ const BranchesPage: React.FC = () => {
                     margin: 0,
                     paddingLeft: isMobile ? '8px' : '24px',
                   }}>
-                    Gallery
+                    {t('gallery')}
                   </h3>
                   {(selectedBranch.galleries?.length || 0) > 0 && (
                     <button 
@@ -1319,7 +1321,7 @@ const BranchesPage: React.FC = () => {
                         cursor: 'pointer',
                         padding: isMobile ? '0 8px 0 0' : 0,
                       }}>
-                      View all
+                      {t('viewAll')}
                     </button>
                   )}
                 </div>
@@ -1400,7 +1402,7 @@ const BranchesPage: React.FC = () => {
                     color: '#061F42',
                     margin: 0,
                   }}>
-                    Our Services
+                    {t('ourServices')}
                   </h3>
                   <div style={{
                     display: 'grid',
@@ -1410,7 +1412,7 @@ const BranchesPage: React.FC = () => {
                   }}>
                     {departments.length > 0 ? (
                       departments.map(dept => (
-                        <SpecialtyItem key={dept.id} name={dept.name} icon={dept.icon} />
+                        <SpecialtyItem key={dept.id} name={getTranslatedField(dept.name, '')} icon={dept.icon} />
                       ))
                     ) : (
                       // Fallback if no departments loaded
@@ -1443,7 +1445,7 @@ const BranchesPage: React.FC = () => {
                     color: '#061F42',
                     margin: 0,
                   }}>
-                    Contact information
+                    {t('contactInformation')}
                   </h3>
                   <div style={{
                     display: 'flex',
@@ -1456,22 +1458,22 @@ const BranchesPage: React.FC = () => {
                   }}>
                     <ContactItem
                       icon="address"
-                      title="Address"
+                      title={t('address')}
                       lines={[
-                        selectedBranch.address || 'King Faisal Road, Ghulail District',
+                        getTranslatedField(selectedBranch.address, '') || 'King Faisal Road, Ghulail District',
                         `Jeddah 21442, Saudi Arabia`
                       ]}
                       isMobile={isMobile}
                     />
                     <ContactItem
                       icon="phone"
-                      title="Phone"
+                      title={t('phone')}
                       lines={[selectedBranch.phone || '+966 12 345 6789']}
                       isMobile={isMobile}
                     />
                     <ContactItem
                       icon="email"
-                      title="Email"
+                      title={t('email')}
                       lines={[selectedBranch.email || 'ghulail@medicalcenter.sa']}
                       isMobile={isMobile}
                     />
@@ -1505,7 +1507,7 @@ const BranchesPage: React.FC = () => {
                       margin: 0,
                       flexGrow: 1,
                     }}>
-                      Our Doctors
+                      {t('ourDoctors')}
                     </h3>
                   </div>
 
@@ -1600,7 +1602,7 @@ const BranchesPage: React.FC = () => {
                             fontSize: '16px',
                             color: '#6A6A6A',
                           }}>
-                            No doctors found for this branch.
+                            {t('noDoctorsFound')}
                           </div>
                         )}
                       </div>
@@ -1779,7 +1781,7 @@ const BranchesPage: React.FC = () => {
           >
             <img
               src={selectedBranch.galleries[currentImageIndex]?.image_url}
-              alt={selectedBranch.galleries[currentImageIndex]?.title || `Gallery image ${currentImageIndex + 1}`}
+              alt={getTranslatedField(selectedBranch.galleries[currentImageIndex]?.title, '') || `Gallery image ${currentImageIndex + 1}`}
               style={{
                 maxWidth: '100%',
                 maxHeight: '70vh',

@@ -8,6 +8,8 @@ import CustomSelect from '../components/CustomSelect';
 import { DoctorCardSkeleton } from '../components/LoadingComponents';
 import { EASINGS, getStaggerDelay } from '../utils/animations';
 import FloatingContactButtons from '../components/FloatingContactButtons';
+import { getTranslatedField } from '../utils/localeHelpers';
+import { useTranslation } from 'react-i18next';
 
 interface DoctorCardProps {
   doctor: Doctor;
@@ -18,17 +20,18 @@ interface DoctorCardProps {
 const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onLearnMore, onBookNow }) => {
   const [isHovered, setIsHovered] = useState(false);
   const navigate = useNavigate();
+  const { t } = useTranslation('pages');
   
   const getStatusStyle = (status: string) => {
     switch (status) {
       case 'available_today':
-        return { background: '#CFF5FF', color: '#061F42', text: 'Available Today' };
+        return { background: '#CFF5FF', color: '#061F42', text: t('availableToday') };
       case 'busy':
-        return { background: '#EE443F', color: '#FFFFFF', text: 'Busy' };
+        return { background: '#EE443F', color: '#FFFFFF', text: t('busy') };
       case 'available_soon':
-        return { background: '#FFD75D', color: '#061F42', text: 'Available Soon' };
+        return { background: '#FFD75D', color: '#061F42', text: t('availableSoon') };
       default:
-        return { background: '#CFF5FF', color: '#061F42', text: 'Available Today' };
+        return { background: '#CFF5FF', color: '#061F42', text: t('availableToday') };
     }
   };
 
@@ -112,7 +115,7 @@ const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onLearnMore, onBookNow 
       }}>
         <img
           src={doctor.image_url || '/assets/images/general/person_template.png'}
-          alt={doctor.name}
+          alt={getTranslatedField(doctor.name, '')}
           style={{
             width: '100%',
             height: '100%',
@@ -144,7 +147,7 @@ const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onLearnMore, onBookNow 
           color: '#061F42',
           margin: 0,
         }}>
-          {doctor.name}
+          {getTranslatedField(doctor.name, '')}
         </h3>
         <div style={{
           width: '100%',
@@ -158,7 +161,7 @@ const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onLearnMore, onBookNow 
           color: '#061F42',
           margin: 0,
         }}>
-          {doctor.specialization || doctor.department?.name || 'Specialist'}
+          {getTranslatedField(doctor.specialization, '') || getTranslatedField(doctor.department?.name, '') || 'Specialist'}
         </div>
       </div>
 
@@ -235,7 +238,7 @@ const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onLearnMore, onBookNow 
               lineHeight: '16px',
               color: '#6A6A6A',
             }}>
-              {doctor.branch?.name || doctor.location}
+              {getTranslatedField(doctor.branch?.name, '') || getTranslatedField(doctor.location, '')}
             </span>
           </div>
 
@@ -277,7 +280,7 @@ const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onLearnMore, onBookNow 
               textAlign: 'center',
               color: '#061F42',
             }}>
-              {doctor.department?.name || 'Department'}
+              {getTranslatedField(doctor.department?.name, 'Department')}
             </span>
           </div>
         </div>
@@ -327,7 +330,7 @@ const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onLearnMore, onBookNow 
             marginLeft: '16px',
           }}>
             {doctor.experience_years} Years Of Experience<br />
-            {doctor.education}
+            {getTranslatedField(doctor.education, '')}
           </div>
         </div>
       </div>
@@ -381,7 +384,7 @@ const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onLearnMore, onBookNow 
             textAlign: 'center',
             color: doctor.status === 'busy' ? '#9EA2AE' : '#FFFFFF',
           }}>
-            Book Now
+            {t('bookNow')}
           </span>
         </button>
 
@@ -420,7 +423,7 @@ const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onLearnMore, onBookNow 
             textAlign: 'center',
             color: '#FFFFFF',
           }}>
-            Learn More
+            {t('readMore')}
           </span>
         </button>
       </div>
@@ -432,6 +435,7 @@ const DoctorsPage: React.FC = () => {
   const ResponsiveNavbar = useResponsiveNavbar();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { t } = useTranslation('pages');
   const [doctors, setDoctors] = useState<PaginatedResponse<Doctor> | null>(null);
   const [branches, setBranches] = useState<Branch[]>([]);
   const [departments, setDepartments] = useState<Department[]>([]);
@@ -732,7 +736,7 @@ const DoctorsPage: React.FC = () => {
           margin: 0,
           flexGrow: 1,
         }}>
-          Doctors
+          {t('doctors')}
         </h1>
 
         {/* Selection dropdowns */}
@@ -751,12 +755,12 @@ const DoctorsPage: React.FC = () => {
           {/* Branch Filter */}
           <div style={{ width: window.innerWidth <= 768 ? '100%' : '180px' }}>
             <CustomSelect
-              placeholder="Select Branch"
+              placeholder={t('selectBranch')}
               value={selectedBranch}
               onChange={(value) => handleBranchChange(value)}
               options={branches.map(branch => ({
                 value: String(branch.id),
-                label: branch.name
+                label: getTranslatedField(branch.name, '')
               }))}
               searchable={false}
             />
@@ -765,12 +769,12 @@ const DoctorsPage: React.FC = () => {
           {/* Department Filter */}
           <div style={{ width: window.innerWidth <= 768 ? '100%' : '180px' }}>
             <CustomSelect
-              placeholder="Select Department"
+              placeholder={t('selectDepartment')}
               value={selectedDepartment}
               onChange={(value) => handleDepartmentChange(value)}
               options={filteredDepartments.map(dept => ({
                 value: String(dept.id),
-                label: dept.name
+                label: getTranslatedField(dept.name, '')
               }))}
               searchable={false}
             />
@@ -820,7 +824,7 @@ const DoctorsPage: React.FC = () => {
               lineHeight: '20px',
               color: '#FFFFFF',
             }}>
-              {sortByName ? 'Unsort' : 'Sort By Name'}
+              {sortByName ? t('unsort') : t('sortByName')}
             </span>
           </button>
         </div>
@@ -838,7 +842,7 @@ const DoctorsPage: React.FC = () => {
         marginBottom: '10px',
         padding: window.innerWidth <= 768 ? '8px 0' : '0',
       }}>
-        <span style={{ color: '#A4A5A5' }}>Displaying results for </span>
+        <span style={{ color: '#A4A5A5' }}>{t('displayingResultsFor')} </span>
         <span style={{ color: '#061F42' }}>
           <span 
             onClick={() => navigate('/doctors')}
@@ -851,7 +855,7 @@ const DoctorsPage: React.FC = () => {
             onMouseEnter={(e) => (e.currentTarget as HTMLElement).style.color = '#00ABDA'}
             onMouseLeave={(e) => (e.currentTarget as HTMLElement).style.color = '#061F42'}
           >
-            Doctors
+            {t('doctors')}
           </span>
           {selectedBranch && branches.find(b => b.id === parseInt(selectedBranch)) && (
             <>
@@ -867,7 +871,7 @@ const DoctorsPage: React.FC = () => {
                 onMouseEnter={(e) => (e.currentTarget as HTMLElement).style.color = '#00ABDA'}
                 onMouseLeave={(e) => (e.currentTarget as HTMLElement).style.color = '#061F42'}
               >
-                {branches.find(b => b.id === parseInt(selectedBranch))?.name}
+                {getTranslatedField(branches.find(b => b.id === parseInt(selectedBranch))?.name, '')}
               </span>
             </>
           )}
@@ -885,11 +889,11 @@ const DoctorsPage: React.FC = () => {
                 onMouseEnter={(e) => (e.currentTarget as HTMLElement).style.color = '#00ABDA'}
                 onMouseLeave={(e) => (e.currentTarget as HTMLElement).style.color = '#061F42'}
               >
-                {filteredDepartments.find(d => d.id === parseInt(selectedDepartment))?.name}
+                {getTranslatedField(filteredDepartments.find(d => d.id === parseInt(selectedDepartment))?.name, '')}
               </span>
             </>
           )}
-          {!selectedBranch && !selectedDepartment && ' > All'}
+          {!selectedBranch && !selectedDepartment && ` > ${t('all')}`}
         </span>
       </div>
 
@@ -1026,7 +1030,7 @@ const DoctorsPage: React.FC = () => {
           fontSize: '18px',
           color: '#6A6A6A',
         }}>
-          No doctors found matching your criteria.
+          {t('noDoctorsCriteria')}
         </div>
       )}
         </div>

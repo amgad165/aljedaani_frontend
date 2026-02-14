@@ -7,6 +7,7 @@ import DoctorFilters from '../components/DoctorFilters';
 import { LoadingSpinner } from '../components/LoadingComponents';
 import { EASINGS } from '../utils/animations';
 import FloatingContactButtons from '../components/FloatingContactButtons';
+import { getTranslatedField } from '../utils/localeHelpers';
 
 const DoctorDetailsPage: React.FC = () => {
   const ResponsiveNavbar = useResponsiveNavbar();
@@ -76,7 +77,7 @@ const DoctorDetailsPage: React.FC = () => {
           lineHeight: '20px',
           color: '#061F42',
         }}>
-          {service.title}:
+          {getTranslatedField(service.title, '')}:
         </span>
       </div>
       
@@ -90,7 +91,7 @@ const DoctorDetailsPage: React.FC = () => {
         lineHeight: '16px',
         color: '#061F42',
       }}>
-        {service.description}
+        {getTranslatedField(service.description, '')}
       </div>
 
       {/* Divider */}
@@ -251,7 +252,7 @@ const DoctorDetailsPage: React.FC = () => {
               <span style={{
                 color: '#061F42',
               }}>
-                {doctor.name}
+                {getTranslatedField(doctor.name, '')}
               </span>
             </span>
           </div>
@@ -340,7 +341,7 @@ const DoctorDetailsPage: React.FC = () => {
                 }}>
                   <img
                     src={doctor.image_url || '/assets/images/general/person_template.png'}
-                    alt={doctor.name}
+                    alt={getTranslatedField(doctor.name, '')}
                     style={{
                       width: '100%',
                       height: '100%',
@@ -369,7 +370,7 @@ const DoctorDetailsPage: React.FC = () => {
                     textAlign: 'center',
                     color: '#061F42',
                   }}>
-                    {doctor.name}
+                    {getTranslatedField(doctor.name, '')}
                   </div>
                   {/* Sub title - Specialization */}
                   <div style={{
@@ -508,11 +509,11 @@ const DoctorDetailsPage: React.FC = () => {
                         <li>{doctor.experience_years} Years Of Experience</li>
                       )}
                       {doctor.education && (
-                        <li>{doctor.education}</li>
+                        <li>{getTranslatedField(doctor.education, '')}</li>
                       )}
                       {doctor.specialization && (
                         <li style={{ whiteSpace: 'pre-wrap' as const, wordWrap: 'break-word' as const }}>
-                          {doctor.specialization}
+                          {getTranslatedField(doctor.specialization, '')}
                         </li>
                       )}
    

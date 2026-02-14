@@ -1,9 +1,12 @@
 import { useScrollAnimation, getAnimationStyle } from '../hooks/useScrollAnimation';
 import { useHomepageData } from '../context/HomepageContext';
+import { getTranslatedField } from '../utils/localeHelpers';
+import { useTranslation } from 'react-i18next';
 
 const LocationCards = () => {
   const { ref, isVisible } = useScrollAnimation();
   const { data, loading } = useHomepageData();
+  const { t } = useTranslation('pages');
   const branches = data?.branches?.slice(0, 3) || [];
 
   if (loading) {
@@ -12,7 +15,7 @@ const LocationCards = () => {
         <div className="container">
           <div className="row g-3">
             <div style={{ textAlign: 'center', width: '100%', padding: '40px' }}>
-              Loading locations...
+              {t('loadingLocations')}
             </div>
           </div>
         </div>
@@ -32,7 +35,7 @@ const LocationCards = () => {
             >
               <div style={{ backgroundImage: `url('${branch.image_url || '/assets/img/card-img-1.webp'}')` }} className="main-wrapper">
                 <div className="content-bar">
-                  <span className="title">{branch.name}</span>
+                  <span className="title">{getTranslatedField(branch.name, '')}</span>
                   <a 
                     href={branch.map_url || '#'}
                     target={branch.map_url ? '_blank' : undefined}
@@ -52,7 +55,7 @@ const LocationCards = () => {
                     }}
                   >
                     <img src="/assets/img/icons/view-icon.png" width="12" height="12" alt="Icon" /> 
-                    View location
+                    {t('viewLocation')}
                   </a>
                 </div>
               </div>

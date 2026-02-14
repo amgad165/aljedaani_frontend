@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AdminLayout from './AdminLayout';
+import { getTranslatedField } from '../../utils/localeHelpers';
 
 interface Department {
   id: number;
@@ -13,9 +14,11 @@ interface Department {
 }
 
 interface FormData {
-  name: string;
+  name_en: string;
+  name_ar: string;
   icon: string;
-  description: string;
+  description_en: string;
+  description_ar: string;
   is_active: boolean;
 }
 
@@ -27,11 +30,14 @@ const AdminDepartments: React.FC = () => {
   const [modalMode, setModalMode] = useState<'create' | 'edit'>('create');
   const [selectedDepartment, setSelectedDepartment] = useState<Department | null>(null);
   const [formData, setFormData] = useState<FormData>({
-    name: '',
+    name_en: '',
+    name_ar: '',
     icon: '',
-    description: '',
+    description_en: '',
+    description_ar: '',
     is_active: true
   });
+  const [activeFormTab, setActiveFormTab] = useState<'en' | 'ar'>('en');
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState<number | null>(null);
   const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
@@ -74,7 +80,8 @@ const AdminDepartments: React.FC = () => {
   const handleCreate = () => {
     setModalMode('create');
     setSelectedDepartment(null);
-    setFormData({ name: '', icon: '', description: '', is_active: true });
+    setFormData({ name_en: '', name_ar: '', icon: '', description_en: '', description_ar: '', is_active: true });
+    setActiveFormTab('en');
     setIconFile(null);
     setIconPreview(null);
     setShowModal(true);
@@ -83,12 +90,20 @@ const AdminDepartments: React.FC = () => {
   const handleEdit = (dept: Department) => {
     setModalMode('edit');
     setSelectedDepartment(dept);
+    
+    // Parse JSON objects for translatable fields
+    const nameObj = typeof dept.name === 'object' ? dept.name : { en: dept.name || '', ar: '' };
+    const descObj = typeof dept.description === 'object' ? dept.description : { en: dept.description || '', ar: '' };
+    
     setFormData({
-      name: dept.name,
+      name_en: nameObj.en || '',
+      name_ar: nameObj.ar || '',
       icon: dept.icon || '',
-      description: dept.description || '',
+      description_en: (descObj && descObj.en) || '',
+      description_ar: (descObj && descObj.ar) || '',
       is_active: dept.is_active
     });
+    setActiveFormTab('en');
     setIconFile(null);
     setIconPreview(dept.icon || null);
     setShowModal(true);
@@ -152,11 +167,16 @@ const AdminDepartments: React.FC = () => {
       
       // Use FormData to send file directly (same as doctor upload)
       const formDataToSend = new window.FormData();
-      formDataToSend.append('name', formData.name);
+      
+      // Build JSON objects for translatable fields
+      formDataToSend.append('name', JSON.stringify({ en: formData.name_en, ar: formData.name_ar }));
+      if (formData.description_en || formData.description_ar) {
+        formDataToSend.append('description', JSON.stringify({ en: formData.description_en, ar: formData.description_ar }));
+      }
+      
       if (iconFile) {
         formDataToSend.append('icon', iconFile);
       }
-      if (formData.description) formDataToSend.append('description', formData.description);
       formDataToSend.append('is_active', formData.is_active ? '1' : '0');
       
       if (modalMode === 'edit') {
@@ -196,8 +216,8 @@ const AdminDepartments: React.FC = () => {
   };
 
   const filteredDepartments = departments.filter(dept =>
-    dept.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (dept.description?.toLowerCase().includes(searchQuery.toLowerCase()) || false)
+    getTranslatedField(dept.name, '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (getTranslatedField(dept.description, '').toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   // Inline Styles
@@ -302,7 +322,7 @@ const AdminDepartments: React.FC = () => {
                             {dept.icon ? (
                               <img
                                 src={dept.icon}
-                                alt={dept.name}
+                                alt={getTranslatedField(dept.name, '')}
                                 style={{
                                   width: '32px',
                                   height: '32px',
@@ -313,11 +333,11 @@ const AdminDepartments: React.FC = () => {
                               <span>🏥</span>
                             )}
                           </div>
-                          <span style={deptNameStyle}>{dept.name}</span>
+                          <span style={deptNameStyle}>{getTranslatedField(dept.name, '')}</span>
                         </div>
                       </td>
                       <td style={tdStyle}>
-                        <span style={{ color: '#6B7280', fontSize: '14px' }}>{dept.description || '-'}</span>
+                        <span style={{ color: '#6B7280', fontSize: '14px' }}>{getTranslatedField(dept.description, '') || '-'}</span>
                       </td>
                       <td style={tdStyle}>
                         <span style={statusBadgeStyle(dept.is_active)}>
@@ -373,10 +393,103 @@ const AdminDepartments: React.FC = () => {
               </div>
               <form onSubmit={handleSubmit}>
                 <div style={modalBodyStyle}>
-                  <div style={formGroupStyle}>
-                    <label style={labelStyle}>Department Name *</label>
-                    <input type="text" required value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} style={inputStyle} placeholder="e.g., Cardiology" />
+                  {/* Language Tabs */}
+                  <div style={{ marginBottom: '24px', borderBottom: '2px solid #E5E7EB' }}>
+                    <div style={{ display: 'flex', gap: '2px' }}>
+                      <button
+                        type="button"
+                        onClick={() => setActiveFormTab('en')}
+                        style={{
+                          flex: 1,
+                          padding: '12px 16px',
+                          fontSize: '14px',
+                          fontWeight: 600,
+                          border: 'none',
+                          borderBottom: `3px solid ${activeFormTab === 'en' ? '#15C9FA' : 'transparent'}`,
+                          backgroundColor: activeFormTab === 'en' ? '#E0F7FF' : 'transparent',
+                          color: activeFormTab === 'en' ? '#0a4d68' : '#6B7280',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s'
+                        }}
+                      >
+                        English
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setActiveFormTab('ar')}
+                        style={{
+                          flex: 1,
+                          padding: '12px 16px',
+                          fontSize: '14px',
+                          fontWeight: 600,
+                          border: 'none',
+                          borderBottom: `3px solid ${activeFormTab === 'ar' ? '#15C9FA' : 'transparent'}`,
+                          backgroundColor: activeFormTab === 'ar' ? '#E0F7FF' : 'transparent',
+                          color: activeFormTab === 'ar' ? '#0a4d68' : '#6B7280',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s'
+                        }}
+                      >
+                        العربية (Arabic)
+                      </button>
+                    </div>
                   </div>
+
+                  {/* English Fields */}
+                  {activeFormTab === 'en' && (
+                    <>
+                      <div style={formGroupStyle}>
+                        <label style={labelStyle}>Department Name (English) *</label>
+                        <input
+                          type="text"
+                          required
+                          value={formData.name_en}
+                          onChange={(e) => setFormData({ ...formData, name_en: e.target.value })}
+                          style={inputStyle}
+                          placeholder="e.g., Cardiology"
+                        />
+                      </div>
+                      <div style={formGroupStyle}>
+                        <label style={labelStyle}>Description (English)</label>
+                        <textarea
+                          value={formData.description_en}
+                          onChange={(e) => setFormData({ ...formData, description_en: e.target.value })}
+                          style={textareaStyle}
+                          placeholder="Brief description of the department"
+                        />
+                      </div>
+                    </>
+                  )}
+
+                  {/* Arabic Fields */}
+                  {activeFormTab === 'ar' && (
+                    <>
+                      <div style={formGroupStyle}>
+                        <label style={labelStyle}>اسم القسم (عربي) *</label>
+                        <input
+                          type="text"
+                          required
+                          value={formData.name_ar}
+                          onChange={(e) => setFormData({ ...formData, name_ar: e.target.value })}
+                          style={{ ...inputStyle, direction: 'rtl' }}
+                          placeholder="مثال: أمراض القلب"
+                          dir="rtl"
+                        />
+                      </div>
+                      <div style={formGroupStyle}>
+                        <label style={labelStyle}>الوصف (عربي)</label>
+                        <textarea
+                          value={formData.description_ar}
+                          onChange={(e) => setFormData({ ...formData, description_ar: e.target.value })}
+                          style={{ ...textareaStyle, direction: 'rtl' }}
+                          placeholder="وصف مختصر للقسم"
+                          dir="rtl"
+                        />
+                      </div>
+                    </>
+                  )}
+
+                  {/* Icon field - always visible */}
                   <div style={formGroupStyle}>
                     <label style={labelStyle}>Department Icon</label>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -428,10 +541,6 @@ const AdminDepartments: React.FC = () => {
                         </div>
                       )}
                     </div>
-                  </div>
-                  <div style={formGroupStyle}>
-                    <label style={labelStyle}>Description</label>
-                    <textarea value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} style={textareaStyle} placeholder="Brief description of the department" />
                   </div>
                   <div style={formGroupStyle}>
                     <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>

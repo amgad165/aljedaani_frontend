@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useHomepageData } from '../context/HomepageContext';
 import { type Department } from '../services/departmentsService';
 import { doctorsService, type Doctor } from '../services/doctorsService';
+import { getTranslatedField } from '../utils/localeHelpers';
+import { useTranslation } from 'react-i18next';
 
 // Custom Select Component
 interface CustomSelectProps {
@@ -27,9 +29,10 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
 
   const selectedOption = options.find(opt => opt.id.toString() === value);
 
-  const filteredOptions = options.filter(opt =>
-    opt.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredOptions = options.filter(opt => {
+    const name = getTranslatedField(opt.name, '');
+    return name.toLowerCase().includes(searchTerm.toLowerCase());
+  });
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -75,7 +78,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
           boxShadow: isOpen ? '0 4px 12px rgba(0, 171, 218, 0.15)' : undefined,
         }}
       >
-        {selectedOption ? selectedOption.name : placeholder}
+        {selectedOption ? getTranslatedField(selectedOption.name, '') : placeholder}
         <div style={{
           position: 'absolute',
           right: '12px',
@@ -214,7 +217,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
                     color: value === option.id.toString() ? '#00838F' : '#374151',
                     flex: 1,
                   }}>
-                    {option.name}
+                    {getTranslatedField(option.name, '')}
                   </span>
                 </div>
               ))
@@ -254,6 +257,7 @@ const HeroSection = () => {
   const navigate = useNavigate();
   const [isLoaded, setIsLoaded] = useState(false);
   const { data: homepageData } = useHomepageData();
+  const { t } = useTranslation('pages');
   
   // Data states
   const [departments, setDepartments] = useState<Department[]>([]);
@@ -380,11 +384,11 @@ const HeroSection = () => {
         >
           <div style={{ maxWidth: '440px' }} className="content-wrapper">
             <h1 style={{ fontSize: '48px' }} className="fw-exbold mb-4">
-              Trusted care across<br />
-              the <span className="fw-exbold main-title text-primary-light">Kingdom</span>
+              {t('trustedCareAcross')}<br />
+              <span className="fw-exbold main-title text-primary-light">{t('theKingdom')}</span>
             </h1>
             <a style={{ padding: '12px 20px' }} href="/book-appointment" className="btn btn-primary w-100">
-              Book appointment
+              {t('bookAppointment')}
             </a>
           </div>
         </div>
@@ -404,7 +408,7 @@ const HeroSection = () => {
                 options={branches.map(b => ({ id: b.id, name: b.name }))}
                 value={selectedBranch}
                 onChange={handleBranchChange}
-                placeholder="Select Branch"
+                placeholder={t('selectBranch')}
               />
             </div>
             <div className="input-wrapper d-flex flex-column position-relative">
@@ -412,7 +416,7 @@ const HeroSection = () => {
                 options={filteredDepartments.map(dept => ({ id: dept.id, name: dept.name }))}
                 value={selectedDepartment}
                 onChange={handleDepartmentChange}
-                placeholder="Select Department"
+                placeholder={t('selectDepartment')}
               />
             </div>
             <div className="input-wrapper d-flex flex-column position-relative">
@@ -420,7 +424,7 @@ const HeroSection = () => {
                 options={doctors.map(d => ({ id: d.id, name: d.name }))}
                 value={selectedDoctor}
                 onChange={(value) => setSelectedDoctor(value)}
-                placeholder="Select Doctor"
+                placeholder={t('selectDoctor')}
                 disabled={doctors.length === 0}
               />
             </div>

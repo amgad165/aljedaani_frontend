@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { branchesService, type Branch } from '../services/branchesService';
 import { departmentsService, type Department } from '../services/departmentsService';
 import { doctorsService, type Doctor } from '../services/doctorsService';
+import { getTranslatedField } from '../utils/localeHelpers';
 
 interface DoctorFiltersProps {
   /** Initial selected branch ID */
@@ -519,7 +520,7 @@ const DoctorFilters: React.FC<DoctorFiltersProps> = ({
       }}>
         {/* Branch Filter */}
         <CustomSelect
-          options={branches.map(b => ({ id: b.id, name: b.name }))}
+          options={branches.map(b => ({ id: b.id, name: getTranslatedField(b.name, '') }))}
           value={selectedBranchId}
           onChange={(value) => setSelectedBranchId(value)}
           placeholder="Select Branch"
@@ -530,7 +531,7 @@ const DoctorFilters: React.FC<DoctorFiltersProps> = ({
 
         {/* Department Filter */}
         <CustomSelect
-          options={filteredDepartments.map(d => ({ id: d.id, name: d.name }))}
+          options={filteredDepartments.map(d => ({ id: d.id, name: getTranslatedField(d.name, '') }))}
           value={selectedDepartmentId}
           onChange={(value) => {
             setSelectedDepartmentId(value);
@@ -544,7 +545,7 @@ const DoctorFilters: React.FC<DoctorFiltersProps> = ({
 
         {/* Doctor Filter */}
         <CustomSelect
-          options={filteredDoctors.map(d => ({ id: d.id, name: d.name }))}
+          options={filteredDoctors.map(d => ({ id: d.id, name: getTranslatedField(d.name, '') }))}
           value={selectedDoctorId}
           onChange={(value) => setSelectedDoctorId(value)}
           placeholder={

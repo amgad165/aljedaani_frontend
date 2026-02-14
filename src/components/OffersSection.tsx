@@ -1,5 +1,6 @@
 import { useScrollAnimation, getAnimationStyle } from '../hooks/useScrollAnimation';
 import { useHomepageData } from '../context/HomepageContext';
+import { getTranslatedField } from '../utils/localeHelpers';
 
 const OffersSection = () => {
   const { ref: titleRef, isVisible: titleVisible } = useScrollAnimation();
@@ -79,7 +80,7 @@ const OffersSection = () => {
                 <div className="icon roboto responsive-d-block">{Math.floor(Number(mainOffer.discount))}%
                   <br />OFF</div>
                 <div className="service-card">
-                  <span className="h3 fw-exbold">{mainOffer.title}</span>
+                  <span className="h3 fw-exbold">{getTranslatedField(mainOffer.title, '')}</span>
                   <div className="d-flex align-items-center gap-1">
                     <div className="buttons">
                       <div style={{
@@ -123,7 +124,7 @@ const OffersSection = () => {
                 >
                   <div className="content-wrapper justify-content-end">
                     <div className="service-card">
-                      <span className="h3 fw-exbold">{offer.title}</span>
+                      <span className="h3 fw-exbold">{getTranslatedField(offer.title, '')}</span>
                       <div className="right">
                         <div className="buttons">
                           <div style={{

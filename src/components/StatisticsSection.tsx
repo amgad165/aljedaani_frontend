@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useScrollAnimation, getAnimationStyle } from '../hooks/useScrollAnimation';
+import { useTranslation } from 'react-i18next';
 
 interface Stat {
   id: number;
   number: number;
-  label: string;
+  labelKey: string;
   icon: string;
 }
 
@@ -36,12 +37,13 @@ const Counter = ({ target, isVisible }: { target: number; isVisible: boolean }) 
 const StatisticsSection = () => {
   const { ref: titleRef, isVisible: titleVisible } = useScrollAnimation();
   const { ref: statsRef, isVisible: statsVisible } = useScrollAnimation();
+  const { t } = useTranslation('pages');
   
   const stats: Stat[] = [
-    { id: 1, number: 300, label: 'Beds', icon: '/assets/images/care_section/bed.png' },
-    { id: 2, number: 22, label: 'Specialties', icon: '/assets/images/care_section/plus.png' },
-    { id: 3, number: 216, label: 'Doctors', icon: '/assets/images/care_section/doctor_plus.png' },
-    { id: 4, number: 3500, label: 'Patients', icon: '/assets/images/care_section/lying_person.png' }
+    { id: 1, number: 300, labelKey: 'beds', icon: '/assets/images/care_section/bed.png' },
+    { id: 2, number: 22, labelKey: 'specialties', icon: '/assets/images/care_section/plus.png' },
+    { id: 3, number: 216, labelKey: 'doctors', icon: '/assets/images/care_section/doctor_plus.png' },
+    { id: 4, number: 3500, labelKey: 'patients', icon: '/assets/images/care_section/lying_person.png' }
   ];
 
   return (
@@ -176,7 +178,7 @@ const StatisticsSection = () => {
               flex: 1
             }}
           >
-            Care you can count on
+            {t('careYouCanCount')}
           </h2>
         </div>
 
@@ -285,7 +287,7 @@ const StatisticsSection = () => {
               >
                 <img 
                   src={stat.icon} 
-                  alt={stat.label}
+                  alt={stat.labelKey}
                   className="stat-icon"
                   style={{
                     width: '60px',
@@ -330,7 +332,7 @@ const StatisticsSection = () => {
                     textAlign: 'center'
                   }}
                 >
-                  {stat.label}
+                  {t(stat.labelKey)}
                 </span>
               </div>
             </div>

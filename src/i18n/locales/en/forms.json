@@ -1,0 +1,23 @@
+{
+  "firstName": "First Name",
+  "lastName": "Last Name",
+  "middleName": "Middle Name",
+  "email": "Email",
+  "phone": "Phone",
+  "password": "Password",
+  "confirmPassword": "Confirm Password",
+  "dateOfBirth": "Date of Birth",
+  "gender": "Gender",
+  "male": "Male",
+  "female": "Female",
+  "address": "Address",
+  "city": "City",
+  "country": "Country",
+  "nationalId": "National ID",
+  "message": "Message",
+  "subject": "Subject",
+  "fullName": "Full Name",
+  "required": "This field is required",
+  "invalidEmail": "Invalid email address",
+  "passwordMismatch": "Passwords do not match"
+}

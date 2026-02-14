@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import AdminLayout from './AdminLayout';
 import { type Department, type DepartmentTabContent, type SubSection, type ServiceListItem, type SidebarItem } from '../../services/departmentsService';
+import { getTranslatedField } from '../../utils/localeHelpers';
 
 type TabType = 'overview' | 'opd_services' | 'inpatient_services' | 'investigations';
 
@@ -12,14 +13,43 @@ const tabLabels: Record<TabType, string> = {
   investigations: 'Investigations',
 };
 
-// Extended SubSection type to include file for upload
-interface SubSectionWithFile extends SubSection {
+// Extended SubSection type to include file for upload and bilingual fields
+interface SubSectionWithFile {
+  image?: string;
+  mobile_image?: string;
+  title_en?: string;
+  title_ar?: string;
+  description_en?: string;
+  description_ar?: string;
+  position?: 'left' | 'right';
   imageFile?: File | null;
   imagePreview?: string;
 }
 
-// Extended SidebarItem type to include file for upload
-interface SidebarItemWithFile extends SidebarItem {
+// Bilingual item type
+interface BilingualItem {
+  en: string;
+  ar: string;
+}
+
+// Extended ServiceListItem type with bilingual title and items
+interface ServiceListItemWithLang {
+  title_en?: string;
+  title_ar?: string;
+  items?: BilingualItem[];
+}
+
+// Extended SidebarItem type to include file for upload and bilingual fields
+interface SidebarItemWithFile {
+  id: string;
+  title_en: string;
+  title_ar: string;
+  image?: string;
+  mobile_image?: string;
+  description_en?: string;
+  description_ar?: string;
+  service_list?: ServiceListItemWithLang[];
+  sort_order?: number;
   imageFile?: File | null;
   imagePreview?: string;
 }
@@ -41,6 +71,7 @@ const AdminDepartmentTabs: React.FC = () => {
   
   // Track which sidebar item is expanded for editing
   const [expandedSidebarItem, setExpandedSidebarItem] = useState<number | null>(null);
+  const [activeFormTab, setActiveFormTab] = useState<'en' | 'ar'>('en');
 
   // Image file state for main image
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -54,17 +85,21 @@ const AdminDepartmentTabs: React.FC = () => {
   const [formData, setFormData] = useState<{
     main_image: string;
     mobile_image: string;
-    main_description: string;
-    quote_text: string;
+    main_description_en: string;
+    main_description_ar: string;
+    quote_text_en: string;
+    quote_text_ar: string;
     sub_sections: SubSectionWithFile[];
-    service_list: ServiceListItem[];
+    service_list: ServiceListItemWithLang[];
     sidebar_items: SidebarItemWithFile[];
     is_active: boolean;
   }>({
     main_image: '',
     mobile_image: '',
-    main_description: '',
-    quote_text: '',
+    main_description_en: '',
+    main_description_ar: '',
+    quote_text_en: '',
+    quote_text_ar: '',
     sub_sections: [],
     service_list: [],
     sidebar_items: [],
@@ -118,22 +153,35 @@ const AdminDepartmentTabs: React.FC = () => {
   useEffect(() => {
     const currentContent = tabContents.find(tc => tc.tab_type === activeTab);
     if (currentContent) {
-      // Convert sidebar_items to include file fields
-      // Handle migration from old/corrupted formats to new format (array of objects)
+      // Parse JSON objects for translatable fields
+      const mainDescObj = (typeof currentContent.main_description === 'object' && currentContent.main_description !== null) 
+        ? currentContent.main_description 
+        : { en: currentContent.main_description || '', ar: '' };
+      const quoteTextObj = (typeof currentContent.quote_text === 'object' && currentContent.quote_text !== null) 
+        ? currentContent.quote_text 
+        : { en: currentContent.quote_text || '', ar: '' };
+      
+      // Convert sidebar_items to include file fields and bilingual support
       let sidebarItemsWithFiles: SidebarItemWithFile[] = [];
-      const rawSidebarItems = currentContent.sidebar_items;
+      let rawSidebarItems = currentContent.sidebar_items;
+      
+      // Handle old format where spatie wrapped it: {en: [...]}
+      if (rawSidebarItems && typeof rawSidebarItems === 'object' && !Array.isArray(rawSidebarItems)) {
+        rawSidebarItems = (rawSidebarItems as any).en || [];
+      }
       
       if (rawSidebarItems && Array.isArray(rawSidebarItems)) {
         sidebarItemsWithFiles = rawSidebarItems
           .map((item, idx) => {
-            // Check if it's a string
+            // Check if it's a string (old format)
             if (typeof item === 'string') {
-              // Old format - convert string to new object format
               return {
                 id: `migrated_${idx}_${Date.now()}`,
-                title: item,
+                title_en: item,
+                title_ar: '',
                 image: '',
-                description: '',
+                description_en: '',
+                description_ar: '',
                 service_list: [],
                 sort_order: idx,
                 imageFile: null,
@@ -141,15 +189,16 @@ const AdminDepartmentTabs: React.FC = () => {
               };
             }
             
-            // Check if it's an array (corrupted - array of characters)
+            // Check if it's an array (corrupted)
             if (Array.isArray(item)) {
-              // This is a corrupted item where a string became an array of chars
               const title = item.join('');
               return {
                 id: `recovered_${idx}_${Date.now()}`,
-                title: title,
+                title_en: title,
+                title_ar: '',
                 image: '',
-                description: '',
+                description_en: '',
+                description_ar: '',
                 service_list: [],
                 sort_order: idx,
                 imageFile: null,
@@ -159,29 +208,51 @@ const AdminDepartmentTabs: React.FC = () => {
             
             // Check if it's an object
             if (typeof item === 'object' && item !== null) {
-              // Check if it has numeric string keys (corrupted from spreading a string)
-              // These would be keys like "0", "1", "2" etc.
               const hasNumericKeys = Object.keys(item).some(key => /^\d+$/.test(key));
               
-              // Clean the item - only keep valid SidebarItem properties
+              // Parse bilingual fields
+              const titleObj = (typeof item.title === 'object' && item.title !== null) 
+                ? item.title 
+                : { en: item.title || '', ar: '' };
+              const descObj = (typeof item.description === 'object' && item.description !== null) 
+                ? item.description 
+                : { en: item.description || '', ar: '' };
+              
               const cleanItem: SidebarItemWithFile = {
                 id: item.id || `item_${idx}_${Date.now()}`,
-                title: item.title || '',
+                title_en: titleObj.en || '',
+                title_ar: titleObj.ar || '',
                 image: item.image || '',
-                description: item.description || '',
-                service_list: Array.isArray(item.service_list) ? item.service_list : [],
+                description_en: descObj.en || '',
+                description_ar: descObj.ar || '',
+                service_list: Array.isArray(item.service_list) ? item.service_list.map((s: ServiceListItem) => {
+                  const sTitleObj = (typeof s.title === 'object' && s.title !== null) 
+                    ? s.title 
+                    : { en: s.title || '', ar: '' };
+                  const parsedItems = (s.items || []).map(itm => {
+                    if (typeof itm === 'object' && itm !== null && 'en' in itm) {
+                      return { en: (itm as any).en || '', ar: (itm as any).ar || '' };
+                    }
+                    return { en: String(itm), ar: '' };
+                  });
+                  return {
+                    title_en: sTitleObj.en || '',
+                    title_ar: sTitleObj.ar || '',
+                    items: parsedItems
+                  };
+                }) : [],
                 sort_order: item.sort_order ?? idx,
                 imageFile: null,
                 imagePreview: item.image || ''
               };
               
-              // If we had numeric keys but no title, try to reconstruct from those keys
-              if (hasNumericKeys && !cleanItem.title) {
+              // If we had numeric keys but no title, try to reconstruct
+              if (hasNumericKeys && !cleanItem.title_en) {
                 const chars = Object.keys(item)
                   .filter(key => /^\d+$/.test(key))
                   .sort((a, b) => parseInt(a) - parseInt(b))
                   .map(key => (item as unknown as Record<string, string>)[key]);
-                cleanItem.title = chars.join('');
+                cleanItem.title_en = chars.join('');
               }
               
               return cleanItem;
@@ -190,30 +261,63 @@ const AdminDepartmentTabs: React.FC = () => {
             // Fallback for unexpected data
             return {
               id: `fallback_${idx}_${Date.now()}`,
-              title: String(item),
+              title_en: String(item),
+              title_ar: '',
               image: '',
-              description: '',
+              description_en: '',
+              description_ar: '',
               service_list: [],
               sort_order: idx,
               imageFile: null,
               imagePreview: ''
             };
           })
-          // Filter out items with empty titles
-          .filter(item => item.title.trim() !== '');
+          .filter(item => (item.title_en || item.title_ar).trim() !== '');
       }
       
       setFormData({
         main_image: currentContent.main_image || '',
         mobile_image: currentContent.mobile_image || '',
-        main_description: currentContent.main_description || '',
-        quote_text: currentContent.quote_text || '',
-        sub_sections: (currentContent.sub_sections || []).map(s => ({
-          ...s,
-          imageFile: null,
-          imagePreview: s.image || ''
-        })),
-        service_list: currentContent.service_list || [],
+        main_description_en: mainDescObj.en || '',
+        main_description_ar: mainDescObj.ar || '',
+        quote_text_en: quoteTextObj.en || '',
+        quote_text_ar: quoteTextObj.ar || '',
+        sub_sections: (Array.isArray(currentContent.sub_sections) ? currentContent.sub_sections : []).map(s => {
+          const sTitleObj = (typeof s.title === 'object' && s.title !== null) ? s.title : { en: s.title || '', ar: '' };
+          const sDescObj = (typeof s.description === 'object' && s.description !== null) ? s.description : { en: s.description || '', ar: '' };
+          return {
+            image: s.image || '',
+            mobile_image: s.mobile_image || '',
+            title_en: sTitleObj.en || '',
+            title_ar: sTitleObj.ar || '',
+            description_en: sDescObj.en || '',
+            description_ar: sDescObj.ar || '',
+            position: s.position || 'left',
+            imageFile: null,
+            imagePreview: s.image || ''
+          };
+        }),
+        service_list: (() => {
+          let serviceListData = currentContent.service_list;
+          // Handle old format where spatie wrapped it: {en: [...]}
+          if (serviceListData && typeof serviceListData === 'object' && !Array.isArray(serviceListData)) {
+            serviceListData = (serviceListData as any).en || [];
+          }
+          return (Array.isArray(serviceListData) ? serviceListData : []).map((item: ServiceListItem) => {
+            const itemTitleObj = (typeof item.title === 'object' && item.title !== null) ? item.title : { en: item.title || '', ar: '' };
+            const parsedItems = (item.items || []).map(itm => {
+              if (typeof itm === 'object' && itm !== null && 'en' in itm) {
+                return { en: (itm as any).en || '', ar: (itm as any).ar || '' };
+              }
+              return { en: String(itm), ar: '' };
+            });
+            return {
+              title_en: itemTitleObj.en || '',
+              title_ar: itemTitleObj.ar || '',
+              items: parsedItems
+            };
+          });
+        })(),
         sidebar_items: sidebarItemsWithFiles,
         is_active: currentContent.is_active,
       });
@@ -225,8 +329,10 @@ const AdminDepartmentTabs: React.FC = () => {
       setFormData({
         main_image: '',
         mobile_image: '',
-        main_description: '',
-        quote_text: '',
+        main_description_en: '',
+        main_description_ar: '',
+        quote_text_en: '',
+        quote_text_ar: '',
         sub_sections: [],
         service_list: [],
         sidebar_items: [],
@@ -238,6 +344,7 @@ const AdminDepartmentTabs: React.FC = () => {
       setMobileImagePreview('');
     }
     setExpandedSidebarItem(null);
+    setActiveFormTab('en');
   }, [activeTab, tabContents]);
 
   useEffect(() => {
@@ -288,19 +395,38 @@ const AdminDepartmentTabs: React.FC = () => {
     try {
       const submitData = new FormData();
       submitData.append('tab_type', activeTab);
-      submitData.append('main_description', formData.main_description || '');
-      submitData.append('quote_text', formData.quote_text || '');
       
-      // Prepare sub_sections - strip out File objects
+      // Build JSON objects for translatable fields
+      submitData.append('main_description', JSON.stringify({ en: formData.main_description_en, ar: formData.main_description_ar }));
+      submitData.append('quote_text', JSON.stringify({ en: formData.quote_text_en, ar: formData.quote_text_ar }));
+      
+      // Prepare sub_sections - strip out File objects and build JSON for translatable fields
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const subSectionsForJson = formData.sub_sections.map(({ imageFile: _f, imagePreview: _p, ...rest }) => rest);
+      const subSectionsForJson = formData.sub_sections.map(({ imageFile: _f, imagePreview: _p, title_en, title_ar, description_en, description_ar, ...rest }) => ({
+        ...rest,
+        title: JSON.stringify({ en: title_en, ar: title_ar }),
+        description: JSON.stringify({ en: description_en, ar: description_ar })
+      }));
       submitData.append('sub_sections', JSON.stringify(subSectionsForJson));
       
-      submitData.append('service_list', JSON.stringify(formData.service_list || []));
+      // Prepare service_list with bilingual titles and items
+      const serviceListForJson = formData.service_list.map(({ title_en, title_ar, items }) => ({
+        title: JSON.stringify({ en: title_en, ar: title_ar }),
+        items: (items || []).map(itm => JSON.stringify({ en: itm.en, ar: itm.ar }))
+      }));
+      submitData.append('service_list', JSON.stringify(serviceListForJson));
       
-      // Prepare sidebar_items - strip out File objects
+      // Prepare sidebar_items - strip out File objects and build JSON for translatable fields
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const sidebarItemsForJson = formData.sidebar_items.map(({ imageFile: _f, imagePreview: _p, ...rest }) => rest);
+      const sidebarItemsForJson = formData.sidebar_items.map(({ imageFile: _f, imagePreview: _p, title_en, title_ar, description_en, description_ar, service_list, ...rest }) => ({
+        ...rest,
+        title: JSON.stringify({ en: title_en, ar: title_ar }),
+        description: JSON.stringify({ en: description_en, ar: description_ar }),
+        service_list: (service_list || []).map(({ title_en: sTen, title_ar: sTar, items }) => ({
+          title: JSON.stringify({ en: sTen, ar: sTar }),
+          items: (items || []).map(itm => JSON.stringify({ en: itm.en, ar: itm.ar }))
+        }))
+      }));
       submitData.append('sidebar_items', JSON.stringify(sidebarItemsForJson));
       
       submitData.append('is_active', formData.is_active ? '1' : '0');
@@ -349,16 +475,94 @@ const AdminDepartmentTabs: React.FC = () => {
           return [...prev, updatedContent];
         });
         
-        // Update form data with new URLs from server
+        // Update form data with new URLs from server - parse bilingual fields
+        const mainDescObj = (typeof updatedContent.main_description === 'object' && updatedContent.main_description !== null) 
+          ? updatedContent.main_description 
+          : { en: updatedContent.main_description || '', ar: '' };
+        const quoteTextObj = (typeof updatedContent.quote_text === 'object' && updatedContent.quote_text !== null) 
+          ? updatedContent.quote_text 
+          : { en: updatedContent.quote_text || '', ar: '' };
+        
         setFormData(prev => ({ 
           ...prev, 
           main_image: updatedContent.main_image || '',
-          sub_sections: (updatedContent.sub_sections || []).map((s: SubSection) => ({
-            ...s, imageFile: null, imagePreview: s.image || ''
-          })),
-          sidebar_items: (updatedContent.sidebar_items || []).map((item: SidebarItem) => ({
-            ...item, imageFile: null, imagePreview: item.image || ''
-          }))
+          mobile_image: updatedContent.mobile_image || '',
+          main_description_en: mainDescObj.en || '',
+          main_description_ar: mainDescObj.ar || '',
+          quote_text_en: quoteTextObj.en || '',
+          quote_text_ar: quoteTextObj.ar || '',
+          sub_sections: (Array.isArray(updatedContent.sub_sections) ? updatedContent.sub_sections : []).map((s: SubSection) => {
+            const sTitleObj = (typeof s.title === 'object' && s.title !== null) ? s.title : { en: s.title || '', ar: '' };
+            const sDescObj = (typeof s.description === 'object' && s.description !== null) ? s.description : { en: s.description || '', ar: '' };
+            return {
+              image: s.image || '',
+              mobile_image: s.mobile_image || '',
+              title_en: sTitleObj.en || '',
+              title_ar: sTitleObj.ar || '',
+              description_en: sDescObj.en || '',
+              description_ar: sDescObj.ar || '',
+              position: s.position || 'left',
+              imageFile: null,
+              imagePreview: s.image || ''
+            };
+          }),
+          service_list: (() => {
+            let serviceListData = updatedContent.service_list;
+            // Handle old format where spatie wrapped it: {en: [...]}
+            if (serviceListData && typeof serviceListData === 'object' && !Array.isArray(serviceListData)) {
+              serviceListData = serviceListData.en || [];
+            }
+            return (Array.isArray(serviceListData) ? serviceListData : []).map((item: ServiceListItem) => {
+              const itemTitleObj = (typeof item.title === 'object' && item.title !== null) ? item.title : { en: item.title || '', ar: '' };
+              const parsedItems = (item.items || []).map(itm => {
+                if (typeof itm === 'object' && itm !== null && 'en' in itm) {
+                  return { en: (itm as any).en || '', ar: (itm as any).ar || '' };
+                }
+                return { en: String(itm), ar: '' };
+              });
+              return {
+                title_en: itemTitleObj.en || '',
+                title_ar: itemTitleObj.ar || '',
+                items: parsedItems
+              };
+            });
+          })(),
+          sidebar_items: (() => {
+            let sidebarData = updatedContent.sidebar_items;
+            // Handle old format where spatie wrapped it: {en: [...]}
+            if (sidebarData && typeof sidebarData === 'object' && !Array.isArray(sidebarData)) {
+              sidebarData = sidebarData.en || [];
+            }
+            return (Array.isArray(sidebarData) ? sidebarData : []).map((item: SidebarItem) => {
+            const titleObj = (typeof item.title === 'object' && item.title !== null) ? item.title : { en: item.title || '', ar: '' };
+            const descObj = (typeof item.description === 'object' && item.description !== null) ? item.description : { en: item.description || '', ar: '' };
+            return {
+              id: item.id || `item_${Date.now()}`,
+              title_en: titleObj.en || '',
+              title_ar: titleObj.ar || '',
+              image: item.image || '',
+              description_en: descObj.en || '',
+              description_ar: descObj.ar || '',
+              service_list: Array.isArray(item.service_list) ? item.service_list.map((s: ServiceListItem) => {
+                const sTitleObj = (typeof s.title === 'object' && s.title !== null) ? s.title : { en: s.title || '', ar: '' };
+                const parsedItems = (s.items || []).map(itm => {
+                  if (typeof itm === 'object' && itm !== null && 'en' in itm) {
+                    return { en: (itm as any).en || '', ar: (itm as any).ar || '' };
+                  }
+                  return { en: String(itm), ar: '' };
+                });
+                return {
+                  title_en: sTitleObj.en || '',
+                  title_ar: sTitleObj.ar || '',
+                  items: parsedItems
+                };
+              }) : [],
+              sort_order: item.sort_order ?? 0,
+              imageFile: null,
+              imagePreview: item.image || ''
+            };
+          })
+          })()
         }));
         setImagePreview(updatedContent.main_image || '');
         setImageFile(null);
@@ -379,11 +583,11 @@ const AdminDepartmentTabs: React.FC = () => {
   const addSubSection = () => {
     setFormData(prev => ({
       ...prev,
-      sub_sections: [...prev.sub_sections, { image: '', title: '', description: '', position: 'left', imageFile: null, imagePreview: '' }],
+      sub_sections: [...prev.sub_sections, { image: '', title_en: '', title_ar: '', description_en: '', description_ar: '', position: 'left', imageFile: null, imagePreview: '' }],
     }));
   };
 
-  const updateSubSection = (index: number, field: keyof SubSection, value: string) => {
+  const updateSubSection = (index: number, field: string, value: string) => {
     setFormData(prev => {
       const newSubSections = [...prev.sub_sections];
       newSubSections[index] = { ...newSubSections[index], [field]: value };
@@ -413,9 +617,11 @@ const AdminDepartmentTabs: React.FC = () => {
   const addSidebarItem = () => {
     const newItem: SidebarItemWithFile = {
       id: generateId(),
-      title: '',
+      title_en: '',
+      title_ar: '',
       image: '',
-      description: '',
+      description_en: '',
+      description_ar: '',
       service_list: [],
       sort_order: formData.sidebar_items.length,
       imageFile: null,
@@ -425,7 +631,7 @@ const AdminDepartmentTabs: React.FC = () => {
     setExpandedSidebarItem(formData.sidebar_items.length); // Expand the new item
   };
 
-  const updateSidebarItem = (index: number, field: keyof SidebarItem, value: string | ServiceListItem[] | number) => {
+  const updateSidebarItem = (index: number, field: string, value: string | ServiceListItemWithLang[] | number) => {
     setFormData(prev => {
       const newItems = [...prev.sidebar_items];
       newItems[index] = { ...newItems[index], [field]: value };
@@ -485,12 +691,12 @@ const AdminDepartmentTabs: React.FC = () => {
     setFormData(prev => {
       const newItems = [...prev.sidebar_items];
       const currentServices = newItems[sidebarIndex].service_list || [];
-      newItems[sidebarIndex] = { ...newItems[sidebarIndex], service_list: [...currentServices, { title: '', items: [''] }] };
+      newItems[sidebarIndex] = { ...newItems[sidebarIndex], service_list: [...currentServices, { title_en: '', title_ar: '', items: [{ en: '', ar: '' }] }] };
       return { ...prev, sidebar_items: newItems };
     });
   };
 
-  const updateSidebarItemService = (sidebarIndex: number, serviceIndex: number, field: keyof ServiceListItem, value: string | string[]) => {
+  const updateSidebarItemService = (sidebarIndex: number, serviceIndex: number, field: string, value: string | string[]) => {
     setFormData(prev => {
       const newItems = [...prev.sidebar_items];
       const services = [...(newItems[sidebarIndex].service_list || [])];
@@ -515,19 +721,19 @@ const AdminDepartmentTabs: React.FC = () => {
     setFormData(prev => {
       const newItems = [...prev.sidebar_items];
       const services = [...(newItems[sidebarIndex].service_list || [])];
-      const items = [...(services[serviceIndex].items || []), ''];
+      const items = [...(services[serviceIndex].items || []), { en: '', ar: '' }];
       services[serviceIndex] = { ...services[serviceIndex], items };
       newItems[sidebarIndex] = { ...newItems[sidebarIndex], service_list: services };
       return { ...prev, sidebar_items: newItems };
     });
   };
 
-  const updateSidebarItemServiceListItem = (sidebarIndex: number, serviceIndex: number, itemIndex: number, value: string) => {
+  const updateSidebarItemServiceListItem = (sidebarIndex: number, serviceIndex: number, itemIndex: number, field: 'en' | 'ar', value: string) => {
     setFormData(prev => {
       const newItems = [...prev.sidebar_items];
       const services = [...(newItems[sidebarIndex].service_list || [])];
       const items = [...(services[serviceIndex].items || [])];
-      items[itemIndex] = value;
+      items[itemIndex] = { ...items[itemIndex], [field]: value };
       services[serviceIndex] = { ...services[serviceIndex], items };
       newItems[sidebarIndex] = { ...newItems[sidebarIndex], service_list: services };
       return { ...prev, sidebar_items: newItems };
@@ -662,7 +868,7 @@ const AdminDepartmentTabs: React.FC = () => {
             </svg>
             Back to Departments
           </button>
-          <h1 style={titleStyle}>{department?.name || 'Department'} - Tab Content Management</h1>
+          <h1 style={titleStyle}>{getTranslatedField(department?.name, 'Department')} - Tab Content Management</h1>
           <p style={{ color: '#6B7280', marginTop: '4px' }}>Manage content for each tab on the department details page</p>
         </div>
 
@@ -691,11 +897,56 @@ const AdminDepartmentTabs: React.FC = () => {
             {mobileImageFile && <p style={{ marginTop: '8px', fontSize: '12px', color: '#6B7280' }}>Selected: {mobileImageFile.name}</p>}
           </div>
 
-          {/* Main Description */}
-          <div style={{ marginBottom: '24px' }}>
-            <label style={labelStyle}>Main Description</label>
-            <textarea value={formData.main_description} onChange={(e) => setFormData(prev => ({ ...prev, main_description: e.target.value }))} style={textareaStyle} placeholder="Enter the main description text..." />
+          {/* Language Tabs */}
+          <div style={{ display: 'flex', gap: '12px', marginBottom: '24px', borderBottom: '2px solid #E5E7EB' }}>
+            <button
+              type="button"
+              onClick={() => setActiveFormTab('en')}
+              style={{
+                padding: '12px 24px',
+                fontSize: '14px',
+                fontWeight: 600,
+                color: activeFormTab === 'en' ? '#15C9FA' : '#6B7280',
+                backgroundColor: 'transparent',
+                border: 'none',
+                borderBottom: activeFormTab === 'en' ? '3px solid #15C9FA' : '3px solid transparent',
+                cursor: 'pointer',
+                transition: 'all 0.2s'
+              }}
+            >
+              English
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveFormTab('ar')}
+              style={{
+                padding: '12px 24px',
+                fontSize: '14px',
+                fontWeight: 600,
+                color: activeFormTab === 'ar' ? '#15C9FA' : '#6B7280',
+                backgroundColor: 'transparent',
+                border: 'none',
+                borderBottom: activeFormTab === 'ar' ? '3px solid #15C9FA' : '3px solid transparent',
+                cursor: 'pointer',
+                transition: 'all 0.2s'
+              }}
+            >
+              العربية
+            </button>
           </div>
+
+          {/* Main Description */}
+          {activeFormTab === 'en' ? (
+            <div style={{ marginBottom: '24px' }}>
+              <label style={labelStyle}>Main Description (English)</label>
+              <textarea value={formData.main_description_en} onChange={(e) => setFormData(prev => ({ ...prev, main_description_en: e.target.value }))} style={textareaStyle} placeholder="Enter the main description text..." />
+            </div>
+          ) : (
+            <div style={{ marginBottom: '24px' }}>
+              <label style={labelStyle}>الوصف الرئيسي (عربي)</label>
+              <textarea value={formData.main_description_ar} onChange={(e) => setFormData(prev => ({ ...prev, main_description_ar: e.target.value }))} style={{ ...textareaStyle, direction: 'rtl', textAlign: 'right' }} placeholder="أدخل نص الوصف الرئيسي..." />
+            </div>
+          )}
 
           {/* Main Service List (for OPD/Inpatient/Investigations tabs - shown in Overview sidebar item) */}
           {(activeTab === 'opd_services' || activeTab === 'inpatient_services' || activeTab === 'investigations') && (
@@ -708,17 +959,31 @@ const AdminDepartmentTabs: React.FC = () => {
               {formData.service_list.map((service, serviceIndex) => (
                 <div key={serviceIndex} style={{ border: '1px solid #E5E7EB', borderRadius: '12px', padding: '16px', marginBottom: '12px', background: '#FAFAFA' }}>
                   <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
-                    <input
-                      type="text"
-                      value={service.title || ''}
-                      onChange={(e) => {
-                        const newServiceList = [...formData.service_list];
-                        newServiceList[serviceIndex] = { ...newServiceList[serviceIndex], title: e.target.value };
-                        setFormData(prev => ({ ...prev, service_list: newServiceList }));
-                      }}
-                      style={{ ...inputStyle, flex: 1 }}
-                      placeholder="Service category title (e.g., Special care throughout the motherhood journey, including:)"
-                    />
+                    {activeFormTab === 'en' ? (
+                      <input
+                        type="text"
+                        value={service.title_en || ''}
+                        onChange={(e) => {
+                          const newServiceList = [...formData.service_list];
+                          newServiceList[serviceIndex] = { ...newServiceList[serviceIndex], title_en: e.target.value };
+                          setFormData(prev => ({ ...prev, service_list: newServiceList }));
+                        }}
+                        style={{ ...inputStyle, flex: 1 }}
+                        placeholder="Service category title (e.g., Special care throughout the motherhood journey, including:)"
+                      />
+                    ) : (
+                      <input
+                        type="text"
+                        value={service.title_ar || ''}
+                        onChange={(e) => {
+                          const newServiceList = [...formData.service_list];
+                          newServiceList[serviceIndex] = { ...newServiceList[serviceIndex], title_ar: e.target.value };
+                          setFormData(prev => ({ ...prev, service_list: newServiceList }));
+                        }}
+                        style={{ ...inputStyle, flex: 1, direction: 'rtl' }}
+                        placeholder="عنوان فئة الخدمة (مثال: رعاية خاصة طوال رحلة الأمومة، بما في ذلك:)"
+                      />
+                    )}
                     <button 
                       style={removeButtonStyle} 
                       onClick={() => {
@@ -734,19 +999,35 @@ const AdminDepartmentTabs: React.FC = () => {
                   
                   {(service.items || []).map((item, itemIndex) => (
                     <div key={itemIndex} style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
-                      <input
-                        type="text"
-                        value={item}
-                        onChange={(e) => {
-                          const newServiceList = [...formData.service_list];
-                          const newItems = [...(newServiceList[serviceIndex].items || [])];
-                          newItems[itemIndex] = e.target.value;
-                          newServiceList[serviceIndex] = { ...newServiceList[serviceIndex], items: newItems };
-                          setFormData(prev => ({ ...prev, service_list: newServiceList }));
-                        }}
-                        style={{ ...inputStyle, flex: 1 }}
-                        placeholder="Service item"
-                      />
+                      {activeFormTab === 'en' ? (
+                        <input
+                          type="text"
+                          value={item.en || ''}
+                          onChange={(e) => {
+                            const newServiceList = [...formData.service_list];
+                            const newItems = [...(newServiceList[serviceIndex].items || [])];
+                            newItems[itemIndex] = { ...newItems[itemIndex], en: e.target.value };
+                            newServiceList[serviceIndex] = { ...newServiceList[serviceIndex], items: newItems };
+                            setFormData(prev => ({ ...prev, service_list: newServiceList }));
+                          }}
+                          style={{ ...inputStyle, flex: 1 }}
+                          placeholder="Service item"
+                        />
+                      ) : (
+                        <input
+                          type="text"
+                          value={item.ar || ''}
+                          onChange={(e) => {
+                            const newServiceList = [...formData.service_list];
+                            const newItems = [...(newServiceList[serviceIndex].items || [])];
+                            newItems[itemIndex] = { ...newItems[itemIndex], ar: e.target.value };
+                            newServiceList[serviceIndex] = { ...newServiceList[serviceIndex], items: newItems };
+                            setFormData(prev => ({ ...prev, service_list: newServiceList }));
+                          }}
+                          style={{ ...inputStyle, flex: 1, direction: 'rtl' }}
+                          placeholder="عنصر الخدمة"
+                        />
+                      )}
                       <button 
                         style={{ ...removeButtonStyle, padding: '8px' }} 
                         onClick={() => {
@@ -764,7 +1045,7 @@ const AdminDepartmentTabs: React.FC = () => {
                     style={{ ...addButtonStyle, fontSize: '12px', padding: '6px 12px', marginLeft: '12px' }} 
                     onClick={() => {
                       const newServiceList = [...formData.service_list];
-                      const newItems = [...(newServiceList[serviceIndex].items || []), ''];
+                      const newItems = [...(newServiceList[serviceIndex].items || []), { en: '', ar: '' }];
                       newServiceList[serviceIndex] = { ...newServiceList[serviceIndex], items: newItems };
                       setFormData(prev => ({ ...prev, service_list: newServiceList }));
                     }}
@@ -779,7 +1060,7 @@ const AdminDepartmentTabs: React.FC = () => {
                 onClick={() => {
                   setFormData(prev => ({ 
                     ...prev, 
-                    service_list: [...prev.service_list, { title: '', items: [''] }] 
+                    service_list: [...prev.service_list, { title_en: '', title_ar: '', items: [{ en: '', ar: '' }] }] 
                   }));
                 }}
               >
@@ -793,7 +1074,11 @@ const AdminDepartmentTabs: React.FC = () => {
           {activeTab === 'overview' && (
             <div style={{ marginBottom: '24px' }}>
               <label style={labelStyle}>Quote Text (displayed in highlighted box)</label>
-              <textarea value={formData.quote_text} onChange={(e) => setFormData(prev => ({ ...prev, quote_text: e.target.value }))} style={textareaStyle} placeholder="Enter an inspiring quote..." />
+              {activeFormTab === 'en' ? (
+                <textarea value={formData.quote_text_en} onChange={(e) => setFormData(prev => ({ ...prev, quote_text_en: e.target.value }))} style={textareaStyle} placeholder="Enter an inspiring quote..." />
+              ) : (
+                <textarea value={formData.quote_text_ar} onChange={(e) => setFormData(prev => ({ ...prev, quote_text_ar: e.target.value }))} style={{ ...textareaStyle, direction: 'rtl' }} placeholder="أدخل اقتباسًا ملهمًا..." />
+              )}
             </div>
           )}
 
@@ -823,12 +1108,20 @@ const AdminDepartmentTabs: React.FC = () => {
                   
                   <div style={{ marginBottom: '12px' }}>
                     <label style={{ ...labelStyle, fontSize: '12px' }}>Title</label>
-                    <input type="text" value={section.title || ''} onChange={(e) => updateSubSection(index, 'title', e.target.value)} style={inputStyle} placeholder="e.g., Gynecology" />
+                    {activeFormTab === 'en' ? (
+                      <input type="text" value={section.title_en || ''} onChange={(e) => updateSubSection(index, 'title_en', e.target.value)} style={inputStyle} placeholder="e.g., Gynecology" />
+                    ) : (
+                      <input type="text" value={section.title_ar || ''} onChange={(e) => updateSubSection(index, 'title_ar', e.target.value)} style={{ ...inputStyle, direction: 'rtl' }} placeholder="مثال: أمراض النساء" />
+                    )}
                   </div>
                   
                   <div style={{ marginBottom: '12px' }}>
                     <label style={{ ...labelStyle, fontSize: '12px' }}>Description</label>
-                    <textarea value={section.description || ''} onChange={(e) => updateSubSection(index, 'description', e.target.value)} style={{ ...textareaStyle, minHeight: '80px' }} placeholder="Section description..." />
+                    {activeFormTab === 'en' ? (
+                      <textarea value={section.description_en || ''} onChange={(e) => updateSubSection(index, 'description_en', e.target.value)} style={{ ...textareaStyle, minHeight: '80px' }} placeholder="Section description..." />
+                    ) : (
+                      <textarea value={section.description_ar || ''} onChange={(e) => updateSubSection(index, 'description_ar', e.target.value)} style={{ ...textareaStyle, minHeight: '80px', direction: 'rtl' }} placeholder="وصف القسم..." />
+                    )}
                   </div>
                   
                   <div>
@@ -863,14 +1156,25 @@ const AdminDepartmentTabs: React.FC = () => {
                       <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="#6B7280" style={{ transform: expandedSidebarItem === index ? 'rotate(90deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}>
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                       </svg>
-                      <input
-                        type="text"
-                        value={item.title}
-                        onChange={(e) => { e.stopPropagation(); updateSidebarItem(index, 'title', e.target.value); }}
-                        onClick={(e) => e.stopPropagation()}
-                        style={{ ...inputStyle, flex: 1, padding: '8px 12px' }}
-                        placeholder="Item title (e.g., Vaginal Ultrasound)"
-                      />
+                      {activeFormTab === 'en' ? (
+                        <input
+                          type="text"
+                          value={item.title_en}
+                          onChange={(e) => { e.stopPropagation(); updateSidebarItem(index, 'title_en', e.target.value); }}
+                          onClick={(e) => e.stopPropagation()}
+                          style={{ ...inputStyle, flex: 1, padding: '8px 12px' }}
+                          placeholder="Item title (e.g., Vaginal Ultrasound)"
+                        />
+                      ) : (
+                        <input
+                          type="text"
+                          value={item.title_ar}
+                          onChange={(e) => { e.stopPropagation(); updateSidebarItem(index, 'title_ar', e.target.value); }}
+                          onClick={(e) => e.stopPropagation()}
+                          style={{ ...inputStyle, flex: 1, padding: '8px 12px', direction: 'rtl' }}
+                          placeholder="عنوان العنصر (مثال: الموجات فوق الصوتية المهبلية)"
+                        />
+                      )}
                     </div>
                     <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                       <button 
@@ -914,12 +1218,21 @@ const AdminDepartmentTabs: React.FC = () => {
                       {/* Item Description */}
                       <div style={{ marginBottom: '16px' }}>
                         <label style={{ ...labelStyle, fontSize: '12px' }}>Description</label>
-                        <textarea
-                          value={item.description || ''}
-                          onChange={(e) => updateSidebarItem(index, 'description', e.target.value)}
-                          style={{ ...textareaStyle, minHeight: '80px' }}
-                          placeholder="Description for this service..."
-                        />
+                        {activeFormTab === 'en' ? (
+                          <textarea
+                            value={item.description_en || ''}
+                            onChange={(e) => updateSidebarItem(index, 'description_en', e.target.value)}
+                            style={{ ...textareaStyle, minHeight: '80px' }}
+                            placeholder="Description for this service..."
+                          />
+                        ) : (
+                          <textarea
+                            value={item.description_ar || ''}
+                            onChange={(e) => updateSidebarItem(index, 'description_ar', e.target.value)}
+                            style={{ ...textareaStyle, minHeight: '80px', direction: 'rtl' }}
+                            placeholder="وصف لهذه الخدمة..."
+                          />
+                        )}
                       </div>
                       
                       {/* Item Service Categories */}
@@ -928,13 +1241,23 @@ const AdminDepartmentTabs: React.FC = () => {
                         {(item.service_list || []).map((service, serviceIndex) => (
                           <div key={serviceIndex} style={{ border: '1px solid #E5E7EB', borderRadius: '8px', padding: '12px', marginBottom: '8px', background: 'white' }}>
                             <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
-                              <input
-                                type="text"
-                                value={service.title || ''}
-                                onChange={(e) => updateSidebarItemService(index, serviceIndex, 'title', e.target.value)}
-                                style={{ ...inputStyle, flex: 1, padding: '8px 12px', fontSize: '13px' }}
-                                placeholder="Category title"
-                              />
+                              {activeFormTab === 'en' ? (
+                                <input
+                                  type="text"
+                                  value={service.title_en || ''}
+                                  onChange={(e) => updateSidebarItemService(index, serviceIndex, 'title_en', e.target.value)}
+                                  style={{ ...inputStyle, flex: 1, padding: '8px 12px', fontSize: '13px' }}
+                                  placeholder="Category title"
+                                />
+                              ) : (
+                                <input
+                                  type="text"
+                                  value={service.title_ar || ''}
+                                  onChange={(e) => updateSidebarItemService(index, serviceIndex, 'title_ar', e.target.value)}
+                                  style={{ ...inputStyle, flex: 1, padding: '8px 12px', fontSize: '13px', direction: 'rtl' }}
+                                  placeholder="عنوان الفئة"
+                                />
+                              )}
                               <button 
                                 style={{ padding: '6px', backgroundColor: serviceIndex === 0 ? '#F3F4F6' : '#E0F7FA', color: serviceIndex === 0 ? '#9CA3AF' : '#15C9FA', border: 'none', borderRadius: '6px', cursor: serviceIndex === 0 ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center' }} 
                                 onClick={() => moveSidebarItemServiceUp(index, serviceIndex)}
@@ -956,13 +1279,23 @@ const AdminDepartmentTabs: React.FC = () => {
                             
                             {(service.items || []).map((listItem, itemIndex) => (
                               <div key={itemIndex} style={{ display: 'flex', gap: '8px', marginBottom: '4px' }}>
-                                <input
-                                  type="text"
-                                  value={listItem}
-                                  onChange={(e) => updateSidebarItemServiceListItem(index, serviceIndex, itemIndex, e.target.value)}
-                                  style={{ ...inputStyle, flex: 1, padding: '6px 10px', fontSize: '12px' }}
-                                  placeholder="Service item"
-                                />
+                                {activeFormTab === 'en' ? (
+                                  <input
+                                    type="text"
+                                    value={listItem.en || ''}
+                                    onChange={(e) => updateSidebarItemServiceListItem(index, serviceIndex, itemIndex, 'en', e.target.value)}
+                                    style={{ ...inputStyle, flex: 1, padding: '6px 10px', fontSize: '12px' }}
+                                    placeholder="Service item"
+                                  />
+                                ) : (
+                                  <input
+                                    type="text"
+                                    value={listItem.ar || ''}
+                                    onChange={(e) => updateSidebarItemServiceListItem(index, serviceIndex, itemIndex, 'ar', e.target.value)}
+                                    style={{ ...inputStyle, flex: 1, padding: '6px 10px', fontSize: '12px', direction: 'rtl' }}
+                                    placeholder="عنصر الخدمة"
+                                  />
+                                )}
                                 <button style={{ ...removeButtonStyle, padding: '4px 8px', fontSize: '12px' }} onClick={() => removeSidebarItemServiceListItem(index, serviceIndex, itemIndex)}>×</button>
                               </div>
                             ))}

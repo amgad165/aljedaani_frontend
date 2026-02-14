@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { Link, useNavigate } from 'react-router-dom';
 import { branchesService, type Branch } from '../services/branchesService';
+import { getTranslatedField } from '../utils/localeHelpers';
 import './ResponsiveNavbar.css';
 
 interface NavItem {
@@ -230,7 +231,7 @@ const ResponsiveNavbar = () => {
                                 onClick={() => handleBranchClick(branch.id)}
                                 className="responsive-branch-item"
                               >
-                                {branch.name}
+                                {getTranslatedField(branch.name, '')}
                               </button>
                             ))}
                             <Link

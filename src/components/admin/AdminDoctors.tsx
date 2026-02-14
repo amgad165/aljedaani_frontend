@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import AdminLayout from './AdminLayout';
+import { getTranslatedField } from '../../utils/localeHelpers';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
 
@@ -15,8 +16,10 @@ interface Department {
 }
 
 interface ServiceItem {
-  title: string;
-  description: string;
+  title_en: string;
+  title_ar: string;
+  description_en: string;
+  description_ar: string;
 }
 
 interface Doctor {
@@ -43,15 +46,19 @@ interface Doctor {
 
 interface FormData {
   doctor_code: string;
-  name: string;
+  name_en: string;
+  name_ar: string;
   email: string;
   phone: string;
   department_id: string;
   branch_id: string;
-  location: string;
+  location_en: string;
+  location_ar: string;
   experience_years: string;
-  education: string;
-  specialization: string;
+  education_en: string;
+  education_ar: string;
+  specialization_en: string;
+  specialization_ar: string;
   status: string;
   is_active: boolean;
   order: string;
@@ -61,15 +68,19 @@ interface FormData {
 
 const initialFormData: FormData = {
   doctor_code: '',
-  name: '',
+  name_en: '',
+  name_ar: '',
   email: '',
   phone: '',
   department_id: '',
   branch_id: '',
-  location: '',
+  location_en: '',
+  location_ar: '',
   experience_years: '',
-  education: '',
-  specialization: '',
+  education_en: '',
+  education_ar: '',
+  specialization_en: '',
+  specialization_ar: '',
   status: 'available_today',
   is_active: true,
   order: '0',
@@ -78,11 +89,13 @@ const initialFormData: FormData = {
 };
 
 interface NewServiceForm {
-  title: string;
-  description: string;
+  title_en: string;
+  title_ar: string;
+  description_en: string;
+  description_ar: string;
 }
 
-const initialServiceForm: NewServiceForm = { title: '', description: '' };
+const initialServiceForm: NewServiceForm = { title_en: '', title_ar: '', description_en: '', description_ar: '' };
 
 const AdminDoctors: React.FC = () => {
   const [doctors, setDoctors] = useState<Doctor[]>([]);
@@ -96,6 +109,8 @@ const AdminDoctors: React.FC = () => {
   const [imagePreview, setImagePreview] = useState<string>('');
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState<'basic' | 'services'>('basic');
+  const [activeFormTab, setActiveFormTab] = useState<'en' | 'ar'>('en');
+  const [activeServiceTab, setActiveServiceTab] = useState<'en' | 'ar'>('en');
   const [newOutpatientService, setNewOutpatientService] = useState<NewServiceForm>(initialServiceForm);
   const [newInpatientService, setNewInpatientService] = useState<NewServiceForm>(initialServiceForm);
   const [editingOutpatientIndex, setEditingOutpatientIndex] = useState<number | null>(null);
@@ -209,17 +224,28 @@ const AdminDoctors: React.FC = () => {
   const openDrawer = (doctor?: Doctor) => {
     if (doctor) {
       setEditingDoctor(doctor);
+      
+      // Parse JSON objects for translatable fields
+      const nameObj = typeof doctor.name === 'object' ? doctor.name : { en: doctor.name || '', ar: '' };
+      const locationObj = typeof doctor.location === 'object' ? doctor.location : { en: doctor.location || '', ar: '' };
+      const educationObj = typeof doctor.education === 'object' ? doctor.education : { en: doctor.education || '', ar: '' };
+      const specializationObj = typeof doctor.specialization === 'object' ? doctor.specialization : { en: doctor.specialization || '', ar: '' };
+      
       const newFormData: FormData = {
         doctor_code: doctor.doctor_code || '',
-        name: doctor.name,
+        name_en: nameObj.en || '',
+        name_ar: nameObj.ar || '',
         email: doctor.email,
         phone: doctor.phone || '',
         department_id: doctor.department_id?.toString() || '',
         branch_id: doctor.branch_id?.toString() || '',
-        location: doctor.location,
+        location_en: locationObj.en || '',
+        location_ar: locationObj.ar || '',
         experience_years: doctor.experience_years.toString(),
-        education: doctor.education,
-        specialization: doctor.specialization || '',
+        education_en: educationObj.en || '',
+        education_ar: educationObj.ar || '',
+        specialization_en: specializationObj.en || '',
+        specialization_ar: specializationObj.ar || '',
         status: doctor.status,
         is_active: doctor.is_active,
         order: doctor.order?.toString() || '0',
@@ -237,6 +263,7 @@ const AdminDoctors: React.FC = () => {
     }
     setImageFile(null);
     setActiveTab('basic');
+    setActiveFormTab('en');
     setHasChanges(false);
     setIsDrawerOpen(true);
   };
@@ -283,14 +310,16 @@ const AdminDoctors: React.FC = () => {
   };
 
   const addOutpatientService = () => {
-    if (newOutpatientService.title.trim()) {
+    if (newOutpatientService.title_en.trim() || newOutpatientService.title_ar.trim()) {
       if (editingOutpatientIndex !== null) {
         // Update existing service
         setFormData(prev => {
           const updated = [...prev.outpatient_services];
           updated[editingOutpatientIndex] = {
-            title: newOutpatientService.title.trim(),
-            description: newOutpatientService.description.trim()
+            title_en: newOutpatientService.title_en.trim(),
+            title_ar: newOutpatientService.title_ar.trim(),
+            description_en: newOutpatientService.description_en.trim(),
+            description_ar: newOutpatientService.description_ar.trim()
           };
           return { ...prev, outpatient_services: updated };
         });
@@ -300,12 +329,15 @@ const AdminDoctors: React.FC = () => {
         setFormData(prev => ({
           ...prev,
           outpatient_services: [...prev.outpatient_services, {
-            title: newOutpatientService.title.trim(),
-            description: newOutpatientService.description.trim()
+            title_en: newOutpatientService.title_en.trim(),
+            title_ar: newOutpatientService.title_ar.trim(),
+            description_en: newOutpatientService.description_en.trim(),
+            description_ar: newOutpatientService.description_ar.trim()
           }]
         }));
       }
       setNewOutpatientService(initialServiceForm);
+      setActiveServiceTab('en');
     }
   };
 
@@ -317,6 +349,7 @@ const AdminDoctors: React.FC = () => {
   const cancelEditOutpatient = () => {
     setNewOutpatientService(initialServiceForm);
     setEditingOutpatientIndex(null);
+    setActiveServiceTab('en');
   };
 
   const removeOutpatientService = (index: number) => {
@@ -330,14 +363,16 @@ const AdminDoctors: React.FC = () => {
   };
 
   const addInpatientService = () => {
-    if (newInpatientService.title.trim()) {
+    if (newInpatientService.title_en.trim() || newInpatientService.title_ar.trim()) {
       if (editingInpatientIndex !== null) {
         // Update existing service
         setFormData(prev => {
           const updated = [...prev.inpatient_services];
           updated[editingInpatientIndex] = {
-            title: newInpatientService.title.trim(),
-            description: newInpatientService.description.trim()
+            title_en: newInpatientService.title_en.trim(),
+            title_ar: newInpatientService.title_ar.trim(),
+            description_en: newInpatientService.description_en.trim(),
+            description_ar: newInpatientService.description_ar.trim()
           };
           return { ...prev, inpatient_services: updated };
         });
@@ -347,12 +382,15 @@ const AdminDoctors: React.FC = () => {
         setFormData(prev => ({
           ...prev,
           inpatient_services: [...prev.inpatient_services, {
-            title: newInpatientService.title.trim(),
-            description: newInpatientService.description.trim()
+            title_en: newInpatientService.title_en.trim(),
+            title_ar: newInpatientService.title_ar.trim(),
+            description_en: newInpatientService.description_en.trim(),
+            description_ar: newInpatientService.description_ar.trim()
           }]
         }));
       }
       setNewInpatientService(initialServiceForm);
+      setActiveServiceTab('en');
     }
   };
 
@@ -364,6 +402,7 @@ const AdminDoctors: React.FC = () => {
   const cancelEditInpatient = () => {
     setNewInpatientService(initialServiceForm);
     setEditingInpatientIndex(null);
+    setActiveServiceTab('en');
   };
 
   const removeInpatientService = (index: number) => {
@@ -385,14 +424,17 @@ const AdminDoctors: React.FC = () => {
       if (formData.doctor_code) {
         submitData.append('doctor_code', formData.doctor_code);
       }
-      submitData.append('name', formData.name);
+      
+      // Build JSON objects for translatable fields
+      submitData.append('name', JSON.stringify({ en: formData.name_en, ar: formData.name_ar }));
+      submitData.append('location', JSON.stringify({ en: formData.location_en, ar: formData.location_ar }));
+      submitData.append('education', JSON.stringify({ en: formData.education_en, ar: formData.education_ar }));
+      submitData.append('specialization', JSON.stringify({ en: formData.specialization_en, ar: formData.specialization_ar }));
+      
       submitData.append('email', formData.email);
       submitData.append('phone', formData.phone);
       submitData.append('department_id', formData.department_id);
-      submitData.append('location', formData.location);
       submitData.append('experience_years', formData.experience_years);
-      submitData.append('education', formData.education);
-      submitData.append('specialization', formData.specialization);
       submitData.append('status', formData.status);
       submitData.append('is_active', formData.is_active ? '1' : '0');
       submitData.append('order', formData.order || '0');
@@ -1016,7 +1058,7 @@ const AdminDoctors: React.FC = () => {
             <option value="">All Departments</option>
             {departments.map(dept => (
               <option key={dept.id} value={dept.id}>
-                {dept.name}
+                {getTranslatedField(dept.name, '')}
               </option>
             ))}
           </select>
@@ -1044,7 +1086,7 @@ const AdminDoctors: React.FC = () => {
             <option value="">All Branches</option>
             {branches.map(branch => (
               <option key={branch.id} value={branch.id}>
-                {branch.name}
+                {getTranslatedField(branch.name, '')}
               </option>
             ))}
           </select>
@@ -1108,7 +1150,7 @@ const AdminDoctors: React.FC = () => {
               </td>
               <td style={styles.td}>
                 {doctor.image_url ? (
-                  <img src={doctor.image_url} alt={doctor.name} style={styles.doctorImage} />
+                  <img src={doctor.image_url} alt={getTranslatedField(doctor.name, '')} style={styles.doctorImage} />
                 ) : (
                   <div style={styles.imagePlaceholder}>👤</div>
                 )}
@@ -1119,15 +1161,15 @@ const AdminDoctors: React.FC = () => {
                 </div>
               </td>
               <td style={styles.td}>
-                <div>{doctor.name}</div>
+                <div>{getTranslatedField(doctor.name, '')}</div>
                 <div style={{ color: '#64748b', fontSize: '12px' }}>{doctor.email}</div>
               </td>
               <td style={styles.td}>
-                {doctor.department?.name || <span style={{ color: '#94a3b8' }}>No department</span>}
+                {doctor.department?.name ? getTranslatedField(doctor.department.name, '') : <span style={{ color: '#94a3b8' }}>No department</span>}
               </td>
               <td style={styles.td}>
                 {doctor.branch ? (
-                  <span style={styles.branchBadge}>{doctor.branch.name}</span>
+                  <span style={styles.branchBadge}>{getTranslatedField(doctor.branch.name, '')}</span>
                 ) : (
                   <span style={{ color: '#94a3b8' }}>No branch</span>
                 )}
@@ -1303,30 +1345,173 @@ const AdminDoctors: React.FC = () => {
                   </label>
                 </div>
 
-                {/* Doctor Code & Name */}
-                <div style={styles.formRow}>
-                  <div>
-                    <label style={styles.label}>Doctor Code</label>
-                    <input
-                      type="text"
-                      name="doctor_code"
-                      value={formData.doctor_code}
-                      onChange={handleInputChange}
-                      style={styles.input}
-                      placeholder="e.g., DOC-001"
-                    />
+                {/* Language Tabs */}
+                <div style={{ margin: '20px 0', borderBottom: '2px solid #e2e8f0' }}>
+                  <div style={{ display: 'flex', gap: '2px' }}>
+                    <button
+                      type="button"
+                      onClick={() => setActiveFormTab('en')}
+                      style={{
+                        flex: 1,
+                        padding: '12px 16px',
+                        fontSize: '14px',
+                        fontWeight: 600,
+                        border: 'none',
+                        borderBottom: `3px solid ${activeFormTab === 'en' ? '#0d9488' : 'transparent'}`,
+                        backgroundColor: activeFormTab === 'en' ? '#e0f2f1' : 'transparent',
+                        color: activeFormTab === 'en' ? '#0d9488' : '#64748b',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s'
+                      }}
+                    >
+                      English
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setActiveFormTab('ar')}
+                      style={{
+                        flex: 1,
+                        padding: '12px 16px',
+                        fontSize: '14px',
+                        fontWeight: 600,
+                        border: 'none',
+                        borderBottom: `3px solid ${activeFormTab === 'ar' ? '#0d9488' : 'transparent'}`,
+                        backgroundColor: activeFormTab === 'ar' ? '#e0f2f1' : 'transparent',
+                        color: activeFormTab === 'ar' ? '#0d9488' : '#64748b',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s'
+                      }}
+                    >
+                      العربية (Arabic)
+                    </button>
                   </div>
-                  <div>
-                    <label style={styles.label}>Name *</label>
-                    <input
-                      type="text"
-                      name="name"
-                      value={formData.name}
-                      onChange={handleInputChange}
-                      style={styles.input}
-                      required
-                    />
-                  </div>
+                </div>
+
+                {/* English Fields */}
+                {activeFormTab === 'en' && (
+                  <>
+                    <div style={styles.formRow}>
+                      <div>
+                        <label style={styles.label}>Name (English) *</label>
+                        <input
+                          type="text"
+                          name="name_en"
+                          value={formData.name_en}
+                          onChange={handleInputChange}
+                          style={styles.input}
+                          required
+                          placeholder="e.g., Dr. John Smith"
+                        />
+                      </div>
+                      <div>
+                        <label style={styles.label}>Location (English)</label>
+                        <input
+                          type="text"
+                          name="location_en"
+                          value={formData.location_en}
+                          onChange={handleInputChange}
+                          style={styles.input}
+                          placeholder="e.g., Riyadh Branch"
+                        />
+                      </div>
+                    </div>
+
+                    <div style={styles.formGroup}>
+                      <label style={styles.label}>Education (English) *</label>
+                      <input
+                        type="text"
+                        name="education_en"
+                        value={formData.education_en}
+                        onChange={handleInputChange}
+                        style={styles.input}
+                        required
+                        placeholder="e.g., MD, Harvard Medical School"
+                      />
+                    </div>
+
+                    <div style={styles.formGroup}>
+                      <label style={styles.label}>Specialization (English)</label>
+                      <textarea
+                        name="specialization_en"
+                        value={formData.specialization_en}
+                        onChange={handleInputChange}
+                        style={styles.textarea}
+                        placeholder="Enter specialization details"
+                      />
+                    </div>
+                  </>
+                )}
+
+                {/* Arabic Fields */}
+                {activeFormTab === 'ar' && (
+                  <>
+                    <div style={styles.formRow}>
+                      <div>
+                        <label style={styles.label}>الاسم (عربي) *</label>
+                        <input
+                          type="text"
+                          name="name_ar"
+                          value={formData.name_ar}
+                          onChange={handleInputChange}
+                          style={{ ...styles.input, direction: 'rtl' }}
+                          required
+                          placeholder="مثال: د. محمد أحمد"
+                          dir="rtl"
+                        />
+                      </div>
+                      <div>
+                        <label style={styles.label}>الموقع (عربي)</label>
+                        <input
+                          type="text"
+                          name="location_ar"
+                          value={formData.location_ar}
+                          onChange={handleInputChange}
+                          style={{ ...styles.input, direction: 'rtl' }}
+                          placeholder="مثال: فرع الرياض"
+                          dir="rtl"
+                        />
+                      </div>
+                    </div>
+
+                    <div style={styles.formGroup}>
+                      <label style={styles.label}>التعليم (عربي) *</label>
+                      <input
+                        type="text"
+                        name="education_ar"
+                        value={formData.education_ar}
+                        onChange={handleInputChange}
+                        style={{ ...styles.input, direction: 'rtl' }}
+                        required
+                        placeholder="مثال: دكتوراه في الطب، جامعة الملك سعود"
+                        dir="rtl"
+                      />
+                    </div>
+
+                    <div style={styles.formGroup}>
+                      <label style={styles.label}>التخصص (عربي)</label>
+                      <textarea
+                        name="specialization_ar"
+                        value={formData.specialization_ar}
+                        onChange={handleInputChange}
+                        style={{ ...styles.textarea, direction: 'rtl' }}
+                        placeholder="أدخل تفاصيل التخصص"
+                        dir="rtl"
+                      />
+                    </div>
+                  </>
+                )}
+
+                {/* Doctor Code - always visible */}
+                <div style={styles.formGroup}>
+                  <label style={styles.label}>Doctor Code</label>
+                  <input
+                    type="text"
+                    name="doctor_code"
+                    value={formData.doctor_code}
+                    onChange={handleInputChange}
+                    style={styles.input}
+                    placeholder="e.g., DOC-001"
+                  />
                 </div>
 
                 {/* Email */}
@@ -1341,28 +1526,16 @@ const AdminDoctors: React.FC = () => {
                   />
                 </div>
 
-                {/* Phone & Location */}
-                <div style={styles.formRow}>
-                  <div>
-                    <label style={styles.label}>Phone</label>
-                    <input
-                      type="text"
-                      name="phone"
-                      value={formData.phone}
-                      onChange={handleInputChange}
-                      style={styles.input}
-                    />
-                  </div>
-                  <div>
-                    <label style={styles.label}>Location</label>
-                    <input
-                      type="text"
-                      name="location"
-                      value={formData.location}
-                      onChange={handleInputChange}
-                      style={styles.input}
-                    />
-                  </div>
+                {/* Phone */}
+                <div style={styles.formGroup}>
+                  <label style={styles.label}>Phone</label>
+                  <input
+                    type="text"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleInputChange}
+                    style={styles.input}
+                  />
                 </div>
 
                 {/* Department & Branch */}
@@ -1379,7 +1552,7 @@ const AdminDoctors: React.FC = () => {
                       <option value="">Select Department</option>
                       {departments.map(dept => (
                         <option key={dept.id} value={dept.id}>
-                          {dept.name}
+                          {getTranslatedField(dept.name, '')}
                         </option>
                       ))}
                     </select>
@@ -1395,49 +1568,24 @@ const AdminDoctors: React.FC = () => {
                       <option value="">Select Branch</option>
                       {branches.map(branch => (
                         <option key={branch.id} value={branch.id}>
-                          {branch.name}
+                          {getTranslatedField(branch.name, '')}
                         </option>
                       ))}
                     </select>
                   </div>
                 </div>
 
-                {/* Education & Experience */}
-                <div style={styles.formRow}>
-                  <div>
-                    <label style={styles.label}>Education *</label>
-                    <input
-                      type="text"
-                      name="education"
-                      value={formData.education}
-                      onChange={handleInputChange}
-                      style={styles.input}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label style={styles.label}>Experience (Years) *</label>
-                    <input
-                      type="number"
-                      name="experience_years"
-                      value={formData.experience_years}
-                      onChange={handleInputChange}
-                      style={styles.input}
-                      required
-                      min="0"
-                    />
-                  </div>
-                </div>
-
-                {/* Specialization */}
+                {/* Experience Years */}
                 <div style={styles.formGroup}>
-                  <label style={styles.label}>Specialization</label>
-                  <textarea
-                    name="specialization"
-                    value={formData.specialization}
+                  <label style={styles.label}>Experience (Years) *</label>
+                  <input
+                    type="number"
+                    name="experience_years"
+                    value={formData.experience_years}
                     onChange={handleInputChange}
-                    style={styles.textarea}
-                    placeholder="Enter specialization details. Use line breaks for multiple items."
+                    style={styles.input}
+                    required
+                    min="0"
                   />
                 </div>
 
@@ -1497,31 +1645,102 @@ const AdminDoctors: React.FC = () => {
                 {/* Outpatient Services */}
                 <div style={styles.serviceSection}>
                   <h3 style={styles.serviceSectionTitle}>Outpatient Services</h3>
+                  
+                  {/* Service Language Tabs */}
+                  <div style={{ margin: '16px 0', borderBottom: '2px solid #e2e8f0' }}>
+                    <div style={{ display: 'flex', gap: '2px' }}>
+                      <button
+                        type="button"
+                        onClick={() => setActiveServiceTab('en')}
+                        style={{
+                          flex: 1,
+                          padding: '10px 14px',
+                          fontSize: '13px',
+                          fontWeight: 600,
+                          border: 'none',
+                          borderBottom: `3px solid ${activeServiceTab === 'en' ? '#0d9488' : 'transparent'}`,
+                          backgroundColor: activeServiceTab === 'en' ? '#e0f2f1' : 'transparent',
+                          color: activeServiceTab === 'en' ? '#0d9488' : '#64748b',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s'
+                        }}
+                      >
+                        English
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setActiveServiceTab('ar')}
+                        style={{
+                          flex: 1,
+                          padding: '10px 14px',
+                          fontSize: '13px',
+                          fontWeight: 600,
+                          border: 'none',
+                          borderBottom: `3px solid ${activeServiceTab === 'ar' ? '#0d9488' : 'transparent'}`,
+                          backgroundColor: activeServiceTab === 'ar' ? '#e0f2f1' : 'transparent',
+                          color: activeServiceTab === 'ar' ? '#0d9488' : '#64748b',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s'
+                        }}
+                      >
+                        العربية
+                      </button>
+                    </div>
+                  </div>
+                  
                   <div style={{ marginBottom: '16px', padding: '16px', backgroundColor: '#f8fafc', borderRadius: '8px' }}>
-                    <div style={{ marginBottom: '12px' }}>
-                      <label style={styles.label}>Service Title *</label>
-                      <input
-                        type="text"
-                        value={newOutpatientService.title}
-                        onChange={(e) => setNewOutpatientService(prev => ({ ...prev, title: e.target.value }))}
-                        placeholder="e.g., Acne Treatment"
-                        style={styles.input}
-                      />
-                    </div>
-                    <div style={{ marginBottom: '12px' }}>
-                      <label style={styles.label}>Service Description</label>
-                      <textarea
-                        value={newOutpatientService.description}
-                        onChange={(e) => setNewOutpatientService(prev => ({ ...prev, description: e.target.value }))}
-                        placeholder="e.g., We offer effective solutions to get rid of acne and its effects..."
-                        style={styles.textarea}
-                      />
-                    </div>
+                    {activeServiceTab === 'en' ? (
+                      <>
+                        <div style={{ marginBottom: '12px' }}>
+                          <label style={styles.label}>Service Title (English) *</label>
+                          <input
+                            type="text"
+                            value={newOutpatientService.title_en}
+                            onChange={(e) => setNewOutpatientService(prev => ({ ...prev, title_en: e.target.value }))}
+                            placeholder="e.g., Acne Treatment"
+                            style={styles.input}
+                          />
+                        </div>
+                        <div style={{ marginBottom: '12px' }}>
+                          <label style={styles.label}>Service Description (English)</label>
+                          <textarea
+                            value={newOutpatientService.description_en}
+                            onChange={(e) => setNewOutpatientService(prev => ({ ...prev, description_en: e.target.value }))}
+                            placeholder="e.g., We offer effective solutions to get rid of acne and its effects..."
+                            style={styles.textarea}
+                          />
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div style={{ marginBottom: '12px' }}>
+                          <label style={styles.label}>عنوان الخدمة (عربي) *</label>
+                          <input
+                            type="text"
+                            value={newOutpatientService.title_ar}
+                            onChange={(e) => setNewOutpatientService(prev => ({ ...prev, title_ar: e.target.value }))}
+                            placeholder="مثال: علاج حب الشباب"
+                            style={{ ...styles.input, direction: 'rtl' }}
+                            dir="rtl"
+                          />
+                        </div>
+                        <div style={{ marginBottom: '12px' }}>
+                          <label style={styles.label}>وصف الخدمة (عربي)</label>
+                          <textarea
+                            value={newOutpatientService.description_ar}
+                            onChange={(e) => setNewOutpatientService(prev => ({ ...prev, description_ar: e.target.value }))}
+                            placeholder="مثال: نقدم حلول فعالة للتخلص من حب الشباب وآثاره..."
+                            style={{ ...styles.textarea, direction: 'rtl' }}
+                            dir="rtl"
+                          />
+                        </div>
+                      </>
+                    )}
                     <button
                       type="button"
                       onClick={addOutpatientService}
                       style={styles.addServiceButton}
-                      disabled={!newOutpatientService.title.trim()}
+                      disabled={!newOutpatientService.title_en.trim() && !newOutpatientService.title_ar.trim()}
                     >
                       {editingOutpatientIndex !== null ? '✓ Update Service' : '+ Add Service'}
                     </button>
@@ -1544,9 +1763,14 @@ const AdminDoctors: React.FC = () => {
                       {formData.outpatient_services.map((service, index) => (
                         <div key={index} style={styles.serviceItem}>
                           <div style={{ flex: 1 }}>
-                            <div style={{ fontWeight: '600', color: '#1e293b', marginBottom: '4px' }}>• {service.title}</div>
-                            {service.description && (
-                              <div style={{ fontSize: '13px', color: '#64748b' }}>{service.description}</div>
+                            <div style={{ fontWeight: '600', color: '#1e293b', marginBottom: '4px' }}>
+                              • {service.title_en || service.title_ar} 
+                              {service.title_en && service.title_ar && <span style={{ color: '#64748b', fontWeight: 400, fontSize: '12px' }}> / {service.title_ar}</span>}
+                            </div>
+                            {(service.description_en || service.description_ar) && (
+                              <div style={{ fontSize: '13px', color: '#64748b' }}>
+                                {service.description_en || service.description_ar}
+                              </div>
                             )}
                           </div>
                           <div style={{ display: 'flex', gap: '8px' }}>
@@ -1589,31 +1813,102 @@ const AdminDoctors: React.FC = () => {
                 {/* Inpatient Services */}
                 <div style={styles.serviceSection}>
                   <h3 style={styles.serviceSectionTitle}>Inpatient Services</h3>
+                  
+                  {/* Service Language Tabs */}
+                  <div style={{ margin: '16px 0', borderBottom: '2px solid #e2e8f0' }}>
+                    <div style={{ display: 'flex', gap: '2px' }}>
+                      <button
+                        type="button"
+                        onClick={() => setActiveServiceTab('en')}
+                        style={{
+                          flex: 1,
+                          padding: '10px 14px',
+                          fontSize: '13px',
+                          fontWeight: 600,
+                          border: 'none',
+                          borderBottom: `3px solid ${activeServiceTab === 'en' ? '#0d9488' : 'transparent'}`,
+                          backgroundColor: activeServiceTab === 'en' ? '#e0f2f1' : 'transparent',
+                          color: activeServiceTab === 'en' ? '#0d9488' : '#64748b',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s'
+                        }}
+                      >
+                        English
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setActiveServiceTab('ar')}
+                        style={{
+                          flex: 1,
+                          padding: '10px 14px',
+                          fontSize: '13px',
+                          fontWeight: 600,
+                          border: 'none',
+                          borderBottom: `3px solid ${activeServiceTab === 'ar' ? '#0d9488' : 'transparent'}`,
+                          backgroundColor: activeServiceTab === 'ar' ? '#e0f2f1' : 'transparent',
+                          color: activeServiceTab === 'ar' ? '#0d9488' : '#64748b',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s'
+                        }}
+                      >
+                        العربية
+                      </button>
+                    </div>
+                  </div>
+                  
                   <div style={{ marginBottom: '16px', padding: '16px', backgroundColor: '#f8fafc', borderRadius: '8px' }}>
-                    <div style={{ marginBottom: '12px' }}>
-                      <label style={styles.label}>Service Title *</label>
-                      <input
-                        type="text"
-                        value={newInpatientService.title}
-                        onChange={(e) => setNewInpatientService(prev => ({ ...prev, title: e.target.value }))}
-                        placeholder="e.g., Surgery Preparation"
-                        style={styles.input}
-                      />
-                    </div>
-                    <div style={{ marginBottom: '12px' }}>
-                      <label style={styles.label}>Service Description</label>
-                      <textarea
-                        value={newInpatientService.description}
-                        onChange={(e) => setNewInpatientService(prev => ({ ...prev, description: e.target.value }))}
-                        placeholder="e.g., Comprehensive pre-operative care and consultation..."
-                        style={styles.textarea}
-                      />
-                    </div>
+                    {activeServiceTab === 'en' ? (
+                      <>
+                        <div style={{ marginBottom: '12px' }}>
+                          <label style={styles.label}>Service Title (English) *</label>
+                          <input
+                            type="text"
+                            value={newInpatientService.title_en}
+                            onChange={(e) => setNewInpatientService(prev => ({ ...prev, title_en: e.target.value }))}
+                            placeholder="e.g., Surgery Preparation"
+                            style={styles.input}
+                          />
+                        </div>
+                        <div style={{ marginBottom: '12px' }}>
+                          <label style={styles.label}>Service Description (English)</label>
+                          <textarea
+                            value={newInpatientService.description_en}
+                            onChange={(e) => setNewInpatientService(prev => ({ ...prev, description_en: e.target.value }))}
+                            placeholder="e.g., Comprehensive pre-operative care and consultation..."
+                            style={styles.textarea}
+                          />
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div style={{ marginBottom: '12px' }}>
+                          <label style={styles.label}>عنوان الخدمة (عربي) *</label>
+                          <input
+                            type="text"
+                            value={newInpatientService.title_ar}
+                            onChange={(e) => setNewInpatientService(prev => ({ ...prev, title_ar: e.target.value }))}
+                            placeholder="مثال: التحضير للجراحة"
+                            style={{ ...styles.input, direction: 'rtl' }}
+                            dir="rtl"
+                          />
+                        </div>
+                        <div style={{ marginBottom: '12px' }}>
+                          <label style={styles.label}>وصف الخدمة (عربي)</label>
+                          <textarea
+                            value={newInpatientService.description_ar}
+                            onChange={(e) => setNewInpatientService(prev => ({ ...prev, description_ar: e.target.value }))}
+                            placeholder="مثال: رعاية شاملة قبل العملية واستشارة..."
+                            style={{ ...styles.textarea, direction: 'rtl' }}
+                            dir="rtl"
+                          />
+                        </div>
+                      </>
+                    )}
                     <button
                       type="button"
                       onClick={addInpatientService}
                       style={styles.addServiceButton}
-                      disabled={!newInpatientService.title.trim()}
+                      disabled={!newInpatientService.title_en.trim() && !newInpatientService.title_ar.trim()}
                     >
                       {editingInpatientIndex !== null ? '✓ Update Service' : '+ Add Service'}
                     </button>
@@ -1636,9 +1931,14 @@ const AdminDoctors: React.FC = () => {
                       {formData.inpatient_services.map((service, index) => (
                         <div key={index} style={styles.serviceItem}>
                           <div style={{ flex: 1 }}>
-                            <div style={{ fontWeight: '600', color: '#1e293b', marginBottom: '4px' }}>• {service.title}</div>
-                            {service.description && (
-                              <div style={{ fontSize: '13px', color: '#64748b' }}>{service.description}</div>
+                            <div style={{ fontWeight: '600', color: '#1e293b', marginBottom: '4px' }}>
+                              • {service.title_en || service.title_ar}
+                              {service.title_en && service.title_ar && <span style={{ color: '#64748b', fontWeight: 400, fontSize: '12px' }}> / {service.title_ar}</span>}
+                            </div>
+                            {(service.description_en || service.description_ar) && (
+                              <div style={{ fontSize: '13px', color: '#64748b' }}>
+                                {service.description_en || service.description_ar}
+                              </div>
                             )}
                           </div>
                           <div style={{ display: 'flex', gap: '8px' }}>

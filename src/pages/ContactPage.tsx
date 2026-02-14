@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useResponsiveNavbar } from '../hooks/useResponsiveNavbar';
 import { branchesService, type Branch } from '../services/branchesService';
+import { getTranslatedField } from '../utils/localeHelpers';
 import FloatingContactButtons from '../components/FloatingContactButtons';
 import Footer from '../components/Footer';
 
@@ -240,7 +241,7 @@ const ContactPage: React.FC = () => {
                         color: '#FFFFFF',
                         margin: 0,
                       }}>
-                        {branch.name}
+                        {getTranslatedField(branch.name, '')}
                       </h3>
                     </div>
 
@@ -269,7 +270,7 @@ const ContactPage: React.FC = () => {
                         margin: 0,
                         alignSelf: 'stretch',
                       }}>
-                        {branch.name}
+                        {getTranslatedField(branch.name, '')}
                       </h3>
 
                       {/* Bottom Section */}

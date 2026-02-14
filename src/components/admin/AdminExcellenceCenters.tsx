@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import AdminLayout from './AdminLayout';
 import { excellenceCentersService, type ExcellenceCenter } from '../../services/excellenceCentersService';
+import { getTranslatedField } from '../../utils/localeHelpers';
 
 const AdminExcellenceCenters = () => {
   const [centers, setCenters] = useState<ExcellenceCenter[]>([]);
@@ -8,12 +9,15 @@ const AdminExcellenceCenters = () => {
   const [editingCenter, setEditingCenter] = useState<ExcellenceCenter | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({
-    name: '',
-    description: '',
+    name_en: '',
+    name_ar: '',
+    description_en: '',
+    description_ar: '',
     map_url: '',
     sort_order: 0,
     is_active: true,
   });
+  const [activeFormTab, setActiveFormTab] = useState<'en' | 'ar'>('en');
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState('');
   const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
@@ -45,17 +49,21 @@ const AdminExcellenceCenters = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      // Build JSON objects for translatable fields
+      const dataToSubmit = {
+        name: JSON.stringify({ en: formData.name_en, ar: formData.name_ar }),
+        description: JSON.stringify({ en: formData.description_en, ar: formData.description_ar }),
+        map_url: formData.map_url,
+        sort_order: formData.sort_order,
+        is_active: formData.is_active,
+        image: imageFile,
+      };
+      
       if (editingCenter) {
-        await excellenceCentersService.update(editingCenter.id, {
-          ...formData,
-          image: imageFile,
-        });
+        await excellenceCentersService.update(editingCenter.id, dataToSubmit);
         setNotification({ type: 'success', message: 'Center updated successfully' });
       } else {
-        await excellenceCentersService.create({
-          ...formData,
-          image: imageFile,
-        });
+        await excellenceCentersService.create(dataToSubmit);
         setNotification({ type: 'success', message: 'Center created successfully' });
       }
       resetForm();
@@ -68,14 +76,22 @@ const AdminExcellenceCenters = () => {
 
   const handleEdit = (center: ExcellenceCenter) => {
     setEditingCenter(center);
+    
+    // Parse JSON objects for translatable fields
+    const nameObj = (typeof center.name === 'object' && center.name !== null) ? center.name : { en: center.name || '', ar: '' };
+    const descObj = (typeof center.description === 'object' && center.description !== null) ? center.description : { en: center.description || '', ar: '' };
+    
     setFormData({
-      name: center.name,
-      description: center.description,
+      name_en: nameObj.en || '',
+      name_ar: nameObj.ar || '',
+      description_en: descObj.en || '',
+      description_ar: descObj.ar || '',
       map_url: center.map_url || '',
       sort_order: center.sort_order,
       is_active: center.is_active,
     });
     setImagePreview(center.image_url || '');
+    setActiveFormTab('en');
     setShowForm(true);
   };
 
@@ -93,9 +109,10 @@ const AdminExcellenceCenters = () => {
 
   const resetForm = () => {
     setEditingCenter(null);
-    setFormData({ name: '', description: '', map_url: '', sort_order: 0, is_active: true });
+    setFormData({ name_en: '', name_ar: '', description_en: '', description_ar: '', map_url: '', sort_order: 0, is_active: true });
     setImageFile(null);
     setImagePreview('');
+    setActiveFormTab('en');
     setShowForm(false);
   };
 
@@ -137,26 +154,91 @@ const AdminExcellenceCenters = () => {
               {editingCenter ? 'Edit Center' : 'Add New Center'}
             </h2>
             <form onSubmit={handleSubmit}>
-              <div style={{ marginBottom: '16px' }}>
-                <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: '#061F42', marginBottom: '8px' }}>Name</label>
-                <input
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  style={inputStyle}
-                  required
-                />
+              {/* Language Tabs */}
+              <div style={{ display: 'flex', gap: '12px', marginBottom: '24px', borderBottom: '2px solid #E5E7EB' }}>
+                <button
+                  type="button"
+                  onClick={() => setActiveFormTab('en')}
+                  style={{
+                    padding: '12px 24px',
+                    fontSize: '14px',
+                    fontWeight: 600,
+                    color: activeFormTab === 'en' ? '#15C9FA' : '#6B7280',
+                    backgroundColor: 'transparent',
+                    border: 'none',
+                    borderBottom: activeFormTab === 'en' ? '3px solid #15C9FA' : '3px solid transparent',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  English
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveFormTab('ar')}
+                  style={{
+                    padding: '12px 24px',
+                    fontSize: '14px',
+                    fontWeight: 600,
+                    color: activeFormTab === 'ar' ? '#15C9FA' : '#6B7280',
+                    backgroundColor: 'transparent',
+                    border: 'none',
+                    borderBottom: activeFormTab === 'ar' ? '3px solid #15C9FA' : '3px solid transparent',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  العربية
+                </button>
               </div>
 
-              <div style={{ marginBottom: '16px' }}>
-                <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: '#061F42', marginBottom: '8px' }}>Description</label>
-                <textarea
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  style={{ ...inputStyle, minHeight: '100px', resize: 'vertical' }}
-                  required
-                />
-              </div>
+              {activeFormTab === 'en' ? (
+                <>
+                  <div style={{ marginBottom: '16px' }}>
+                    <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: '#061F42', marginBottom: '8px' }}>Name (English) *</label>
+                    <input
+                      type="text"
+                      value={formData.name_en}
+                      onChange={(e) => setFormData({ ...formData, name_en: e.target.value })}
+                      style={inputStyle}
+                      required
+                    />
+                  </div>
+
+                  <div style={{ marginBottom: '16px' }}>
+                    <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: '#061F42', marginBottom: '8px' }}>Description (English) *</label>
+                    <textarea
+                      value={formData.description_en}
+                      onChange={(e) => setFormData({ ...formData, description_en: e.target.value })}
+                      style={{ ...inputStyle, minHeight: '100px', resize: 'vertical' }}
+                      required
+                    />
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div style={{ marginBottom: '16px' }}>
+                    <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: '#061F42', marginBottom: '8px' }}>الاسم (عربي) *</label>
+                    <input
+                      type="text"
+                      value={formData.name_ar}
+                      onChange={(e) => setFormData({ ...formData, name_ar: e.target.value })}
+                      style={{ ...inputStyle, direction: 'rtl', textAlign: 'right' }}
+                      required
+                    />
+                  </div>
+
+                  <div style={{ marginBottom: '16px' }}>
+                    <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: '#061F42', marginBottom: '8px' }}>الوصف (عربي) *</label>
+                    <textarea
+                      value={formData.description_ar}
+                      onChange={(e) => setFormData({ ...formData, description_ar: e.target.value })}
+                      style={{ ...inputStyle, minHeight: '100px', resize: 'vertical', direction: 'rtl', textAlign: 'right' }}
+                      required
+                    />
+                  </div>
+                </>
+              )}
 
               <div style={{ marginBottom: '16px' }}>
                 <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: '#061F42', marginBottom: '8px' }}>Image</label>
@@ -226,12 +308,15 @@ const AdminExcellenceCenters = () => {
                   <tr key={center.id} style={{ borderBottom: '1px solid #E5E7EB' }}>
                     <td style={{ padding: '12px' }}>
                       {center.image_url && (
-                        <img src={center.image_url} alt={center.name} style={{ width: '60px', height: '60px', objectFit: 'cover', borderRadius: '8px' }} />
+                        <img src={center.image_url} alt={getTranslatedField(center.name, '')} style={{ width: '60px', height: '60px', objectFit: 'cover', borderRadius: '8px' }} />
                       )}
                     </td>
-                    <td style={{ padding: '12px', fontWeight: 600 }}>{center.name}</td>
+                    <td style={{ padding: '12px', fontWeight: 600 }}>{getTranslatedField(center.name, '')}</td>
                     <td style={{ padding: '12px', maxWidth: '300px' }}>
-                      {center.description.length > 100 ? `${center.description.substring(0, 100)}...` : center.description}
+                      {(() => {
+                        const desc = getTranslatedField(center.description, '');
+                        return desc.length > 100 ? `${desc.substring(0, 100)}...` : desc;
+                      })()}
                     </td>
                     <td style={{ padding: '12px', textAlign: 'center' }}>{center.sort_order}</td>
                     <td style={{ padding: '12px', textAlign: 'center' }}>

@@ -1,0 +1,17 @@
+{
+  "home": "الرئيسية",
+  "aboutUs": "من نحن",
+  "departments": "الأقسام",
+  "doctors": "الأطباء",
+  "branches": "الفروع",
+  "contact": "اتصل بنا",
+  "bookAppointment": "حجز موعد",
+  "myProfile": "ملفي الشخصي",
+  "myAppointments": "مواعيدي",
+  "medicalReports": "التقارير الطبية",
+  "labReports": "تقارير المختبر",
+  "radiologyReports": "تقارير الأشعة",
+  "login": "تسجيل الدخول",
+  "signup": "إنشاء حساب",
+  "logout": "تسجيل الخروج"
+}

@@ -2,6 +2,9 @@ import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { Link, useNavigate } from 'react-router-dom';
 import { branchesService, type Branch } from '../services/branchesService';
+import { getTranslatedField } from '../utils/localeHelpers';
+import LanguageSwitcher from './LanguageSwitcher';
+import { useTranslation } from 'react-i18next';
 
 interface NavItem {
   label: string;
@@ -13,6 +16,7 @@ interface NavItem {
 
 const Navbar = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation('pages');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isBranchesDropdownOpen, setIsBranchesDropdownOpen] = useState(false);
@@ -57,15 +61,15 @@ const Navbar = () => {
   };
 
   const navItems: NavItem[] = [
-    { label: 'About us', href: '/about' },
-    { label: 'Branches', href: '/branches', hasDropdown: true, isBranchesDropdown: true },
-    { label: 'Departments', href: '/departments' },
-    { label: 'Doctors', href: '/doctors' },
-    { label: 'Pharmacies', href: '#' },
-    { label: 'Patient experience', href: '#' },
-    { label: 'Media', href: '#'},
-    { label: 'Careers', href: '#'},
-    { label: 'Contact', href: '/contact'},
+    { label: t('aboutUs'), href: '/about' },
+    { label: t('branches'), href: '/branches', hasDropdown: true, isBranchesDropdown: true },
+    { label: t('departments'), href: '/departments' },
+    { label: t('doctors'), href: '/doctors' },
+    { label: t('pharmacies'), href: '#' },
+    { label: t('patientExperience'), href: '#' },
+    { label: t('media'), href: '#'},
+    { label: t('careers'), href: '#'},
+    { label: t('contact'), href: '/contact'},
   ];
 
   return (
@@ -198,7 +202,7 @@ const Navbar = () => {
                             <path d="M10 10C12.7614 10 15 7.76142 15 5C15 2.23858 12.7614 0 10 0C7.23858 0 5 2.23858 5 5C5 7.76142 7.23858 10 10 10Z" fill="#0155CB"/>
                             <path d="M10 12C4.47715 12 0 14.6863 0 18V20H20V18C20 14.6863 15.5228 12 10 12Z" fill="#0155CB"/>
                           </svg>
-                          Profile
+                          {t('profile')}
                         </Link>
                         
                         {user.role === 'admin' && (
@@ -228,7 +232,7 @@ const Navbar = () => {
                               <path d="M10 0L2 3V9C2 13.55 5.84 17.74 10 19C14.16 17.74 18 13.55 18 9V3L10 0Z" fill="#0155CB"/>
                               <path d="M8.5 12L6 9.5L7.41 8.09L8.5 9.17L12.09 5.58L13.5 7L8.5 12Z" fill="white"/>
                             </svg>
-                            Admin
+                            {t('admin')}
                           </Link>
                         )}
                         
@@ -262,7 +266,7 @@ const Navbar = () => {
                             <path d="M13 0H2C1.46957 0 0.960859 0.210714 0.585786 0.585786C0.210714 0.960859 0 1.46957 0 2V18C0 18.5304 0.210714 19.0391 0.585786 19.4142C0.960859 19.7893 1.46957 20 2 20H13C13.5304 20 14.0391 19.7893 14.4142 19.4142C14.7893 19.0391 15 18.5304 15 18V16C15 15.7348 14.8946 15.4804 14.7071 15.2929C14.5196 15.1054 14.2652 15 14 15C13.7348 15 13.4804 15.1054 13.2929 15.2929C13.1054 15.4804 13 15.7348 13 16V18H2V2H13V4C13 4.26522 13.1054 4.51957 13.2929 4.70711C13.4804 4.89464 13.7348 5 14 5C14.2652 5 14.5196 4.89464 14.7071 4.70711C14.8946 4.51957 15 4.26522 15 4V2C15 1.46957 14.7893 0.960859 14.4142 0.585786C14.0391 0.210714 13.5304 0 13 0Z" fill="#EF4444"/>
                             <path d="M19.7071 9.29289L16.7071 6.29289C16.5196 6.10536 16.2652 5.99999 16 5.99999C15.7348 5.99999 15.4804 6.10536 15.2929 6.29289C15.1054 6.48043 15 6.73478 15 6.99999C15 7.26521 15.1054 7.51956 15.2929 7.7071L17.5858 9.99999H7C6.73478 9.99999 6.48043 10.1054 6.29289 10.2929C6.10536 10.4804 6 10.7348 6 11C6 11.2652 6.10536 11.5196 6.29289 11.7071C6.48043 11.8946 6.73478 12 7 12H17.5858L15.2929 14.2929C15.1054 14.4804 15 14.7348 15 15C15 15.2652 15.1054 15.5196 15.2929 15.7071C15.4804 15.8946 15.7348 16 16 16C16.2652 16 16.5196 15.8946 16.7071 15.7071L19.7071 12.7071C19.8946 12.5196 20 12.2652 20 12C20 11.7348 19.8946 11.4804 19.7071 11.2929L16.7071 8.29289C16.5196 8.10536 16.2652 7.99999 16 7.99999C15.7348 7.99999 15.4804 8.10536 15.2929 8.29289L19.7071 9.29289Z" fill="#EF4444"/>
                           </svg>
-                          Log Out
+                          {t('logOut')}
                         </button>
                         
                         <style>{`
@@ -282,17 +286,12 @@ const Navbar = () => {
                   </div>
                 ) : (
                   <>
-                    <Link to="/login" className="btn btn-outline">Sign In</Link>
-                    <Link to="/signup" className="btn btn-outline">Sign Up</Link>
+                    <Link to="/login" className="btn btn-outline">{t('signIn')}</Link>
+                    <Link to="/signup" className="btn btn-outline">{t('signUp')}</Link>
                   </>
                 )}
-                <Link to="/book-appointment" className="btn btn-outline">Book appointment</Link>
-                <a href="#" className="" style={{ 
-                  color: '#FFFFFF',
-                  fontFamily: '"Almarai", "IBM Plex Sans Arabic", "Dubai", sans-serif',
-                  fontWeight: 600,
-                  fontSize: '16px'
-                }}>العربيه</a>
+                <Link to="/book-appointment" className="btn btn-outline">{t('bookAppointment')}</Link>
+                <LanguageSwitcher />
               </div>
               <button 
                 className={`hamburger ${isMenuOpen ? 'open' : ''}`}
@@ -483,7 +482,7 @@ const Navbar = () => {
                                     color: '#061F42',
                                     marginBottom: '2px',
                                   }}>
-                                    {branch.name}
+                                    {getTranslatedField(branch.name, '')}
                                   </div>
                                   {branch.region && (
                                     <div style={{
@@ -492,7 +491,7 @@ const Navbar = () => {
                                       fontSize: '12px',
                                       color: '#6B7280',
                                     }}>
-                                      {branch.region}
+                                      {getTranslatedField(branch.region, '')}
                                     </div>
                                   )}
                                 </div>
@@ -535,7 +534,7 @@ const Navbar = () => {
                                 e.currentTarget.style.background = 'transparent';
                               }}
                             >
-                              View All Branches
+                              {t('viewAllBranches')}
                               <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                                 <path d="M3 8H13M13 8L9 4M13 8L9 12" stroke="#00ABDA" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                               </svg>

@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface HomepageData {
   branches: any[];
@@ -20,9 +21,11 @@ export const HomepageProvider: React.FC<{ children: ReactNode }> = ({ children }
   const [data, setData] = useState<HomepageData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { i18n } = useTranslation();
 
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true);
       try {
         const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
         const response = await fetch(`${apiUrl}/homepage`);
@@ -40,7 +43,7 @@ export const HomepageProvider: React.FC<{ children: ReactNode }> = ({ children }
     };
 
     fetchData();
-  }, []);
+  }, [i18n.language]); // Refetch when language changes
 
   return (
     <HomepageContext.Provider value={{ data, loading, error }}>

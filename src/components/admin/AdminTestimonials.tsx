@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import AdminLayout from './AdminLayout';
+import { getTranslatedField } from '../../utils/localeHelpers';
 
 interface Doctor {
   id: number;
@@ -29,14 +30,19 @@ interface Testimonial {
 interface FormData {
   doctor_id: number;
   name?: string;
-  role?: string;
+  role_en?: string;
+  role_ar?: string;
   testimonial_image?: string;
   image_file: File | null;
-  location?: string;
+  location_en?: string;
+  location_ar?: string;
   experience?: string;
-  review_title: string;
-  description: string;
-  full_story: string;
+  review_title_en: string;
+  review_title_ar: string;
+  description_en: string;
+  description_ar: string;
+  full_story_en: string;
+  full_story_ar: string;
   is_active: boolean;
 }
 
@@ -50,20 +56,26 @@ const AdminTestimonials: React.FC = () => {
   const [formData, setFormData] = useState<FormData>({
     doctor_id: 0,
     name: '',
-    role: '',
+    role_en: '',
+    role_ar: '',
     testimonial_image: '',
     image_file: null,
-    location: '',
+    location_en: '',
+    location_ar: '',
     experience: '',
-    review_title: '',
-    description: '',
-    full_story: '',
+    review_title_en: '',
+    review_title_ar: '',
+    description_en: '',
+    description_ar: '',
+    full_story_en: '',
+    full_story_ar: '',
     is_active: true
   });
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState<number | null>(null);
   const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [activeFormTab, setActiveFormTab] = useState<'en' | 'ar'>('en');
 
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
 
@@ -123,35 +135,55 @@ const AdminTestimonials: React.FC = () => {
     setFormData({
       doctor_id: 0,
       name: '',
-      role: '',
+      role_en: '',
+      role_ar: '',
       testimonial_image: '',
       image_file: null,
-      location: '',
+      location_en: '',
+      location_ar: '',
       experience: '',
-      review_title: '',
-      description: '',
-      full_story: '',
+      review_title_en: '',
+      review_title_ar: '',
+      description_en: '',
+      description_ar: '',
+      full_story_en: '',
+      full_story_ar: '',
       is_active: true
     });
+    setActiveFormTab('en');
     setShowModal(true);
   };
 
   const handleEdit = (testimonial: Testimonial) => {
     setModalMode('edit');
     setSelectedTestimonial(testimonial);
+    
+    // Parse JSON objects for translatable fields (handle null values)
+    const roleObj = (typeof testimonial.role === 'object' && testimonial.role !== null) ? testimonial.role : { en: testimonial.role || '', ar: '' };
+    const locationObj = (typeof testimonial.location === 'object' && testimonial.location !== null) ? testimonial.location : { en: testimonial.location || '', ar: '' };
+    const reviewTitleObj = (typeof testimonial.review_title === 'object' && testimonial.review_title !== null) ? testimonial.review_title : { en: testimonial.review_title || '', ar: '' };
+    const descriptionObj = (typeof testimonial.description === 'object' && testimonial.description !== null) ? testimonial.description : { en: testimonial.description || '', ar: '' };
+    const fullStoryObj = (typeof testimonial.full_story === 'object' && testimonial.full_story !== null) ? testimonial.full_story : { en: testimonial.full_story || '', ar: '' };
+    
     setFormData({
       doctor_id: testimonial.doctor_id || 0,
       name: testimonial.name || '',
-      role: testimonial.role || '',
+      role_en: roleObj.en || '',
+      role_ar: roleObj.ar || '',
       testimonial_image: testimonial.testimonial_image || '',
       image_file: null,
-      location: testimonial.location || '',
+      location_en: locationObj.en || '',
+      location_ar: locationObj.ar || '',
       experience: testimonial.experience || '',
-      review_title: testimonial.review_title || '',
-      description: testimonial.description || '',
-      full_story: testimonial.full_story || '',
+      review_title_en: reviewTitleObj.en || '',
+      review_title_ar: reviewTitleObj.ar || '',
+      description_en: descriptionObj.en || '',
+      description_ar: descriptionObj.ar || '',
+      full_story_en: fullStoryObj.en || '',
+      full_story_ar: fullStoryObj.ar || '',
       is_active: testimonial.is_active
     });
+    setActiveFormTab('en');
     setShowModal(true);
   };
 
@@ -200,14 +232,14 @@ const AdminTestimonials: React.FC = () => {
       return;
     }
     
-    // Validate review title and description
-    if (!formData.review_title.trim()) {
-      setNotification({ type: 'error', message: 'Please enter a review title' });
+    // Validate review title and description (at least one language required)
+    if (!formData.review_title_en.trim() && !formData.review_title_ar.trim()) {
+      setNotification({ type: 'error', message: 'Please enter a review title in at least one language' });
       return;
     }
     
-    if (!formData.description.trim()) {
-      setNotification({ type: 'error', message: 'Please enter a review description' });
+    if (!formData.description_en.trim() && !formData.description_ar.trim()) {
+      setNotification({ type: 'error', message: 'Please enter a review description in at least one language' });
       return;
     }
     
@@ -218,12 +250,24 @@ const AdminTestimonials: React.FC = () => {
       const formDataToSend = new window.FormData();
       formDataToSend.append('doctor_id', String(formData.doctor_id));
       if (formData.name) formDataToSend.append('name', formData.name);
-      if (formData.role) formDataToSend.append('role', formData.role);
-      if (formData.location) formDataToSend.append('location', formData.location);
+      
+      // Build JSON objects for translatable fields
+      if (formData.role_en || formData.role_ar) {
+        formDataToSend.append('role', JSON.stringify({ en: formData.role_en, ar: formData.role_ar }));
+      }
+      if (formData.location_en || formData.location_ar) {
+        formDataToSend.append('location', JSON.stringify({ en: formData.location_en, ar: formData.location_ar }));
+      }
+      
       if (formData.experience) formDataToSend.append('experience', formData.experience);
-      formDataToSend.append('review_title', formData.review_title);
-      formDataToSend.append('description', formData.description);
-      if (formData.full_story) formDataToSend.append('full_story', formData.full_story);
+      
+      formDataToSend.append('review_title', JSON.stringify({ en: formData.review_title_en, ar: formData.review_title_ar }));
+      formDataToSend.append('description', JSON.stringify({ en: formData.description_en, ar: formData.description_ar }));
+      
+      if (formData.full_story_en || formData.full_story_ar) {
+        formDataToSend.append('full_story', JSON.stringify({ en: formData.full_story_en, ar: formData.full_story_ar }));
+      }
+      
       formDataToSend.append('is_active', formData.is_active ? '1' : '0');
       
       // Add image file if selected
@@ -270,10 +314,10 @@ const AdminTestimonials: React.FC = () => {
   };
 
   const filteredTestimonials = testimonials.filter(t =>
-    (t.doctor?.name.toLowerCase().includes(searchQuery.toLowerCase()) || false) ||
+    (getTranslatedField(t.doctor?.name, '').toLowerCase().includes(searchQuery.toLowerCase())) ||
     (t.name?.toLowerCase().includes(searchQuery.toLowerCase()) || false) ||
     (t.role?.toLowerCase().includes(searchQuery.toLowerCase()) || false) ||
-    (t.review_title?.toLowerCase().includes(searchQuery.toLowerCase()) || false)
+    (getTranslatedField(t.review_title, '').toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   // Inline Styles
@@ -367,13 +411,13 @@ const AdminTestimonials: React.FC = () => {
                 <div style={cardHeaderStyle}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                     {testimonial.doctor?.image_url ? (
-                      <img src={testimonial.doctor.image_url} alt={testimonial.doctor.name} style={avatarStyle as React.CSSProperties} />
+                      <img src={testimonial.doctor.image_url} alt={getTranslatedField(testimonial.doctor.name, '')} style={avatarStyle as React.CSSProperties} />
                     ) : (
-                      <div style={avatarStyle}>{getInitials(testimonial.doctor?.name || 'Doctor')}</div>
+                      <div style={avatarStyle}>{getInitials(getTranslatedField(testimonial.doctor?.name, '') || 'Doctor')}</div>
                     )}
                     <div style={{ flex: 1 }}>
-                      <h3 style={{ fontSize: '16px', fontWeight: 600, color: '#061F42', margin: 0 }}>Dr. {testimonial.doctor?.name}</h3>
-                      <p style={{ fontSize: '13px', color: '#15C9FA', fontWeight: 500, margin: '2px 0 0' }}>{testimonial.doctor?.specialization}</p>
+                      <h3 style={{ fontSize: '16px', fontWeight: 600, color: '#061F42', margin: 0 }}>Dr. {getTranslatedField(testimonial.doctor?.name, '')}</h3>
+                      <p style={{ fontSize: '13px', color: '#15C9FA', fontWeight: 500, margin: '2px 0 0' }}>{getTranslatedField(testimonial.doctor?.specialization, '')}</p>
                       {testimonial.name && (
                         <div style={{ marginTop: '6px', paddingTop: '6px', borderTop: '1px solid #E5E7EB' }}>
                           <p style={{ fontSize: '12px', color: '#6B7280', margin: '0' }}>Patient: <strong>{testimonial.name}</strong></p>
@@ -388,11 +432,14 @@ const AdminTestimonials: React.FC = () => {
                 <div style={cardBodyStyle}>
                   {testimonial.review_title && (
                     <h4 style={{ fontSize: '15px', fontWeight: 600, color: '#061F42', marginBottom: '8px' }}>
-                      "{testimonial.review_title}"
+                      "{getTranslatedField(testimonial.review_title, '')}"
                     </h4>
                   )}
                   <p style={{ fontSize: '14px', color: '#6B7280', lineHeight: 1.6, margin: 0 }}>
-                    {testimonial.description ? (testimonial.description.length > 150 ? testimonial.description.substring(0, 150) + '...' : testimonial.description) : 'No description'}
+                    {(() => {
+                      const desc = getTranslatedField(testimonial.description, '');
+                      return desc ? (desc.length > 150 ? desc.substring(0, 150) + '...' : desc) : 'No description';
+                    })()}
                   </p>
                   {testimonial.experience && (
                     <div style={{ marginTop: '12px', padding: '8px 12px', backgroundColor: '#F0F9FF', borderRadius: '8px', fontSize: '13px', color: '#0369A1' }}>
@@ -452,98 +499,225 @@ const AdminTestimonials: React.FC = () => {
                       <option value={0}>-- Choose a doctor --</option>
                       {doctors.map(doctor => (
                         <option key={doctor.id} value={doctor.id}>
-                          {doctor.name} - {doctor.specialization}
+                          {getTranslatedField(doctor.name, '')} - {getTranslatedField(doctor.specialization, '')}
                         </option>
                       ))}
                     </select>
                     <p style={{ fontSize: '12px', color: '#6B7280', marginTop: '4px' }}>This is the primary doctor whose success story is being documented</p>
                   </div>
 
-                  {/* Review Title and Description - Core Testimonial Fields */}
-                  <div style={formGroupStyle}>
-                    <label style={labelStyle}>Review Title *</label>
-                    <input 
-                      type="text" 
-                      required
-                      value={formData.review_title} 
-                      onChange={(e) => setFormData({ ...formData, review_title: e.target.value })} 
-                      style={inputStyle} 
-                      placeholder="e.g., Excellent Care and Service" 
-                    />
-                  </div>
-                  <div style={formGroupStyle}>
-                    <label style={labelStyle}>Review / Brief Description *</label>
-                    <textarea 
-                      required
-                      value={formData.description} 
-                      onChange={(e) => setFormData({ ...formData, description: e.target.value })} 
-                      style={textareaStyle} 
-                      placeholder="A brief review of the service or experience..." 
-                    />
-                    <p style={{ fontSize: '12px', color: '#6B7280', marginTop: '4px' }}>Brief summary (will appear on testimonial cards)</p>
+                  {/* Language Tabs */}
+                  <div style={{ display: 'flex', gap: '12px', marginBottom: '24px', borderBottom: '2px solid #E5E7EB' }}>
+                    <button
+                      type="button"
+                      onClick={() => setActiveFormTab('en')}
+                      style={{
+                        padding: '12px 24px',
+                        fontSize: '14px',
+                        fontWeight: 600,
+                        color: activeFormTab === 'en' ? '#15C9FA' : '#6B7280',
+                        backgroundColor: 'transparent',
+                        border: 'none',
+                        borderBottom: activeFormTab === 'en' ? '3px solid #15C9FA' : '3px solid transparent',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s'
+                      }}
+                    >
+                      English
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setActiveFormTab('ar')}
+                      style={{
+                        padding: '12px 24px',
+                        fontSize: '14px',
+                        fontWeight: 600,
+                        color: activeFormTab === 'ar' ? '#15C9FA' : '#6B7280',
+                        backgroundColor: 'transparent',
+                        border: 'none',
+                        borderBottom: activeFormTab === 'ar' ? '3px solid #15C9FA' : '3px solid transparent',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s'
+                      }}
+                    >
+                      العربية
+                    </button>
                   </div>
 
-                  {/* Full Story - Extended Narrative */}
-                  <div style={formGroupStyle}>
-                    <label style={labelStyle}>Full Story (Optional)</label>
-                    <textarea 
-                      value={formData.full_story} 
-                      onChange={(e) => setFormData({ ...formData, full_story: e.target.value })} 
-                      style={{ ...textareaStyle, minHeight: '120px' }}
-                      placeholder="The complete success story - detailed account of the treatment, outcomes, and personal journey. This appears on the detailed success story page."
-                    />
-                    <p style={{ fontSize: '12px', color: '#6B7280', marginTop: '4px' }}>Complete narrative of the success story (optional but recommended)</p>
-                  </div>
+                  {/* Review Title and Description - Core Testimonial Fields */}
+                  {activeFormTab === 'en' ? (
+                    <>
+                      <div style={formGroupStyle}>
+                        <label style={labelStyle}>Review Title (English) *</label>
+                        <input 
+                          type="text" 
+                          value={formData.review_title_en} 
+                          onChange={(e) => setFormData({ ...formData, review_title_en: e.target.value })} 
+                          style={inputStyle} 
+                          placeholder="e.g., Excellent Care and Service" 
+                        />
+                      </div>
+                      <div style={formGroupStyle}>
+                        <label style={labelStyle}>Review / Brief Description (English) *</label>
+                        <textarea 
+                          value={formData.description_en} 
+                          onChange={(e) => setFormData({ ...formData, description_en: e.target.value })} 
+                          style={textareaStyle} 
+                          placeholder="A brief review of the service or experience..." 
+                        />
+                        <p style={{ fontSize: '12px', color: '#6B7280', marginTop: '4px' }}>Brief summary (will appear on testimonial cards)</p>
+                      </div>
+                      
+                      {/* Full Story - Extended Narrative */}
+                      <div style={formGroupStyle}>
+                        <label style={labelStyle}>Full Story (English) (Optional)</label>
+                        <textarea 
+                          value={formData.full_story_en} 
+                          onChange={(e) => setFormData({ ...formData, full_story_en: e.target.value })} 
+                          style={{ ...textareaStyle, minHeight: '120px' }}
+                          placeholder="The complete success story - detailed account of the treatment, outcomes, and personal journey..."
+                        />
+                        <p style={{ fontSize: '12px', color: '#6B7280', marginTop: '4px' }}>Complete narrative of the success story (optional but recommended)</p>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div style={formGroupStyle}>
+                        <label style={labelStyle}>عنوان المراجعة (عربي) *</label>
+                        <input 
+                          type="text" 
+                          value={formData.review_title_ar} 
+                          onChange={(e) => setFormData({ ...formData, review_title_ar: e.target.value })} 
+                          style={{ ...inputStyle, direction: 'rtl', textAlign: 'right' }} 
+                          placeholder="مثلاً، رعاية وخدمة ممتازة" 
+                        />
+                      </div>
+                      <div style={formGroupStyle}>
+                        <label style={labelStyle}>المراجعة / الوصف المختصر (عربي) *</label>
+                        <textarea 
+                          value={formData.description_ar} 
+                          onChange={(e) => setFormData({ ...formData, description_ar: e.target.value })} 
+                          style={{ ...textareaStyle, direction: 'rtl', textAlign: 'right' }} 
+                          placeholder="مراجعة موجزة للخدمة أو التجربة..." 
+                        />
+                        <p style={{ fontSize: '12px', color: '#6B7280', marginTop: '4px', textAlign: 'right', direction: 'rtl' }}>ملخص موجز (سيظهر في بطاقات الشهادات)</p>
+                      </div>
+                      
+                      {/* Full Story - Extended Narrative */}
+                      <div style={formGroupStyle}>
+                        <label style={labelStyle}>القصة الكاملة (عربي) (اختياري)</label>
+                        <textarea 
+                          value={formData.full_story_ar} 
+                          onChange={(e) => setFormData({ ...formData, full_story_ar: e.target.value })} 
+                          style={{ ...textareaStyle, minHeight: '120px', direction: 'rtl', textAlign: 'right' }}
+                          placeholder="قصة النجاح الكاملة - سرد مفصل للعلاج والنتائج والرحلة الشخصية..."
+                        />
+                        <p style={{ fontSize: '12px', color: '#6B7280', marginTop: '4px', textAlign: 'right', direction: 'rtl' }}>السرد الكامل لقصة النجاح (اختياري ولكن موصى به)</p>
+                      </div>
+                    </>
+                  )}
 
                   {/* Patient Information - Optional Secondary Fields */}
                   <div style={{ padding: '16px', backgroundColor: '#F9FAFB', borderRadius: '12px', marginBottom: '20px', borderLeft: '4px solid #15C9FA' }}>
                     <p style={{ fontSize: '13px', fontWeight: 600, color: '#061F42', marginTop: 0, marginBottom: '12px' }}>
                       Patient Information (Optional)
                     </p>
-                    <div style={formRowStyle}>
-                      <div style={formGroupStyle}>
-                        <label style={labelStyle}>Patient Name</label>
-                        <input 
-                          type="text" 
-                          value={formData.name || ''} 
-                          onChange={(e) => setFormData({ ...formData, name: e.target.value })} 
-                          style={inputStyle} 
-                          placeholder="e.g., John Doe" 
-                        />
-                      </div>
-                      <div style={formGroupStyle}>
-                        <label style={labelStyle}>Patient Role</label>
-                        <input 
-                          type="text" 
-                          value={formData.role || ''} 
-                          onChange={(e) => setFormData({ ...formData, role: e.target.value })} 
-                          style={inputStyle} 
-                          placeholder="e.g., Patient, Family Member" 
-                        />
-                      </div>
-                    </div>
-                    <div style={formRowStyle}>
-                      <div style={formGroupStyle}>
-                        <label style={labelStyle}>Location</label>
-                        <input 
-                          type="text" 
-                          value={formData.location || ''} 
-                          onChange={(e) => setFormData({ ...formData, location: e.target.value })} 
-                          style={inputStyle} 
-                          placeholder="e.g., Jeddah, KSA" 
-                        />
-                      </div>
-                      <div style={formGroupStyle}>
-                        <label style={labelStyle}>Experience / Condition</label>
-                        <input 
-                          type="text" 
-                          value={formData.experience || ''} 
-                          onChange={(e) => setFormData({ ...formData, experience: e.target.value })} 
-                          style={inputStyle} 
-                          placeholder="e.g., Cardiac surgery, Pregnancy care" 
-                        />
-                      </div>
-                    </div>
+                    
+                    {activeFormTab === 'en' ? (
+                      <>
+                        <div style={formRowStyle}>
+                          <div style={formGroupStyle}>
+                            <label style={labelStyle}>Patient Name</label>
+                            <input 
+                              type="text" 
+                              value={formData.name || ''} 
+                              onChange={(e) => setFormData({ ...formData, name: e.target.value })} 
+                              style={inputStyle} 
+                              placeholder="e.g., John Doe" 
+                            />
+                          </div>
+                          <div style={formGroupStyle}>
+                            <label style={labelStyle}>Patient Role (English)</label>
+                            <input 
+                              type="text" 
+                              value={formData.role_en || ''} 
+                              onChange={(e) => setFormData({ ...formData, role_en: e.target.value })} 
+                              style={inputStyle} 
+                              placeholder="e.g., Patient, Family Member" 
+                            />
+                          </div>
+                        </div>
+                        <div style={formRowStyle}>
+                          <div style={formGroupStyle}>
+                            <label style={labelStyle}>Location (English)</label>
+                            <input 
+                              type="text" 
+                              value={formData.location_en || ''} 
+                              onChange={(e) => setFormData({ ...formData, location_en: e.target.value })} 
+                              style={inputStyle} 
+                              placeholder="e.g., Jeddah, KSA" 
+                            />
+                          </div>
+                          <div style={formGroupStyle}>
+                            <label style={labelStyle}>Experience / Condition</label>
+                            <input 
+                              type="text" 
+                              value={formData.experience || ''} 
+                              onChange={(e) => setFormData({ ...formData, experience: e.target.value })} 
+                              style={inputStyle} 
+                              placeholder="e.g., Cardiac surgery, Pregnancy care" 
+                            />
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div style={formRowStyle}>
+                          <div style={formGroupStyle}>
+                            <label style={labelStyle}>اسم المريض</label>
+                            <input 
+                              type="text" 
+                              value={formData.name || ''} 
+                              onChange={(e) => setFormData({ ...formData, name: e.target.value })} 
+                              style={{ ...inputStyle, direction: 'rtl', textAlign: 'right' }} 
+                              placeholder="مثلاً، أحمد محمد" 
+                            />
+                          </div>
+                          <div style={formGroupStyle}>
+                            <label style={labelStyle}>دور المريض (عربي)</label>
+                            <input 
+                              type="text" 
+                              value={formData.role_ar || ''} 
+                              onChange={(e) => setFormData({ ...formData, role_ar: e.target.value })} 
+                              style={{ ...inputStyle, direction: 'rtl', textAlign: 'right' }} 
+                              placeholder="مثلاً، مريض، فرد من العائلة" 
+                            />
+                          </div>
+                        </div>
+                        <div style={formRowStyle}>
+                          <div style={formGroupStyle}>
+                            <label style={labelStyle}>الموقع (عربي)</label>
+                            <input 
+                              type="text" 
+                              value={formData.location_ar || ''} 
+                              onChange={(e) => setFormData({ ...formData, location_ar: e.target.value })} 
+                              style={{ ...inputStyle, direction: 'rtl', textAlign: 'right' }} 
+                              placeholder="مثلاً، جدة، المملكة العربية السعودية" 
+                            />
+                          </div>
+                          <div style={formGroupStyle}>
+                            <label style={labelStyle}>التجربة / الحالة</label>
+                            <input 
+                              type="text" 
+                              value={formData.experience || ''} 
+                              onChange={(e) => setFormData({ ...formData, experience: e.target.value })} 
+                              style={{ ...inputStyle, direction: 'rtl', textAlign: 'right' }} 
+                              placeholder="مثلاً، جراحة القلب، رعاية الحمل" 
+                            />
+                          </div>
+                        </div>
+                      </>
+                    )}
                   </div>
 
                   {/* Testimonial Photo */}

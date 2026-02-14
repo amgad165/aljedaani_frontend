@@ -5,10 +5,13 @@ import { useResponsiveNavbar } from '../hooks/useResponsiveNavbar';
 import { DepartmentCardSkeleton } from '../components/LoadingComponents';
 import { EASINGS, getStaggerDelay } from '../utils/animations';
 import FloatingContactButtons from '../components/FloatingContactButtons';
+import { getTranslatedField } from '../utils/localeHelpers';
+import { useTranslation } from 'react-i18next';
 
 const DepartmentsPage: React.FC = () => {
   const ResponsiveNavbar = useResponsiveNavbar();
   const navigate = useNavigate();
+  const { t } = useTranslation('pages');
   const [filteredDepartments, setFilteredDepartments] = useState<Department[]>([]);
   const [branches, setBranches] = useState<{ id: number; name: string }[]>([]);
   const [loading, setLoading] = useState(true);
@@ -250,7 +253,7 @@ const DepartmentsPage: React.FC = () => {
           margin: 0,
           flexGrow: 1,
         }}>
-          Departments
+          {t('departments')}
         </h1>
 
         {/* Search and Sort Controls */}
@@ -335,8 +338,8 @@ const DepartmentsPage: React.FC = () => {
                   flexGrow: 1,
                 }}>
                   {selectedBranchId === null 
-                    ? 'All Branches' 
-                    : branches.find(b => b.id === selectedBranchId)?.name || 'All Branches'
+                    ? t('allBranches') 
+                    : getTranslatedField(branches.find(b => b.id === selectedBranchId)?.name, '') || t('allBranches')
                   }
                 </span>
               </div>
@@ -397,7 +400,7 @@ const DepartmentsPage: React.FC = () => {
                     }
                   }}
                 >
-                  All Branches
+                  {t('allBranches')}
                 </div>
                 {branches.map(branch => (
                   <div
@@ -426,7 +429,7 @@ const DepartmentsPage: React.FC = () => {
                       }
                     }}
                   >
-                    {branch.name}
+                    {getTranslatedField(branch.name, '')}
                   </div>
                 ))}
               </div>
@@ -492,7 +495,7 @@ const DepartmentsPage: React.FC = () => {
         fontSize: isMobile ? '14px' : '16px',
         lineHeight: '40px',
       }}>
-        <span style={{ color: '#A4A5A5' }}>Displaying results for </span>
+        <span style={{ color: '#A4A5A5' }}>{t('displayingResultsFor')} </span>
         <span style={{ color: '#061F42' }}>
           <span 
             onClick={() => {
@@ -508,7 +511,7 @@ const DepartmentsPage: React.FC = () => {
             onMouseEnter={(e) => (e.currentTarget as HTMLElement).style.color = '#00ABDA'}
             onMouseLeave={(e) => (e.currentTarget as HTMLElement).style.color = '#061F42'}
           >
-            Departments
+            {t('departments')}
           </span>
         </span>
       </div>
@@ -525,7 +528,7 @@ const DepartmentsPage: React.FC = () => {
         color: '#061F42',
         margin: 0,
       }}>
-        Select Department
+        {t('selectDepartment')}
       </h2>
 
       {/* Departments Grid */}
@@ -614,7 +617,7 @@ const DepartmentsPage: React.FC = () => {
               {/* Department Icon */}
               <img 
                 src={department.icon || '/assets/images/departments/icon.png'} 
-                alt={`${department.name} Icon`} 
+                alt={`${getTranslatedField(department.name, '')} Icon`} 
                 style={{
                   width: isMobile ? '56px' : '85px',
                   height: isMobile ? '56px' : '85px',
@@ -639,7 +642,7 @@ const DepartmentsPage: React.FC = () => {
               alignItems: 'center',
               justifyContent: 'center',
             }}>
-              {department.name}
+              {getTranslatedField(department.name, '')}
             </h3>
 
             {/* Doctor Count Badge */}
@@ -660,7 +663,7 @@ const DepartmentsPage: React.FC = () => {
                   <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
                   <circle cx="12" cy="7" r="4" />
                 </svg>
-                <span>{department.doctors_count} {department.doctors_count === 1 ? 'Doctor' : 'Doctors'}</span>
+                <span>{department.doctors_count} {department.doctors_count === 1 ? t('doctor') : t('doctors')}</span>
               </div>
             )}
 
@@ -681,7 +684,7 @@ const DepartmentsPage: React.FC = () => {
           fontSize: '18px',
           color: '#6A6A6A',
         }}>
-          No departments found matching your search.
+          {t('noDepartmentsFound')}
         </div>
       )}
       </div>

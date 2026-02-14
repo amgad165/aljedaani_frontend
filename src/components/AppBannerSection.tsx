@@ -1,7 +1,9 @@
 import { useScrollAnimation, getAnimationStyle } from '../hooks/useScrollAnimation';
+import { useTranslation } from 'react-i18next';
 
 const AppBannerSection = () => {
   const { ref: sectionRef, isVisible: sectionVisible } = useScrollAnimation();
+  const { t } = useTranslation('pages');
   
   return (
     <>
@@ -160,7 +162,7 @@ const AppBannerSection = () => {
                   textAlign: 'center'
                 }}
               >
-                Download Mobile App
+                {t('downloadMobileApp')}
               </h2>
               <h3 
                 className="banner-subtitle"
@@ -174,7 +176,7 @@ const AppBannerSection = () => {
 
                 }}
               >
-                For a more personalised experience!
+                {t('mobileAppSubtitle')}
               </h3>
             </div>
             <div 

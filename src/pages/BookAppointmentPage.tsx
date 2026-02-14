@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { getTranslatedField } from '../utils/localeHelpers';
 import { useResponsiveNavbar } from '../hooks/useResponsiveNavbar';
 import Footer from '../components/Footer';
 import CustomSelect from '../components/CustomSelect';
@@ -445,7 +446,7 @@ const BookAppointmentPage = () => {
   useEffect(() => {
     if (doctorSelection.doctorSearch && doctors.length > 0) {
       const searchLower = doctorSelection.doctorSearch.toLowerCase();
-      const filtered = doctors.filter(d => d.name.toLowerCase().includes(searchLower));
+      const filtered = doctors.filter(d => getTranslatedField(d.name, '').toLowerCase().includes(searchLower));
       setFilteredDoctors(filtered);
     } else {
       setFilteredDoctors(doctors);
@@ -2119,7 +2120,7 @@ const BookAppointmentPage = () => {
                           }
                         }}
                       >
-                        <div>{doctor.name}</div>
+                        <div>{getTranslatedField(doctor.name, '')}</div>
                         <div style={{
                           fontSize: '12px',
                           color: '#6B7280',

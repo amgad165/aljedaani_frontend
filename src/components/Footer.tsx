@@ -1,36 +1,38 @@
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 const Footer = () => {
+  const { t } = useTranslation('pages');
 
   const hospitals = [
-    { name: 'Al Safa Hospital', id: 'al-safa' },
-    { name: 'Ghulail Hospital', id: 'ghulail' },
-    { name: 'Ibn Sina Hospital', id: 'ibn-sina' }
+    { name: t('alSafaHospital'), id: 'al-safa' },
+    { name: t('ghulailHospital'), id: 'ghulail' },
+    { name: t('ibnSinaHospital'), id: 'ibn-sina' }
   ];
 
   const quickLinks = [
-    { label: 'Find A Doctor', href: '/doctors' },
-    { label: 'Lab Result', href: '/profile?tab=lab-reports' },
-    { label: 'Radiology Result', href: '/profile?tab=radiology-reports' },
-    { label: 'Medical Reports', href: '/profile?tab=medical-reports' }
+    { label: t('findADoctor'), href: '/doctors' },
+    { label: t('labResult'), href: '/profile?tab=lab-reports' },
+    { label: t('radiologyResult'), href: '/profile?tab=radiology-reports' },
+    { label: t('medicalReports'), href: '/profile?tab=medical-reports' }
   ];
 
   const categoryLinks = [
-    { label: 'My Profile', href: '/profile' },
-    { label: 'Testimonials', href: '/#testimonials' },
-    { label: 'Submit A Complaint', href: '/profile?tab=complaints' },
-    { label: 'Patient Experience', href: '/#patient-experience' },
-    { label: 'Privacy Policy', href: '/#privacy-policy' }
+    { label: t('myProfile'), href: '/profile' },
+    { label: t('testimonials'), href: '/#testimonials' },
+    { label: t('submitComplaint'), href: '/profile?tab=complaints' },
+    { label: t('patientExperience'), href: '/#patient-experience' },
+    { label: t('privacyPolicy'), href: '/#privacy-policy' }
   ];
 
   const mainLinks = [
-    { label: 'Overview', href: '/' },
-    { label: 'Hospitals', href: '/branches' },
-    { label: 'Ibn Sina College', href: 'https://ibnsina.edu.sa/' },
-    { label: 'Pharmacies', href: '/#pharmacies' },
-    { label: 'Departments', href: '/departments' },
-    { label: 'Doctors', href: '/doctors' },
-    { label: 'Media Hub', href: '/#media-hub' }
+    { label: t('overview'), href: '/' },
+    { label: t('hospitals'), href: '/branches' },
+    { label: t('ibnSinaCollege'), href: 'https://ibnsina.edu.sa/' },
+    { label: t('pharmacies'), href: '/#pharmacies' },
+    { label: t('departments'), href: '/departments' },
+    { label: t('doctors'), href: '/doctors' },
+    { label: t('mediaHub'), href: '/#media-hub' }
   ];
 
   return (
@@ -155,7 +157,7 @@ const Footer = () => {
         }}>
           {/* Contact Us Section */}
           <div className="footer-column" style={{ flex: '0 0 auto', width: '230px' }}>
-            <div className="footer-section-title">Contact Us</div>
+            <div className="footer-section-title">{t('contactUs')}</div>
             
             {/* Phone */}
             <div style={{
@@ -248,14 +250,14 @@ const Footer = () => {
                 borderColor: '#00BD13',
               }}>
                 <img src="/assets/images/footer/chat-lines.svg" width="16" height="16" alt="WhatsApp" />
-                WhatsApp
+                {t('whatsapp')}
               </a>
               <a href="mailto:contact@jedaani.com" className="footer-button" style={{
                 background: '#00ABDA',
                 borderColor: '#00ABDA',
               }}>
                 <img src="/assets/images/footer/mail-out.svg" width="16" height="16" alt="Email" />
-                Email us
+                {t('emailUs')}
               </a>
             </div>
           </div>
@@ -329,11 +331,11 @@ const Footer = () => {
             }}>
               <Link to="/book-appointment" className="footer-button">
                 <img src="/assets/images/footer/calendar-plus.svg" width="24" height="24" alt="Calendar" />
-                Book Appointment
+                {t('bookAppointment')}
               </Link>
               <button className="footer-button">
                 <img src="/assets/images/footer/star.svg" width="24" height="24" alt="Star" />
-                Offers
+                {t('offers')}
               </button>
             </div>
           </div>

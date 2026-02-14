@@ -1,5 +1,7 @@
 import { useState, useCallback } from 'react';
 import { useHomepageData } from '../context/HomepageContext';
+import { getTranslatedField } from '../utils/localeHelpers';
+import { useTranslation } from 'react-i18next';
 
 interface DoctorCard {
   id: number;
@@ -29,6 +31,7 @@ const LeftArrowIcon = () => (
 
 const TestimonialSection = () => {
   const { data, loading, error } = useHomepageData();
+  const { t } = useTranslation('pages');
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
 
@@ -36,13 +39,13 @@ const TestimonialSection = () => {
     .filter((testimonial: any) => testimonial.doctor)
     .map((testimonial: any) => ({
       id: testimonial.id,
-      title: ` ${testimonial.doctor?.name || ''}`,
-      subtitle: testimonial.doctor?.specialization || '',
+      title: ` ${getTranslatedField(testimonial.doctor?.name, '')}`,
+      subtitle: getTranslatedField(testimonial.doctor?.specialization, ''),
       image: testimonial.doctor?.image_url || '',
-      badge1: testimonial.doctor?.branch?.name || '',
-      badge2: testimonial.doctor?.department?.name || '',
-      reviewTitle: testimonial.review_title,
-      description: testimonial.description
+      badge1: getTranslatedField(testimonial.doctor?.branch?.name, ''),
+      badge2: getTranslatedField(testimonial.doctor?.department?.name, ''),
+      reviewTitle: getTranslatedField(testimonial.review_title, ''),
+      description: getTranslatedField(testimonial.description, '')
     }));
 
   const handleNext = useCallback(() => {
@@ -66,7 +69,7 @@ const TestimonialSection = () => {
     return (
       <section style={{ padding: '80px 0' }}>
         <div style={{ textAlign: 'center', fontSize: '18px', color: '#061F42' }}>
-          Loading testimonials...
+          {t('loadingTestimonials')}
         </div>
       </section>
     );
@@ -191,7 +194,7 @@ const TestimonialSection = () => {
               flex: 1
             }}
           >
-            Testimonials
+            {t('testimonials')}
           </h2>
         </div>
 
@@ -469,7 +472,7 @@ const TestimonialSection = () => {
                     color: '#FFFFFF'
                   }}
                 >
-                  Book Now
+                  {t('bookNow')}
                 </button>
                 <button
                   style={{
@@ -491,7 +494,7 @@ const TestimonialSection = () => {
                     color: '#FFFFFF'
                   }}
                 >
-                  Read More
+                  {t('readMore')}
                 </button>
               </div>
             </div>

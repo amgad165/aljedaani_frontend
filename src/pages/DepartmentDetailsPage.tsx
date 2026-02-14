@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { departmentsService, type Department, type DepartmentTabContent, type Doctor, type SidebarItem } from '../services/departmentsService';
 import { type Testimonial } from '../services/testimonialsService';
 import { useResponsiveNavbar } from '../hooks/useResponsiveNavbar';
 import { LoadingSpinner } from '../components/LoadingComponents';
 import { EASINGS } from '../utils/animations';
 import FloatingContactButtons from '../components/FloatingContactButtons';
+import { getTranslatedField } from '../utils/localeHelpers';
 
 type TabType = 'overview' | 'doctors' | 'opd_services' | 'inpatient_services' | 'investigations' | 'success_stories';
 
@@ -119,6 +121,7 @@ const animationStyles = `
 
 const DepartmentDetailsPage: React.FC = () => {
   const ResponsiveNavbar = useResponsiveNavbar();
+  const { t } = useTranslation('pages');
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
@@ -162,12 +165,12 @@ const DepartmentDetailsPage: React.FC = () => {
   const [currentSidebarImageUrl, setCurrentSidebarImageUrl] = useState<string>('');
 
   const tabs: { key: TabType; label: string }[] = [
-    { key: 'overview', label: 'Overview' },
-    { key: 'doctors', label: 'Doctors' },
-    { key: 'opd_services', label: 'Outpatient Services' },
-    { key: 'inpatient_services', label: 'Inpatient Services' },
-    { key: 'investigations', label: 'Investigations' },
-    { key: 'success_stories', label: 'Success Stories' },
+    { key: 'overview', label: t('deptOverview') },
+    { key: 'doctors', label: t('deptDoctors') },
+    { key: 'opd_services', label: t('deptOutpatientServices') },
+    { key: 'inpatient_services', label: t('deptInpatientServices') },
+    { key: 'investigations', label: t('deptInvestigations') },
+    { key: 'success_stories', label: t('deptSuccessStories') },
   ];
 
   // Handle tab change with animation
@@ -516,7 +519,7 @@ const DepartmentDetailsPage: React.FC = () => {
         >
           <img
             src={doctor.image_url || '/assets/images/general/person_template.png'}
-            alt={doctor.name}
+            alt={getTranslatedField(doctor.name, '')}
             style={{
               width: '100%',
               height: '100%',
@@ -535,7 +538,7 @@ const DepartmentDetailsPage: React.FC = () => {
           textAlign: 'center',
           color: '#061F42',
         }}>
-          {doctor.name}
+          {getTranslatedField(doctor.name, '')}
         </div>
 
         {/* Specialization */}
@@ -547,7 +550,7 @@ const DepartmentDetailsPage: React.FC = () => {
           whiteSpace: 'pre-wrap',
           wordWrap: 'break-word',
         }}>
-          {doctor.specialization || 'Registrar'}
+          {getTranslatedField(doctor.specialization, '') || 'Registrar'}
         </div>
 
         {/* Info badges */}
@@ -586,7 +589,7 @@ const DepartmentDetailsPage: React.FC = () => {
             e.currentTarget.style.background = '#FFFFFF';
             e.currentTarget.style.borderColor = '#D9D9D9';
           }}>
-            {doctor.branch?.name || doctor.location}
+            {getTranslatedField(doctor.branch?.name, '') || getTranslatedField(doctor.location, '')}
           </div>
           <div 
             onClick={(e) => {
@@ -614,7 +617,7 @@ const DepartmentDetailsPage: React.FC = () => {
           onMouseLeave={(e) => {
             e.currentTarget.style.background = '#A7FAFC';
           }}>
-            {department?.name}
+            {getTranslatedField(department?.name, '')}
           </div>
         </div>
 
@@ -628,7 +631,7 @@ const DepartmentDetailsPage: React.FC = () => {
           fontFamily: 'Nunito, sans-serif',
         }}>
           <div>• {doctor.experience_years} Years Of Experience</div>
-          <div>• {doctor.education}</div>
+          <div>• {getTranslatedField(doctor.education, '')}</div>
         </div>
 
         {/* Buttons */}
@@ -667,7 +670,7 @@ const DepartmentDetailsPage: React.FC = () => {
               }
             }}
           >
-            Book Now
+            {t('bookNow')}
           </button>
           <Link
             to={`/doctors/${doctor.id}`}
@@ -943,7 +946,7 @@ const DepartmentDetailsPage: React.FC = () => {
                 color: '#061F42',
                 transition: 'font-weight 0.2s ease',
               }}>
-                {item.title}
+                {getTranslatedField(item.title, '')}
               </span>
             </div>
           );
@@ -1021,7 +1024,7 @@ const DepartmentDetailsPage: React.FC = () => {
             margin: 0,
             animation: 'fadeInUp 0.4s ease-out 0.1s both',
           }}>
-            {content.main_description}
+            {getTranslatedField(content.main_description, '')}
           </p>
         )}
 
@@ -1034,7 +1037,7 @@ const DepartmentDetailsPage: React.FC = () => {
         }} />
 
         {/* Sub Sections */}
-        {content.sub_sections && content.sub_sections.length > 0 && (
+        {Array.isArray(content.sub_sections) && content.sub_sections.length > 0 && (
           <div style={{
             display: 'flex',
             flexDirection: 'column',
@@ -1096,7 +1099,7 @@ const DepartmentDetailsPage: React.FC = () => {
                   >
                     <img
                       src={(window.innerWidth <= 768 && section.mobile_image) ? section.mobile_image : section.image}
-                      alt={section.title || ''}
+                      alt={getTranslatedField(section.title, '')}
                       style={{
                         width: '100%',
                         height: '100%',
@@ -1121,7 +1124,7 @@ const DepartmentDetailsPage: React.FC = () => {
                       color: '#061F42',
                       margin: 0,
                     }}>
-                      {section.title}
+                      {getTranslatedField(section.title, '')}
                     </h4>
                   )}
                   <p style={{
@@ -1131,7 +1134,7 @@ const DepartmentDetailsPage: React.FC = () => {
                     color: '#061F42',
                     margin: 0,
                   }}>
-                    {section.description}
+                    {getTranslatedField(section.description, '')}
                   </p>
                 </div>
               </div>
@@ -1172,7 +1175,7 @@ const DepartmentDetailsPage: React.FC = () => {
               color: '#061F42',
               margin: 0,
             }}>
-              "{content.quote_text}"
+              "{getTranslatedField(content.quote_text, '')}"
             </p>
           </div>
         )}
@@ -1307,7 +1310,7 @@ const DepartmentDetailsPage: React.FC = () => {
                   src={(window.innerWidth <= 768 && (actualSidebarItem?.mobile_image || content.mobile_image)) 
                     ? (actualSidebarItem?.mobile_image || content.mobile_image) 
                     : displayImage}
-                  alt={isOverviewSelected ? 'Overview' : (activeSidebarItem?.title || 'Service')}
+                  alt={isOverviewSelected ? 'Overview' : (getTranslatedField(activeSidebarItem?.title, '') || 'Service')}
                   style={{
                     width: '100%',
                     height: '100%',
@@ -1351,7 +1354,7 @@ const DepartmentDetailsPage: React.FC = () => {
               margin: 0,
               textAlign: 'left',
             }}>
-              {displayDescription}
+              {getTranslatedField(displayDescription, '')}
             </p>
           )}
 
@@ -1375,7 +1378,7 @@ const DepartmentDetailsPage: React.FC = () => {
                       margin: '0 0 4px 0',
                       textAlign: 'left',
                     }}>
-                      {service.title}
+                      {getTranslatedField(service.title, '')}
                     </h4>
                   )}
                   {service.items && service.items.length > 0 && (
@@ -1393,7 +1396,7 @@ const DepartmentDetailsPage: React.FC = () => {
                           marginBottom: '5px',
                           listStyle: 'none',
                         }}>
-                          {item}
+                          {getTranslatedField(item, '')}
                         </li>
                       ))}
                     </ul>
@@ -1419,7 +1422,7 @@ const DepartmentDetailsPage: React.FC = () => {
           borderRadius: '0px 12px 12px 12px',
           animation: 'fadeInUp 0.4s ease-out',
         }}>
-          No doctors available for this department.
+          {t('noDoctorsAvailable')}
         </div>
       );
     }
@@ -1471,7 +1474,7 @@ const DepartmentDetailsPage: React.FC = () => {
             e.currentTarget.style.boxShadow = 'none';
           }}
         >
-          View All Doctors
+          {t('viewAllDoctors')}
         </Link>
       </div>
     );
@@ -1576,7 +1579,7 @@ const DepartmentDetailsPage: React.FC = () => {
             }}>
               <img
                 src={doctor?.image_url || '/assets/images/testimonials/person_template.png'}
-                alt={`Dr. ${doctor?.name}`}
+                alt={`Dr. ${getTranslatedField(doctor?.name, '')}`}
                 style={{
                   width: '100%',
                   height: '100%',
@@ -1604,7 +1607,7 @@ const DepartmentDetailsPage: React.FC = () => {
                 color: '#061F42',
                 margin: 0
               }}>
-                Dr. {doctor?.name}
+                Dr. {getTranslatedField(doctor?.name, '')}
               </h3>
               <p style={{
                 width: '280px',
@@ -1617,7 +1620,7 @@ const DepartmentDetailsPage: React.FC = () => {
                 color: '#061F42',
                 margin: 0
               }}>
-                {doctor?.specialization}
+                {getTranslatedField(doctor?.specialization, '')}
               </p>
             </div>
 
@@ -1669,7 +1672,7 @@ const DepartmentDetailsPage: React.FC = () => {
                     lineHeight: '16px',
                     color: '#6A6A6A'
                   }}>
-                    {doctor?.branch?.name}
+                    {getTranslatedField(doctor?.branch?.name, '')}
                   </span>
                 </div>
 
@@ -1693,7 +1696,7 @@ const DepartmentDetailsPage: React.FC = () => {
                     lineHeight: '16px',
                     color: '#061F42'
                   }}>
-                    {doctor?.department?.name}
+                    {getTranslatedField(doctor?.department?.name, '')}
                   </span>
                 </div>
               </div>
@@ -1759,7 +1762,7 @@ const DepartmentDetailsPage: React.FC = () => {
                     maxWidth: '220px',
                     wordWrap: 'break-word'
                   }}>
-                    {doctor?.specialization || 'Healthcare Professional'}
+                    {getTranslatedField(doctor?.specialization, '') || 'Healthcare Professional'}
                   </span>
                 </div>
 
@@ -1791,7 +1794,7 @@ const DepartmentDetailsPage: React.FC = () => {
                     overflowY: 'auto',
                     wordWrap: 'break-word'
                   }}>
-                    {doctor?.education || 'Not provided'}
+                    {getTranslatedField(doctor?.education, '') || 'Not provided'}
                   </p>
                 </div>
               </div>
@@ -1827,7 +1830,7 @@ const DepartmentDetailsPage: React.FC = () => {
                 e.currentTarget.style.transform = 'translateY(0)';
               }}
             >
-              Book Now
+              {t('bookNow')}
             </button>
           </div>
 
@@ -1852,7 +1855,7 @@ const DepartmentDetailsPage: React.FC = () => {
               margin: 0,
               width: '100%'
             }}>
-              {testimonial.review_title}
+              {getTranslatedField(testimonial.review_title, '')}
             </h2>
 
             {/* Story Image */}
@@ -1866,7 +1869,7 @@ const DepartmentDetailsPage: React.FC = () => {
               }}>
                 <img
                   src={testimonial.testimonial_image}
-                  alt={testimonial.review_title}
+                  alt={getTranslatedField(testimonial.review_title, '')}
                   style={{
                     width: '100%',
                     height: '100%',
@@ -1899,7 +1902,7 @@ const DepartmentDetailsPage: React.FC = () => {
                 overflowY: 'auto',
                 paddingRight: '12px'
               }}>
-                {testimonial.full_story || testimonial.description}
+                {getTranslatedField(testimonial.full_story, '') || getTranslatedField(testimonial.description, '')}
               </p>
             </div>
           </div>
@@ -1986,7 +1989,7 @@ const DepartmentDetailsPage: React.FC = () => {
               >
                 <img
                   src={testimonial.doctor?.image_url || '/assets/images/testimonials/person_template.png'}
-                  alt={`Dr. ${testimonial.doctor?.name}`}
+                  alt={`Dr. ${getTranslatedField(testimonial.doctor?.name, '')}`}
                   style={{
                     width: '100%',
                     height: '100%',
@@ -2019,7 +2022,7 @@ const DepartmentDetailsPage: React.FC = () => {
                     marginBottom: '4px'
                   }}
                 >
-                  Dr. {testimonial.doctor?.name}
+                  Dr. {getTranslatedField(testimonial.doctor?.name, '')}
                 </h3>
                 <p
                   style={{
@@ -2034,7 +2037,7 @@ const DepartmentDetailsPage: React.FC = () => {
                     margin: 0
                   }}
                 >
-                  {testimonial.doctor?.specialization}
+                  {getTranslatedField(testimonial.doctor?.specialization, '')}
                 </p>
               </div>
 
@@ -2095,7 +2098,7 @@ const DepartmentDetailsPage: React.FC = () => {
                         color: '#6A6A6A'
                       }}
                     >
-                      {testimonial.doctor?.branch?.name}
+                      {getTranslatedField(testimonial.doctor?.branch?.name, '')}
                     </span>
                   </div>
                   {/* Department Badge */}
@@ -2122,7 +2125,7 @@ const DepartmentDetailsPage: React.FC = () => {
                         color: '#061F42'
                       }}
                     >
-                      {testimonial.doctor?.department?.name}
+                      {getTranslatedField(testimonial.doctor?.department?.name, '')}
                     </span>
                   </div>
                 </div>
@@ -2141,7 +2144,7 @@ const DepartmentDetailsPage: React.FC = () => {
                     marginBottom: '3px'
                   }}
                 >
-                  {testimonial.review_title}
+                  {getTranslatedField(testimonial.review_title, '')}
                 </h4>
 
                 {/* Description */}
@@ -2157,7 +2160,7 @@ const DepartmentDetailsPage: React.FC = () => {
                     margin: 0
                   }}
                 >
-                  {testimonial.description}
+                  {getTranslatedField(testimonial.description, '')}
                 </p>
               </div>
 
@@ -2201,7 +2204,7 @@ const DepartmentDetailsPage: React.FC = () => {
                     e.currentTarget.style.transform = 'translateY(0)';
                   }}
                 >
-                  Book Now
+                  {t('bookNow')}
                 </button>
                 <button
                   onClick={() => {
@@ -2239,7 +2242,7 @@ const DepartmentDetailsPage: React.FC = () => {
                     e.currentTarget.style.transform = 'translateY(0)';
                   }}
                 >
-                  Read More
+                  {t('readMore')}
                 </button>
               </div>
             </div>
@@ -2297,7 +2300,7 @@ const DepartmentDetailsPage: React.FC = () => {
               cursor: 'pointer',
             }}
           >
-            Back to Departments
+            {t('backToDepartments')}
           </button>
         </div>
       </div>
@@ -2379,7 +2382,7 @@ const DepartmentDetailsPage: React.FC = () => {
               <span style={{
                 color: '#061F42',
               }}>
-                {department.name}
+                {getTranslatedField(department.name, '')}
               </span>
             </span>
           </div>
@@ -2393,7 +2396,7 @@ const DepartmentDetailsPage: React.FC = () => {
             color: '#061F42',
             margin: '0 0 16px 0',
           }}>
-            {department.name}
+            {getTranslatedField(department.name, '')}
           </h2>
 
           {/* Tabs Container */}
@@ -2508,7 +2511,7 @@ const DepartmentDetailsPage: React.FC = () => {
                 color: '#061F42',
                 margin: '0 0 24px 0',
               }}>
-                Our Doctors
+                {t('ourDoctors')}
               </h3>
 
               <div style={{

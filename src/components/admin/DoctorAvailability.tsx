@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import AdminLayout from './AdminLayout';
+import { getTranslatedField } from '../../utils/localeHelpers';
 
 interface Doctor {
   id: number;
@@ -192,7 +193,7 @@ const DoctorAvailability: React.FC = () => {
             <option value="">-- Choose a doctor --</option>
             {Array.isArray(doctors) && doctors.map((doctor) => (
               <option key={doctor.id} value={doctor.id}>
-                {doctor.name} - {doctor.department.name}
+                {getTranslatedField(doctor.name, '')} - {getTranslatedField(doctor.department.name, '')}
               </option>
             ))}
           </select>

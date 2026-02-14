@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import AdminLayout from './AdminLayout';
+import { getTranslatedField } from '../../utils/localeHelpers';
 
 interface Gallery {
   id: number;
@@ -31,10 +32,14 @@ interface Branch {
 }
 
 interface FormData {
-  name: string;
-  region: string;
-  description: string;
-  address: string;
+  name_en: string;
+  name_ar: string;
+  region_en: string;
+  region_ar: string;
+  description_en: string;
+  description_ar: string;
+  address_en: string;
+  address_ar: string;
   phone: string;
   email: string;
   latitude: string;
@@ -76,10 +81,14 @@ const AdminBranches: React.FC = () => {
   const [selectedBranch, setSelectedBranch] = useState<Branch | null>(null);
   const [selectedGallery, setSelectedGallery] = useState<Gallery | null>(null);
   const [formData, setFormData] = useState<FormData>({
-    name: '',
-    region: '',
-    description: '',
-    address: '',
+    name_en: '',
+    name_ar: '',
+    region_en: '',
+    region_ar: '',
+    description_en: '',
+    description_ar: '',
+    address_en: '',
+    address_ar: '',
     phone: '',
     email: '',
     latitude: '',
@@ -91,6 +100,7 @@ const AdminBranches: React.FC = () => {
     mobile_image_file: null,
     is_active: true
   });
+  const [activeFormTab, setActiveFormTab] = useState<'en' | 'ar'>('en');
   const [galleryFormData, setGalleryFormData] = useState<GalleryFormData>({
     title: '',
     description: '',
@@ -147,10 +157,14 @@ const AdminBranches: React.FC = () => {
     setModalMode('create');
     setSelectedBranch(null);
     setFormData({
-      name: '',
-      region: '',
-      description: '',
-      address: '',
+      name_en: '',
+      name_ar: '',
+      region_en: '',
+      region_ar: '',
+      description_en: '',
+      description_ar: '',
+      address_en: '',
+      address_ar: '',
       phone: '',
       email: '',
       latitude: '',
@@ -162,6 +176,7 @@ const AdminBranches: React.FC = () => {
       mobile_image_file: null,
       is_active: true
     });
+    setActiveFormTab('en');
     setModalGalleryItems([]);
     setShowModal(true);
   };
@@ -169,11 +184,22 @@ const AdminBranches: React.FC = () => {
   const handleEdit = (branch: Branch) => {
     setModalMode('edit');
     setSelectedBranch(branch);
+    
+    // Extract both EN and AR values from JSON fields
+    const nameObj = typeof branch.name === 'object' ? branch.name : { en: branch.name || '', ar: '' };
+    const regionObj = typeof branch.region === 'object' ? branch.region : { en: branch.region || '', ar: '' };
+    const descObj = typeof branch.description === 'object' ? branch.description : { en: branch.description || '', ar: '' };
+    const addrObj = typeof branch.address === 'object' ? branch.address : { en: branch.address || '', ar: '' };
+    
     setFormData({
-      name: branch.name,
-      region: branch.region,
-      description: branch.description || '',
-      address: branch.address,
+      name_en: nameObj.en || '',
+      name_ar: nameObj.ar || '',
+      region_en: regionObj.en || '',
+      region_ar: regionObj.ar || '',
+      description_en: (descObj && descObj.en) || '',
+      description_ar: (descObj && descObj.ar) || '',
+      address_en: addrObj.en || '',
+      address_ar: addrObj.ar || '',
       phone: branch.phone,
       email: branch.email || '',
       latitude: branch.latitude?.toString() || '',
@@ -185,9 +211,10 @@ const AdminBranches: React.FC = () => {
       mobile_image_file: null,
       is_active: branch.is_active
     });
+    setActiveFormTab('en');
     // Initialize gallery items from existing branch galleries
     setModalGalleryItems(
-      (branch.galleries || []).map(g => ({
+      (Array.isArray(branch.galleries) ? branch.galleries : []).map(g => ({
         id: g.id,
         title: g.title || '',
         description: g.description || '',
@@ -320,10 +347,14 @@ const AdminBranches: React.FC = () => {
       
       // Create FormData for branch with image
       const formDataToSend = new FormData();
-      formDataToSend.append('name', formData.name);
-      formDataToSend.append('region', formData.region);
-      if (formData.description) formDataToSend.append('description', formData.description);
-      formDataToSend.append('address', formData.address);
+      
+      // Build JSON objects for translatable fields
+      formDataToSend.append('name', JSON.stringify({ en: formData.name_en, ar: formData.name_ar }));
+      formDataToSend.append('region', JSON.stringify({ en: formData.region_en, ar: formData.region_ar }));
+      if (formData.description_en || formData.description_ar) {
+        formDataToSend.append('description', JSON.stringify({ en: formData.description_en, ar: formData.description_ar }));
+      }
+      formDataToSend.append('address', JSON.stringify({ en: formData.address_en, ar: formData.address_ar }));
       formDataToSend.append('phone', formData.phone);
       if (formData.email) formDataToSend.append('email', formData.email);
       if (formData.latitude) formDataToSend.append('latitude', formData.latitude);
@@ -502,9 +533,9 @@ const AdminBranches: React.FC = () => {
   };
 
   const filteredBranches = branches.filter(branch =>
-    branch.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    branch.region.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    branch.address.toLowerCase().includes(searchQuery.toLowerCase())
+    getTranslatedField(branch.name, '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+    getTranslatedField(branch.region, '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+    getTranslatedField(branch.address, '').toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   // Inline Styles
@@ -596,7 +627,7 @@ const AdminBranches: React.FC = () => {
             {filteredBranches.map((branch) => (
               <div key={branch.id} style={cardStyle}>
                 {branch.image_url ? (
-                  <img src={branch.image_url} alt={branch.name} style={cardImageStyle} />
+                  <img src={branch.image_url} alt={getTranslatedField(branch.name, '')} style={cardImageStyle} />
                 ) : (
                   <div style={{ ...cardImageStyle, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <svg style={{ width: '48px', height: '48px', color: '#D1D5DB' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -607,8 +638,8 @@ const AdminBranches: React.FC = () => {
                 <div style={cardContentStyle}>
                   <div style={cardHeaderStyle}>
                     <div>
-                      <h3 style={branchNameStyle}>{branch.name}</h3>
-                      <span style={regionBadgeStyle}>{branch.region}</span>
+                      <h3 style={branchNameStyle}>{getTranslatedField(branch.name, '')}</h3>
+                      <span style={regionBadgeStyle}>{getTranslatedField(branch.region, '')}</span>
                     </div>
                     <span style={statusBadgeStyle(branch.is_active)}>
                       <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: branch.is_active ? '#03543F' : '#6B7280', marginRight: '6px' }} />
@@ -617,7 +648,7 @@ const AdminBranches: React.FC = () => {
                   </div>
                   
                   {branch.description && (
-                    <p style={{ fontSize: '14px', color: '#6B7280', marginBottom: '12px', lineHeight: 1.5 }}>{branch.description}</p>
+                    <p style={{ fontSize: '14px', color: '#6B7280', marginBottom: '12px', lineHeight: 1.5 }}>{getTranslatedField(branch.description, '')}</p>
                   )}
                   
                   <div style={infoRowStyle}>
@@ -625,7 +656,7 @@ const AdminBranches: React.FC = () => {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
-                    {branch.address}
+                    {getTranslatedField(branch.address, '')}
                   </div>
                   
                   <div style={infoRowStyle}>
@@ -664,7 +695,7 @@ const AdminBranches: React.FC = () => {
                       <div style={galleryGridStyle}>
                         {branch.galleries.slice(0, expandedBranch === branch.id ? undefined : 4).map((gallery) => (
                           <div key={gallery.id} style={{ position: 'relative' }}>
-                            <img src={gallery.image_url} alt={gallery.title || 'Gallery'} style={galleryImageStyle} onClick={() => handleEditGallery(branch, gallery)} />
+                            <img src={gallery.image_url} alt={getTranslatedField(gallery.title, 'Gallery')} style={galleryImageStyle} onClick={() => handleEditGallery(branch, gallery)} />
                             <button
                               onClick={(e) => { e.stopPropagation(); handleDeleteGallery(gallery.id); }}
                               style={{
@@ -737,26 +768,155 @@ const AdminBranches: React.FC = () => {
               </div>
               <form onSubmit={handleSubmit}>
                 <div style={modalBodyStyle}>
-                  <div style={formRowStyle}>
-                    <div style={formGroupStyle}>
-                      <label style={labelStyle}>Branch Name *</label>
-                      <input type="text" required value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} style={inputStyle} placeholder="e.g., Ghulail Hospital" />
+                  {/* Language Tabs */}
+                  <div style={{ marginBottom: '24px', borderBottom: '2px solid #E5E7EB' }}>
+                    <div style={{ display: 'flex', gap: '2px' }}>
+                      <button
+                        type="button"
+                        onClick={() => setActiveFormTab('en')}
+                        style={{
+                          flex: 1,
+                          padding: '12px 16px',
+                          fontSize: '14px',
+                          fontWeight: 600,
+                          border: 'none',
+                          borderBottom: `3px solid ${activeFormTab === 'en' ? '#15C9FA' : 'transparent'}`,
+                          backgroundColor: activeFormTab === 'en' ? '#E0F7FF' : 'transparent',
+                          color: activeFormTab === 'en' ? '#0a4d68' : '#6B7280',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s'
+                        }}
+                      >
+                        English
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setActiveFormTab('ar')}
+                        style={{
+                          flex: 1,
+                          padding: '12px 16px',
+                          fontSize: '14px',
+                          fontWeight: 600,
+                          border: 'none',
+                          borderBottom: `3px solid ${activeFormTab === 'ar' ? '#15C9FA' : 'transparent'}`,
+                          backgroundColor: activeFormTab === 'ar' ? '#E0F7FF' : 'transparent',
+                          color: activeFormTab === 'ar' ? '#0a4d68' : '#6B7280',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s'
+                        }}
+                      >
+                        العربية (Arabic)
+                      </button>
                     </div>
-                    <div style={formGroupStyle}>
-                      <label style={labelStyle}>Region *</label>
-                      <input type="text" required value={formData.region} onChange={(e) => setFormData({ ...formData, region: e.target.value })} style={inputStyle} placeholder="e.g., Jeddah Region" />
-                    </div>
                   </div>
-                  
-                  <div style={formGroupStyle}>
-                    <label style={labelStyle}>Description</label>
-                    <textarea value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} style={textareaStyle} placeholder="Brief description of the branch" />
-                  </div>
-                  
-                  <div style={formGroupStyle}>
-                    <label style={labelStyle}>Address *</label>
-                    <input type="text" required value={formData.address} onChange={(e) => setFormData({ ...formData, address: e.target.value })} style={inputStyle} placeholder="e.g., King Faisal Road, Ghulail District" />
-                  </div>
+
+                  {/* English Fields */}
+                  {activeFormTab === 'en' && (
+                    <>
+                      <div style={formRowStyle}>
+                        <div style={formGroupStyle}>
+                          <label style={labelStyle}>Branch Name (English) *</label>
+                          <input
+                            type="text"
+                            required
+                            value={formData.name_en}
+                            onChange={(e) => setFormData({ ...formData, name_en: e.target.value })}
+                            style={inputStyle}
+                            placeholder="e.g., Ghulail Hospital"
+                          />
+                        </div>
+                        <div style={formGroupStyle}>
+                          <label style={labelStyle}>Region (English) *</label>
+                          <input
+                            type="text"
+                            required
+                            value={formData.region_en}
+                            onChange={(e) => setFormData({ ...formData, region_en: e.target.value })}
+                            style={inputStyle}
+                            placeholder="e.g., Jeddah Region"
+                          />
+                        </div>
+                      </div>
+                      
+                      <div style={formGroupStyle}>
+                        <label style={labelStyle}>Description (English)</label>
+                        <textarea
+                          value={formData.description_en}
+                          onChange={(e) => setFormData({ ...formData, description_en: e.target.value })}
+                          style={textareaStyle}
+                          placeholder="Brief description of the branch"
+                        />
+                      </div>
+                      
+                      <div style={formGroupStyle}>
+                        <label style={labelStyle}>Address (English) *</label>
+                        <input
+                          type="text"
+                          required
+                          value={formData.address_en}
+                          onChange={(e) => setFormData({ ...formData, address_en: e.target.value })}
+                          style={inputStyle}
+                          placeholder="e.g., King Faisal Road, Ghulail District"
+                        />
+                      </div>
+                    </>
+                  )}
+
+                  {/* Arabic Fields */}
+                  {activeFormTab === 'ar' && (
+                    <>
+                      <div style={formRowStyle}>
+                        <div style={formGroupStyle}>
+                          <label style={labelStyle}>اسم الفرع (عربي) *</label>
+                          <input
+                            type="text"
+                            required
+                            value={formData.name_ar}
+                            onChange={(e) => setFormData({ ...formData, name_ar: e.target.value })}
+                            style={{ ...inputStyle, direction: 'rtl' }}
+                            placeholder="مثال: مستشفى الغليل"
+                            dir="rtl"
+                          />
+                        </div>
+                        <div style={formGroupStyle}>
+                          <label style={labelStyle}>المنطقة (عربي) *</label>
+                          <input
+                            type="text"
+                            required
+                            value={formData.region_ar}
+                            onChange={(e) => setFormData({ ...formData, region_ar: e.target.value })}
+                            style={{ ...inputStyle, direction: 'rtl' }}
+                            placeholder="مثال: منطقة جدة"
+                            dir="rtl"
+                          />
+                        </div>
+                      </div>
+                      
+                      <div style={formGroupStyle}>
+                        <label style={labelStyle}>الوصف (عربي)</label>
+                        <textarea
+                          value={formData.description_ar}
+                          onChange={(e) => setFormData({ ...formData, description_ar: e.target.value })}
+                          style={{ ...textareaStyle, direction: 'rtl' }}
+                          placeholder="وصف مختصر للفرع"
+                          dir="rtl"
+                        />
+                      </div>
+                      
+                      <div style={formGroupStyle}>
+                        <label style={labelStyle}>العنوان (عربي) *</label>
+                        <input
+                          type="text"
+                          required
+                          value={formData.address_ar}
+                          onChange={(e) => setFormData({ ...formData, address_ar: e.target.value })}
+                          style={{ ...inputStyle, direction: 'rtl' }}
+                          placeholder="مثال: طريق الملك فيصل، حي الغليل"
+                          dir="rtl"
+                        />
+                      </div>
+                    </>
+                  )}
                   
                   <div style={formRowStyle}>
                     <div style={formGroupStyle}>
@@ -978,7 +1138,7 @@ const AdminBranches: React.FC = () => {
                                   <div style={{ position: 'relative' }}>
                                     <img 
                                       src={item.image_file ? URL.createObjectURL(item.image_file) : item.image_url} 
-                                      alt={item.title || 'Gallery'} 
+                                      alt={getTranslatedField(item.title, 'Gallery')} 
                                       style={{ 
                                         width: '120px', 
                                         height: '80px', 

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import AdminLayout from './AdminLayout';
 import { offersService, type Offer } from '../../services/offersService';
+import { getTranslatedField } from '../../utils/localeHelpers';
 
 const AdminOffers = () => {
   const [offers, setOffers] = useState<Offer[]>([]);
@@ -8,13 +9,16 @@ const AdminOffers = () => {
   const [editingOffer, setEditingOffer] = useState<Offer | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({
-    title: '',
-    description: '',
+    title_en: '',
+    title_ar: '',
+    description_en: '',
+    description_ar: '',
     price: 0,
     discount: 0,
     sort_order: 0,
     is_active: true,
   });
+  const [activeFormTab, setActiveFormTab] = useState<'en' | 'ar'>('en');
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState('');
   const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
@@ -46,17 +50,22 @@ const AdminOffers = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      // Build JSON objects for translatable fields
+      const dataToSubmit = {
+        title: JSON.stringify({ en: formData.title_en, ar: formData.title_ar }),
+        description: JSON.stringify({ en: formData.description_en, ar: formData.description_ar }),
+        price: formData.price,
+        discount: formData.discount,
+        sort_order: formData.sort_order,
+        is_active: formData.is_active,
+        image: imageFile || undefined,
+      };
+      
       if (editingOffer) {
-        await offersService.update(editingOffer.id, {
-          ...formData,
-          image: imageFile || undefined,
-        });
+        await offersService.update(editingOffer.id, dataToSubmit);
         setNotification({ type: 'success', message: 'Offer updated successfully' });
       } else {
-        await offersService.create({
-          ...formData,
-          image: imageFile || undefined,
-        });
+        await offersService.create(dataToSubmit);
         setNotification({ type: 'success', message: 'Offer created successfully' });
       }
       resetForm();
@@ -69,15 +78,23 @@ const AdminOffers = () => {
 
   const handleEdit = (offer: Offer) => {
     setEditingOffer(offer);
+    
+    // Parse JSON objects for translatable fields
+    const titleObj = (typeof offer.title === 'object' && offer.title !== null) ? offer.title : { en: offer.title || '', ar: '' };
+    const descObj = (typeof offer.description === 'object' && offer.description !== null) ? offer.description : { en: offer.description || '', ar: '' };
+    
     setFormData({
-      title: offer.title,
-      description: offer.description || '',
+      title_en: titleObj.en || '',
+      title_ar: titleObj.ar || '',
+      description_en: descObj.en || '',
+      description_ar: descObj.ar || '',
       price: offer.price,
       discount: offer.discount,
       sort_order: offer.sort_order,
       is_active: offer.is_active,
     });
     setImagePreview(offer.image_url || '');
+    setActiveFormTab('en');
     setShowForm(true);
   };
 
@@ -95,9 +112,10 @@ const AdminOffers = () => {
 
   const resetForm = () => {
     setEditingOffer(null);
-    setFormData({ title: '', description: '', price: 0, discount: 0, sort_order: 0, is_active: true });
+    setFormData({ title_en: '', title_ar: '', description_en: '', description_ar: '', price: 0, discount: 0, sort_order: 0, is_active: true });
     setImageFile(null);
     setImagePreview('');
+    setActiveFormTab('en');
     setShowForm(false);
   };
 
@@ -169,18 +187,91 @@ const AdminOffers = () => {
               {editingOffer ? 'Edit Offer' : 'Add New Offer'}
             </h2>
             <form onSubmit={handleSubmit}>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
-                <div style={{ marginBottom: '16px' }}>
-                  <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: '#061F42', marginBottom: '8px' }}>Title</label>
-                  <input
-                    type="text"
-                    value={formData.title}
-                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    style={inputStyle}
-                    required
-                  />
-                </div>
+              {/* Language Tabs */}
+              <div style={{ display: 'flex', gap: '12px', marginBottom: '24px', borderBottom: '2px solid #E5E7EB' }}>
+                <button
+                  type="button"
+                  onClick={() => setActiveFormTab('en')}
+                  style={{
+                    padding: '12px 24px',
+                    fontSize: '14px',
+                    fontWeight: 600,
+                    color: activeFormTab === 'en' ? '#15C9FA' : '#6B7280',
+                    backgroundColor: 'transparent',
+                    border: 'none',
+                    borderBottom: activeFormTab === 'en' ? '3px solid #15C9FA' : '3px solid transparent',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  English
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveFormTab('ar')}
+                  style={{
+                    padding: '12px 24px',
+                    fontSize: '14px',
+                    fontWeight: 600,
+                    color: activeFormTab === 'ar' ? '#15C9FA' : '#6B7280',
+                    backgroundColor: 'transparent',
+                    border: 'none',
+                    borderBottom: activeFormTab === 'ar' ? '3px solid #15C9FA' : '3px solid transparent',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  العربية
+                </button>
+              </div>
 
+              {activeFormTab === 'en' ? (
+                <>
+                  <div style={{ marginBottom: '16px' }}>
+                    <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: '#061F42', marginBottom: '8px' }}>Title (English) *</label>
+                    <input
+                      type="text"
+                      value={formData.title_en}
+                      onChange={(e) => setFormData({ ...formData, title_en: e.target.value })}
+                      style={inputStyle}
+                      required
+                    />
+                  </div>
+                  
+                  <div style={{ marginBottom: '16px' }}>
+                    <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: '#061F42', marginBottom: '8px' }}>Description (English)</label>
+                    <textarea
+                      value={formData.description_en}
+                      onChange={(e) => setFormData({ ...formData, description_en: e.target.value })}
+                      style={{ ...inputStyle, minHeight: '100px', resize: 'vertical' }}
+                    />
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div style={{ marginBottom: '16px' }}>
+                    <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: '#061F42', marginBottom: '8px' }}>العنوان (عربي) *</label>
+                    <input
+                      type="text"
+                      value={formData.title_ar}
+                      onChange={(e) => setFormData({ ...formData, title_ar: e.target.value })}
+                      style={{ ...inputStyle, direction: 'rtl', textAlign: 'right' }}
+                      required
+                    />
+                  </div>
+                  
+                  <div style={{ marginBottom: '16px' }}>
+                    <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: '#061F42', marginBottom: '8px' }}>الوصف (عربي)</label>
+                    <textarea
+                      value={formData.description_ar}
+                      onChange={(e) => setFormData({ ...formData, description_ar: e.target.value })}
+                      style={{ ...inputStyle, minHeight: '100px', resize: 'vertical', direction: 'rtl', textAlign: 'right' }}
+                    />
+                  </div>
+                </>
+              )}
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
                 <div style={{ marginBottom: '16px' }}>
                   <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: '#061F42', marginBottom: '8px' }}>Price (SAR)</label>
                   <input
@@ -217,15 +308,6 @@ const AdminOffers = () => {
                     style={inputStyle}
                   />
                 </div>
-              </div>
-
-              <div style={{ marginBottom: '16px' }}>
-                <label style={{ display: 'block', fontSize: '14px', fontWeight: 600, color: '#061F42', marginBottom: '8px' }}>Description</label>
-                <textarea
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  style={{ ...inputStyle, minHeight: '100px', resize: 'vertical' }}
-                />
               </div>
 
               <div style={{ marginBottom: '16px' }}>
@@ -299,12 +381,12 @@ const AdminOffers = () => {
                           {offer.image_url && (
                             <img
                               src={offer.image_url}
-                              alt={offer.title}
+                              alt={getTranslatedField(offer.title, '')}
                               style={{ width: '60px', height: '60px', objectFit: 'cover', borderRadius: '8px' }}
                             />
                           )}
                         </td>
-                        <td style={{ padding: '12px', fontSize: '14px', color: '#111827' }}>{offer.title}</td>
+                        <td style={{ padding: '12px', fontSize: '14px', color: '#111827' }}>{getTranslatedField(offer.title, '')}</td>
                         <td style={{ padding: '12px', fontSize: '14px', color: '#111827' }}>{price.toFixed(2)} SAR</td>
                         <td style={{ padding: '12px', fontSize: '14px', color: '#111827' }}>{discount}%</td>
                         <td style={{ padding: '12px', fontSize: '14px', fontWeight: 600, color: '#088395' }}>{finalPrice.toFixed(2)} SAR</td>

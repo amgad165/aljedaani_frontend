@@ -1,0 +1,17 @@
+{
+  "home": "Home",
+  "aboutUs": "About Us",
+  "departments": "Departments",
+  "doctors": "Doctors",
+  "branches": "Branches",
+  "contact": "Contact Us",
+  "bookAppointment": "Book Appointment",
+  "myProfile": "My Profile",
+  "myAppointments": "My Appointments",
+  "medicalReports": "Medical Reports",
+  "labReports": "Lab Reports",
+  "radiologyReports": "Radiology Reports",
+  "login": "Login",
+  "signup": "Sign Up",
+  "logout": "Logout"
+}
