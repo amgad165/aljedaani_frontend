@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { 
   getUserHisLabReports, 
   downloadHisLabReportPdf, 
@@ -13,7 +14,9 @@ interface ReportCardProps {
   onView: (slno: string) => void;
 }
 
-const ReportCard = ({ report, onDownload, onView }: ReportCardProps) => (
+const ReportCard = ({ report, onDownload, onView }: ReportCardProps) => {
+  const { t } = useTranslation('pages');
+  return (
   <div style={{
     boxSizing: 'border-box',
     display: 'flex',
@@ -103,7 +106,7 @@ const ReportCard = ({ report, onDownload, onView }: ReportCardProps) => (
           color: '#FFFFFF',
         }}
       >
-        Download
+        {t('labReportsDownload')}
       </button>
       <button 
         onClick={() => onView(report.slno)}
@@ -126,13 +129,15 @@ const ReportCard = ({ report, onDownload, onView }: ReportCardProps) => (
           color: '#FFFFFF',
         }}
       >
-        View File
+        {t('labReportsViewFile')}
       </button>
     </div>
   </div>
-);
+  );
+};
 
 const LabReportsTab = () => {
+  const { t } = useTranslation('pages');
   const [currentPage, setCurrentPage] = useState(1);
   const [reports, setReports] = useState<HisLabReport[]>([]);
   const [loading, setLoading] = useState(false);
@@ -275,7 +280,7 @@ const LabReportsTab = () => {
             }}>
               <input
                 type="text"
-                placeholder="Search for documents"
+                placeholder={t('labReportsSearchPlaceholder')}
                 value={inputValue}
                 onChange={handleInputChange}
                 onKeyDown={(e) => e.key === 'Enter' && handleSearchClick()}
@@ -314,7 +319,7 @@ const LabReportsTab = () => {
               whiteSpace: 'nowrap',
             }}
           >
-            Search
+            {t('labReportsSearch')}
           </button>
           
           {/* Date Input */}
@@ -354,7 +359,7 @@ const LabReportsTab = () => {
           fontSize: '16px',
           color: '#666'
         }}>
-          Loading lab reports...
+          {t('labReportsLoading')}
         </div>
       ) : error ? (
         <div style={{
@@ -382,7 +387,7 @@ const LabReportsTab = () => {
           fontSize: '16px',
           color: '#666'
         }}>
-          No lab reports found
+          {t('labReportsNoReports')}
         </div>
       ) : (
         <div style={{

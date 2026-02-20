@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   getUserHisRadiologyReports,
   viewHisRadiologyReportPdf,
@@ -6,6 +7,7 @@ import {
   formatReportDate,
   type HisRadiologyReport,
 } from '../../services/hisRadiologyUserService';
+import { getTranslatedField } from '../../utils/localeHelpers';
 
 interface ReportCardProps {
   report: HisRadiologyReport;
@@ -14,6 +16,7 @@ interface ReportCardProps {
 }
 
 const ReportCard = ({ report, onViewPdf, onDownloadPdf }: ReportCardProps) => {
+  const { t } = useTranslation('pages');
   const inspectionName = report.service_name || 'Radiology Test';
   const technicianName = report.technician;
   const reportDate = formatReportDate(report.date);
@@ -61,7 +64,7 @@ const ReportCard = ({ report, onViewPdf, onDownloadPdf }: ReportCardProps) => {
         textAlign: 'center',
         color: '#061F42',
       }}>
-        Ref. Doctor: {technicianName}
+        Ref. Doctor: {getTranslatedField(technicianName, '')}
       </div>
     )}
     
@@ -120,7 +123,7 @@ const ReportCard = ({ report, onViewPdf, onDownloadPdf }: ReportCardProps) => {
           lineHeight: '16px',
           color: '#FFFFFF',
         }}>
-        Download
+        {t('radReportsDownload')}
       </button>
       <button 
         onClick={onViewPdf}
@@ -142,7 +145,7 @@ const ReportCard = ({ report, onViewPdf, onDownloadPdf }: ReportCardProps) => {
           lineHeight: '16px',
           color: '#FFFFFF',
         }}>
-        View File
+        {t('radReportsViewFile')}
       </button>
     </div>
   </div>
@@ -150,6 +153,7 @@ const ReportCard = ({ report, onViewPdf, onDownloadPdf }: ReportCardProps) => {
 };
 
 const RadReportsTab = () => {
+  const { t } = useTranslation('pages');
   const [currentPage, setCurrentPage] = useState(1);
   const [reports, setReports] = useState<HisRadiologyReport[]>([]);
   const [totalPages, setTotalPages] = useState(1);
@@ -300,7 +304,7 @@ const RadReportsTab = () => {
             }}>
               <input
                 type="text"
-                placeholder="Search for documents"
+                placeholder={t('radReportsSearchPlaceholder')}
                 value={inputValue}
                 onChange={handleInputChange}
                 onKeyDown={(e) => e.key === 'Enter' && handleSearchClick()}
@@ -339,7 +343,7 @@ const RadReportsTab = () => {
               whiteSpace: 'nowrap',
             }}
           >
-            Search
+            {t('radReportsSearch')}
           </button>
           
           {/* Date Input */}
@@ -379,7 +383,7 @@ const RadReportsTab = () => {
           fontSize: '16px',
           color: '#666'
         }}>
-          Loading reports...
+          {t('radReportsLoading')}
         </div>
       ) : error ? (
         <div style={{
@@ -407,7 +411,7 @@ const RadReportsTab = () => {
           fontSize: '16px',
           color: '#666'
         }}>
-          No radiology reports found
+          {t('radReportsNoReports')}
         </div>
       ) : (
         <div style={{

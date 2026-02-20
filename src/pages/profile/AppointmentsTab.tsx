@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import UpcomingAppointmentsView from './UpcomingAppointmentsView';
 import PastAppointmentsView from './PastAppointmentsView';
 
@@ -122,7 +123,9 @@ const AppointmentCard = ({
 );
 
 // Book Appointment Card Component
-const BookAppointmentCard = ({ onClick }: { onClick: () => void }) => (
+const BookAppointmentCard = ({ onClick }: { onClick: () => void }) => {
+  const { t } = useTranslation('pages');
+  return (
   <div 
     onClick={onClick}
     style={{
@@ -179,15 +182,17 @@ const BookAppointmentCard = ({ onClick }: { onClick: () => void }) => (
         textAlign: 'center',
         color: '#061F42',
       }}>
-        Book Appointment
+        {t('appointmentsBookAppointment')}
       </div>
     </div>
   </div>
-);
+  );
+};
 
 type ViewType = 'main' | 'upcoming' | 'past';
 
 const AppointmentsTab = () => {
+  const { t } = useTranslation('pages');
   const navigate = useNavigate();
   const [currentView, setCurrentView] = useState<ViewType>('main');
   const [upcomingCount, setUpcomingCount] = useState(0);
@@ -265,7 +270,7 @@ const AppointmentsTab = () => {
           fontSize: '16px',
           color: '#061F42',
         }}>
-          Loading appointments...
+          {t('appointmentsLoading')}
         </div>
       ) : (
         /* Upcoming and Past Appointments Cards */
@@ -283,7 +288,7 @@ const AppointmentsTab = () => {
 
           {/* Past Appointments */}
           <AppointmentCard
-            title="Past Appointments"
+            title={t('appointmentsPast')}
             count={pastCount}
             color="#1F57A4"
             icon={<CalendarLateIcon />}
@@ -292,7 +297,7 @@ const AppointmentsTab = () => {
 
            {/* Upcoming Appointments */}
           <AppointmentCard
-            title="Upcoming Appointments"
+            title={t('appointmentsUpcoming')}
             count={upcomingCount}
             color="#00ABDA"
             icon={<CalendarAddIcon />}

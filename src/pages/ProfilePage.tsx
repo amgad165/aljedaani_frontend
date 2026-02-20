@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { Navigate, useSearchParams } from 'react-router-dom';
 import { useResponsiveNavbar } from '../hooks/useResponsiveNavbar';
+import { useTranslation } from 'react-i18next';
 import Footer from '../components/Footer';
 import FloatingContactButtons from '../components/FloatingContactButtons';
 import {
@@ -16,6 +17,7 @@ import type { TabType, TabInfo, ProfileData } from './profile';
 
 const ProfilePage = () => {
   const ResponsiveNavbar = useResponsiveNavbar();
+  const { t } = useTranslation('pages');
   const { isAuthenticated, user, isLoading, refreshUser } = useAuth();
   const [searchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState<TabType>('dashboard');
@@ -30,12 +32,12 @@ const ProfilePage = () => {
   }, [searchParams]);
 
   const tabs: TabInfo[] = [
-    { id: 'dashboard', label: 'Dashboard', width: '148px' },
-    { id: 'edit-profile', label: 'Edit Profile', width: '149px' },
-    { id: 'appointments', label: 'My Appointments', width: '211px' },
-    { id: 'lab-reports', label: 'Lab. Results', width: '164px' },
-    { id: 'rad-reports', label: 'Rad. Reports', width: '167px' },
-    { id: 'medical-reports', label: 'Medical Reports', width: '197px' },
+    { id: 'dashboard', label: t('profileDashboard'), width: 'auto' },
+    { id: 'edit-profile', label: t('profileEditProfile'), width: 'auto' },
+    { id: 'appointments', label: t('profileMyAppointments'), width: 'auto' },
+    { id: 'lab-reports', label: t('profileLabResults'), width: 'auto' },
+    { id: 'rad-reports', label: t('profileRadReports'), width: 'auto' },
+    { id: 'medical-reports', label: t('profileMedicalReports'), width: 'auto' },
   ];
 
   // Redirect to login if not authenticated
@@ -75,8 +77,8 @@ const ProfilePage = () => {
         justifyContent: 'center',
         alignItems: 'center',
         padding: window.innerWidth <= 768 ? '10px 12px' : '12px 16px',
-        width: window.innerWidth <= 768 ? 'auto' : tab.width,
-        minWidth: window.innerWidth <= 768 ? '80px' : 'auto',
+        width: 'auto',
+        minWidth: window.innerWidth <= 768 ? '80px' : '120px',
         height: window.innerWidth <= 768 ? '36px' : '40px',
         background: isActive ? '#FCFCFC' : '#E6E6E6',
         boxShadow: isActive ? '0px 0px 5px rgba(0, 0, 0, 0.25)' : 'none',
@@ -138,7 +140,7 @@ const ProfilePage = () => {
         minHeight: '100vh',
         fontFamily: 'Nunito, sans-serif',
       }}>
-        Loading...
+        {t('loading')}
       </div>
     );
   }
@@ -192,7 +194,7 @@ const ProfilePage = () => {
             color: '#061F42',
             marginBottom: window.innerWidth <= 768 ? '16px' : '24px',
           }}>
-            My Profile
+            {t('myProfile')}
           </h1>
 
           {/* Tabs */}

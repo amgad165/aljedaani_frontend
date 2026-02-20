@@ -121,7 +121,7 @@ const animationStyles = `
 
 const DepartmentDetailsPage: React.FC = () => {
   const ResponsiveNavbar = useResponsiveNavbar();
-  const { t } = useTranslation('pages');
+  const { t, i18n } = useTranslation('pages');
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
@@ -162,7 +162,6 @@ const DepartmentDetailsPage: React.FC = () => {
 
   // Image loading state for sidebar images
   const [sidebarImageLoading, setSidebarImageLoading] = useState(true);
-  const [currentSidebarImageUrl, setCurrentSidebarImageUrl] = useState<string>('');
 
   const tabs: { key: TabType; label: string }[] = [
     { key: 'overview', label: t('deptOverview') },
@@ -231,7 +230,6 @@ const DepartmentDetailsPage: React.FC = () => {
     setActiveSidebarItem(null);
     setSidebarContentKey(prev => prev + 1);
     setSidebarImageLoading(true);
-    setCurrentSidebarImageUrl('');
     // Reset sidebar scroll position
     if (sidebarScrollRef.current) {
       sidebarScrollRef.current.scrollLeft = 0;
@@ -706,7 +704,7 @@ const DepartmentDetailsPage: React.FC = () => {
 
   // Helper to normalize sidebar items (handle both old string format and new object format)
   // For opd_services, inpatient_services, and investigations, Overview is now included in sidebar_items from backend
-  const normalizeSidebarItems = (items: (string | SidebarItem)[] | undefined, includeOverview: boolean = false, tabType?: string): SidebarItem[] => {
+  const normalizeSidebarItems = (items: any, includeOverview: boolean = false, tabType?: string): SidebarItem[] => {
     const result: SidebarItem[] = [];
     
     // Check if this is a tab type where backend includes Overview in sidebar_items
@@ -717,15 +715,35 @@ const DepartmentDetailsPage: React.FC = () => {
       result.push({ id: 'overview_main', title: 'Overview', sort_order: -1 });
     }
     
-    if (!items || items.length === 0) return result;
+    if (!items) return result;
     
-    // Handle if items is actually an object with numeric keys (corrupted data format)
-    if (!Array.isArray(items)) {
-      const itemsArray = Object.values(items).filter(
-        (v): v is string | SidebarItem => typeof v === 'string' || (typeof v === 'object' && v !== null && 'title' in v)
-      );
-      items = itemsArray;
+    // Handle bilingual structure: { "0": overview, "en": [...], "ar": [...] }
+    if (!Array.isArray(items) && typeof items === 'object' && items !== null) {
+      // Check if this is the bilingual structure with language keys
+      const hasLanguageKeys = ('en' in items || 'ar' in items) && '0' in items;
+      
+      if (hasLanguageKeys) {
+        // Extract the current language array
+        const currentLang = i18n.language || 'en';
+        const langItems = items[currentLang] || items['en'] || [];
+        
+        // Extract overview from key "0" if backend includes it
+        if (backendIncludesOverview && items['0']) {
+          const overviewItem = items['0'];
+          items = [overviewItem, ...langItems];
+        } else {
+          items = langItems;
+        }
+      } else {
+        // Handle old format with numeric keys
+        const itemsArray = Object.values(items).filter(
+          (v): v is string | SidebarItem => typeof v === 'string' || (typeof v === 'object' && v !== null && 'title' in v)
+        );
+        items = itemsArray;
+      }
     }
+    
+    if (!Array.isArray(items) || items.length === 0) return result;
     
     items.forEach((item, idx) => {
       // Handle string format
@@ -748,7 +766,12 @@ const DepartmentDetailsPage: React.FC = () => {
         // Check for corrupted data with numeric string keys
         const hasNumericKeys = Object.keys(item).some(key => /^\d+$/.test(key));
         
-        let title = item.title || '';
+        // Extract title - handle both string and bilingual object {en, ar}
+        let title = typeof item.title === 'string' 
+          ? item.title 
+          : (typeof item.title === 'object' && item.title !== null)
+            ? getTranslatedField(item.title, '')
+            : '';
         
         // If no title but has numeric keys, reconstruct from those
         if (!title && hasNumericKeys) {
@@ -759,12 +782,12 @@ const DepartmentDetailsPage: React.FC = () => {
           title = chars.join('');
         }
         
-        if (title.trim()) {
+        if (title && title.trim()) {
           const sidebarItem: SidebarItem = {
             id: item.id || `item_${idx}`,
             title: title,
             image: item.image,
-            description: item.description,
+            description: item.description,  // Keep original format (string or bilingual object)
             service_list: Array.isArray(item.service_list) ? item.service_list : [],
             sort_order: item.sort_order ?? idx
           };
@@ -1023,6 +1046,7 @@ const DepartmentDetailsPage: React.FC = () => {
             color: '#061F42',
             margin: 0,
             animation: 'fadeInUp 0.4s ease-out 0.1s both',
+            textAlign: i18n.language === 'ar' ? 'right' : 'left',
           }}>
             {getTranslatedField(content.main_description, '')}
           </p>
@@ -1037,32 +1061,41 @@ const DepartmentDetailsPage: React.FC = () => {
         }} />
 
         {/* Sub Sections */}
-        {Array.isArray(content.sub_sections) && content.sub_sections.length > 0 && (
-          <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '24px',
-            width: '100%',
-            padding: '24px 0',
-          }}>
-            {/* Section Title */}
-            {content.sub_sections.length > 0 && (
-              <h3 style={{
-                fontFamily: 'Nunito, sans-serif',
-                fontWeight: 700,
-                fontSize: '24px',
-                lineHeight: '38px',
-                textAlign: 'center',
-                color: '#061F42',
-                margin: 0,
-                width: '100%',
-                animation: 'fadeInUp 0.4s ease-out 0.2s both',
-              }}>
-                We offer a wide range of services, including:
-              </h3>
-            )}
+        {(() => {
+          // Handle bilingual sub_sections structure: {en: [...], ar: [...]} or legacy array format
+          const currentLang = i18n.language as 'en' | 'ar';
+          const subSections = Array.isArray(content.sub_sections) 
+            ? content.sub_sections
+            : (content.sub_sections && typeof content.sub_sections === 'object')
+              ? (content.sub_sections[currentLang] || content.sub_sections['en'] || [])
+              : [];
+          
+          return Array.isArray(subSections) && subSections.length > 0 && (
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '24px',
+              width: '100%',
+              padding: '24px 0',
+            }}>
+              {/* Section Title */}
+              {subSections.length > 0 && (
+                <h3 style={{
+                  fontFamily: 'Nunito, sans-serif',
+                  fontWeight: 700,
+                  fontSize: '24px',
+                  lineHeight: '38px',
+                  textAlign: 'center',
+                  color: '#061F42',
+                  margin: 0,
+                  width: '100%',
+                  animation: 'fadeInUp 0.4s ease-out 0.2s both',
+                }}>
+                  We offer a wide range of services, including:
+                </h3>
+              )}
 
-            {content.sub_sections.map((section, index) => (
+              {subSections.map((section, index) => (
               <div
                 key={index}
                 style={{
@@ -1123,6 +1156,7 @@ const DepartmentDetailsPage: React.FC = () => {
                       lineHeight: '26px',
                       color: '#061F42',
                       margin: 0,
+                      textAlign: i18n.language === 'ar' ? 'right' : 'left',
                     }}>
                       {getTranslatedField(section.title, '')}
                     </h4>
@@ -1133,14 +1167,16 @@ const DepartmentDetailsPage: React.FC = () => {
                     lineHeight: '120%',
                     color: '#061F42',
                     margin: 0,
+                    textAlign: i18n.language === 'ar' ? 'right' : 'left',
                   }}>
                     {getTranslatedField(section.description, '')}
                   </p>
                 </div>
               </div>
-            ))}
-          </div>
-        )}
+              ))}
+            </div>
+          );
+        })()}
 
         {/* Quote Section */}
         {content.quote_text && (
@@ -1196,7 +1232,7 @@ const DepartmentDetailsPage: React.FC = () => {
     const backendIncludesOverview = ['opd_services', 'inpatient_services', 'investigations'].includes(content.tab_type);
     
     // Check if Overview (main content) is selected or no selection
-    const isOverviewSelected = !activeSidebarItem || activeSidebarItem.id === 'overview_main' || activeSidebarItem.title === 'Overview';
+    const isOverviewSelected = !activeSidebarItem || activeSidebarItem.id === 'overview_main' || activeSidebarItem.title === 'Overview' || activeSidebarItem.title === 'نظرة عامة';
     
     // Find the actual sidebar item data from content.sidebar_items if it's a real item
     // This handles the case where activeSidebarItem might be a normalized/reconstructed item
@@ -1205,9 +1241,9 @@ const DepartmentDetailsPage: React.FC = () => {
       const normalizedItems = normalizeSidebarItems(content.sidebar_items, false, content.tab_type);
       actualSidebarItem = normalizedItems.find(item => item.id === activeSidebarItem?.id);
     } else if (isOverviewSelected && backendIncludesOverview && content.sidebar_items) {
-      // For special tab types, Overview data is in the first sidebar item
+      // For special tab types, Overview data is in the first sidebar item (with id 'overview_main')
       const normalizedItems = normalizeSidebarItems(content.sidebar_items, false, content.tab_type);
-      actualSidebarItem = normalizedItems.find(item => item.title === 'Overview');
+      actualSidebarItem = normalizedItems.find(item => item.id === 'overview_main');
     }
     
     // Determine what content to display
@@ -1318,13 +1354,8 @@ const DepartmentDetailsPage: React.FC = () => {
                     transition: 'transform 0.5s ease',
                     display: sidebarImageLoading ? 'none' : 'block',
                   }}
-                  onLoad={(e) => {
-                    const imgElement = e.target as HTMLImageElement;
-                    const newImageUrl = imgElement.src;
-                    if (newImageUrl !== currentSidebarImageUrl) {
-                      setCurrentSidebarImageUrl(newImageUrl);
-                      setSidebarImageLoading(false);
-                    }
+                  onLoad={() => {
+                    setSidebarImageLoading(false);
                   }}
                   onError={() => {
                     setSidebarImageLoading(false);
@@ -1352,7 +1383,7 @@ const DepartmentDetailsPage: React.FC = () => {
               lineHeight: '24px',
               color: '#061F42',
               margin: 0,
-              textAlign: 'left',
+              textAlign: i18n.language === 'ar' ? 'right' : 'left',
             }}>
               {getTranslatedField(displayDescription, '')}
             </p>
@@ -1376,7 +1407,7 @@ const DepartmentDetailsPage: React.FC = () => {
                       lineHeight: '14px',
                       color: '#061F42',
                       margin: '0 0 4px 0',
-                      textAlign: 'left',
+                      textAlign: i18n.language === 'ar' ? 'right' : 'left',
                     }}>
                       {getTranslatedField(service.title, '')}
                     </h4>
@@ -1390,11 +1421,14 @@ const DepartmentDetailsPage: React.FC = () => {
                       fontSize: '15px',
                       lineHeight: '24px',
                       color: '#061F42',
+                      textAlign: i18n.language === 'ar' ? 'right' : 'left',
                     }}>
                       {service.items.map((item, itemIndex) => (
                         <li key={itemIndex} style={{ 
                           marginBottom: '5px',
                           listStyle: 'none',
+                          paddingLeft: '0',
+                          paddingRight: '0',
                         }}>
                           {getTranslatedField(item, '')}
                         </li>
@@ -2326,6 +2360,7 @@ const DepartmentDetailsPage: React.FC = () => {
         alignItems: 'flex-start',
         justifyContent: 'center',
         padding: window.innerWidth <= 768 ? '90px 16px 20px 16px' : '131px 20px 40px 20px',
+        direction: i18n.language === 'ar' ? 'rtl' : 'ltr',
       }}>
         <div style={{
           width: '100%',
@@ -2350,8 +2385,10 @@ const DepartmentDetailsPage: React.FC = () => {
               lineHeight: window.innerWidth <= 768 ? '32px' : '50px',
               color: '#061F42',
               margin: 0,
+              textAlign: i18n.language === 'ar' ? 'right' : 'left',
+              width: '100%',
             }}>
-              Departments
+              {t('departments')}
             </h1>
           </div>
 
@@ -2362,8 +2399,9 @@ const DepartmentDetailsPage: React.FC = () => {
             fontSize: '16px',
             lineHeight: '40px',
             marginBottom: '8px',
+            textAlign: i18n.language === 'ar' ? 'right' : 'left',
           }}>
-            <span style={{ color: '#A4A5A5' }}>Displaying results for </span>
+            <span style={{ color: '#A4A5A5' }}>{t('displayingResultsFor')} </span>
             <span style={{ color: '#061F42' }}>
               <span 
                 onClick={() => navigate('/departments')}
@@ -2376,9 +2414,9 @@ const DepartmentDetailsPage: React.FC = () => {
                 onMouseEnter={(e) => (e.currentTarget as HTMLElement).style.color = '#00ABDA'}
                 onMouseLeave={(e) => (e.currentTarget as HTMLElement).style.color = '#061F42'}
               >
-                Departments
+                {t('departments')}
               </span>
-              {' > '}
+              {i18n.language === 'ar' ? ' ← ' : ' > '}
               <span style={{
                 color: '#061F42',
               }}>
@@ -2395,6 +2433,7 @@ const DepartmentDetailsPage: React.FC = () => {
             lineHeight: '40px',
             color: '#061F42',
             margin: '0 0 16px 0',
+            textAlign: i18n.language === 'ar' ? 'right' : 'left',
           }}>
             {getTranslatedField(department.name, '')}
           </h2>
@@ -2510,6 +2549,7 @@ const DepartmentDetailsPage: React.FC = () => {
                 lineHeight: '40px',
                 color: '#061F42',
                 margin: '0 0 24px 0',
+                textAlign: i18n.language === 'ar' ? 'right' : 'left',
               }}>
                 {t('ourDoctors')}
               </h3>

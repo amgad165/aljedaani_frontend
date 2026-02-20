@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { ProfileData } from './types';
 import {
   CalendarIcon,
@@ -177,6 +178,7 @@ const StatsDisplay = ({ items }: { items: { value: number; label: string }[] }) 
 );
 
 const DashboardTab = ({ profileData }: DashboardTabProps) => {
+  const { t } = useTranslation('pages');
   const [showVitals, setShowVitals] = useState(false);
   const [showChiefComplaints, setShowChiefComplaints] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
@@ -247,7 +249,7 @@ const DashboardTab = ({ profileData }: DashboardTabProps) => {
             (e.currentTarget as HTMLElement).style.background = '#FFFFFF';
           }}
         >
-          ← Back to Dashboard
+          ← {t('dashboardBackToDashboard')}
         </button>
 
         {/* Chief Complaints Content */}
@@ -292,7 +294,7 @@ const DashboardTab = ({ profileData }: DashboardTabProps) => {
             (e.currentTarget as HTMLElement).style.background = '#FFFFFF';
           }}
         >
-          ← Back to Dashboard
+          ← {t('dashboardBackToDashboard')}
         </button>
 
         {/* History Content */}
@@ -337,7 +339,7 @@ const DashboardTab = ({ profileData }: DashboardTabProps) => {
             (e.currentTarget as HTMLElement).style.background = '#FFFFFF';
           }}
         >
-          ← Back to Dashboard
+          ← {t('dashboardBackToDashboard')}
         </button>
 
         {/* Vitals Content */}
@@ -397,6 +399,7 @@ const DashboardTab = ({ profileData }: DashboardTabProps) => {
       padding: window.innerWidth <= 768 ? '8px' : '12px 16px',
       width: '100%',
       boxSizing: 'border-box',
+      justifyContent: 'center',
     }}>
       {/* Profile Card */}
       <DashboardCard 
@@ -408,7 +411,7 @@ const DashboardTab = ({ profileData }: DashboardTabProps) => {
 
       {/* My Vitals Card */}
       <DashboardCard 
-        title="My Vitals" 
+        title={t('dashboardMyVitals')} 
         icon={
           <img src="/assets/images/profile/Heart-Rate.png" alt="Heart Rate" style={{ width: '24px', height: '24px' }} />
         }
@@ -418,26 +421,26 @@ const DashboardTab = ({ profileData }: DashboardTabProps) => {
       </DashboardCard>
 
       {/* Total Appointments Card */}
-      <DashboardCard title="Total Appointments" icon={<CalendarIcon />}>
+      <DashboardCard title={t('dashboardTotalAppointments')} icon={<CalendarIcon />}>
         <StatsDisplay items={[
-          { value: stats?.appointments.total ?? 0, label: 'Total' },
-          { value: stats?.appointments.upcoming ?? 0, label: 'Upcoming' },
-          { value: stats?.appointments.past ?? 0, label: 'Past' },
+          { value: stats?.appointments.total ?? 0, label: t('dashboardTotal') },
+          { value: stats?.appointments.upcoming ?? 0, label: t('dashboardUpcoming') },
+          { value: stats?.appointments.past ?? 0, label: t('dashboardPast') },
         ]} />
       </DashboardCard>
 
       {/* My Documents Card */}
-      <DashboardCard title="My Documents" icon={<DocumentIcon />}>
+      <DashboardCard title={t('dashboardMyDocuments')} icon={<DocumentIcon />}>
         <StatsDisplay items={[
-          { value: stats?.documents.lab_reports ?? 0, label: 'Lab Reports' },
-          { value: stats?.documents.rad_reports ?? 0, label: 'Rad Reports' },
-          { value: stats?.documents.medical_reports ?? 0, label: 'Medical' },
+          { value: stats?.documents.lab_reports ?? 0, label: t('dashboardLabReports') },
+          { value: stats?.documents.rad_reports ?? 0, label: t('dashboardRadReports') },
+          { value: stats?.documents.medical_reports ?? 0, label: t('dashboardMedical') },
         ]} />
       </DashboardCard>
 
       {/* Chief Complaints Card */}
       <DashboardCard 
-        title="Chief Complaints" 
+        title={t('dashboardChiefComplaints')} 
         icon={
           <img src="/assets/images/profile/complaints.png" alt="Chief Complaints" style={{ width: '24px', height: '24px' }} />
         }
@@ -448,7 +451,7 @@ const DashboardTab = ({ profileData }: DashboardTabProps) => {
 
       {/* History Card */}
       <DashboardCard 
-        title="History" 
+        title={t('dashboardHistory')} 
         icon={
           <img src="/assets/images/profile/history.png" alt="History" style={{ width: '24px', height: '24px' }} />
         }

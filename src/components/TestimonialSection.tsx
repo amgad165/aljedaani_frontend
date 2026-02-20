@@ -1,10 +1,14 @@
 import { useState, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useHomepageData } from '../context/HomepageContext';
 import { getTranslatedField } from '../utils/localeHelpers';
 import { useTranslation } from 'react-i18next';
 
 interface DoctorCard {
   id: number;
+  doctorId: number;
+  branchId: number;
+  departmentId: number;
   title: string;
   subtitle: string;
   image: string;
@@ -32,6 +36,7 @@ const LeftArrowIcon = () => (
 const TestimonialSection = () => {
   const { data, loading, error } = useHomepageData();
   const { t } = useTranslation('pages');
+  const navigate = useNavigate();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
 
@@ -39,6 +44,9 @@ const TestimonialSection = () => {
     .filter((testimonial: any) => testimonial.doctor)
     .map((testimonial: any) => ({
       id: testimonial.id,
+      doctorId: testimonial.doctor?.id,
+      branchId: testimonial.doctor?.branch?.id,
+      departmentId: testimonial.doctor?.department?.id,
       title: ` ${getTranslatedField(testimonial.doctor?.name, '')}`,
       subtitle: getTranslatedField(testimonial.doctor?.specialization, ''),
       image: testimonial.doctor?.image_url || '',
@@ -437,7 +445,7 @@ const TestimonialSection = () => {
                     margin: 0
                   }}
                 >
-                  {doctor.description}
+                  {getTranslatedField(doctor.description, '')}
                 </p>
               </div>
 
@@ -453,6 +461,14 @@ const TestimonialSection = () => {
                 }}
               >
                 <button
+                  onClick={() => {
+                    const params = new URLSearchParams({
+                      doctor_id: doctor.doctorId.toString(),
+                      branch_id: doctor.branchId?.toString() || '',
+                      department_id: doctor.departmentId?.toString() || '',
+                    });
+                    navigate(`/book-appointment?${params.toString()}`);
+                  }}
                   style={{
                     display: 'flex',
                     flexDirection: 'row',
@@ -475,6 +491,7 @@ const TestimonialSection = () => {
                   {t('bookNow')}
                 </button>
                 <button
+                  onClick={() => navigate(`/doctors/${doctor.doctorId}`)}
                   style={{
                     display: 'flex',
                     flexDirection: 'row',

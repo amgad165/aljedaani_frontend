@@ -231,6 +231,111 @@ const AdminDoctors: React.FC = () => {
       const educationObj = typeof doctor.education === 'object' ? doctor.education : { en: doctor.education || '', ar: '' };
       const specializationObj = typeof doctor.specialization === 'object' ? doctor.specialization : { en: doctor.specialization || '', ar: '' };
       
+      // Transform services from backend format to frontend format
+      const transformOutpatientServices = (services: any): ServiceItem[] => {
+        console.log('=== TRANSFORMING SERVICES ===');
+        console.log('Raw services received:', services);
+        
+        // Handle null/undefined
+        if (!services) {
+          console.log('Services is null/undefined');
+          return [];
+        }
+        
+        // Handle string (parse it)
+        if (typeof services === 'string') {
+          console.log('Services is a string, parsing...');
+          try {
+            services = JSON.parse(services);
+            console.log('Parsed services:', services);
+          } catch (e) {
+            console.error('Failed to parse services:', e);
+            return [];
+          }
+        }
+        
+        // Handle nested format: { en: [...], ar: [...] } - extract the 'en' array
+        if (services && typeof services === 'object' && !Array.isArray(services) && services.en) {
+          console.log('Services has nested format with "en" key, extracting...');
+          services = services.en;
+          console.log('Extracted services:', services);
+        }
+        
+        // Convert object to array if needed (e.g., {0: {...}, 1: {...}} => [{...}, {...}])
+        if (!Array.isArray(services) && typeof services === 'object') {
+          console.log('Services is an object, converting to array...');
+          services = Object.values(services);
+          console.log('Converted services:', services);
+        }
+        
+        // Ensure it's an array
+        if (!Array.isArray(services)) {
+          console.warn('Services is not an array:', services);
+          return [];
+        }
+        
+        // If empty array
+        if (services.length === 0) {
+          console.log('Services is empty array');
+          return [];
+        }
+        
+        const transformed = services.map((service, index) => {
+          console.log(`Processing service ${index}:`, service);
+          
+          if (service.title_en !== undefined) {
+            // Already in frontend format
+            console.log(`Service ${index} already in frontend format`);
+            return service as ServiceItem;
+          }
+          
+          // Parse title and description (they may be JSON strings or objects)
+          let titleObj = service.title;
+          let descObj = service.description;
+          
+          console.log(`Service ${index} title before parse:`, titleObj);
+          console.log(`Service ${index} description before parse:`, descObj);
+          
+          // Ensure titleObj and descObj are objects
+          if (!titleObj) {
+            titleObj = { en: '', ar: '' };
+          } else if (typeof titleObj === 'string') {
+            try {
+              titleObj = JSON.parse(titleObj);
+            } catch (e) {
+              titleObj = { en: titleObj, ar: '' };
+            }
+          }
+          
+          if (!descObj) {
+            descObj = { en: '', ar: '' };
+          } else if (typeof descObj === 'string') {
+            try {
+              descObj = JSON.parse(descObj);
+            } catch (e) {
+              descObj = { en: descObj, ar: '' };
+            }
+          }
+          
+          console.log(`Service ${index} title after parse:`, titleObj);
+          console.log(`Service ${index} description after parse:`, descObj);
+          
+          const result = {
+            title_en: titleObj?.en || '',
+            title_ar: titleObj?.ar || '',
+            description_en: descObj?.en || '',
+            description_ar: descObj?.ar || ''
+          };
+          
+          console.log(`Service ${index} final result:`, result);
+          
+          return result;
+        });
+        
+        console.log('Final transformed services:', transformed);
+        return transformed;
+      };
+      
       const newFormData: FormData = {
         doctor_code: doctor.doctor_code || '',
         name_en: nameObj.en || '',
@@ -249,8 +354,8 @@ const AdminDoctors: React.FC = () => {
         status: doctor.status,
         is_active: doctor.is_active,
         order: doctor.order?.toString() || '0',
-        outpatient_services: doctor.outpatient_services || [],
-        inpatient_services: doctor.inpatient_services || [],
+        outpatient_services: transformOutpatientServices(doctor.outpatient_services || []),
+        inpatient_services: transformOutpatientServices(doctor.inpatient_services || []),
       };
       setFormData(newFormData);
       setImagePreview(doctor.image_url || '');
@@ -443,9 +548,25 @@ const AdminDoctors: React.FC = () => {
         submitData.append('branch_id', formData.branch_id);
       }
       
+      // Transform services to backend format with title and description as JSON strings
+      const transformedOutpatientServices = formData.outpatient_services.map(service => ({
+        title: JSON.stringify({ en: service.title_en, ar: service.title_ar }),
+        description: JSON.stringify({ en: service.description_en, ar: service.description_ar })
+      }));
+      
+      const transformedInpatientServices = formData.inpatient_services.map(service => ({
+        title: JSON.stringify({ en: service.title_en, ar: service.title_ar }),
+        description: JSON.stringify({ en: service.description_en, ar: service.description_ar })
+      }));
+      
+      console.log('=== SUBMITTING SERVICES ===');
+      console.log('Original outpatient_services:', formData.outpatient_services);
+      console.log('Transformed outpatient_services:', transformedOutpatientServices);
+      console.log('Stringified outpatient_services:', JSON.stringify(transformedOutpatientServices));
+      
       // Append services as JSON strings for Laravel
-      submitData.append('outpatient_services', JSON.stringify(formData.outpatient_services));
-      submitData.append('inpatient_services', JSON.stringify(formData.inpatient_services));
+      submitData.append('outpatient_services', JSON.stringify(transformedOutpatientServices));
+      submitData.append('inpatient_services', JSON.stringify(transformedInpatientServices));
 
       if (imageFile) {
         submitData.append('image', imageFile);

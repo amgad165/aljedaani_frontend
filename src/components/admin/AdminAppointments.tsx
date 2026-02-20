@@ -3,6 +3,11 @@ import AdminLayout from './AdminLayout';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
 
+interface TranslatableField {
+  en: string;
+  ar: string;
+}
+
 interface Appointment {
   id: number;
   patient_name: string;
@@ -14,18 +19,18 @@ interface Appointment {
   doctor_code: string | null;
   doctor?: {
     id: number;
-    name: string;
-    specialty: string;
+    name: string | TranslatableField;
+    specialty: string | TranslatableField;
   };
   department_id: number;
   department?: {
     id: number;
-    name: string;
+    name: string | TranslatableField;
   };
   branch_id: number;
   branch?: {
     id: number;
-    name: string;
+    name: string | TranslatableField;
   };
   appointment_date: string;
   appointment_time: string;
@@ -115,6 +120,12 @@ const AdminAppointments: React.FC = () => {
 
   const formatTime = (timeString: string) => {
     return timeString ? timeString.substring(0, 5) : 'N/A';
+  };
+
+  const getTranslatableName = (name: string | TranslatableField | undefined): string => {
+    if (!name) return 'N/A';
+    if (typeof name === 'string') return name;
+    return name.en || name.ar || 'N/A';
   };
 
   const getStatusColor = (status: string) => {
@@ -430,14 +441,14 @@ const AdminAppointments: React.FC = () => {
                         </td>
                         <td style={{ padding: '16px' }}>
                           <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '14px', color: '#111827' }}>
-                            {appointment.doctor?.name || 'N/A'}
+                            {getTranslatableName(appointment.doctor?.name)}
                           </div>
                           <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '12px', color: '#6b7280' }}>
                             Code: {appointment.doctor_code || 'N/A'}
                           </div>
                         </td>
                         <td style={{ fontFamily: 'Nunito, sans-serif', padding: '16px', fontSize: '14px', color: '#6b7280' }}>
-                          {appointment.department?.name || 'N/A'}
+                          {getTranslatableName(appointment.department?.name)}
                         </td>
                         <td style={{ padding: '16px' }}>
                           <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '14px', color: '#111827' }}>
@@ -656,7 +667,7 @@ const AdminAppointments: React.FC = () => {
                     <div>
                       <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '12px', color: '#6b7280' }}>Doctor</div>
                       <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '14px', fontWeight: '500', color: '#111827' }}>
-                        {selectedAppointment.doctor?.name || 'N/A'}
+                        {getTranslatableName(selectedAppointment.doctor?.name)}
                       </div>
                       <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '12px', color: '#6b7280' }}>
                         Code: {selectedAppointment.doctor_code || 'N/A'}
@@ -665,13 +676,13 @@ const AdminAppointments: React.FC = () => {
                     <div>
                       <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '12px', color: '#6b7280' }}>Department</div>
                       <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '14px', fontWeight: '500', color: '#111827' }}>
-                        {selectedAppointment.department?.name || 'N/A'}
+                        {getTranslatableName(selectedAppointment.department?.name)}
                       </div>
                     </div>
                     <div>
                       <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '12px', color: '#6b7280' }}>Branch</div>
                       <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '14px', fontWeight: '500', color: '#111827' }}>
-                        {selectedAppointment.branch?.name || 'N/A'}
+                        {getTranslatableName(selectedAppointment.branch?.name)}
                       </div>
                     </div>
                     <div>

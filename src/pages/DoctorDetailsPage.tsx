@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { doctorsService, type Doctor } from '../services/doctorsService';
 import type { ServiceItem } from '../services/departmentsService';
 import { useResponsiveNavbar } from '../hooks/useResponsiveNavbar';
@@ -11,6 +12,7 @@ import { getTranslatedField } from '../utils/localeHelpers';
 
 const DoctorDetailsPage: React.FC = () => {
   const ResponsiveNavbar = useResponsiveNavbar();
+  const { i18n } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [doctor, setDoctor] = useState<Doctor | null>(null);
@@ -49,7 +51,7 @@ const DoctorDetailsPage: React.FC = () => {
   };
 
   const renderServiceItem = (service: ServiceItem, index: number, isLast: boolean) => (
-    <div key={index}>
+    <div key={index} style={{ direction: i18n.language === 'ar' ? 'rtl' : 'ltr' }}>
       {/* Service Item - Title Row */}
       <div style={{
         display: 'flex',
@@ -76,8 +78,9 @@ const DoctorDetailsPage: React.FC = () => {
           fontSize: '16px',
           lineHeight: '20px',
           color: '#061F42',
+          textAlign: i18n.language === 'ar' ? 'right' : 'left',
         }}>
-          {getTranslatedField(service.title, '')}:
+          {getTranslatedField({ en: service.title_en, ar: service.title_ar }, '')}:
         </span>
       </div>
       
@@ -90,8 +93,9 @@ const DoctorDetailsPage: React.FC = () => {
         fontSize: '12px',
         lineHeight: '16px',
         color: '#061F42',
+        textAlign: i18n.language === 'ar' ? 'right' : 'left',
       }}>
-        {getTranslatedField(service.description, '')}
+        {getTranslatedField({ en: service.description_en, ar: service.description_ar }, '')}
       </div>
 
       {/* Divider */}
@@ -147,7 +151,7 @@ const DoctorDetailsPage: React.FC = () => {
             fontSize: '18px',
             color: '#EE443F',
           }}>
-            {error || 'Doctor not found'}
+            {error || (i18n.language === 'ar' ? 'لم يتم العثور على الطبيب' : 'Doctor not found')}
           </span>
           <button
             onClick={() => navigate('/doctors')}
@@ -163,7 +167,7 @@ const DoctorDetailsPage: React.FC = () => {
               cursor: 'pointer',
             }}
           >
-            Back to Doctors
+            {i18n.language === 'ar' ? 'العودة إلى الأطباء' : 'Back to Doctors'}
           </button>
         </div>
       </div>
@@ -172,9 +176,69 @@ const DoctorDetailsPage: React.FC = () => {
 
   const statusStyle = getStatusStyle(doctor.status);
   
+  // Extract services based on current language and transform to ServiceItem format
+  // Services come from backend in bilingual format: {en: [...], ar: [...]}
+  // Each service has title and description as JSON strings that need to be parsed
+  const extractServices = (services: any): ServiceItem[] => {
+    if (!services) return [];
+    
+    let servicesArray: any[] = [];
+    
+    // If services is already an array, use it
+    if (Array.isArray(services)) {
+      servicesArray = services;
+    } 
+    // If it's an object with language keys, extract the current language
+    else if (typeof services === 'object' && (services.en || services.ar)) {
+      const currentLang = i18n.language as 'en' | 'ar';
+      const langServices = services[currentLang] || services['en'] || [];
+      servicesArray = Array.isArray(langServices) ? langServices : [];
+    } else {
+      return [];
+    }
+    
+    // Transform each service to match ServiceItem interface
+    return servicesArray.map((service) => {
+      // If already in correct format (title_en, title_ar, etc.)
+      if (service.title_en !== undefined) {
+        return service as ServiceItem;
+      }
+      
+      // Parse title and description if they're JSON strings
+      let titleObj = service.title;
+      let descObj = service.description;
+      
+      // Parse title
+      if (typeof titleObj === 'string') {
+        try {
+          titleObj = JSON.parse(titleObj);
+        } catch (e) {
+          titleObj = { en: titleObj, ar: '' };
+        }
+      }
+      
+      // Parse description
+      if (typeof descObj === 'string') {
+        try {
+          descObj = JSON.parse(descObj);
+        } catch (e) {
+          descObj = { en: descObj, ar: '' };
+        }
+      }
+      
+      // Return in ServiceItem format
+      return {
+        title_en: titleObj?.en || '',
+        title_ar: titleObj?.ar || '',
+        description_en: descObj?.en || '',
+        description_ar: descObj?.ar || '',
+      } as ServiceItem;
+    });
+  };
+  
   const currentServices = activeTab === 'outpatient' 
-    ? (doctor.outpatient_services || [])
-    : (doctor.inpatient_services || []);
+    ? extractServices(doctor.outpatient_services)
+    : extractServices(doctor.inpatient_services);
 
   return (
     <div style={{
@@ -203,13 +267,52 @@ const DoctorDetailsPage: React.FC = () => {
           maxWidth: window.innerWidth <= 768 ? '100%' : '1120px',
           boxSizing: 'border-box',
         }}>
-          {/* Title Section with Filters */}
-          <DoctorFilters 
-            showTitle={true}
-            initialDepartmentId={doctor.department_id}
-            initialBranchId={doctor.branch_id || undefined}
-            containerStyle={{ marginBottom: '8px' }}
-          />
+          {/* Title and Filters Row */}
+          <div style={{
+            display: 'flex',
+            flexDirection: window.innerWidth <= 768 ? 'column' : 'row',
+            justifyContent: 'space-between',
+            alignItems: window.innerWidth <= 768 ? 'stretch' : 'center',
+            gap: '16px',
+            marginBottom: '8px',
+            padding: window.innerWidth <= 768 ? '12px 16px' : '12px 16px 12px 24px',
+            background: '#FFFFFF',
+            borderRadius: '16px',
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
+          }}>
+            {/* Title */}
+            <h1 style={{
+              fontFamily: 'Nunito, sans-serif',
+              fontStyle: 'normal',
+              fontWeight: 600,
+              fontSize: window.innerWidth <= 768 ? '32px' : '48px',
+              lineHeight: window.innerWidth <= 768 ? '36px' : '50px',
+              color: '#061F42',
+              margin: 0,
+            }}>
+              {i18n.language === 'ar' ? 'الأطباء' : 'Doctors'}
+            </h1>
+            
+            {/* Filters on the right */}
+            <div style={{
+              display: 'flex',
+              flexDirection: window.innerWidth <= 768 ? 'column' : 'row',
+              alignItems: window.innerWidth <= 768 ? 'stretch' : 'center',
+              gap: '12px',
+            }}>
+              <DoctorFilters 
+                showTitle={false}
+                initialDepartmentId={doctor.department_id}
+                initialBranchId={doctor.branch_id || undefined}
+                containerStyle={{ 
+                  background: 'transparent',
+                  boxShadow: 'none',
+                  padding: '0',
+                  minHeight: 'auto',
+                }}
+              />
+            </div>
+          </div>
 
           {/* Breadcrumb */}
           <div style={{
@@ -218,8 +321,12 @@ const DoctorDetailsPage: React.FC = () => {
             fontSize: window.innerWidth <= 768 ? '14px' : '16px',
             lineHeight: window.innerWidth <= 768 ? '20px' : '40px',
             marginBottom: '8px',
+            direction: i18n.language === 'ar' ? 'rtl' : 'ltr',
+            textAlign: i18n.language === 'ar' ? 'right' : 'left',
           }}>
-            <span style={{ color: '#A4A5A5' }}>Displaying results for </span>
+            <span style={{ color: '#A4A5A5' }}>
+              {i18n.language === 'ar' ? 'عرض النتائج لـ ' : 'Displaying results for '}
+            </span>
             <span style={{ color: '#061F42' }}>
               <span 
                 onClick={() => navigate('/doctors')}
@@ -232,9 +339,9 @@ const DoctorDetailsPage: React.FC = () => {
                 onMouseEnter={(e) => (e.currentTarget as HTMLElement).style.color = '#00ABDA'}
                 onMouseLeave={(e) => (e.currentTarget as HTMLElement).style.color = '#061F42'}
               >
-                Doctors
+                {i18n.language === 'ar' ? 'الأطباء' : 'Doctors'}
               </span>
-              {' > '}
+              {i18n.language === 'ar' ? ' < ' : ' > '}
               <span 
                 onClick={() => navigate(`/doctors`)}
                 style={{
@@ -246,9 +353,9 @@ const DoctorDetailsPage: React.FC = () => {
                 onMouseEnter={(e) => (e.currentTarget as HTMLElement).style.color = '#00ABDA'}
                 onMouseLeave={(e) => (e.currentTarget as HTMLElement).style.color = '#061F42'}
               >
-                {doctor.department?.name || 'Specialty'}
+                {getTranslatedField(doctor.department?.name, i18n.language === 'ar' ? 'التخصص' : 'Specialty')}
               </span>
-              {' > '}
+              {i18n.language === 'ar' ? ' < ' : ' > '}
               <span style={{
                 color: '#061F42',
               }}>
@@ -385,7 +492,7 @@ const DoctorDetailsPage: React.FC = () => {
                     whiteSpace: 'pre-wrap' as const,
                     wordWrap: 'break-word' as const,
                   }}>
-                    {doctor.specialization || 'Registrar'}
+                    {getTranslatedField(doctor.specialization, 'Registrar')}
                   </div>
                 </div>
 
@@ -447,7 +554,7 @@ const DoctorDetailsPage: React.FC = () => {
                         textAlign: 'center',
                         color: '#6A6A6A',
                       }}>
-                        {doctor.branch?.name || doctor.location}
+                        {getTranslatedField(doctor.branch?.name, '') || getTranslatedField(doctor.location, '')}
                       </span>
                     </div>
 
@@ -475,7 +582,7 @@ const DoctorDetailsPage: React.FC = () => {
                         textAlign: 'center',
                         color: '#061F42',
                       }}>
-                        {doctor.department?.name || 'Department'}
+                        {getTranslatedField(doctor.department?.name, 'Department')}
                       </span>
                     </div>
                   </div>
@@ -506,7 +613,12 @@ const DoctorDetailsPage: React.FC = () => {
                       listStyleType: 'disc',
                     }}>
                       {doctor.experience_years !== undefined && doctor.experience_years > 0 && (
-                        <li>{doctor.experience_years} Years Of Experience</li>
+                        <li>
+                          {i18n.language === 'ar' 
+                            ? `${doctor.experience_years} سنوات من الخبرة`
+                            : `${doctor.experience_years} Years Of Experience`
+                          }
+                        </li>
                       )}
                       {doctor.education && (
                         <li>{getTranslatedField(doctor.education, '')}</li>
@@ -625,7 +737,7 @@ const DoctorDetailsPage: React.FC = () => {
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',
                     }}>
-                      Outpatient Services
+                      {i18n.language === 'ar' ? 'خدمات العيادات الخارجية' : 'Outpatient Services'}
                     </span>
                   </button>
 
@@ -665,7 +777,7 @@ const DoctorDetailsPage: React.FC = () => {
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',
                     }}>
-                      Inpatient Services
+                      {i18n.language === 'ar' ? 'خدمات المرضى الداخليين' : 'Inpatient Services'}
                     </span>
                   </button>
                 </div>
@@ -704,7 +816,10 @@ const DoctorDetailsPage: React.FC = () => {
                         fontSize: '14px',
                         color: '#6A6A6A',
                       }}>
-                        No {activeTab === 'outpatient' ? 'outpatient' : 'inpatient'} services listed for this doctor.
+                        {i18n.language === 'ar' 
+                          ? `لا توجد خدمات ${activeTab === 'outpatient' ? 'عيادات خارجية' : 'مرضى داخليين'} مدرجة لهذا الطبيب.`
+                          : `No ${activeTab === 'outpatient' ? 'outpatient' : 'inpatient'} services listed for this doctor.`
+                        }
                       </span>
                     </div>
                   )}

@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 
 interface Appointment {
-  id: number;
+  id: number | string;
+  source?: string;
   department: string;
   department_icon?: string;
   doctor_name: string;

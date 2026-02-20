@@ -455,7 +455,7 @@ const BookAppointmentPage = () => {
 
   // Fetch available slots when doctor is selected
   useEffect(() => {
-    if (!doctorSelection.doctor || currentStep !== 3) return;
+    if (!doctorSelection.doctor || currentStep !== 4) return;
 
     const fetchAvailableSlots = async () => {
       setLoadingSlots(true);
@@ -2446,7 +2446,7 @@ const BookAppointmentPage = () => {
                         fontSize: '14px',
                         color: '#061F42',
                       }}>
-                        {branches.find(b => b.id === parseInt(doctorSelection.branch))?.name || 'Branch'}
+                        {getTranslatedField(branches.find(b => b.id === parseInt(doctorSelection.branch))?.name, 'Branch')}
                       </span>
                     )}
                     {doctorSelection.specialty && (
@@ -2462,7 +2462,7 @@ const BookAppointmentPage = () => {
                         fontSize: '14px',
                         color: '#061F42',
                       }}>
-                        {departments.find(d => d.id === parseInt(doctorSelection.specialty))?.name || 'Specialty'}
+                        {getTranslatedField(departments.find(d => d.id === parseInt(doctorSelection.specialty))?.name, 'Specialty')}
                       </span>
                     )}
                     {doctorSelection.doctor && (
@@ -2478,7 +2478,7 @@ const BookAppointmentPage = () => {
                         fontSize: '14px',
                         color: '#FFFFFF',
                       }}>
-                        {doctors.find(d => d.id === parseInt(doctorSelection.doctor))?.name || 'Doctor'}
+                        {getTranslatedField(doctors.find(d => d.id === parseInt(doctorSelection.doctor))?.name, 'Doctor')}
                       </span>
                     )}
                     {doctorSelection.selectedDate && doctorSelection.selectedSlot && (
@@ -2699,7 +2699,7 @@ const BookAppointmentPage = () => {
                 lineHeight: '19px',
                 color: '#061F42',
               }}>
-                Your appointment is scheduled at {selectedBranch?.name} - {selectedDepartment?.name} - {selectedDoctor?.name} - {formatAppointmentDate(doctorSelection.selectedDate, doctorSelection.selectedSlot)}
+                Your appointment is scheduled at {getTranslatedField(selectedBranch?.name, '')} - {getTranslatedField(selectedDepartment?.name, '')} - {getTranslatedField(selectedDoctor?.name, '')} - {formatAppointmentDate(doctorSelection.selectedDate, doctorSelection.selectedSlot)}
               </div>
               
               {/* Warning Badge */}

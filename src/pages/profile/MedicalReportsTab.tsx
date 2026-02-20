@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   getUserHisMedicalReports,
   viewHisMedicalReportPdf,
@@ -14,6 +15,7 @@ interface ReportCardProps {
 }
 
 const ReportCard = ({ report, onViewPdf, onDownloadPdf }: ReportCardProps) => {
+  const { t } = useTranslation('pages');
   const reportType = report.service_name || 'Medical Report';
   const technicianName = report.technician;
   const reportDate = formatReportDate(report.date);
@@ -121,7 +123,7 @@ const ReportCard = ({ report, onViewPdf, onDownloadPdf }: ReportCardProps) => {
           color: '#FFFFFF',
         }}
       >
-        Download
+        {t('medicalReportsDownload')}
       </button>
       <button 
         onClick={onViewPdf}
@@ -144,7 +146,7 @@ const ReportCard = ({ report, onViewPdf, onDownloadPdf }: ReportCardProps) => {
           color: '#FFFFFF',
         }}
       >
-        View File
+        {t('medicalReportsViewFile')}
       </button>
     </div>
   </div>
@@ -152,6 +154,7 @@ const ReportCard = ({ report, onViewPdf, onDownloadPdf }: ReportCardProps) => {
 };
 
 const MedicalReportsTab = () => {
+  const { t } = useTranslation('pages');
   const [currentPage, setCurrentPage] = useState(1);
   const [reports, setReports] = useState<HisMedicalReport[]>([]);
   const [loading, setLoading] = useState(true);
@@ -303,7 +306,7 @@ const MedicalReportsTab = () => {
                 value={inputValue}
                 onChange={handleInputChange}
                 onKeyDown={(e) => e.key === 'Enter' && handleSearchClick()}
-                placeholder="Search for documents"
+                placeholder={t('medicalReportsSearchPlaceholder')}
                 style={{
                   width: '100%',
                   border: 'none',
@@ -339,7 +342,7 @@ const MedicalReportsTab = () => {
               whiteSpace: 'nowrap',
             }}
           >
-            Search
+            {t('medicalReportsSearch')}
           </button>
           
           {/* Date Input */}
@@ -378,7 +381,7 @@ const MedicalReportsTab = () => {
       }}>
         {loading ? (
           <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '40px' }}>
-            Loading reports...
+            {t('medicalReportsLoading')}
           </div>
         ) : error ? (
           <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '40px', color: '#CB0729' }}>
@@ -386,7 +389,7 @@ const MedicalReportsTab = () => {
           </div>
         ) : reports.length === 0 ? (
           <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '40px' }}>
-            No medical reports found
+            {t('medicalReportsNoReports')}
           </div>
         ) : (
           reports.map((report) => (

@@ -19,8 +19,12 @@ export interface Branch {
 }
 
 export interface ServiceItem {
-  title: string;
-  description: string;
+  title?: string;
+  description?: string;
+  title_en?: string;
+  title_ar?: string;
+  description_en?: string;
+  description_ar?: string;
 }
 
 // Sub-section structure for Overview tab

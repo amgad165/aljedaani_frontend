@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useResponsiveNavbar } from '../hooks/useResponsiveNavbar';
 import Footer from '../components/Footer';
 import FloatingContactButtons from '../components/FloatingContactButtons';
@@ -15,6 +16,8 @@ interface TabContent {
 }
 
 const AboutUsPage = () => {
+  const { t, i18n } = useTranslation('pages');
+  const isRTL = i18n.language === 'ar';
   const ResponsiveNavbar = useResponsiveNavbar();
   const [activeTab, setActiveTab] = useState<TabType>('overview');
   const [isMobile, setIsMobile] = useState(false);
@@ -30,9 +33,9 @@ const AboutUsPage = () => {
   }, []);
 
   const tabs = [
-    { id: 'overview' as TabType, title: 'Overview' },
-    { id: 'mission' as TabType, title: 'Mission & Vision' },
-    { id: 'values' as TabType, title: 'Values' },
+    { id: 'overview' as TabType, title: t('aboutTabOverview') },
+    { id: 'mission' as TabType, title: t('aboutTabMission') },
+    { id: 'values' as TabType, title: t('aboutTabValues') },
     // { id: 'awards' as TabType, title: 'Awards & Accreditations' },
 
     // hidden for now don't delete
@@ -42,38 +45,26 @@ const AboutUsPage = () => {
   const tabContent: Record<TabType, TabContent> = {
     overview: {
       id: 'overview',
-      title: 'Overview',
-      tagline: 'SINCE 1992',
-      subtitle: 'Al Jedaani Group of Hospitals',
+      title: t('aboutTabOverview'),
+      tagline: t('aboutOverviewTagline'),
+      subtitle: t('aboutOverviewSubtitle'),
       content: ``,
       imageUrl: '/assets/img/about/overview-image.jpg',
     },
     mission: {
       id: 'mission',
-      title: 'Mission & Vision',
-      tagline: 'OUR PURPOSE',
-      subtitle: 'Mission & Vision',
-      content: `Mission: To provide compassionate, high-quality healthcare services that enhance the wellbeing of our patients and community. We are committed to delivering excellence through innovation, continuous improvement, and a patient-centered approach.
-
-Vision: To be the leading healthcare provider in Saudi Arabia, recognized for our clinical excellence, patient satisfaction, and contribution to advancing medical science. We aspire to set the standard for healthcare delivery in the region.
-
-Our mission and vision guide every decision we make, from the technology we invest in to the way we interact with patients. We believe in treating every patient with dignity and respect, while leveraging the latest medical advancements to deliver optimal outcomes.`,
+      title: t('aboutTabMission'),
+      tagline: t('aboutMissionTagline'),
+      subtitle: t('aboutMissionSubtitle'),
+      content: t('aboutMissionContent'),
       imageUrl: '/assets/img/about/mission-image.jpg',
     },
     values: {
       id: 'values',
-      title: 'Values',
-      tagline: 'OUR PRINCIPLES',
-      subtitle: 'Core Values',
-      content: `Perfection: Always striving for improvement of effective medical care for the patients with the best utilization of the available resources, with emphasis on health maintenance and promotion.
-
-Honesty: Always acting with integrity and in accordance with society's cultural values and Islamic principles that provide the basis for sound trans-cultural medical practice in corporation with multi-national medical staff background and expertise.
-
-Creativity: Always looking for new ways to do things and solve problems with caring attitude, responsible and critical thinking generalist and responsive to patient's needs.
-
-Respect: For patient, staff and community via inculcate ethical, moral, legal and spiritual values and develop respect for human dignity by abiding faith in Allah.
-
-Teamwork: Always a set of interacting relationship among different groups of individuals who share some mutual goals are expected to follow an organized system of behavioral pattern.`,
+      title: t('aboutTabValues'),
+      tagline: t('aboutValuesTagline'),
+      subtitle: t('aboutValuesSubtitle'),
+      content: t('aboutValuesContent'),
       imageUrl: '/assets/img/about/values-image.jpg',
     },
     awards: {
@@ -128,7 +119,7 @@ Our leaders believe in leading by example, maintaining open communication, and e
             marginBottom: '12px',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'left',
+            justifyContent: isRTL ? 'right' : 'left',
           }}>
             <h1 style={{
               fontFamily: 'Nunito, sans-serif',
@@ -139,7 +130,7 @@ Our leaders believe in leading by example, maintaining open communication, and e
               color: '#061F42',
               margin: 0,
             }}>
-              About Us
+              {t('aboutPageTitle')}
             </h1>
           </div>
 
@@ -155,9 +146,9 @@ Our leaders believe in leading by example, maintaining open communication, and e
             lineHeight: isMobile ? '24px' : '40px',
             marginBottom: '12px',
           }}>
-            <span style={{ color: '#A4A5A5' }}>Displaying results for </span>
+            <span style={{ color: '#A4A5A5' }}>{t('aboutDisplayingResults')} </span>
             <span style={{ color: '#061F42' }}>
-              About Us &gt; {currentContent.title}
+              {t('aboutPageTitle')} &gt; {currentContent.title}
             </span>
           </div>
 
@@ -366,7 +357,7 @@ Our leaders believe in leading by example, maintaining open communication, and e
                       color: '#061F42',
                       margin: 0,
                     }}>
-                      Jedaani Hospitals, Over 30 Years of Clinical Excellence
+                      {t('aboutOverviewMainTitle')}
                     </h1>
                     <p style={{
                       fontFamily: 'Nunito, sans-serif',
@@ -375,8 +366,7 @@ Our leaders believe in leading by example, maintaining open communication, and e
                       lineHeight: isMobile ? '24px' : '29px',
                       color: '#4A5565',
                       margin: 0,
-                    }}>
-                      With over three decades of clinical expertise, <strong>Jedaani Hospitals stand as a cornerstone of healthcare in Jeddah.</strong>
+                    }} dangerouslySetInnerHTML={{ __html: t('aboutOverviewIntro1') }}>
                     </p>
                     <p style={{
                       fontFamily: 'Nunito, sans-serif',
@@ -386,7 +376,7 @@ Our leaders believe in leading by example, maintaining open communication, and e
                       color: '#4A5565',
                       margin: 0,
                     }}>
-                      Our practice is governed by a rigorous professional methodology summarized in our slogan, <strong>"Experienced Care"</strong>
+                      {t('aboutExperiencedCareText')} <strong>"{t('aboutExperiencedCareSlogan')}"</strong>
                     </p>
                     <p style={{
                       fontFamily: 'Nunito, sans-serif',
@@ -395,8 +385,7 @@ Our leaders believe in leading by example, maintaining open communication, and e
                       lineHeight: isMobile ? '24px' : '29px',
                       color: '#4A5565',
                       margin: 0,
-                    }}>
-                      We are dedicated to merging long-standing clinical heritage with evidence-based medical advancements to provide a safe, reliable, and patient-centric environment that enhances the quality of life for every individual we serve.
+                    }} dangerouslySetInnerHTML={{ __html: t('aboutOverviewIntro2') }}>
                     </p>
 
                     <h2 style={{
@@ -407,7 +396,7 @@ Our leaders believe in leading by example, maintaining open communication, and e
                       color: '#061F42',
                       margin: '16px 0 0 0',
                     }}>
-                      Comprehensive Medical Specialties
+                      {t('aboutOverviewSpecialtiesTitle')}
                     </h2>
                     <p style={{
                       fontFamily: 'Nunito, sans-serif',
@@ -416,8 +405,7 @@ Our leaders believe in leading by example, maintaining open communication, and e
                       lineHeight: isMobile ? '24px' : '29px',
                       color: '#4A5565',
                       margin: 0,
-                    }}>
-                      Jedaani Hospitals relies on a distinguished faculty of <strong>high-caliber consultants and experts</strong> across more than <strong>20 medical specialties</strong>.
+                    }} dangerouslySetInnerHTML={{ __html: t('aboutOverviewSpecialties1') }}>
                     </p>
                     <p style={{
                       fontFamily: 'Nunito, sans-serif',
@@ -427,7 +415,7 @@ Our leaders believe in leading by example, maintaining open communication, and e
                       color: '#4A5565',
                       margin: 0,
                     }}>
-                      Our primary clinical focus centers on Pediatrics, Obstetrics, Gynecology, Cardiology, Neurology and Internal Medicine. We extend this expertise into advanced surgical and specialized domains, including General Surgery, Orthopedics, Urology, Ophthalmology, and Pediatric Surgery.
+                      {t('aboutOverviewSpecialties2')}
                     </p>
                     <p style={{
                       fontFamily: 'Nunito, sans-serif',
@@ -437,7 +425,7 @@ Our leaders believe in leading by example, maintaining open communication, and e
                       color: '#4A5565',
                       margin: 0,
                     }}>
-                      This multidisciplinary framework integrates expert management in Pulmonology, Nephrology, and Psychiatry, complemented by specialized services in Dermatology, Dentistry, and Physical Therapy to deliver accurate, diagnostic-driven treatment solutions.
+                      {t('aboutOverviewSpecialties3')}
                     </p>
 
                     <h2 style={{
@@ -448,7 +436,7 @@ Our leaders believe in leading by example, maintaining open communication, and e
                       color: '#061F42',
                       margin: '16px 0 0 0',
                     }}>
-                      Advanced Infrastructure
+                      {t('aboutOverviewInfraTitle')}
                     </h2>
                     <p style={{
                       fontFamily: 'Nunito, sans-serif',
@@ -457,8 +445,7 @@ Our leaders believe in leading by example, maintaining open communication, and e
                       lineHeight: isMobile ? '24px' : '29px',
                       color: '#4A5565',
                       margin: 0,
-                    }}>
-                      We maintain a robust intensive care network, providing specialized Adult, Pediatric, and Neonatal <strong>Intensive Care units</strong> with full technical readiness.
+                    }} dangerouslySetInnerHTML={{ __html: t('aboutOverviewInfra1') }}>
                     </p>
                     <p style={{
                       fontFamily: 'Nunito, sans-serif',
@@ -467,8 +454,7 @@ Our leaders believe in leading by example, maintaining open communication, and e
                       lineHeight: isMobile ? '24px' : '29px',
                       color: '#4A5565',
                       margin: 0,
-                    }}>
-                      Our facilities are equipped with state-of-the-art medical technologies across <strong>all laboratory, diagnostic, and imaging services</strong> to ensure rapid and precise clinical results.
+                    }} dangerouslySetInnerHTML={{ __html: t('aboutOverviewInfra2') }}>
                     </p>
                     <p style={{
                       fontFamily: 'Nunito, sans-serif',
@@ -477,8 +463,7 @@ Our leaders believe in leading by example, maintaining open communication, and e
                       lineHeight: isMobile ? '24px' : '29px',
                       color: '#4A5565',
                       margin: 0,
-                    }}>
-                      Integrated within our healthcare ecosystem is the <strong>Baher Al-Arbaeen Pharmacy group</strong>, delivering seamless pharmaceutical care and retail services to both inpatients and outpatients under the highest international standards.
+                    }} dangerouslySetInnerHTML={{ __html: t('aboutOverviewInfra3') }}>
                     </p>
 
                     <h2 style={{
@@ -489,7 +474,7 @@ Our leaders believe in leading by example, maintaining open communication, and e
                       color: '#061F42',
                       margin: '16px 0 0 0',
                     }}>
-                      Strategic Regional Presence
+                      {t('aboutOverviewPresenceTitle')}
                     </h2>
                     <p style={{
                       fontFamily: 'Nunito, sans-serif',
@@ -498,8 +483,7 @@ Our leaders believe in leading by example, maintaining open communication, and e
                       lineHeight: isMobile ? '24px' : '29px',
                       color: '#4A5565',
                       margin: 0,
-                    }}>
-                      Strategically located across <strong>3 major hospitals in Jeddah</strong> with a total capacity of 300 beds, our infrastructure provides comprehensive healthcare coverage for the entire Western Region of Saudi Arabia. We ensure streamlined access to <strong>advanced medical interventions and 24/7 emergency</strong> management. Our operational effectiveness is designed to handle high patient volumes while maintaining the rapid response times essential for acute and inpatient care.
+                    }} dangerouslySetInnerHTML={{ __html: t('aboutOverviewPresence') }}>
                     </p>
 
                     <h2 style={{
@@ -510,7 +494,7 @@ Our leaders believe in leading by example, maintaining open communication, and e
                       color: '#061F42',
                       margin: '16px 0 0 0',
                     }}>
-                      Specialized Excellence Centers
+                      {t('aboutOverviewCentersTitle')}
                     </h2>
                     <p style={{
                       fontFamily: 'Nunito, sans-serif',
@@ -519,8 +503,7 @@ Our leaders believe in leading by example, maintaining open communication, and e
                       lineHeight: isMobile ? '24px' : '29px',
                       color: '#4A5565',
                       margin: 0,
-                    }}>
-                      Al Jedaani Hospitals is distinguished by five specialized Centers of Excellence designed to provide focused, high-tier medical care. This system includes the <strong>Women's Health Center, the Pediatrics Center, the Center of Excellence for Men's Health, the Advanced Cardiac Catheterization Lab, and the Mental Health Center</strong>. These centers utilize advanced diagnostic and therapeutic tools to implement the world's most precise medical protocols, ensuring superior clinical outcomes through directed and professional expertise.
+                    }} dangerouslySetInnerHTML={{ __html: t('aboutOverviewCenters') }}>
                     </p>
                   </div>
                 )}
@@ -579,7 +562,7 @@ Our leaders believe in leading by example, maintaining open communication, and e
                           color: '#061F42',
                           margin: 0,
                         }}>
-                          Our Mission
+                          {t('aboutMissionHeading')}
                         </h3>
                       </div>
                       {/* Paragraph */}
@@ -592,8 +575,8 @@ Our leaders believe in leading by example, maintaining open communication, and e
                         color: '#4A5565',
                         margin: 0,
                         width: '100%',
-                      }}>
-Jedaani Hospitals are committed to provide high quality patient Care for all ages of the citizens, visitors & as well as the residents.   <br /> <br /> The Hospital staff demonstrates professional competence in providing effective medical services with dedication to face society challenges all over the year.                   </p>
+                      }} dangerouslySetInnerHTML={{ __html: t('aboutMissionText') }}>
+                      </p>
                     </div>
 
                     {/* Our Vision */}
@@ -646,7 +629,7 @@ Jedaani Hospitals are committed to provide high quality patient Care for all age
                           color: '#061F42',
                           margin: 0,
                         }}>
-                          Our Vision
+                          {t('aboutVisionHeading')}
                         </h3>
                       </div>
                       {/* Paragraph */}
@@ -660,7 +643,7 @@ Jedaani Hospitals are committed to provide high quality patient Care for all age
                         margin: 0,
                         width: '100%',
                       }}>
-                       Jedaani Hospitals shall create an authentic name in the world of medical services.
+                       {t('aboutVisionText')}
                       </p>
                     </div>
                   </div>
@@ -677,7 +660,7 @@ Jedaani Hospitals are committed to provide high quality patient Care for all age
                       color: '#061F42',
                       margin: isMobile ? '0 0 16px 0' : '0 0 24px 0',
                     }}>
-                      Our Core Values
+                      {t('aboutValuesHeading')}
                     </h3>
                     <div style={{
                       display: 'grid',
@@ -686,11 +669,11 @@ Jedaani Hospitals are committed to provide high quality patient Care for all age
                       width: '100%',
                     }}>
                       {[
-                        { title: 'Perfection', description: 'Always striving for improvement of effective medical care, economical utilization of available resources and health promotion, prevention and rehabilitation services.' },
-                        { title: 'Honesty', description: 'Always acting with integrity and in accordance with society\'s cultural values and Islamic principles with trans-cultural practice in mind.' },
-                        { title: 'Creativity', description: 'Always looking for new ways to do things and solve problems through a caring attitude that is responsive to people\'s needs.' },
-                        { title: 'Respect', description: 'For patient, staff and community via inculcate ethical, moral, legal and spiritual values which uphold human dignity and faith in Allah.' },
-                        { title: 'Teamwork', description: 'Always a set of interacting relationship among different groups of multi-national staff working together and having mutual goals and organized behavioral patterns.' },
+                        { title: t('aboutValuePerfection'), description: t('aboutValuePerfectionDesc') },
+                        { title: t('aboutValueHonesty'), description: t('aboutValueHonestyDesc') },
+                        { title: t('aboutValueCreativity'), description: t('aboutValueCreativityDesc') },
+                        { title: t('aboutValueRespect'), description: t('aboutValueRespectDesc') },
+                        { title: t('aboutValueTeamwork'), description: t('aboutValueTeamworkDesc') },
                       ].map((value, index) => (
                         <div key={index} style={{
                           display: 'flex',
@@ -754,7 +737,7 @@ Jedaani Hospitals are committed to provide high quality patient Care for all age
                       color: '#061F42',
                       margin: isMobile ? '0 0 12px 0' : '0 0 16px 0',
                     }}>
-                      Awards & Accreditations
+                      {t('aboutAwardsHeading')}
                     </h3>
                     <p style={{
                       fontFamily: 'Nunito, sans-serif',
@@ -764,7 +747,7 @@ Jedaani Hospitals are committed to provide high quality patient Care for all age
                       color: '#6B7280',
                       margin: isMobile ? '0 0 24px 0' : '0 0 32px 0',
                     }}>
-                      Al Jedaani Hospitals are proud to be accredited by national and international healthcare bodies, reflecting our unwavering commitment to quality.
+                      {t('aboutAwardsIntro')}
                     </p>
                     <div style={{
                       display: 'grid',
@@ -773,10 +756,10 @@ Jedaani Hospitals are committed to provide high quality patient Care for all age
                       width: '100%',
                     }}>
                       {[
-                        { title: 'CBAHI Accredited', image: '/assets/img/awards/cbahi.jpg', badge: 'Certified', badgeColor: '#00ABDA' },
-                        { title: 'MOH Recognition', image: '/assets/img/awards/moh.jpg', badge: '2023', badgeColor: '#00ABDA' },
-                        { title: 'Patient Safety Award', image: '/assets/img/awards/patient-safety.jpg', badge: '2022', badgeColor: '#00ABDA' },
-                        { title: 'Best Community Hospital', image: '/assets/img/awards/community.jpg', badge: '2021', badgeColor: '#00ABDA' },
+                        { title: t('aboutAwardsCBAHI'), image: '/assets/img/awards/cbahi.jpg', badge: t('aboutAwardCertified'), badgeColor: '#00ABDA' },
+                        { title: t('aboutAwardsMOH'), image: '/assets/img/awards/moh.jpg', badge: '2023', badgeColor: '#00ABDA' },
+                        { title: t('aboutAwardsPatientSafety'), image: '/assets/img/awards/patient-safety.jpg', badge: '2022', badgeColor: '#00ABDA' },
+                        { title: t('aboutAwardsCommunity'), image: '/assets/img/awards/community.jpg', badge: '2021', badgeColor: '#00ABDA' },
                       ].map((award, index) => (
                         <div key={index} style={{
                           background: '#FFFFFF',
@@ -858,7 +841,7 @@ Jedaani Hospitals are committed to provide high quality patient Care for all age
                         color: '#061F42',
                         margin: 0,
                       }}>
-                        Executive Leadership
+                        {t('aboutLeadershipHeading')}
                       </h3>
                     </div>
 
@@ -870,10 +853,10 @@ Jedaani Hospitals are committed to provide high quality patient Care for all age
                       width: '100%',
                     }}>
                       {[
-                        { name: 'Sheikh Abdullah Al Jedaani', title: 'Chairman', image: '/assets/img/leadership/chairman.jpg' },
-                        { name: 'Dr. Mohammed Al Jedaani', title: 'Chief Executive Officer', image: '/assets/img/leadership/ceo.jpg' },
-                        { name: 'Dr. Ahmed Al Ghamdi', title: 'Medical Director', image: '/assets/img/leadership/medical-director.jpg' },
-                        { name: 'Mrs. Sarah Al Jedaani', title: 'Director of Operations', image: '/assets/img/leadership/operations.jpg' },
+                        { name: t('aboutLeadershipChairman'), title: t('aboutLeadershipChairmanTitle'), image: '/assets/img/leadership/chairman.jpg' },
+                        { name: t('aboutLeadershipCEO'), title: t('aboutLeadershipCEOTitle'), image: '/assets/img/leadership/ceo.jpg' },
+                        { name: t('aboutLeadershipMedicalDirector'), title: t('aboutLeadershipMedicalDirectorTitle'), image: '/assets/img/leadership/medical-director.jpg' },
+                        { name: t('aboutLeadershipOperations'), title: t('aboutLeadershipOperationsTitle'), image: '/assets/img/leadership/operations.jpg' },
                       ].map((leader, index) => (
                         <div key={index} style={{
                           boxSizing: 'border-box',

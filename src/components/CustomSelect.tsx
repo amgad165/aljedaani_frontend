@@ -1,8 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { getTranslatedField } from '../utils/localeHelpers';
 
 export interface SelectOption {
   value: string;
-  label: string;
+  label: string | { en: string; ar: string };
 }
 
 interface CustomSelectProps {
@@ -35,10 +36,16 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // Helper to get label as string
+  const getLabel = (label: string | { en: string; ar: string }): string => {
+    if (typeof label === 'string') return label;
+    return getTranslatedField(label, '');
+  };
+
   const selectedOption = options.find(opt => opt.value === value);
 
   const filteredOptions = options.filter(opt =>
-    opt.label.toLowerCase().includes(searchTerm.toLowerCase())
+    getLabel(opt.label).toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   // Close dropdown when clicking outside
@@ -157,7 +164,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
               textOverflow: 'ellipsis',
               display: 'block',
             }}>
-              {selectedOption ? selectedOption.label : placeholder}
+              {selectedOption ? getLabel(selectedOption.label) : placeholder}
             </span>
           </div>
 
@@ -344,7 +351,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
                     color: value === option.value ? '#0155CB' : '#374151',
                     flex: 1,
                   }}>
-                    {option.label}
+                    {getLabel(option.label)}
                   </span>
                 </div>
               ))

@@ -2,7 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import Calendar from '../../components/Calendar';
 
 interface Appointment {
-  id: number;
+  id: number | string;
+  source?: string;
   department: string;
   department_icon?: string;
   doctor_name: string;
@@ -703,7 +704,7 @@ const AppointmentCard = ({
         marginTop: '12px',
       }}>
         <button
-          onClick={() => onCancel(appointment.id)}
+          onClick={() => onCancel(appointment.id as number)}
           style={{
             display: 'flex',
             flexDirection: 'row',

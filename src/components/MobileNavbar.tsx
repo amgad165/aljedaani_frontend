@@ -1,20 +1,23 @@
 import { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import LanguageSwitcher from './LanguageSwitcher';
 
 const MobileNavbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { isAuthenticated, user, logout } = useAuth();
+  const { t } = useTranslation('pages');
 
   const navItems = [
-    { label: 'About us', href: '/about' },
-    { label: 'Branches', href: '/branches' },
-    { label: 'Pharmacies', href: '#' },
-    { label: 'Departments', href: '/departments' },
-    { label: 'Doctors', href: '/doctors' },
-    { label: 'Patient experience', href: '#' },
-    { label: 'Media', href: '#' },
-    { label: 'More', href: '#' },
+    { label: t('aboutUs'), href: '/about' },
+    { label: t('branches'), href: '/branches' },
+    { label: t('pharmacies'), href: '#' },
+    { label: t('departments'), href: '/departments' },
+    { label: t('doctors'), href: '/doctors' },
+    { label: t('patientExperience'), href: '#' },
+    { label: t('media'), href: '#' },
+    { label: t('more'), href: '#' },
   ];
 
   return (
@@ -134,6 +137,15 @@ const MobileNavbar = () => {
             borderTop: '1px solid rgba(255, 255, 255, 0.2)',
             marginTop: '8px',
           }}>
+            {/* Language Switcher */}
+            <div style={{
+              marginBottom: '16px',
+              display: 'flex',
+              justifyContent: 'center',
+            }}>
+              <LanguageSwitcher />
+            </div>
+
             {isAuthenticated && user ? (
               <>
                 <Link
@@ -158,7 +170,7 @@ const MobileNavbar = () => {
                     <path d="M10 10C12.7614 10 15 7.76142 15 5C15 2.23858 12.7614 0 10 0C7.23858 0 5 2.23858 5 5C5 7.76142 7.23858 10 10 10Z" fill="#0155CB"/>
                     <path d="M10 12C4.47715 12 0 14.6863 0 18V20H20V18C20 14.6863 15.5228 12 10 12Z" fill="#0155CB"/>
                   </svg>
-                  Profile
+                  {t('profile')}
                 </Link>
                 <button
                   onClick={() => {
@@ -186,7 +198,7 @@ const MobileNavbar = () => {
                     <path d="M13 0H2C1.46957 0 0.960859 0.210714 0.585786 0.585786C0.210714 0.960859 0 1.46957 0 2V18C0 18.5304 0.210714 19.0391 0.585786 19.4142C0.960859 19.7893 1.46957 20 2 20H13C13.5304 20 14.0391 19.7893 14.4142 19.4142C14.7893 19.0391 15 18.5304 15 18V16C15 15.7348 14.8946 15.4804 14.7071 15.2929C14.5196 15.1054 14.2652 15 14 15C13.7348 15 13.4804 15.1054 13.2929 15.2929C13.1054 15.4804 13 15.7348 13 16V18H2V2H13V4C13 4.26522 13.1054 4.51957 13.2929 4.70711C13.4804 4.89464 13.7348 5 14 5C14.2652 5 14.5196 4.89464 14.7071 4.70711C14.8946 4.51957 15 4.26522 15 4V2C15 1.46957 14.7893 0.960859 14.4142 0.585786C14.0391 0.210714 13.5304 0 13 0Z" fill="#EF4444"/>
                     <path d="M19.7071 9.29289L16.7071 6.29289C16.5196 6.10536 16.2652 5.99999 16 5.99999C15.7348 5.99999 15.4804 6.10536 15.2929 6.29289C15.1054 6.48043 15 6.73478 15 6.99999C15 7.26521 15.1054 7.51956 15.2929 7.7071L17.5858 9.99999H7C6.73478 9.99999 6.48043 10.1054 6.29289 10.2929C6.10536 10.4804 6 10.7348 6 11C6 11.2652 6.10536 11.5196 6.29289 11.7071C6.48043 11.8946 6.73478 12 7 12H17.5858L15.2929 14.2929C15.1054 14.4804 15 14.7348 15 15C15 15.2652 15.1054 15.5196 15.2929 15.7071C15.4804 15.8946 15.7348 16 16 16C16.2652 16 16.5196 15.8946 16.7071 15.7071L19.7071 12.7071C19.8946 12.5196 20 12.2652 20 12C20 11.7348 19.8946 11.4804 19.7071 11.2929L16.7071 8.29289C16.5196 8.10536 16.2652 7.99999 16 7.99999C15.7348 7.99999 15.4804 8.10536 15.2929 8.29289L19.7071 9.29289Z" fill="#EF4444"/>
                   </svg>
-                  Log Out
+                  {t('logOut')}
                 </button>
               </>
             ) : (
@@ -208,7 +220,7 @@ const MobileNavbar = () => {
                     marginBottom: '12px',
                   }}
                 >
-                  Sign In
+                  {t('signIn')}
                 </Link>
                 <Link
                   to="/signup"
@@ -227,7 +239,7 @@ const MobileNavbar = () => {
                     marginBottom: '12px',
                   }}
                 >
-                  Sign Up
+                  {t('signUp')}
                 </Link>
               </>
             )}
@@ -249,7 +261,7 @@ const MobileNavbar = () => {
                 textAlign: 'center',
               }}
             >
-              Book Appointment
+              {t('bookAppointment')}
             </Link>
           </div>
         </div>

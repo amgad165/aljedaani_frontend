@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { ProfileData } from './types';
 import CustomSelect from '../../components/CustomSelect';
 import { 
@@ -182,33 +183,37 @@ const InputField = ({
 );
 
 // Verify Button Component
-const VerifyButton = () => (
-  <button style={{
-    display: 'flex',
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: '6px 8px',
-    width: '59px',
-    height: '24px',
-    borderRadius: '8px',
-    border: 'none',
-    background: 'transparent',
-    cursor: 'pointer',
-  }}>
-    <span style={{
-      fontFamily: 'Nunito, sans-serif',
-      fontWeight: 600,
-      fontSize: '10px',
-      lineHeight: '12px',
-      color: '#9EA2AE',
+const VerifyButton = () => {
+  const { t } = useTranslation('pages');
+  return (
+    <button style={{
+      display: 'flex',
+      flexDirection: 'row',
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: '6px 8px',
+      width: '59px',
+      height: '24px',
+      borderRadius: '8px',
+      border: 'none',
+      background: 'transparent',
+      cursor: 'pointer',
     }}>
-      Verify
-    </span>
-  </button>
-);
+      <span style={{
+        fontFamily: 'Nunito, sans-serif',
+        fontWeight: 600,
+        fontSize: '10px',
+        lineHeight: '12px',
+        color: '#9EA2AE',
+      }}>
+        {t('editProfileVerifyButton')}
+      </span>
+    </button>
+  );
+};
 
 const EditProfileTab = ({ profileData, onSave, onUpdate }: EditProfileTabProps) => {
+  const { t } = useTranslation('pages');
   const [formData, setFormData] = useState({
     email: profileData.email || '',
     phone: profileData.phone || '',
@@ -633,8 +638,8 @@ const EditProfileTab = ({ profileData, onSave, onUpdate }: EditProfileTabProps) 
                 maxWidth: window.innerWidth <= 768 ? '100%' : '368px',
               }}>
                 <InputField
-                  label="Change Email"
-                  placeholder="patient@gmail.com"
+                  label={t('editProfileChangeEmail')}
+                  placeholder={t('editProfileEmailPlaceholder')}
                   value={formData.email}
                   onChange={(value) => handleInputChange('email', value)}
                   disabled={true}
@@ -653,8 +658,8 @@ const EditProfileTab = ({ profileData, onSave, onUpdate }: EditProfileTabProps) 
                 maxWidth: window.innerWidth <= 768 ? '100%' : '368px',
               }}>
                 <InputField
-                  label="Change Mobile Number"
-                  placeholder="+966 58 667 8356"
+                  label={t('editProfileChangeMobile')}
+                  placeholder={t('editProfileMobilePlaceholder')}
                   value={formData.phone}
                   onChange={(value) => handleInputChange('phone', value)}
                 />
@@ -673,7 +678,7 @@ const EditProfileTab = ({ profileData, onSave, onUpdate }: EditProfileTabProps) 
             }}>
               {/* Change Address */}
               <InputField
-                label="Change Address"
+                label={t('editProfileChangeAddress')}
                 placeholder="3885 Al Bandariyyah Street Al Falah
 Riyadh 13314
 SAU"
@@ -684,30 +689,30 @@ SAU"
 
               {/* Marital Status */}
               <CustomSelect
-                label="Marital Status"
-                placeholder="Select your marital status"
+                label={t('editProfileMaritalStatus')}
+                placeholder={t('editProfileMaritalPlaceholder')}
                 value={formData.maritalStatus}
                 onChange={(value) => handleInputChange('maritalStatus', value)}
                 width={window.innerWidth <= 768 ? '100%' : '368px'}
                 options={[
-                  { value: 'single', label: 'Single' },
-                  { value: 'married', label: 'Married' },
-                  { value: 'divorced', label: 'Divorced' },
-                  { value: 'widowed', label: 'Widowed' },
+                  { value: 'single', label: t('editProfileMaritalSingle') },
+                  { value: 'married', label: t('editProfileMaritalMarried') },
+                  { value: 'divorced', label: t('editProfileMaritalDivorced') },
+                  { value: 'widowed', label: t('editProfileMaritalWidowed') },
                 ]}
               />
 
               {/* Religion */}
               <CustomSelect
-                label="Religion"
-                placeholder="Select your religion"
+                label={t('editProfileReligion')}
+                placeholder={t('editProfileReligionPlaceholder')}
                 value={formData.religion}
                 onChange={(value) => handleInputChange('religion', value)}
                 width={window.innerWidth <= 768 ? '100%' : '368px'}
                 options={[
-                  { value: 'islam', label: 'Islam' },
-                  { value: 'christianity', label: 'Christianity' },
-                  { value: 'other', label: 'Other' },
+                  { value: 'islam', label: t('editProfileReligionIslam') },
+                  { value: 'christianity', label: t('editProfileReligionChristianity') },
+                  { value: 'other', label: t('editProfileReligionOther') },
                 ]}
               />
             </div>
@@ -747,7 +752,7 @@ SAU"
             lineHeight: '20px',
             color: '#FFFFFF',
           }}>
-            {saving ? 'Saving Profile...' : 'Update Profile'}
+            {saving ? t('editProfileSavingButton') : t('editProfileUpdateButton')}
           </span>
         </button>
 
@@ -772,7 +777,7 @@ SAU"
             color: '#061F42',
             marginBottom: '4px',
           }}>
-            Change Password
+            {t('editProfileChangePasswordSection')}
           </div>
 
           <div style={{
@@ -799,7 +804,7 @@ SAU"
                 lineHeight: '24px',
                 color: '#061F42',
               }}>
-                Current Password
+                {t('editProfileCurrentPassword')}
               </div>
               <div style={{
                 boxSizing: 'border-box',
@@ -816,7 +821,7 @@ SAU"
               }}>
                 <input
                   type={showCurrentPassword ? 'text' : 'password'}
-                  placeholder="Enter current password"
+                  placeholder={t('editProfileCurrentPasswordPlaceholder')}
                   value={passwordData.current_password}
                   onChange={(e) => handlePasswordChange('current_password', e.target.value)}
                   style={{
@@ -874,7 +879,7 @@ SAU"
                 lineHeight: '24px',
                 color: '#061F42',
               }}>
-                New Password
+                {t('editProfileNewPassword')}
               </div>
               <div style={{
                 boxSizing: 'border-box',
@@ -891,7 +896,7 @@ SAU"
               }}>
                 <input
                   type={showNewPassword ? 'text' : 'password'}
-                  placeholder="Min 8 characters"
+                  placeholder={t('editProfileNewPasswordPlaceholder')}
                   value={passwordData.password}
                   onChange={(e) => handlePasswordChange('password', e.target.value)}
                   style={{
@@ -949,7 +954,7 @@ SAU"
                 lineHeight: '24px',
                 color: '#061F42',
               }}>
-                Confirm Password
+                {t('editProfileConfirmPassword')}
               </div>
               <div style={{
                 boxSizing: 'border-box',
@@ -966,7 +971,7 @@ SAU"
               }}>
                 <input
                   type={showConfirmPassword ? 'text' : 'password'}
-                  placeholder="Confirm new password"
+                  placeholder={t('editProfileConfirmPasswordPlaceholder')}
                   value={passwordData.password_confirmation}
                   onChange={(e) => handlePasswordChange('password_confirmation', e.target.value)}
                   style={{
@@ -1035,7 +1040,7 @@ SAU"
               lineHeight: '16px',
               color: '#FFFFFF',
             }}>
-              {changingPassword ? 'Changing...' : 'Change Password'}
+              {changingPassword ? t('editProfileChangingPasswordButton') : t('editProfileChangePasswordButton')}
             </span>
           </button>
         </div>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useResponsiveNavbar } from '../hooks/useResponsiveNavbar';
 import { branchesService, type Branch } from '../services/branchesService';
 import { getTranslatedField } from '../utils/localeHelpers';
@@ -6,6 +7,7 @@ import FloatingContactButtons from '../components/FloatingContactButtons';
 import Footer from '../components/Footer';
 
 const ContactPage: React.FC = () => {
+  const { t, i18n } = useTranslation('pages');
   const ResponsiveNavbar = useResponsiveNavbar();
   const [branches, setBranches] = useState<Branch[]>([]);
   const [loading, setLoading] = useState(true);
@@ -108,6 +110,7 @@ const ContactPage: React.FC = () => {
         alignItems: 'flex-start',
         justifyContent: 'center',
         padding: window.innerWidth <= 768 ? '90px 16px 40px' : '131px 20px 40px',
+        direction: i18n.language === 'ar' ? 'rtl' : 'ltr',
       }}>
         <div style={{
           width: '100%',
@@ -132,12 +135,12 @@ const ContactPage: React.FC = () => {
               fontWeight: 600,
               fontSize: window.innerWidth <= 768 ? '24px' : '44px',
               lineHeight: '50px',
-              textAlign: 'left',
+              textAlign: i18n.language === 'ar' ? 'right' : 'left',
               color: '#061F42',
               margin: 0,
               flexGrow: 1,
             }}>
-              Contact us
+              {t('contactUs')}
             </h1>
           </div>
 
@@ -160,7 +163,7 @@ const ContactPage: React.FC = () => {
               margin: 0,
               flexGrow: 1,
             }}>
-              Our Branches
+              {t('ourBranches')}
             </h2>
           </div>
 
@@ -350,7 +353,7 @@ const ContactPage: React.FC = () => {
                               lineHeight: '12px',
                               color: '#FFFFFF',
                             }}>
-                              Call Now
+                              {t('callNow')}
                             </span>
                           </button>
                         </div>
@@ -365,7 +368,7 @@ const ContactPage: React.FC = () => {
                           margin: 0,
                           alignSelf: 'stretch',
                         }}>
-                          {branch.address || 'Jeddah, Saudi Arabia'}
+                          {getTranslatedField(branch.address, '') || 'Jeddah, Saudi Arabia'}
                         </p>
                       </div>
                     </div>
@@ -412,8 +415,10 @@ const ContactPage: React.FC = () => {
                   fontSize: '16px',
                   lineHeight: '24px',
                   color: '#061F42',
+                  textAlign: i18n.language === 'ar' ? 'right' : 'left',
+                  width: '100%',
                 }}>
-                  Name*
+                  {t('name')}*
                 </label>
                 <input
                   type="text"
@@ -421,7 +426,7 @@ const ContactPage: React.FC = () => {
                   value={formData.name}
                   onChange={handleInputChange}
                   required
-                  placeholder="Type your name"
+                  placeholder={t('typeYourName')}
                   style={{
                     boxSizing: 'border-box',
                     width: '100%',
@@ -452,8 +457,10 @@ const ContactPage: React.FC = () => {
                   fontSize: '16px',
                   lineHeight: '24px',
                   color: '#061F42',
+                  textAlign: i18n.language === 'ar' ? 'right' : 'left',
+                  width: '100%',
                 }}>
-                  Mobile Number*
+                  {t('mobileNumber')}*
                 </label>
                 <input
                   type="tel"
@@ -461,7 +468,7 @@ const ContactPage: React.FC = () => {
                   value={formData.mobile}
                   onChange={handleInputChange}
                   required
-                  placeholder="Type your mobile number"
+                  placeholder={t('typeYourMobile')}
                   style={{
                     boxSizing: 'border-box',
                     width: '100%',
@@ -492,8 +499,10 @@ const ContactPage: React.FC = () => {
                   fontSize: '16px',
                   lineHeight: '24px',
                   color: '#061F42',
+                  textAlign: i18n.language === 'ar' ? 'right' : 'left',
+                  width: '100%',
                 }}>
-                  Email*
+                  {t('email')}*
                 </label>
                 <input
                   type="email"
@@ -501,7 +510,7 @@ const ContactPage: React.FC = () => {
                   value={formData.email}
                   onChange={handleInputChange}
                   required
-                  placeholder="Type your email"
+                  placeholder={t('typeYourEmail')}
                   style={{
                     boxSizing: 'border-box',
                     width: '100%',
@@ -543,15 +552,17 @@ const ContactPage: React.FC = () => {
                   fontSize: '16px',
                   lineHeight: '24px',
                   color: '#061F42',
+                  textAlign: i18n.language === 'ar' ? 'right' : 'left',
+                  width: '100%',
                 }}>
-                  Message*
+                  {t('message')}*
                 </label>
                 <textarea
                   name="message"
                   value={formData.message}
                   onChange={handleInputChange}
                   required
-                  placeholder="Type your message"
+                  placeholder={t('typeYourMessage')}
                   style={{
                     boxSizing: 'border-box',
                     width: '100%',
@@ -608,7 +619,7 @@ const ContactPage: React.FC = () => {
                   color: '#FFFFFF',
                   padding: '0 8px',
                 }}>
-                  {submitting ? 'Sending...' : 'Send'}
+                  {submitting ? t('sending') : t('send')}
                 </span>
               </button>
 
