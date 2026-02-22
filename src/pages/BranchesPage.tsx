@@ -976,7 +976,7 @@ const BranchesPage: React.FC = () => {
                     lineHeight: '20px',
                     color: '#061F42',
                   }}>
-                    {selectedBranch?.name || t('selectBranch')}
+                    {selectedBranch ? getTranslatedField(selectedBranch.name, '') : t('selectBranch')}
                   </span>
                 </div>
                 <svg 

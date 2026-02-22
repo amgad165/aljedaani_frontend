@@ -197,6 +197,102 @@ const DepartmentDetailsPage: React.FC = () => {
     }, 150);
   }, [activeSidebarItem]);
 
+  // Normalize sidebar items to handle various data formats
+  const normalizeSidebarItems = (items: any, includeOverview: boolean = false, tabType?: string): SidebarItem[] => {
+    const result: SidebarItem[] = [];
+    
+    // Check if this is a tab type where backend includes Overview in sidebar_items
+    const backendIncludesOverview = tabType && ['opd_services', 'inpatient_services', 'investigations'].includes(tabType);
+    
+    // Add Overview as first item if requested and not already included by backend
+    if (includeOverview && !backendIncludesOverview) {
+      result.push({ id: 'overview_main', title: 'Overview', sort_order: -1 });
+    }
+    
+    if (!items) return result;
+    
+    // Handle bilingual structure: { "0": overview, "en": [...], "ar": [...] }
+    if (!Array.isArray(items) && typeof items === 'object' && items !== null) {
+      // Check if this is the bilingual structure with language keys
+      const hasLanguageKeys = ('en' in items || 'ar' in items) && '0' in items;
+      
+      if (hasLanguageKeys) {
+        // Extract the current language array
+        const currentLang = i18n.language || 'en';
+        const langItems = items[currentLang] || items['en'] || [];
+        
+        // Extract overview from key "0" if backend includes it
+        if (backendIncludesOverview && items['0']) {
+          const overviewItem = items['0'];
+          items = [overviewItem, ...langItems];
+        } else {
+          items = langItems;
+        }
+      } else {
+        // Handle old format with numeric keys
+        const itemsArray = Object.values(items).filter(
+          (v): v is string | SidebarItem => typeof v === 'string' || (typeof v === 'object' && v !== null && 'title' in v)
+        );
+        items = itemsArray;
+      }
+    }
+    
+    if (!Array.isArray(items) || items.length === 0) return result;
+    
+    items.forEach((item, idx) => {
+      // Handle string format
+      if (typeof item === 'string') {
+        result.push({ id: `legacy_${idx}`, title: item, sort_order: idx });
+        return;
+      }
+      
+      // Handle array of characters (corrupted data)
+      if (Array.isArray(item)) {
+        const title = item.join('');
+        if (title.trim()) {
+          result.push({ id: `recovered_${idx}`, title, sort_order: idx });
+        }
+        return;
+      }
+      
+      // Handle object format
+      if (typeof item === 'object' && item !== null) {
+        // Check for corrupted data with numeric string keys
+        const hasNumericKeys = Object.keys(item).some(key => /^\d+$/.test(key));
+        
+        // Extract title - handle both string and bilingual object {en, ar}
+        let title = typeof item.title === 'string' 
+          ? item.title 
+          : (typeof item.title === 'object' && item.title !== null)
+            ? getTranslatedField(item.title, '')
+            : '';
+        
+        // If no title but has numeric keys, reconstruct from those
+        if (!title && hasNumericKeys) {
+          const chars = Object.keys(item)
+            .filter(key => /^\d+$/.test(key))
+            .sort((a, b) => parseInt(a) - parseInt(b))
+            .map(key => (item as unknown as Record<string, string>)[key]);
+          title = chars.join('');
+        }
+        
+        if (title && title.trim()) {
+          const sidebarItem: SidebarItem = {
+            id: item.id || `item_${idx}`,
+            title: title,
+            image: item.image,
+            description: item.description,  // Keep original format (string or bilingual object)
+            service_list: Array.isArray(item.service_list) ? item.service_list : [],
+            sort_order: item.sort_order ?? idx
+          };
+          result.push(sidebarItem);
+        }
+      }
+    });
+    
+    return result;
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       if (!id) return;
@@ -256,22 +352,14 @@ const DepartmentDetailsPage: React.FC = () => {
         // Get current tab content
         const currentContent = tabContents.find(tc => tc.tab_type === activeTab);
         if (currentContent && currentContent.sidebar_items) {
-          // Simple normalization for auto-scroll
-          const items = Array.isArray(currentContent.sidebar_items) 
-            ? currentContent.sidebar_items 
-            : Object.values(currentContent.sidebar_items);
+          // Use the same normalization function as rendering
+          const normalizedItems = normalizeSidebarItems(currentContent.sidebar_items, false, currentContent.tab_type);
           
-          if (items[currentIndex]) {
-            const item = items[currentIndex];
-            const itemId = typeof item === 'object' && item !== null && 'id' in item 
-              ? item.id 
-              : `item_${currentIndex}`;
+          if (normalizedItems[currentIndex]) {
+            const item = normalizedItems[currentIndex];
             
-            if (activeSidebarItem?.id !== itemId) {
-              const sidebarItem = typeof item === 'string'
-                ? { id: `item_${currentIndex}`, title: item, sort_order: currentIndex }
-                : { ...item, id: itemId };
-              setActiveSidebarItem(sidebarItem as SidebarItem);
+            if (activeSidebarItem?.id !== item.id) {
+              setActiveSidebarItem(item);
             }
           }
         }
@@ -702,103 +790,6 @@ const DepartmentDetailsPage: React.FC = () => {
     );
   };
 
-  // Helper to normalize sidebar items (handle both old string format and new object format)
-  // For opd_services, inpatient_services, and investigations, Overview is now included in sidebar_items from backend
-  const normalizeSidebarItems = (items: any, includeOverview: boolean = false, tabType?: string): SidebarItem[] => {
-    const result: SidebarItem[] = [];
-    
-    // Check if this is a tab type where backend includes Overview in sidebar_items
-    const backendIncludesOverview = tabType && ['opd_services', 'inpatient_services', 'investigations'].includes(tabType);
-    
-    // Add Overview as first item if requested and not already included by backend
-    if (includeOverview && !backendIncludesOverview) {
-      result.push({ id: 'overview_main', title: 'Overview', sort_order: -1 });
-    }
-    
-    if (!items) return result;
-    
-    // Handle bilingual structure: { "0": overview, "en": [...], "ar": [...] }
-    if (!Array.isArray(items) && typeof items === 'object' && items !== null) {
-      // Check if this is the bilingual structure with language keys
-      const hasLanguageKeys = ('en' in items || 'ar' in items) && '0' in items;
-      
-      if (hasLanguageKeys) {
-        // Extract the current language array
-        const currentLang = i18n.language || 'en';
-        const langItems = items[currentLang] || items['en'] || [];
-        
-        // Extract overview from key "0" if backend includes it
-        if (backendIncludesOverview && items['0']) {
-          const overviewItem = items['0'];
-          items = [overviewItem, ...langItems];
-        } else {
-          items = langItems;
-        }
-      } else {
-        // Handle old format with numeric keys
-        const itemsArray = Object.values(items).filter(
-          (v): v is string | SidebarItem => typeof v === 'string' || (typeof v === 'object' && v !== null && 'title' in v)
-        );
-        items = itemsArray;
-      }
-    }
-    
-    if (!Array.isArray(items) || items.length === 0) return result;
-    
-    items.forEach((item, idx) => {
-      // Handle string format
-      if (typeof item === 'string') {
-        result.push({ id: `legacy_${idx}`, title: item, sort_order: idx });
-        return;
-      }
-      
-      // Handle array of characters (corrupted data)
-      if (Array.isArray(item)) {
-        const title = item.join('');
-        if (title.trim()) {
-          result.push({ id: `recovered_${idx}`, title, sort_order: idx });
-        }
-        return;
-      }
-      
-      // Handle object format
-      if (typeof item === 'object' && item !== null) {
-        // Check for corrupted data with numeric string keys
-        const hasNumericKeys = Object.keys(item).some(key => /^\d+$/.test(key));
-        
-        // Extract title - handle both string and bilingual object {en, ar}
-        let title = typeof item.title === 'string' 
-          ? item.title 
-          : (typeof item.title === 'object' && item.title !== null)
-            ? getTranslatedField(item.title, '')
-            : '';
-        
-        // If no title but has numeric keys, reconstruct from those
-        if (!title && hasNumericKeys) {
-          const chars = Object.keys(item)
-            .filter(key => /^\d+$/.test(key))
-            .sort((a, b) => parseInt(a) - parseInt(b))
-            .map(key => (item as unknown as Record<string, string>)[key]);
-          title = chars.join('');
-        }
-        
-        if (title && title.trim()) {
-          const sidebarItem: SidebarItem = {
-            id: item.id || `item_${idx}`,
-            title: title,
-            image: item.image,
-            description: item.description,  // Keep original format (string or bilingual object)
-            service_list: Array.isArray(item.service_list) ? item.service_list : [],
-            sort_order: item.sort_order ?? idx
-          };
-          result.push(sidebarItem);
-        }
-      }
-    });
-    
-    return result;
-  };
-
   const renderSidebar = (items: (string | SidebarItem)[] | undefined, includeOverview: boolean = false, tabType?: string) => {
     const normalizedItems = normalizeSidebarItems(items, includeOverview, tabType);
     if (normalizedItems.length === 0) return null;
@@ -921,7 +912,7 @@ const DepartmentDetailsPage: React.FC = () => {
           return (
             <div
               key={item.id || `sidebar-${index}`}
-              onClick={() => !isMobile && handleSidebarItemChange(item)}
+              onClick={() => handleSidebarItemChange(item)}
               style={{
                 boxSizing: 'border-box',
                 display: 'flex',
@@ -935,7 +926,7 @@ const DepartmentDetailsPage: React.FC = () => {
                 background: isSelected ? '#DAF8FF' : '#FFFFFF',
                 border: isSelected ? '2px solid #15C9FA' : '1px solid #D8D8D8',
                 borderRadius: '12px',
-                cursor: isMobile ? 'default' : 'pointer',
+                cursor: 'pointer',
                 transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                 transform: isSelected ? 'translateX(4px)' : 'translateX(0)',
                 boxShadow: isSelected ? '0 4px 12px rgba(21, 201, 250, 0.2)' : '0 1px 3px rgba(0, 0, 0, 0.05)',

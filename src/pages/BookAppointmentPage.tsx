@@ -463,12 +463,13 @@ const BookAppointmentPage = () => {
         const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
         const token = localStorage.getItem('auth_token') || '';
         
-        // Calculate date range
+        // Calculate date range using local timezone (Saudi Arabia time)
         const today = new Date();
-        const startDate = today.toISOString().split('T')[0];
+        // Format date as YYYY-MM-DD using local time (not UTC)
+        const startDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
         const endDate = new Date(today);
         endDate.setDate(endDate.getDate() + parseInt(dateRange));
-        const endDateStr = endDate.toISOString().split('T')[0];
+        const endDateStr = `${endDate.getFullYear()}-${String(endDate.getMonth() + 1).padStart(2, '0')}-${String(endDate.getDate()).padStart(2, '0')}`;
 
         const response = await fetch(
           `${API_BASE_URL}/appointments/available-slots/range?doctor_id=${doctorSelection.doctor}&start_date=${startDate}&end_date=${endDateStr}`,
@@ -2126,7 +2127,7 @@ const BookAppointmentPage = () => {
                           color: '#6B7280',
                           marginTop: '2px',
                         }}>
-                          {doctor.department_name} • {doctor.branch_name}
+                          {getTranslatedField(doctor.department_name, '')} • {getTranslatedField(doctor.branch_name, '')}
                         </div>
                       </div>
                     ))}

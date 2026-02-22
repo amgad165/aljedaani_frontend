@@ -311,8 +311,11 @@ const RescheduleModal = ({
     try {
       const token = localStorage.getItem('auth_token');
       const today = new Date();
-      const startDate = today.toISOString().split('T')[0];
-      const endDate = new Date(today.setDate(today.getDate() + 30)).toISOString().split('T')[0];
+      // Format date as YYYY-MM-DD using local time (not UTC)
+      const startDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+      const endDateObj = new Date(today);
+      endDateObj.setDate(endDateObj.getDate() + 30);
+      const endDate = `${endDateObj.getFullYear()}-${String(endDateObj.getMonth() + 1).padStart(2, '0')}-${String(endDateObj.getDate()).padStart(2, '0')}`;
 
       const response = await fetch(
         `${API_URL}/appointments/available-slots/range?doctor_id=${appointment.doctor_id}&start_date=${startDate}&end_date=${endDate}`,

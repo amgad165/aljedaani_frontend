@@ -316,14 +316,13 @@ const DepartmentsPage: React.FC = () => {
                 alignItems: 'center',
                 padding: '0px',
                 gap: '12px',
-                width: '648px',
                 height: '16px',
                 flex: 'none',
                 order: 0,
                 flexGrow: 1,
+                minWidth: 0,
               }}>
                 <span style={{
-                  width: '648px',
                   height: '16px',
                   fontFamily: 'Nunito, sans-serif',
                   fontStyle: 'normal',
@@ -336,6 +335,10 @@ const DepartmentsPage: React.FC = () => {
                   flex: 'none',
                   order: 1,
                   flexGrow: 1,
+                  minWidth: 0,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
                 }}>
                   {selectedBranchId === null 
                     ? t('allBranches') 

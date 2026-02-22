@@ -72,12 +72,12 @@ const DoctorAvailability: React.FC = () => {
     const fetchAvailability = async () => {
       setLoading(true);
       try {
-        // Calculate date range
+        // Calculate date range using local time (not UTC)
         const today = new Date();
-        const startDate = today.toISOString().split('T')[0]; // YYYY-MM-DD
+        const startDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
         const endDate = new Date(today);
         endDate.setDate(endDate.getDate() + parseInt(dateRange));
-        const endDateStr = endDate.toISOString().split('T')[0];
+        const endDateStr = `${endDate.getFullYear()}-${String(endDate.getMonth() + 1).padStart(2, '0')}-${String(endDate.getDate()).padStart(2, '0')}`;
 
         const response = await fetch(
           `${API_BASE_URL}/appointments/available-slots/range?doctor_id=${selectedDoctorId}&start_date=${startDate}&end_date=${endDateStr}`,

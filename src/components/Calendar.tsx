@@ -152,7 +152,7 @@ const Calendar: React.FC<CalendarProps> = ({
           style={{
             display: 'flex',
             flexDirection: 'row',
-            justifyContent: 'flex-start',
+            justifyContent: 'center',
             alignItems: 'flex-start',
             padding: window.innerWidth <= 768 ? '0px 8px' : '0px 24px',
             gap: window.innerWidth <= 768 ? '10px' : '14px',
@@ -252,17 +252,17 @@ const Calendar: React.FC<CalendarProps> = ({
       <div style={{
         display: 'flex',
         flexDirection: 'row',
-        justifyContent: 'space-between',
+        justifyContent: 'center',
         alignItems: 'flex-start',
         padding: window.innerWidth <= 768 ? '0px 8px' : '0px 24px',
-        gap: window.innerWidth <= 768 ? '4px' : '6px',
+        gap: window.innerWidth <= 768 ? '10px' : '14px',
         marginBottom: '16px',
       }}>
         {daysOfWeek.map((day) => (
           <div
             key={day}
             style={{
-              width: '32px',
+              width: '24px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
