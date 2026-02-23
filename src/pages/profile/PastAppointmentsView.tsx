@@ -103,9 +103,10 @@ const BackButton = ({ onClick }: { onClick: () => void }) => (
 
 // Appointment Card Component
 const AppointmentCard = ({ appointment }: { appointment: Appointment }) => {
-  const formatDate = (datetime: string) => {
-    const date = new Date(datetime);
-    return date.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  const formatDate = (dateString: string) => {
+    // Parse YYYY-MM-DD format without timezone conversion
+    const [year, month, day] = dateString.split('-');
+    return `${day}/${month}/${year}`;
   };
 
   const formatTime = (time: string) => {
@@ -267,7 +268,7 @@ const AppointmentCard = ({ appointment }: { appointment: Appointment }) => {
           textAlign: 'center',
           color: '#1F57A4',
         }}>
-          {formatDate(appointment.appointment_datetime)}
+          {formatDate(appointment.appointment_date)}
         </div>
       </div>
 
