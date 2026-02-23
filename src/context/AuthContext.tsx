@@ -17,6 +17,8 @@ interface User {
   religion?: string;
   address?: string;
   profile_photo?: string;
+  is_his_patient?: boolean;
+  his_patient_file_number?: string;
 }
 
 interface AuthContextType {

@@ -44,6 +44,12 @@ export interface AuthResponse {
     nationality?: string;
     medical_record_number?: string;
     national_id?: string;
+    marital_status?: string;
+    religion?: string;
+    address?: string;
+    profile_photo?: string;
+    is_his_patient?: boolean;
+    his_patient_file_number?: string;
   };
   token: string;
 }

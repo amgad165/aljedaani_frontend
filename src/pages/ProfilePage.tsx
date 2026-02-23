@@ -51,7 +51,7 @@ const ProfilePage = () => {
     avatar: user?.profile_photo || '/assets/images/general/person_template.png',
     email: user?.email || 'patient@gmail.com',
     phone: user?.phone || '+966 58 XXX XXXX',
-    medicalRecordNumber: user?.medical_record_number || 'N/A',
+    medicalRecordNumber: user?.his_patient_file_number || user?.medical_record_number || 'N/A',
     nationalId: user?.national_id || 'N/A',
     dateOfBirth: user?.date_of_birth || '08/12/1988',
     address: user?.address || '3885 Al Bandariyyah Street Al Falah\nRiyadh 13314\nSAU',
