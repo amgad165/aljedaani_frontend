@@ -8,6 +8,7 @@ interface Department {
   name: string;
   icon: string | null;
   description: string | null;
+  his_code: string | null;
   is_active: boolean;
   created_at: string;
   updated_at: string;
@@ -19,6 +20,7 @@ interface FormData {
   icon: string;
   description_en: string;
   description_ar: string;
+  his_code: string;
   is_active: boolean;
 }
 
@@ -35,6 +37,7 @@ const AdminDepartments: React.FC = () => {
     icon: '',
     description_en: '',
     description_ar: '',
+    his_code: '',
     is_active: true
   });
   const [activeFormTab, setActiveFormTab] = useState<'en' | 'ar'>('en');
@@ -80,7 +83,7 @@ const AdminDepartments: React.FC = () => {
   const handleCreate = () => {
     setModalMode('create');
     setSelectedDepartment(null);
-    setFormData({ name_en: '', name_ar: '', icon: '', description_en: '', description_ar: '', is_active: true });
+    setFormData({ name_en: '', name_ar: '', icon: '', description_en: '', description_ar: '', his_code: '', is_active: true });
     setActiveFormTab('en');
     setIconFile(null);
     setIconPreview(null);
@@ -101,6 +104,7 @@ const AdminDepartments: React.FC = () => {
       icon: dept.icon || '',
       description_en: (descObj && descObj.en) || '',
       description_ar: (descObj && descObj.ar) || '',
+      his_code: dept.his_code || '',
       is_active: dept.is_active
     });
     setActiveFormTab('en');
@@ -172,6 +176,10 @@ const AdminDepartments: React.FC = () => {
       formDataToSend.append('name', JSON.stringify({ en: formData.name_en, ar: formData.name_ar }));
       if (formData.description_en || formData.description_ar) {
         formDataToSend.append('description', JSON.stringify({ en: formData.description_en, ar: formData.description_ar }));
+      }
+      
+      if (formData.his_code) {
+        formDataToSend.append('his_code', formData.his_code);
       }
       
       if (iconFile) {
@@ -308,6 +316,7 @@ const AdminDepartments: React.FC = () => {
                   <tr>
                     <th style={thStyle}>Department</th>
                     <th style={thStyle}>Description</th>
+                    <th style={thStyle}>HIS Code</th>
                     <th style={thStyle}>Status</th>
                     <th style={thStyle}>Created</th>
                     <th style={{ ...thStyle, textAlign: 'right' }}>Actions</th>
@@ -338,6 +347,9 @@ const AdminDepartments: React.FC = () => {
                       </td>
                       <td style={tdStyle}>
                         <span style={{ color: '#6B7280', fontSize: '14px' }}>{getTranslatedField(dept.description, '') || '-'}</span>
+                      </td>
+                      <td style={tdStyle}>
+                        <span style={{ color: '#374151', fontSize: '14px', fontWeight: 500 }}>{dept.his_code || '-'}</span>
                       </td>
                       <td style={tdStyle}>
                         <span style={statusBadgeStyle(dept.is_active)}>
@@ -488,6 +500,18 @@ const AdminDepartments: React.FC = () => {
                       </div>
                     </>
                   )}
+
+                  {/* HIS Code field - always visible */}
+                  <div style={formGroupStyle}>
+                    <label style={labelStyle}>HIS Code</label>
+                    <input
+                      type="text"
+                      value={formData.his_code}
+                      onChange={(e) => setFormData({ ...formData, his_code: e.target.value })}
+                      style={inputStyle}
+                      placeholder="e.g., DEPT001"
+                    />
+                  </div>
 
                   {/* Icon field - always visible */}
                   <div style={formGroupStyle}>

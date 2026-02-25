@@ -391,6 +391,14 @@ const BookAppointmentPage = () => {
     }
   }, [isAuthenticated, user]);
 
+  // Scroll to top when step changes
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  }, [currentStep]);
+
   // Countdown timer effect
   useEffect(() => {
     if (resendCountdown > 0) {

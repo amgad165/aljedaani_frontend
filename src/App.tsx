@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { AuthProvider } from './context/AuthContext';
 import ThemeStyles from './components/ThemeStyles';
 import { injectGlobalStyles } from './utils/globalStyles';
@@ -48,9 +49,18 @@ import ProtectedRoute from './components/admin/ProtectedRoute';
 import './App.css';
 
 function App() {
+  const { i18n } = useTranslation();
+  
   useEffect(() => {
     injectGlobalStyles();
   }, []);
+
+  // Update HTML lang attribute when language changes
+  useEffect(() => {
+    document.documentElement.lang = i18n.language;
+    // Update direction for RTL languages
+    document.documentElement.dir = i18n.language === 'ar' ? 'rtl' : 'ltr';
+  }, [i18n.language]);
 
   return (
     <AuthProvider>
