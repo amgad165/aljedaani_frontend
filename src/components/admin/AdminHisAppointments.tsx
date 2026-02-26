@@ -701,32 +701,30 @@ const AdminHisAppointments: React.FC = () => {
                 Appointment Details
               </h2>
               <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                {/* Reset Sync Button */}
-                {(selectedAppointment.needs_cancel_sync || selectedAppointment.needs_resync || selectedAppointment.cancelled_at) && (
-                  <button
-                    onClick={() => setShowResetConfirm(true)}
-                    disabled={isResetting}
-                    style={{
-                      padding: '8px 16px',
-                      background: isResetting ? '#9ca3af' : '#f59e0b',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '8px',
-                      fontSize: '14px',
-                      fontWeight: '600',
-                      cursor: isResetting ? 'not-allowed' : 'pointer',
-                      transition: 'background 0.2s',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '6px',
-                    }}
-                    onMouseEnter={(e) => !isResetting && (e.currentTarget.style.background = '#d97706')}
-                    onMouseLeave={(e) => !isResetting && (e.currentTarget.style.background = '#f59e0b')}
-                  >
-                    <span>🔄</span>
-                    <span>{isResetting ? 'Resetting...' : 'Reset Sync'}</span>
-                  </button>
-                )}
+                {/* Reset Sync Button - Now shows for ANY appointment */}
+                <button
+                  onClick={() => setShowResetConfirm(true)}
+                  disabled={isResetting}
+                  style={{
+                    padding: '8px 16px',
+                    background: isResetting ? '#9ca3af' : '#f59e0b',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    cursor: isResetting ? 'not-allowed' : 'pointer',
+                    transition: 'background 0.2s',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                  }}
+                  onMouseEnter={(e) => !isResetting && (e.currentTarget.style.background = '#d97706')}
+                  onMouseLeave={(e) => !isResetting && (e.currentTarget.style.background = '#f59e0b')}
+                >
+                  <span>🔄</span>
+                  <span>{isResetting ? 'Resetting...' : 'Reset Status'}</span>
+                </button>
                 <button
                   onClick={closeModal}
                   style={{
@@ -917,12 +915,12 @@ const AdminHisAppointments: React.FC = () => {
                 color: '#0a4d68',
                 marginBottom: '12px',
               }}>
-                Reset Sync Status?
+                Reset Appointment Status?
               </h3>
               <p style={{ color: '#6b7280', fontSize: '15px', lineHeight: '1.6' }}>
-                This will reset the appointment to "Booked" status and clear all sync flags.
+                This will reset the appointment to "Booked" status and clear all sync flags and cancellation data.
                 <br />
-                <strong>Use this for testing only.</strong>
+                <strong>Use this for testing or to force-reset a stuck appointment.</strong>
               </p>
               <div style={{
                 marginTop: '16px',
