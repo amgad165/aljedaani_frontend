@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import AdminLayout from './AdminLayout';
-import { getHisAppointments, getHisAppointmentsSyncStats } from '../../services/hisAppointmentsService';
+import { getHisAppointments, getHisAppointmentsSyncStats, resetHisAppointmentSync } from '../../services/hisAppointmentsService';
 import type { HisAppointment, HisAppointmentsSyncStats } from '../../services/hisAppointmentsService';
 
 const AdminHisAppointments: React.FC = () => {
@@ -15,6 +15,8 @@ const AdminHisAppointments: React.FC = () => {
   const [selectedAppointment, setSelectedAppointment] = useState<HisAppointment | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [searchColumn, setSearchColumn] = useState('file_number');
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -68,6 +70,55 @@ const AdminHisAppointments: React.FC = () => {
     return timeString;
   };
 
+  const formatDateTime = (dateTimeString: string | null) => {
+    if (!dateTimeString) return 'N/A';
+    return new Date(dateTimeString).toLocaleString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
+
+  const getSyncStatusBadge = (appointment: HisAppointment) => {
+    // Check if cancelled
+    if (appointment.status === '9' || appointment.cancelled_at) {
+      if (appointment.needs_cancel_sync) {
+        return {
+          text: 'Pending Cancel Sync',
+          bg: '#fef3c7',
+          color: '#92400e',
+          icon: '⏳'
+        };
+      }
+      return {
+        text: 'Cancelled',
+        bg: '#fee2e2',
+        color: '#991b1b',
+        icon: '✕'
+      };
+    }
+
+    // Check if needs resync (rescheduled)
+    if (appointment.needs_resync) {
+      return {
+        text: 'Pending Resync',
+        bg: '#fef3c7',
+        color: '#92400e',
+        icon: '⏳'
+      };
+    }
+
+    // Normal synced status
+    return {
+      text: 'Synced',
+      bg: '#dcfce7',
+      color: '#166534',
+      icon: '✓'
+    };
+  };
+
   const handleRowClick = (appointment: HisAppointment) => {
     setSelectedAppointment(appointment);
     setShowModal(true);
@@ -76,6 +127,27 @@ const AdminHisAppointments: React.FC = () => {
   const closeModal = () => {
     setShowModal(false);
     setSelectedAppointment(null);
+    setShowResetConfirm(false);
+  };
+
+  const handleResetSync = async () => {
+    if (!selectedAppointment) return;
+
+    setIsResetting(true);
+    try {
+      await resetHisAppointmentSync(selectedAppointment.id);
+      alert('✅ Sync flags reset successfully! The appointment status has been restored to "Booked" and you can now cancel/reschedule it again.');
+      
+      // Refresh the appointments list and close modal
+      await fetchAppointments();
+      closeModal();
+    } catch (error) {
+      console.error('Error resetting sync:', error);
+      alert('❌ Failed to reset sync flags: ' + (error instanceof Error ? error.message : 'Unknown error'));
+    } finally {
+      setIsResetting(false);
+      setShowResetConfirm(false);
+    }
   };
 
   return (
@@ -286,6 +358,7 @@ const AdminHisAppointments: React.FC = () => {
                       <th style={tableHeaderStyle}>Doctor</th>
                       <th style={tableHeaderStyle}>Department</th>
                       <th style={tableHeaderStyle}>Status</th>
+                      <th style={tableHeaderStyle}>Sync Status</th>
                       <th style={tableHeaderStyle}>Mobile</th>
                     </tr>
                   </thead>
@@ -315,12 +388,35 @@ const AdminHisAppointments: React.FC = () => {
                             fontSize: '14px',
                             fontWeight: '500',
                             background: appointment.status === 'Confirmed' ? '#dcfce7' : 
-                                       appointment.status === 'Cancelled' ? '#fee2e2' : '#e5e7eb',
+                                       appointment.status === 'Cancelled' ? '#fee2e2' : 
+                                       appointment.status === '9' ? '#fee2e2' : '#e5e7eb',
                             color: appointment.status === 'Confirmed' ? '#166534' : 
-                                   appointment.status === 'Cancelled' ? '#991b1b' : '#374151',
+                                   appointment.status === 'Cancelled' ? '#991b1b' : 
+                                   appointment.status === '9' ? '#991b1b' : '#374151',
                           }}>
-                            {appointment.status || 'N/A'}
+                            {appointment.status === '9' ? 'Cancelled' : (appointment.status || 'N/A')}
                           </span>
+                        </td>
+                        <td style={tableCellStyle}>
+                          {(() => {
+                            const badge = getSyncStatusBadge(appointment);
+                            return (
+                              <span style={{
+                                padding: '4px 12px',
+                                borderRadius: '12px',
+                                fontSize: '13px',
+                                fontWeight: '500',
+                                background: badge.bg,
+                                color: badge.color,
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                              }}>
+                                <span>{badge.icon}</span>
+                                <span>{badge.text}</span>
+                              </span>
+                            );
+                          })()}
                         </td>
                         <td style={tableCellStyle}>{appointment.mobile || 'N/A'}</td>
                       </tr>
@@ -439,32 +535,134 @@ const AdminHisAppointments: React.FC = () => {
               }}>
                 Appointment Details
               </h2>
-              <button
-                onClick={closeModal}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  fontSize: '24px',
-                  cursor: 'pointer',
-                  color: '#6b7280',
-                  padding: '4px',
-                }}
-              >
-                ×
-              </button>
+              <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                {/* Reset Sync Button */}
+                {(selectedAppointment.needs_cancel_sync || selectedAppointment.needs_resync || selectedAppointment.cancelled_at) && (
+                  <button
+                    onClick={() => setShowResetConfirm(true)}
+                    disabled={isResetting}
+                    style={{
+                      padding: '8px 16px',
+                      background: isResetting ? '#9ca3af' : '#f59e0b',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '8px',
+                      fontSize: '14px',
+                      fontWeight: '600',
+                      cursor: isResetting ? 'not-allowed' : 'pointer',
+                      transition: 'background 0.2s',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                    }}
+                    onMouseEnter={(e) => !isResetting && (e.currentTarget.style.background = '#d97706')}
+                    onMouseLeave={(e) => !isResetting && (e.currentTarget.style.background = '#f59e0b')}
+                  >
+                    <span>🔄</span>
+                    <span>{isResetting ? 'Resetting...' : 'Reset Sync'}</span>
+                  </button>
+                )}
+                <button
+                  onClick={closeModal}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    fontSize: '24px',
+                    cursor: 'pointer',
+                    color: '#6b7280',
+                    padding: '4px',
+                  }}
+                >
+                  ×
+                </button>
+              </div>
             </div>
 
             {/* Modal Content */}
             <div style={{ padding: '24px' }}>
+              {/* Sync Status Alert */}
+              {(selectedAppointment.needs_cancel_sync || selectedAppointment.needs_resync) && (
+                <div style={{
+                  padding: '16px',
+                  marginBottom: '24px',
+                  borderRadius: '12px',
+                  background: '#fef3c7',
+                  border: '2px solid #f59e0b',
+                  display: 'flex',
+                  alignItems: 'start',
+                  gap: '12px',
+                }}>
+                  <span style={{ fontSize: '24px' }}>⚠️</span>
+                  <div>
+                    <h4 style={{ fontWeight: '600', color: '#92400e', marginBottom: '4px' }}>
+                      Pending Sync to HIS
+                    </h4>
+                    <p style={{ color: '#78350f', fontSize: '14px' }}>
+                      {selectedAppointment.needs_cancel_sync 
+                        ? 'This appointment cancellation is waiting to be synced to the HIS system.'
+                        : 'This appointment reschedule is waiting to be synced to the HIS system.'}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Cancellation Info */}
+              {selectedAppointment.cancelled_at && (
+                <div style={{
+                  padding: '16px',
+                  marginBottom: '24px',
+                  borderRadius: '12px',
+                  background: '#fee2e2',
+                  border: '2px solid #ef4444',
+                }}>
+                  <h4 style={{ fontWeight: '600', color: '#991b1b', marginBottom: '8px' }}>
+                    ✕ Cancelled Appointment
+                  </h4>
+                  <div style={{ color: '#7f1d1d', fontSize: '14px', display: 'grid', gap: '4px' }}>
+                    <p><strong>Cancelled At:</strong> {formatDateTime(selectedAppointment.cancelled_at)}</p>
+                    {selectedAppointment.cancellation_reason && (
+                      <p><strong>Reason:</strong> {selectedAppointment.cancellation_reason}</p>
+                    )}
+                    {selectedAppointment.cancelled_by && (
+                      <p><strong>Cancelled By User ID:</strong> {selectedAppointment.cancelled_by}</p>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Reschedule Info */}
+              {selectedAppointment.original_appointment_date && (
+                <div style={{
+                  padding: '16px',
+                  marginBottom: '24px',
+                  borderRadius: '12px',
+                  background: '#dbeafe',
+                  border: '2px solid #3b82f6',
+                }}>
+                  <h4 style={{ fontWeight: '600', color: '#1e40af', marginBottom: '8px' }}>
+                    🔄 Rescheduled Appointment
+                  </h4>
+                  <div style={{ color: '#1e3a8a', fontSize: '14px', display: 'grid', gap: '4px' }}>
+                    <p><strong>Original Date:</strong> {formatDate(selectedAppointment.original_appointment_date)}</p>
+                    {selectedAppointment.original_appointment_time && (
+                      <p><strong>Original Time:</strong> {formatTime(selectedAppointment.original_appointment_time)}</p>
+                    )}
+                    <p><strong>New Date:</strong> {formatDate(selectedAppointment.appointment_date)}</p>
+                    <p><strong>New Time:</strong> {formatTime(selectedAppointment.appointment_time)}</p>
+                  </div>
+                </div>
+              )}
+
               {/* Appointment Information */}
               <Section title="Appointment Information">
+                <InfoRow label="ID" value={selectedAppointment.id?.toString()} />
                 <InfoRow label="App Code" value={selectedAppointment.app_code} />
                 <InfoRow label="File Number" value={selectedAppointment.file_number} />
                 <InfoRow label="Date" value={formatDate(selectedAppointment.appointment_date)} />
                 <InfoRow label="Time" value={formatTime(selectedAppointment.appointment_time)} />
                 <InfoRow label="Original Time" value={formatTime(selectedAppointment.original_time)} />
                 <InfoRow label="Waiting" value={selectedAppointment.waiting?.toString()} />
-                <InfoRow label="Status" value={selectedAppointment.status} />
+                <InfoRow label="Status" value={selectedAppointment.status === '9' ? 'Cancelled (9)' : selectedAppointment.status} />
                 <InfoRow label="Station" value={selectedAppointment.station} />
               </Section>
 
@@ -496,6 +694,13 @@ const AdminHisAppointments: React.FC = () => {
                 <InfoRow label="Remarks 2" value={selectedAppointment.remarks2} />
               </Section>
 
+              {/* Sync Tracking */}
+              <Section title="Sync Tracking">
+                <InfoRow label="Needs Cancel Sync" value={selectedAppointment.needs_cancel_sync ? 'Yes ⏳' : 'No'} />
+                <InfoRow label="Needs Resync" value={selectedAppointment.needs_resync ? 'Yes ⏳' : 'No'} />
+                <InfoRow label="Last Synced" value={selectedAppointment.last_synced_at ? formatDateTime(selectedAppointment.last_synced_at) : null} />
+              </Section>
+
               {/* System Information */}
               <Section title="System Information">
                 <InfoRow label="Added By" value={selectedAppointment.added_by} />
@@ -504,8 +709,111 @@ const AdminHisAppointments: React.FC = () => {
                 <InfoRow label="Edit Time" value={selectedAppointment.edit_time ? formatDate(selectedAppointment.edit_time) : null} />
                 <InfoRow label="Message ID" value={selectedAppointment.message_id} />
                 <InfoRow label="Block Value" value={selectedAppointment.block_value} />
-                <InfoRow label="Last Synced" value={selectedAppointment.last_synced_at ? formatDate(selectedAppointment.last_synced_at) : null} />
               </Section>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reset Confirmation Dialog */}
+      {showResetConfirm && selectedAppointment && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0, 0, 0, 0.6)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 2000,
+            padding: '20px',
+          }}
+          onClick={() => setShowResetConfirm(false)}
+        >
+          <div
+            style={{
+              background: 'white',
+              borderRadius: '16px',
+              maxWidth: '500px',
+              width: '100%',
+              padding: '32px',
+              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.3)',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+              <div style={{ fontSize: '48px', marginBottom: '16px' }}>⚠️</div>
+              <h3 style={{
+                fontSize: '24px',
+                fontWeight: '700',
+                color: '#0a4d68',
+                marginBottom: '12px',
+              }}>
+                Reset Sync Status?
+              </h3>
+              <p style={{ color: '#6b7280', fontSize: '15px', lineHeight: '1.6' }}>
+                This will reset the appointment to "Booked" status and clear all sync flags.
+                <br />
+                <strong>Use this for testing only.</strong>
+              </p>
+              <div style={{
+                marginTop: '16px',
+                padding: '12px',
+                background: '#fef3c7',
+                borderRadius: '8px',
+                fontSize: '14px',
+                color: '#92400e',
+              }}>
+                <strong>What will be reset:</strong>
+                <ul style={{ margin: '8px 0 0 0', paddingLeft: '20px', textAlign: 'left' }}>
+                  <li>Status → Booked (0)</li>
+                  <li>needs_cancel_sync → false</li>
+                  <li>needs_resync → false</li>
+                  <li>Cancellation data cleared</li>
+                  <li>Reschedule tracking cleared</li>
+                </ul>
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+              <button
+                onClick={() => setShowResetConfirm(false)}
+                disabled={isResetting}
+                style={{
+                  padding: '12px 24px',
+                  background: '#e5e7eb',
+                  color: '#374151',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  cursor: isResetting ? 'not-allowed' : 'pointer',
+                  transition: 'background 0.2s',
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleResetSync}
+                disabled={isResetting}
+                style={{
+                  padding: '12px 24px',
+                  background: isResetting ? '#9ca3af' : '#f59e0b',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  cursor: isResetting ? 'not-allowed' : 'pointer',
+                  transition: 'background 0.2s',
+                }}
+                onMouseEnter={(e) => !isResetting && (e.currentTarget.style.background = '#d97706')}
+                onMouseLeave={(e) => !isResetting && (e.currentTarget.style.background = '#f59e0b')}
+              >
+                {isResetting ? '🔄 Resetting...' : '✓ Yes, Reset'}
+              </button>
             </div>
           </div>
         </div>

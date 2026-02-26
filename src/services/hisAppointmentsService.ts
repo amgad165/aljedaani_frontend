@@ -1,6 +1,9 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api';
 
 export interface HisAppointment {
+  // ID field
+  id: number;
+
   // Original PascalCase fields from backend
   AppCode: string;
   FileNumber: string | null;
@@ -30,6 +33,15 @@ export interface HisAppointment {
   BlockVal: string | null;
   last_synced_at: string | null;
   sync_metadata: Record<string, any> | null;
+
+  // New sync tracking fields
+  needs_cancel_sync: boolean;
+  needs_resync: boolean;
+  original_appointment_date: string | null;
+  original_appointment_time: string | null;
+  cancellation_reason: string | null;
+  cancelled_at: string | null;
+  cancelled_by: number | null;
 
   // Computed snake_case fields for frontend
   app_code: string;
@@ -132,6 +144,30 @@ export const getHisAppointmentsSyncStats = async (): Promise<HisAppointmentsSync
 
   if (!response.ok) {
     throw new Error('Failed to fetch HIS appointments sync stats');
+  }
+
+  const result = await response.json();
+  return result.data;
+};
+
+/**
+ * Reset sync flags for a HIS appointment (admin only)
+ * This allows testing by resetting cancelled/rescheduled status
+ */
+export const resetHisAppointmentSync = async (appointmentId: number): Promise<void> => {
+  const token = localStorage.getItem('auth_token');
+
+  const response = await fetch(`${API_BASE_URL}/admin/his-appointments/${appointmentId}/reset-sync`, {
+    method: 'PUT',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || 'Failed to reset appointment sync');
   }
 
   const result = await response.json();
