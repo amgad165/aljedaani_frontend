@@ -93,14 +93,22 @@ export interface PaginatedResponse<T> {
   };
 }
 
+export interface AppointmentFilters {
+  fromDate?: string;
+  toDate?: string;
+  status?: string;
+  syncStatus?: string;
+}
+
 /**
- * Get paginated list of HIS appointments with optional search
+ * Get paginated list of HIS appointments with optional search and filters
  */
 export const getHisAppointments = async (
   page: number = 1,
   perPage: number = 15,
   search: string = '',
-  searchColumn: string = 'file_number'
+  searchColumn: string = 'file_number',
+  filters?: AppointmentFilters
 ): Promise<PaginatedResponse<HisAppointment>> => {
   const token = localStorage.getItem('auth_token');
   
@@ -112,6 +120,14 @@ export const getHisAppointments = async (
   if (search) {
     params.append('search', search);
     params.append('search_column', searchColumn);
+  }
+
+  // Add filter parameters
+  if (filters) {
+    if (filters.fromDate) params.append('from_date', filters.fromDate);
+    if (filters.toDate) params.append('to_date', filters.toDate);
+    if (filters.status && filters.status !== 'all') params.append('status', filters.status);
+    if (filters.syncStatus && filters.syncStatus !== 'all') params.append('sync_status', filters.syncStatus);
   }
 
   const response = await fetch(`${API_BASE_URL}/admin/his-appointments?${params}`, {

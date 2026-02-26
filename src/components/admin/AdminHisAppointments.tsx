@@ -17,6 +17,13 @@ const AdminHisAppointments: React.FC = () => {
   const [searchColumn, setSearchColumn] = useState('file_number');
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
+  const [filters, setFilters] = useState({
+    fromDate: '',
+    toDate: '',
+    status: 'all',
+    syncStatus: 'all',
+  });
+  const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -35,7 +42,13 @@ const AdminHisAppointments: React.FC = () => {
   const fetchAppointments = async () => {
     setLoading(true);
     try {
-      const data = await getHisAppointments(currentPage, perPage, searchTerm, searchColumn);
+      const data = await getHisAppointments(
+        currentPage,
+        perPage,
+        searchTerm,
+        searchColumn,
+        filters
+      );
       setAppointments(data.data);
       setTotalPages(data.pagination?.last_page || 1);
       setTotalAppointments(data.pagination?.total || 0);
@@ -54,6 +67,21 @@ const AdminHisAppointments: React.FC = () => {
   const handleSearch = () => {
     setCurrentPage(1);
     fetchAppointments();
+  };
+
+  const handleClearFilters = () => {
+    setFilters({
+      fromDate: '',
+      toDate: '',
+      status: 'all',
+      syncStatus: 'all',
+    });
+    setSearchTerm('');
+    setCurrentPage(1);
+  };
+
+  const hasActiveFilters = () => {
+    return filters.fromDate || filters.toDate || filters.status !== 'all' || filters.syncStatus !== 'all' || searchTerm;
   };
 
   const formatDate = (dateString: string | null) => {
@@ -249,7 +277,8 @@ const AdminHisAppointments: React.FC = () => {
           marginBottom: '24px',
           boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
         }}>
-          <div style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
+          {/* Search Bar */}
+          <div style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap', marginBottom: showFilters ? '20px' : '0' }}>
             <select
               value={searchColumn}
               onChange={(e) => setSearchColumn(e.target.value)}
@@ -307,6 +336,42 @@ const AdminHisAppointments: React.FC = () => {
               Search
             </button>
             <button
+              onClick={() => setShowFilters(!showFilters)}
+              style={{
+                padding: '12px 24px',
+                background: showFilters ? '#088395' : 'white',
+                color: showFilters ? 'white' : '#088395',
+                border: '2px solid #088395',
+                borderRadius: '8px',
+                fontSize: '16px',
+                fontWeight: '500',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+              }}
+            >
+              🔍 Filters {hasActiveFilters() && '•'}
+            </button>
+            {hasActiveFilters() && (
+              <button
+                onClick={handleClearFilters}
+                style={{
+                  padding: '12px 24px',
+                  background: '#ef4444',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '16px',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                  transition: 'background 0.2s',
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.background = '#dc2626'}
+                onMouseLeave={(e) => e.currentTarget.style.background = '#ef4444'}
+              >
+                Clear All
+              </button>
+            )}
+            <button
               onClick={fetchAppointments}
               style={{
                 padding: '12px 24px',
@@ -325,6 +390,102 @@ const AdminHisAppointments: React.FC = () => {
               Refresh
             </button>
           </div>
+
+          {/* Filter Panel */}
+          {showFilters && (
+            <div style={{
+              padding: '20px',
+              background: '#f9fafb',
+              borderRadius: '8px',
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+              gap: '16px',
+            }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', color: '#374151', marginBottom: '8px' }}>
+                  From Date
+                </label>
+                <input
+                  type="date"
+                  value={filters.fromDate}
+                  onChange={(e) => setFilters({ ...filters, fromDate: e.target.value })}
+                  style={{
+                    width: '100%',
+                    padding: '10px 12px',
+                    border: '2px solid #e5e7eb',
+                    borderRadius: '6px',
+                    fontSize: '14px',
+                    outline: 'none',
+                  }}
+                />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', color: '#374151', marginBottom: '8px' }}>
+                  To Date
+                </label>
+                <input
+                  type="date"
+                  value={filters.toDate}
+                  onChange={(e) => setFilters({ ...filters, toDate: e.target.value })}
+                  style={{
+                    width: '100%',
+                    padding: '10px 12px',
+                    border: '2px solid #e5e7eb',
+                    borderRadius: '6px',
+                    fontSize: '14px',
+                    outline: 'none',
+                  }}
+                />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', color: '#374151', marginBottom: '8px' }}>
+                  Status
+                </label>
+                <select
+                  value={filters.status}
+                  onChange={(e) => setFilters({ ...filters, status: e.target.value })}
+                  style={{
+                    width: '100%',
+                    padding: '10px 12px',
+                    border: '2px solid #e5e7eb',
+                    borderRadius: '6px',
+                    fontSize: '14px',
+                    outline: 'none',
+                    cursor: 'pointer',
+                  }}
+                >
+                  <option value="all">All Status</option>
+                  <option value="0">Booked</option>
+                  <option value="1">Confirmed</option>
+                  <option value="9">Cancelled</option>
+                </select>
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', color: '#374151', marginBottom: '8px' }}>
+                  Sync Status
+                </label>
+                <select
+                  value={filters.syncStatus}
+                  onChange={(e) => setFilters({ ...filters, syncStatus: e.target.value })}
+                  style={{
+                    width: '100%',
+                    padding: '10px 12px',
+                    border: '2px solid #e5e7eb',
+                    borderRadius: '6px',
+                    fontSize: '14px',
+                    outline: 'none',
+                    cursor: 'pointer',
+                  }}
+                >
+                  <option value="all">All Sync Status</option>
+                  <option value="synced">Synced</option>
+                  <option value="needs_cancel_sync">Pending Cancel Sync</option>
+                  <option value="needs_resync">Pending Resync</option>
+                  <option value="pending_any">Any Pending</option>
+                </select>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Table */}
@@ -353,8 +514,8 @@ const AdminHisAppointments: React.FC = () => {
                     <tr style={{ background: '#f9fafb' }}>
                       <th style={tableHeaderStyle}>App Code</th>
                       <th style={tableHeaderStyle}>File Number</th>
-                      <th style={tableHeaderStyle}>Date</th>
-                      <th style={tableHeaderStyle}>Time</th>
+                      <th style={{ ...tableHeaderStyle, background: '#dbeafe', fontWeight: '700' }}>📅 Date</th>
+                      <th style={{ ...tableHeaderStyle, background: '#dbeafe', fontWeight: '700' }}>⏰ Time</th>
                       <th style={tableHeaderStyle}>Doctor</th>
                       <th style={tableHeaderStyle}>Department</th>
                       <th style={tableHeaderStyle}>Status</th>
@@ -377,8 +538,12 @@ const AdminHisAppointments: React.FC = () => {
                       >
                         <td style={tableCellStyle}>{appointment.app_code || 'N/A'}</td>
                         <td style={tableCellStyle}>{appointment.file_number || 'N/A'}</td>
-                        <td style={tableCellStyle}>{formatDate(appointment.appointment_date)}</td>
-                        <td style={tableCellStyle}>{formatTime(appointment.appointment_time)}</td>
+                        <td style={{ ...tableCellStyle, background: '#eff6ff', fontWeight: '600', color: '#1e40af' }}>
+                          {formatDate(appointment.appointment_date)}
+                        </td>
+                        <td style={{ ...tableCellStyle, background: '#eff6ff', fontWeight: '600', color: '#1e40af' }}>
+                          {formatTime(appointment.appointment_time)}
+                        </td>
                         <td style={tableCellStyle}>{appointment.doctor_code || 'N/A'}</td>
                         <td style={tableCellStyle}>{appointment.department || 'N/A'}</td>
                         <td style={tableCellStyle}>
