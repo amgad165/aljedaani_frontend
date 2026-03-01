@@ -716,7 +716,7 @@ const DepartmentDetailsPage: React.FC = () => {
           color: '#061F42',
           fontFamily: 'Nunito, sans-serif',
         }}>
-          <div>• {doctor.experience_years} Years Of Experience</div>
+          <div>• {doctor.experience_years} {t('yearsOfExperience')}</div>
           <div>• {getTranslatedField(doctor.education, '')}</div>
         </div>
 
@@ -1758,7 +1758,7 @@ const DepartmentDetailsPage: React.FC = () => {
                     lineHeight: '16px',
                     color: '#061F42'
                   }}>
-                    {doctor?.experience_years ? `${doctor.experience_years} Years of Experience` : 'Experienced professional'}
+                    {doctor?.experience_years ? `${doctor.experience_years} ${t('yearsOfExperience')}` : t('experiencedProfessional')}
                   </span>
                 </div>
 

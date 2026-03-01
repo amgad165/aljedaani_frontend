@@ -185,11 +185,11 @@ const AdminBranches: React.FC = () => {
     setModalMode('edit');
     setSelectedBranch(branch);
     
-    // Extract both EN and AR values from JSON fields
-    const nameObj = typeof branch.name === 'object' ? branch.name : { en: branch.name || '', ar: '' };
-    const regionObj = typeof branch.region === 'object' ? branch.region : { en: branch.region || '', ar: '' };
-    const descObj = typeof branch.description === 'object' ? branch.description : { en: branch.description || '', ar: '' };
-    const addrObj = typeof branch.address === 'object' ? branch.address : { en: branch.address || '', ar: '' };
+    // Extract both EN and AR values from JSON fields with null checks
+    const nameObj = typeof branch.name === 'object' && branch.name !== null ? branch.name : { en: branch.name || '', ar: '' };
+    const regionObj = typeof branch.region === 'object' && branch.region !== null ? branch.region : { en: branch.region || '', ar: '' };
+    const descObj = typeof branch.description === 'object' && branch.description !== null ? branch.description : { en: branch.description || '', ar: '' };
+    const addrObj = typeof branch.address === 'object' && branch.address !== null ? branch.address : { en: branch.address || '', ar: '' };
     
     setFormData({
       name_en: nameObj.en || '',

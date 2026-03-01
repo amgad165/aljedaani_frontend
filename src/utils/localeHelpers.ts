@@ -52,6 +52,17 @@ export const fetchWithLocale = async (
  */
 export const getTranslatedField = (value: any, fallback: string = ''): string => {
   if (typeof value === 'string') {
+    // Try to parse if it looks like a JSON object
+    if (value.trim().startsWith('{') && value.trim().endsWith('}')) {
+      try {
+        const parsed = JSON.parse(value);
+        const locale = i18n.language || 'en';
+        return parsed[locale] || parsed['en'] || parsed[Object.keys(parsed)[0]] || fallback;
+      } catch (e) {
+        // If parsing fails, return the string as-is
+        return value;
+      }
+    }
     return value;
   }
   

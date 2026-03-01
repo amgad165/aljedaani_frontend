@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useScrollAnimation, getAnimationStyle } from '../hooks/useScrollAnimation';
 import { useTranslation } from 'react-i18next';
+import i18n from '../i18n/config';
 
 interface Stat {
   id: number;
@@ -31,7 +32,17 @@ const Counter = ({ target, isVisible }: { target: number; isVisible: boolean }) 
     return () => clearInterval(timer);
   }, [target, isVisible]);
 
-  return <>{count}</>;
+  // Format large numbers
+  const formatNumber = (num: number) => {
+    if (num >= 1000000) {
+      const millions = (num / 1000000).toFixed(1);
+      const isArabic = i18n.language === 'ar';
+      return isArabic ? `${millions} م+` : `${millions}M+`;
+    }
+    return num.toString();
+  };
+
+  return <>{formatNumber(count)}</>;
 };
 
 const StatisticsSection = () => {
@@ -43,7 +54,7 @@ const StatisticsSection = () => {
     { id: 1, number: 300, labelKey: 'beds', icon: '/assets/images/care_section/bed.png' },
     { id: 2, number: 22, labelKey: 'specialties', icon: '/assets/images/care_section/plus.png' },
     { id: 3, number: 216, labelKey: 'doctors', icon: '/assets/images/care_section/doctor_plus.png' },
-    { id: 4, number: 3500, labelKey: 'patients', icon: '/assets/images/care_section/lying_person.png' }
+    { id: 4, number: 1500000, labelKey: 'patients', icon: '/assets/images/care_section/lying_person.png' }
   ];
 
   return (

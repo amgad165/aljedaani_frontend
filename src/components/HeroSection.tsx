@@ -73,9 +73,13 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
         className="form-select"
         style={{
           cursor: disabled ? 'not-allowed' : 'pointer',
-          opacity: disabled ? 0.6 : 1,
-          border: isOpen ? '2px solid #00ABDA' : undefined,
+          opacity: disabled ? 0.3: 0.6,
+          background: '#F3F4F6',
+          backgroundColor: '#F3F4F6',
+          border: isOpen ? '2px solid #00ABDA' : '1px solid #E5E7EB',
           boxShadow: isOpen ? '0 4px 12px rgba(0, 171, 218, 0.15)' : undefined,
+          color: selectedOption ? '#000000' : 'rgb(1, 4, 8)',
+          fontWeight: selectedOption ? 700 : 600,
         }}
       >
         {selectedOption ? getTranslatedField(selectedOption.name, '') : placeholder}
@@ -380,6 +384,8 @@ const HeroSection = () => {
             opacity: isLoaded ? 1 : 0,
             transform: isLoaded ? 'translateY(0)' : 'translateY(40px)',
             transition: 'opacity 0.7s cubic-bezier(0.4, 0, 0.2, 1), transform 0.7s cubic-bezier(0.4, 0, 0.2, 1)',
+            marginLeft: 0,
+            marginRight: 'auto',
           }}
         >
           <div style={{ maxWidth: '440px' }} className="content-wrapper">

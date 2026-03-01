@@ -225,11 +225,11 @@ const AdminDoctors: React.FC = () => {
     if (doctor) {
       setEditingDoctor(doctor);
       
-      // Parse JSON objects for translatable fields
-      const nameObj = typeof doctor.name === 'object' ? doctor.name : { en: doctor.name || '', ar: '' };
-      const locationObj = typeof doctor.location === 'object' ? doctor.location : { en: doctor.location || '', ar: '' };
-      const educationObj = typeof doctor.education === 'object' ? doctor.education : { en: doctor.education || '', ar: '' };
-      const specializationObj = typeof doctor.specialization === 'object' ? doctor.specialization : { en: doctor.specialization || '', ar: '' };
+      // Parse JSON objects for translatable fields with null checks
+      const nameObj = typeof doctor.name === 'object' && doctor.name !== null ? doctor.name : { en: doctor.name || '', ar: '' };
+      const locationObj = typeof doctor.location === 'object' && doctor.location !== null ? doctor.location : { en: doctor.location || '', ar: '' };
+      const educationObj = typeof doctor.education === 'object' && doctor.education !== null ? doctor.education : { en: doctor.education || '', ar: '' };
+      const specializationObj = typeof doctor.specialization === 'object' && doctor.specialization !== null ? doctor.specialization : { en: doctor.specialization || '', ar: '' };
       
       // Transform services from backend format to frontend format
       const transformOutpatientServices = (services: any): ServiceItem[] => {

@@ -318,7 +318,7 @@ const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onLearnMore, onBookNow 
             color: '#061F42',
             marginLeft: '8px',
           }}>
-            {doctor.experience_years} Years Of Experience<br />
+            {doctor.experience_years} {t('yearsOfExperience')}<br />
             {getTranslatedField(doctor.education, '')}
           </div>
         </div>

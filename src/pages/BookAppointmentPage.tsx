@@ -452,7 +452,7 @@ const BookAppointmentPage = () => {
 
   // Filter doctors by search term
   useEffect(() => {
-    if (doctorSelection.doctorSearch && doctors.length > 0) {
+    if (doctorSelection.doctorSearch && doctors.length > 0 && typeof doctorSelection.doctorSearch === 'string') {
       const searchLower = doctorSelection.doctorSearch.toLowerCase();
       const filtered = doctors.filter(d => getTranslatedField(d.name, '').toLowerCase().includes(searchLower));
       setFilteredDoctors(filtered);
@@ -1681,10 +1681,65 @@ const BookAppointmentPage = () => {
                 disabled={!!verificationData.hisPatientData?.nationality && ['saudi', 'uae', 'egypt', 'jordan', 'other'].includes(verificationData.hisPatientData.nationality.toLowerCase())}
                 hasDropdown
                 options={[
-                  { value: 'saudi', label: 'Saudi Arabia' },
-                  { value: 'uae', label: 'United Arab Emirates' },
+                  { value: 'afghanistan', label: 'Afghanistan' },
+                  { value: 'albania', label: 'Albania' },
+                  { value: 'algeria', label: 'Algeria' },
+                  { value: 'argentina', label: 'Argentina' },
+                  { value: 'australia', label: 'Australia' },
+                  { value: 'austria', label: 'Austria' },
+                  { value: 'bahrain', label: 'Bahrain' },
+                  { value: 'bangladesh', label: 'Bangladesh' },
+                  { value: 'belgium', label: 'Belgium' },
+                  { value: 'brazil', label: 'Brazil' },
+                  { value: 'canada', label: 'Canada' },
+                  { value: 'china', label: 'China' },
+                  { value: 'denmark', label: 'Denmark' },
                   { value: 'egypt', label: 'Egypt' },
+                  { value: 'finland', label: 'Finland' },
+                  { value: 'france', label: 'France' },
+                  { value: 'germany', label: 'Germany' },
+                  { value: 'greece', label: 'Greece' },
+                  { value: 'india', label: 'India' },
+                  { value: 'indonesia', label: 'Indonesia' },
+                  { value: 'iran', label: 'Iran' },
+                  { value: 'iraq', label: 'Iraq' },
+                  { value: 'ireland', label: 'Ireland' },
+                  { value: 'italy', label: 'Italy' },
+                  { value: 'japan', label: 'Japan' },
                   { value: 'jordan', label: 'Jordan' },
+                  { value: 'kuwait', label: 'Kuwait' },
+                  { value: 'lebanon', label: 'Lebanon' },
+                  { value: 'libya', label: 'Libya' },
+                  { value: 'malaysia', label: 'Malaysia' },
+                  { value: 'mexico', label: 'Mexico' },
+                  { value: 'morocco', label: 'Morocco' },
+                  { value: 'netherlands', label: 'Netherlands' },
+                  { value: 'new_zealand', label: 'New Zealand' },
+                  { value: 'nigeria', label: 'Nigeria' },
+                  { value: 'norway', label: 'Norway' },
+                  { value: 'oman', label: 'Oman' },
+                  { value: 'pakistan', label: 'Pakistan' },
+                  { value: 'palestine', label: 'Palestine' },
+                  { value: 'philippines', label: 'Philippines' },
+                  { value: 'poland', label: 'Poland' },
+                  { value: 'portugal', label: 'Portugal' },
+                  { value: 'qatar', label: 'Qatar' },
+                  { value: 'russia', label: 'Russia' },
+                  { value: 'saudi', label: 'Saudi Arabia' },
+                  { value: 'south_africa', label: 'South Africa' },
+                  { value: 'south_korea', label: 'South Korea' },
+                  { value: 'spain', label: 'Spain' },
+                  { value: 'sudan', label: 'Sudan' },
+                  { value: 'sweden', label: 'Sweden' },
+                  { value: 'switzerland', label: 'Switzerland' },
+                  { value: 'syria', label: 'Syria' },
+                  { value: 'thailand', label: 'Thailand' },
+                  { value: 'tunisia', label: 'Tunisia' },
+                  { value: 'turkey', label: 'Turkey' },
+                  { value: 'uae', label: 'United Arab Emirates' },
+                  { value: 'uk', label: 'United Kingdom' },
+                  { value: 'usa', label: 'United States' },
+                  { value: 'yemen', label: 'Yemen' },
                   { value: 'other', label: 'Other' },
                 ]}
                 required
@@ -2072,11 +2127,11 @@ const BookAppointmentPage = () => {
                 </div>
                 
                 {/* Autocomplete Dropdown */}
-                {doctorSelection.doctorSearch && filteredDoctors.length > 0 && (
+                {doctorSelection.doctorSearch && typeof doctorSelection.doctorSearch === 'string' && filteredDoctors.length > 0 && (
                   // Only show if search doesn't exactly match selected doctor
                   (() => {
                     const selectedDoctor = doctors.find(d => d.id.toString() === doctorSelection.doctor);
-                    const exactMatch = selectedDoctor && doctorSelection.doctorSearch === selectedDoctor.name;
+                    const exactMatch = selectedDoctor && doctorSelection.doctorSearch === getTranslatedField(selectedDoctor.name, '');
                     return !exactMatch;
                   })()
                 ) && (
@@ -2100,7 +2155,7 @@ const BookAppointmentPage = () => {
                           setDoctorSelection(prev => ({ 
                             ...prev, 
                             doctor: doctor.id.toString(),
-                            doctorSearch: doctor.name,
+                            doctorSearch: getTranslatedField(doctor.name, ''),
                             branch: doctor.branch_id.toString(),
                             specialty: doctor.department_id.toString(),
                             selectedDate: '',

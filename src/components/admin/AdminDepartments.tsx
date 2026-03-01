@@ -94,9 +94,9 @@ const AdminDepartments: React.FC = () => {
     setModalMode('edit');
     setSelectedDepartment(dept);
     
-    // Parse JSON objects for translatable fields
-    const nameObj = typeof dept.name === 'object' ? dept.name : { en: dept.name || '', ar: '' };
-    const descObj = typeof dept.description === 'object' ? dept.description : { en: dept.description || '', ar: '' };
+    // Parse JSON objects for translatable fields with null checks
+    const nameObj = typeof dept.name === 'object' && dept.name !== null ? dept.name : { en: dept.name || '', ar: '' };
+    const descObj = typeof dept.description === 'object' && dept.description !== null ? dept.description : { en: dept.description || '', ar: '' };
     
     setFormData({
       name_en: nameObj.en || '',

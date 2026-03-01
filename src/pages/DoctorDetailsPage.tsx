@@ -12,7 +12,7 @@ import { getTranslatedField } from '../utils/localeHelpers';
 
 const DoctorDetailsPage: React.FC = () => {
   const ResponsiveNavbar = useResponsiveNavbar();
-  const { i18n } = useTranslation();
+  const { i18n, t } = useTranslation('pages');
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [doctor, setDoctor] = useState<Doctor | null>(null);
@@ -614,10 +614,7 @@ const DoctorDetailsPage: React.FC = () => {
                     }}>
                       {doctor.experience_years !== undefined && doctor.experience_years > 0 && (
                         <li>
-                          {i18n.language === 'ar' 
-                            ? `${doctor.experience_years} سنوات من الخبرة`
-                            : `${doctor.experience_years} Years Of Experience`
-                          }
+                          {doctor.experience_years} {t('yearsOfExperience')}
                         </li>
                       )}
                       {doctor.education && (
