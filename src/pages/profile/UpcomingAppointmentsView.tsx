@@ -576,7 +576,7 @@ const AppointmentCard = ({
       gap: '12px',
       width: '350px',
       minWidth: '350px',
-      height: '280px',
+      height: appointment.status === 'pending' ? '310px' : '280px', // Extra height for status badge
       background: '#FFFFFF',
       border: '1px solid #D8D8D8',
       borderRadius: '12px',
@@ -698,6 +698,27 @@ const AppointmentCard = ({
           {formatDate(appointment.appointment_date)}
         </div>
       </div>
+
+      {/* Status Badge (if pending) */}
+      {appointment.status === 'pending' && (
+        <div style={{
+          padding: '4px 12px',
+          background: '#FFF3CD',
+          borderRadius: '12px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '4px',
+        }}>
+          <span style={{
+            fontFamily: 'Nunito, sans-serif',
+            fontWeight: 600,
+            fontSize: '12px',
+            color: '#856404',
+          }}>
+            ⏳ Waiting for Confirmation
+          </span>
+        </div>
+      )}
 
       {/* Action Buttons */}
       <div style={{
