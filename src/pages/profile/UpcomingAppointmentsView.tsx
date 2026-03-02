@@ -715,7 +715,7 @@ const AppointmentCard = ({
             fontSize: '12px',
             color: '#856404',
           }}>
-            ⏳ Waiting for Confirmation
+             Waiting for Confirmation
           </span>
         </div>
       )}
@@ -835,7 +835,7 @@ const AppointmentCard = ({
   );
 };
 
-const UpcomingAppointmentsView = ({ onBack }: { onBack: () => void }) => {
+const UpcomingAppointmentsView = ({ onBack, onStatsChange }: { onBack: () => void; onStatsChange?: () => void }) => {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -929,6 +929,10 @@ const UpcomingAppointmentsView = ({ onBack }: { onBack: () => void }) => {
         setSelectedAppointment(null);
         // Refresh the appointments list
         fetchAppointments();
+        // Notify parent to refresh stats
+        if (onStatsChange) {
+          onStatsChange();
+        }
       } else {
         setToast({ message: data.message || 'Failed to cancel appointment', type: 'error' });
       }
@@ -981,11 +985,50 @@ const UpcomingAppointmentsView = ({ onBack }: { onBack: () => void }) => {
       const data = await response.json();
 
       if (data.success) {
-        setToast({ message: 'Appointment rescheduled successfully', type: 'success' });
+        setToast({ message: 'Appointment rescheduled successfully. Waiting for hospital confirmation.', type: 'success' });
         setShowRescheduleModal(false);
         setSelectedAppointment(null);
-        // Refresh the appointments list
-        fetchAppointments();
+        
+        // Update the appointment in state immediately with the new data and pending status
+        if (data.data) {
+          console.log('Reschedule response data:', data.data);
+          console.log('Selected appointment ID:', selectedAppointment.id);
+          
+          // The response might have an 'id' field that could be different from the current ID
+          const responseId = data.data.id || selectedAppointment.id;
+          
+          setAppointments(prevAppointments => {
+            const updated = prevAppointments.map(apt => {
+              // Match by original ID or response ID
+              if (apt.id === selectedAppointment.id || apt.id === responseId) {
+                console.log('Updating appointment:', apt.id, 'with status:', data.data.status || 'pending');
+                return { 
+                  ...apt, 
+                  id: responseId, // Use the response ID in case it changed
+                  appointment_date: data.data.appointment_date,
+                  appointment_time: formattedTime,
+                  status: data.data.status || 'pending',
+                  appointment_datetime: `${data.data.appointment_date}T${formattedTime}.000Z`
+                };
+              }
+              return apt;
+            });
+            console.log('Updated appointments:', updated);
+            return updated;
+          });
+          // Notify parent to refresh stats
+          if (onStatsChange) {
+            onStatsChange();
+          }
+        } else {
+          console.warn('No data in reschedule response, refetching appointments');
+          // Fallback: refetch if no data in response
+          fetchAppointments();
+          // Notify parent to refresh stats
+          if (onStatsChange) {
+            onStatsChange();
+          }
+        }
       } else {
         setToast({ message: data.message || 'Failed to reschedule appointment', type: 'error' });
       }

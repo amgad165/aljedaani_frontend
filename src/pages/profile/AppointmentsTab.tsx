@@ -233,13 +233,20 @@ const AppointmentsTab = () => {
     }
   };
 
+  const handleBackToMain = () => {
+    setCurrentView('main');
+    // Reset the ref so stats will be fetched again
+    hasFetchedRef.current = false;
+    fetchAppointmentStats();
+  };
+
   // Show different views
   if (currentView === 'upcoming') {
-    return <UpcomingAppointmentsView onBack={() => setCurrentView('main')} />;
+    return <UpcomingAppointmentsView onBack={handleBackToMain} onStatsChange={fetchAppointmentStats} />;
   }
 
   if (currentView === 'past') {
-    return <PastAppointmentsView onBack={() => setCurrentView('main')} />;
+    return <PastAppointmentsView onBack={handleBackToMain} />;
   }
 
   // Main view with cards
