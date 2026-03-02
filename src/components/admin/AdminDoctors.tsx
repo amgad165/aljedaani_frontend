@@ -1116,7 +1116,7 @@ const AdminDoctors: React.FC = () => {
           </label>
           <input
             type="text"
-            placeholder="Search by name, email, or specialization..."
+            placeholder="Search by doctor code, name, email, or specialization..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             style={{

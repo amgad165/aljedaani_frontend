@@ -53,7 +53,13 @@ const AdminDepartments: React.FC = () => {
 
   const fetchDepartments = useCallback(async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/departments`);
+      const token = localStorage.getItem('auth_token');
+      const response = await fetch(`${API_BASE_URL}/departments?active=all`, {
+        headers: {
+          'Accept': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        }
+      });
       const result = await response.json();
       if (result.success && result.data) {
         setDepartments(Array.isArray(result.data) ? result.data : []);
