@@ -145,3 +145,28 @@ export const getHisPatient = async (id: number): Promise<HisPatient> => {
   const result = await response.json();
   return result.data;
 };
+
+// Update HIS patient mobile phone (admin only)
+export const updateHisPatientMobile = async (
+  id: number,
+  mobile: string
+): Promise<HisPatient> => {
+  const token = localStorage.getItem('auth_token');
+
+  const response = await fetch(`${API_BASE_URL}/admin/his-patients/${id}/mobile`, {
+    method: 'PUT',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ mobile }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || 'Failed to update mobile phone');
+  }
+
+  const result = await response.json();
+  return result.data;
+};

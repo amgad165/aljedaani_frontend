@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import AdminLayout from './AdminLayout';
-import { getHisPatients, getHisSyncStats } from '../../services/hisPatientsService';
+import { getHisPatients, getHisSyncStats, updateHisPatientMobile } from '../../services/hisPatientsService';
 import type { HisPatient, HisSyncStats } from '../../services/hisPatientsService';
 
 const AdminHisPatients: React.FC = () => {
@@ -15,6 +15,9 @@ const AdminHisPatients: React.FC = () => {
   const [selectedPatient, setSelectedPatient] = useState<HisPatient | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [searchColumn, setSearchColumn] = useState('FileNumber');
+  const [isEditingMobile, setIsEditingMobile] = useState(false);
+  const [editedMobile, setEditedMobile] = useState('');
+  const [savingMobile, setSavingMobile] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -22,6 +25,7 @@ const AdminHisPatients: React.FC = () => {
 
   useEffect(() => {
     fetchPatients();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage]);
 
   const fetchData = async () => {
@@ -77,11 +81,54 @@ const AdminHisPatients: React.FC = () => {
   const handleRowClick = (patient: HisPatient) => {
     setSelectedPatient(patient);
     setShowModal(true);
+    setIsEditingMobile(false);
+    setEditedMobile(patient.Telephone || patient.mobile || '');
   };
 
   const closeModal = () => {
     setShowModal(false);
     setSelectedPatient(null);
+    setIsEditingMobile(false);
+    setEditedMobile('');
+  };
+
+  const handleEditMobile = () => {
+    setIsEditingMobile(true);
+    setEditedMobile(selectedPatient?.Telephone || selectedPatient?.mobile || '');
+  };
+
+  const handleCancelEditMobile = () => {
+    setIsEditingMobile(false);
+    setEditedMobile(selectedPatient?.Telephone || selectedPatient?.mobile || '');
+  };
+
+  const handleSaveMobile = async () => {
+    if (!selectedPatient) return;
+
+    setSavingMobile(true);
+    try {
+      await updateHisPatientMobile(selectedPatient.id, editedMobile);
+      
+      // Update the patient in the list
+      setPatients(prevPatients => 
+        prevPatients.map(p => 
+          p.id === selectedPatient.id 
+            ? { ...p, Telephone: editedMobile, mobile: editedMobile }
+            : p
+        )
+      );
+      
+      // Update selected patient
+      setSelectedPatient({ ...selectedPatient, Telephone: editedMobile, mobile: editedMobile });
+      setIsEditingMobile(false);
+      
+      alert('Mobile phone updated successfully!');
+    } catch (error) {
+      console.error('Error updating mobile:', error);
+      alert('Failed to update mobile phone: ' + (error instanceof Error ? error.message : 'Unknown error'));
+    } finally {
+      setSavingMobile(false);
+    }
   };
 
   return (
@@ -496,18 +543,114 @@ const AdminHisPatients: React.FC = () => {
 
               {/* Contact Information */}
               <div style={{ marginBottom: '32px' }}>
-                <h3 style={{
-                  fontSize: '18px',
-                  fontWeight: '700',
-                  color: '#0a4d68',
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
                   marginBottom: '16px',
                   borderBottom: '2px solid #088395',
                   paddingBottom: '8px',
                 }}>
-                  Contact Information
-                </h3>
+                  <h3 style={{
+                    fontSize: '18px',
+                    fontWeight: '700',
+                    color: '#0a4d68',
+                    margin: 0,
+                  }}>
+                    Contact Information
+                  </h3>
+                  {!isEditingMobile && (
+                    <button
+                      onClick={handleEditMobile}
+                      style={{
+                        padding: '6px 16px',
+                        background: '#05bfdb',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '6px',
+                        fontSize: '14px',
+                        fontWeight: '500',
+                        cursor: 'pointer',
+                        transition: 'background 0.2s',
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.background = '#088395'}
+                      onMouseLeave={(e) => e.currentTarget.style.background = '#05bfdb'}
+                    >
+                      ✏️ Edit Mobile
+                    </button>
+                  )}
+                </div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '16px' }}>
-                  <DetailField label="Telephone" value={selectedPatient.Telephone} />
+                  {/* Editable Telephone Field */}
+                  <div style={{
+                    background: '#f9fafb',
+                    padding: '12px',
+                    borderRadius: '8px',
+                    border: isEditingMobile ? '2px solid #088395' : '1px solid #E5E7EB',
+                  }}>
+                    <div style={{ fontSize: '12px', color: '#6B7280', marginBottom: '4px', fontWeight: '600' }}>
+                      Telephone (Mobile)
+                    </div>
+                    {isEditingMobile ? (
+                      <div>
+                        <input
+                          type="text"
+                          value={editedMobile}
+                          onChange={(e) => setEditedMobile(e.target.value)}
+                          style={{
+                            width: '100%',
+                            padding: '8px',
+                            fontSize: '14px',
+                            border: '1px solid #d1d5db',
+                            borderRadius: '4px',
+                            marginBottom: '8px',
+                            outline: 'none',
+                          }}
+                          placeholder="Enter mobile phone"
+                        />
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <button
+                            onClick={handleSaveMobile}
+                            disabled={savingMobile}
+                            style={{
+                              flex: 1,
+                              padding: '6px 12px',
+                              background: savingMobile ? '#9CA3AF' : '#10B981',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '4px',
+                              fontSize: '13px',
+                              fontWeight: '500',
+                              cursor: savingMobile ? 'not-allowed' : 'pointer',
+                            }}
+                          >
+                            {savingMobile ? 'Saving...' : '✓ Save'}
+                          </button>
+                          <button
+                            onClick={handleCancelEditMobile}
+                            disabled={savingMobile}
+                            style={{
+                              flex: 1,
+                              padding: '6px 12px',
+                              background: '#EF4444',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '4px',
+                              fontSize: '13px',
+                              fontWeight: '500',
+                              cursor: savingMobile ? 'not-allowed' : 'pointer',
+                            }}
+                          >
+                            ✕ Cancel
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div style={{ fontSize: '14px', color: '#111827', fontWeight: '500' }}>
+                        {selectedPatient.Telephone || selectedPatient.mobile || 'N/A'}
+                      </div>
+                    )}
+                  </div>
                   <DetailField label="Email" value={selectedPatient.E_Mail} />
                   <DetailField label="Work Phone" value={selectedPatient.WorkPhone} />
                   <DetailField label="Address" value={selectedPatient.Addres} />
