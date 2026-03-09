@@ -491,7 +491,7 @@ const TestimonialSection = () => {
                   {t('bookNow')}
                 </button>
                 <button
-                  onClick={() => navigate(`/doctors/${doctor.doctorId}`)}
+                  onClick={() => navigate(`/testimonials/${doctor.id}`)}
                   style={{
                     display: 'flex',
                     flexDirection: 'row',

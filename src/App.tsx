@@ -17,6 +17,7 @@ import ContactPage from './pages/ContactPage';
 import BookAppointmentPage from './pages/BookAppointmentPage';
 import ProfilePage from './pages/ProfilePage';
 import AboutUsPage from './pages/AboutUsPage';
+import TestimonialDetailPage from './pages/TestimonialDetailPage';
 // Admin Pages
 import AdminLogin from './components/admin/AdminLogin';
 import AdminDashboard from './components/admin/AdminDashboard';
@@ -77,6 +78,7 @@ function App() {
           <Route path="/departments/:id" element={<DepartmentDetailsPage />} />
           <Route path="/doctors" element={<DoctorsPage />} />
           <Route path="/doctors/:id" element={<DoctorDetailsPage />} />
+          <Route path="/testimonials/:id" element={<TestimonialDetailPage />} />
           <Route path="/branches" element={<BranchesPage />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/about" element={<AboutUsPage />} />
