@@ -103,7 +103,8 @@ const AdminTestimonials: React.FC = () => {
 
   const fetchDoctors = useCallback(async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/doctors?active=true`);
+      // Request all doctors without pagination limit
+      const response = await fetch(`${API_BASE_URL}/doctors?per_page=1000`);
       const result = await response.json();
       if (result.success && result.data) {
         const doctorsArray = Array.isArray(result.data) ? result.data : (result.data.data || []);
