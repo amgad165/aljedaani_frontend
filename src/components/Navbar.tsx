@@ -11,6 +11,7 @@ interface NavItem {
   href: string;
   hasDropdown?: boolean;
   isBranchesDropdown?: boolean;
+  isMediaDropdown?: boolean;
   submenu?: { label: string; href: string }[];
 }
 
@@ -20,9 +21,11 @@ const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isBranchesDropdownOpen, setIsBranchesDropdownOpen] = useState(false);
+  const [isMediaDropdownOpen, setIsMediaDropdownOpen] = useState(false);
   const [branches, setBranches] = useState<Branch[]>([]);
   const [loadingBranches, setLoadingBranches] = useState(false);
   const branchesDropdownRef = useRef<HTMLLIElement>(null);
+  const mediaDropdownRef = useRef<HTMLLIElement>(null);
   const userMenuTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { isAuthenticated, user, logout } = useAuth();
 
@@ -50,6 +53,9 @@ const Navbar = () => {
       if (branchesDropdownRef.current && !branchesDropdownRef.current.contains(event.target as Node)) {
         setIsBranchesDropdownOpen(false);
       }
+      if (mediaDropdownRef.current && !mediaDropdownRef.current.contains(event.target as Node)) {
+        setIsMediaDropdownOpen(false);
+      }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
@@ -67,7 +73,7 @@ const Navbar = () => {
     { label: t('doctors'), href: '/doctors' },
     { label: t('pharmacies'), href: '#' },
     { label: t('patientExperience'), href: '#' },
-    { label: t('media'), href: '#'},
+    { label: t('media'), href: '#', hasDropdown: true, isMediaDropdown: true },
     { label: t('careers'), href: '#'},
     { label: t('contact'), href: '/contact'},
   ];
@@ -310,10 +316,10 @@ const Navbar = () => {
           <div className="container">
             <ul className="menu-links">
               {navItems.map((item) => (
-                <li 
-                  key={item.label} 
+                <li
+                  key={item.label}
                   className={item.hasDropdown ? 'dropdown-s1' : ''}
-                  ref={item.isBranchesDropdown ? branchesDropdownRef : undefined}
+                  ref={item.isBranchesDropdown ? branchesDropdownRef : item.isMediaDropdown ? mediaDropdownRef : undefined}
                   style={{ position: 'relative' }}
                 >
                   {item.isBranchesDropdown ? (
@@ -562,12 +568,133 @@ const Navbar = () => {
                         `}</style>
                       </div>
                     </>
+                  ) : item.isMediaDropdown ? (
+                    // Media with dropdown
+                    <>
+                      <a
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setIsMediaDropdownOpen(!isMediaDropdownOpen);
+                        }}
+                        style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
+                      >
+                        {item.label}
+                      </a>
+                      <img
+                        src="/assets/img/icons/dropdown.svg"
+                        className="d-block"
+                        width="10"
+                        height="18"
+                        alt="Dropdown Icon"
+                        style={{
+                          transition: 'transform 0.3s ease',
+                          transform: isMediaDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                          cursor: 'pointer',
+                        }}
+                        onClick={() => setIsMediaDropdownOpen(!isMediaDropdownOpen)}
+                      />
+
+                      {/* Media Dropdown Menu */}
+                      <div style={{
+                        position: 'absolute',
+                        top: '100%',
+                        left: '50%',
+                        transform: 'translateX(-50%)',
+                        marginTop: '12px',
+                        background: '#FFFFFF',
+                        borderRadius: '16px',
+                        boxShadow: '0 10px 40px rgba(0, 0, 0, 0.15)',
+                        border: '1px solid #E5E7EB',
+                        minWidth: '200px',
+                        zIndex: 1000,
+                        overflow: 'hidden',
+                        opacity: isMediaDropdownOpen ? 1 : 0,
+                        visibility: isMediaDropdownOpen ? 'visible' : 'hidden',
+                        pointerEvents: isMediaDropdownOpen ? 'auto' : 'none',
+                        transformOrigin: 'top center',
+                        transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+                      }}>
+                        {/* Arrow pointer */}
+                        <div style={{
+                          position: 'absolute',
+                          top: '-8px',
+                          left: '50%',
+                          transform: 'translateX(-50%) rotate(45deg)',
+                          width: '16px',
+                          height: '16px',
+                          background: '#FFFFFF',
+                          borderLeft: '1px solid #E5E7EB',
+                          borderTop: '1px solid #E5E7EB',
+                        }} />
+
+                        {/* Header */}
+                        <div style={{
+                          padding: '16px 20px 12px',
+                          borderBottom: '1px solid #F3F4F6',
+                          background: 'linear-gradient(135deg, #E0F7FA 0%, #FFFFFF 100%)',
+                        }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                              <path d="M4 6h16M4 12h10M4 18h12" stroke="#00ABDA" strokeWidth="1.5" strokeLinecap="round"/>
+                            </svg>
+                            <span style={{
+                              fontFamily: 'Nunito, sans-serif',
+                              fontWeight: 700,
+                              fontSize: '14px',
+                              color: '#061F42',
+                              textTransform: 'uppercase',
+                              letterSpacing: '0.5px',
+                            }}>
+                              Media
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Items */}
+                        <div style={{ padding: '8px' }}>
+                          <Link
+                            to="/articles"
+                            onClick={() => setIsMediaDropdownOpen(false)}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '12px',
+                              padding: '12px 16px',
+                              borderRadius: '10px',
+                              fontFamily: 'Nunito, sans-serif',
+                              fontWeight: 600,
+                              fontSize: '14px',
+                              color: '#061F42',
+                              textDecoration: 'none',
+                              transition: 'background 0.2s ease',
+                            }}
+                            onMouseEnter={(e) => { e.currentTarget.style.background = '#F0FDFF'; }}
+                            onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+                          >
+                            <div style={{
+                              width: '36px', height: '36px', borderRadius: '8px',
+                              background: 'linear-gradient(135deg, #00ABDA 0%, #0088B0 100%)',
+                              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                            }}>
+                              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                                <path d="M4 6h16M4 12h10M4 18h12" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+                              </svg>
+                            </div>
+                            Articles
+                            <svg style={{ marginInlineStart: 'auto' }} width="16" height="16" viewBox="0 0 16 16" fill="none">
+                              <path d="M6 12L10 8L6 4" stroke="#9CA3AF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                          </Link>
+                        </div>
+                      </div>
+                    </>
                   ) : item.href.startsWith('/') ? (
                     <Link to={item.href}>{item.label}</Link>
                   ) : (
                     <a href={item.href}>{item.label}</a>
                   )}
-                  {item.hasDropdown && !item.isBranchesDropdown && (
+                  {item.hasDropdown && !item.isBranchesDropdown && !item.isMediaDropdown && (
                     <img src="/assets/img/icons/dropdown.svg" className="d-block" width="10" height="18" alt="Dropdown Icon" />
                   )}
                 </li>

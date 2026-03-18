@@ -18,6 +18,8 @@ import BookAppointmentPage from './pages/BookAppointmentPage';
 import ProfilePage from './pages/ProfilePage';
 import AboutUsPage from './pages/AboutUsPage';
 import TestimonialDetailPage from './pages/TestimonialDetailPage';
+import ArticlesPage from './pages/ArticlesPage';
+import ArticleDetailsPage from './pages/ArticleDetailsPage';
 // Admin Pages
 import AdminLogin from './components/admin/AdminLogin';
 import AdminDashboard from './components/admin/AdminDashboard';
@@ -46,6 +48,7 @@ import AdminHisShiftDefineDetails from './components/admin/AdminHisShiftDefineDe
 import DoctorAvailability from './components/admin/DoctorAvailability';
 import PatientDetails from './components/admin/PatientDetails';
 import AdminContactSubmissions from './components/admin/AdminContactSubmissions';
+import AdminArticles from './components/admin/AdminArticles';
 import ProtectedRoute from './components/admin/ProtectedRoute';
 import './App.css';
 
@@ -82,6 +85,8 @@ function App() {
           <Route path="/branches" element={<BranchesPage />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/about" element={<AboutUsPage />} />
+          <Route path="/articles" element={<ArticlesPage />} />
+          <Route path="/articles/:id" element={<ArticleDetailsPage />} />
           {/* Admin Routes */}
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin" element={
@@ -122,6 +127,11 @@ function App() {
           <Route path="/admin/offers" element={
             <ProtectedRoute>
               <AdminOffers />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/articles" element={
+            <ProtectedRoute>
+              <AdminArticles />
             </ProtectedRoute>
           } />
           <Route path="/admin/otp-logs" element={

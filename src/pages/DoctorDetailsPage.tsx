@@ -259,12 +259,12 @@ const DoctorDetailsPage: React.FC = () => {
         display: 'flex',
         alignItems: 'flex-start',
         justifyContent: 'center',
-        padding: window.innerWidth <= 768 ? '90px 12px 20px 12px' : '180px 20px 40px 20px',
+        padding: window.innerWidth <= 768 ? '90px 12px 20px 12px' : '130px 20px 20px 20px',
         boxSizing: 'border-box',
       }}>
         <div style={{
           width: '100%',
-          maxWidth: window.innerWidth <= 768 ? '100%' : '1120px',
+          maxWidth: window.innerWidth <= 768 ? '100%' : '1400px',
           boxSizing: 'border-box',
         }}>
           {/* Title and Filters Row */}
@@ -285,7 +285,7 @@ const DoctorDetailsPage: React.FC = () => {
               fontFamily: 'Nunito, sans-serif',
               fontStyle: 'normal',
               fontWeight: 600,
-              fontSize: window.innerWidth <= 768 ? '32px' : '48px',
+              fontSize: window.innerWidth <= 768 ? '32px' : '44px',
               lineHeight: window.innerWidth <= 768 ? '36px' : '50px',
               color: '#061F42',
               margin: 0,

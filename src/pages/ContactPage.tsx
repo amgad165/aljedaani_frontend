@@ -128,7 +128,7 @@ const ContactPage: React.FC = () => {
             padding: window.innerWidth <= 768 ? '8px 12px' : '10px 32px',
             background: '#FFFFFF',
             borderRadius: '15px',
-            height: window.innerWidth <= 768 ? 'auto' : '58px',
+            height: window.innerWidth <= 768 ? 'auto' : '80px',
           }}>
             <h1 style={{
               fontFamily: 'Nunito, sans-serif',

@@ -435,7 +435,7 @@ const DoctorsPage: React.FC = () => {
   const ResponsiveNavbar = useResponsiveNavbar();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { t } = useTranslation('pages');
+  const { t, i18n } = useTranslation('pages');
   const [doctors, setDoctors] = useState<PaginatedResponse<Doctor> | null>(null);
   const [branches, setBranches] = useState<Branch[]>([]);
   const [departments, setDepartments] = useState<Department[]>([]);
@@ -556,9 +556,17 @@ const DoctorsPage: React.FC = () => {
     
     return {
       ...doctors,
-      data: [...doctors.data].sort((a, b) => a.name.localeCompare(b.name))
+      data: [...doctors.data].sort((a, b) => {
+        const nameA = typeof a.name === 'string' 
+          ? a.name 
+          : (i18n.language === 'ar' ? ((a.name as any)?.ar || (a.name as any)?.en || '') : ((a.name as any)?.en || (a.name as any)?.ar || ''));
+        const nameB = typeof b.name === 'string' 
+          ? b.name 
+          : (i18n.language === 'ar' ? ((b.name as any)?.ar || (b.name as any)?.en || '') : ((b.name as any)?.en || (b.name as any)?.ar || ''));
+        return nameA.localeCompare(nameB);
+      })
     };
-  }, [doctors, sortByName]);
+  }, [doctors, sortByName, i18n.language]);
 
   const renderPaginationButton = (page: number, isActive: boolean = false) => (
     <button

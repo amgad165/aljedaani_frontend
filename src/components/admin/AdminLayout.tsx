@@ -68,6 +68,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
     { path: '/admin/testimonials', label: 'Testimonials', icon: 'testimonial' },
     { path: '/admin/excellence-centers', label: 'Excellence Centers', icon: 'excellence' },
     { path: '/admin/offers', label: 'Offers', icon: 'offers' },
+    { path: '/admin/articles', label: 'Articles', icon: 'articles' },
     { path: '/admin/contact-submissions', label: 'Contact Submissions', icon: 'contact' },
   ];
 
@@ -163,6 +164,13 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
         return (
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2">
             <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
+          </svg>
+        );
+      case 'articles':
+        return (
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2">
+            <path d="M4 6h16M4 12h10M4 18h12" strokeLinecap="round" />
+            <rect x="14" y="13" width="6" height="6" rx="1" />
           </svg>
         );
       case 'calendar':

@@ -10,6 +10,7 @@ import { appointmentsService } from '../services/appointmentsService';
 import FloatingContactButtons from '../components/FloatingContactButtons';
 import ToastContainer from '../components/ToastContainer';
 import { useToast } from '../hooks/useToast';
+import { useTranslation } from 'react-i18next';
 
 // Simplified types for initial data (only fields needed for booking)
 interface Branch {
@@ -254,6 +255,7 @@ const InputField = ({
 
 const BookAppointmentPage = () => {
   const ResponsiveNavbar = useResponsiveNavbar();
+  const { t } = useTranslation('pages');
   const { isAuthenticated, user, register, clearError } = useAuth();
   const [searchParams] = useSearchParams();
   const { toasts, removeToast, success, error: showError, warning } = useToast();
@@ -1026,7 +1028,7 @@ const BookAppointmentPage = () => {
               color: '#0155CB',
               margin: 0,
             }}>
-              Verification
+              {t('verification')}
             </h2>
             
             {renderProgressBar()}
@@ -1040,7 +1042,7 @@ const BookAppointmentPage = () => {
               color: '#061F42',
               margin: '24px 0 0 0',
             }}>
-              Enter the mobile number and click on 'Send OTP', we will send you an OTP code
+              {t('verificationInstructions')}
             </p>
           </div>
           
@@ -1054,8 +1056,8 @@ const BookAppointmentPage = () => {
             maxWidth: '100%',
           }}>
             <InputField
-              label="Mobile Number"
-              placeholder="Type your mobile number"
+              label={t('mobileNumber')}
+              placeholder={t('typeMobileNumber')}
               value={verificationData.mobileNumber}
               onChange={(value) => setVerificationData(prev => ({ ...prev, mobileNumber: value }))}
               type="tel"
@@ -1064,8 +1066,8 @@ const BookAppointmentPage = () => {
             
             {isOtpSent && (
               <InputField
-                label="OTP Code"
-                placeholder="Enter OTP code"
+                label={t('otpCode')}
+                placeholder={t('enterOtpCode')}
                 value={verificationData.otpCode}
                 onChange={(value) => setVerificationData(prev => ({ ...prev, otpCode: value }))}
                 required
@@ -1087,7 +1089,7 @@ const BookAppointmentPage = () => {
                   fontSize: '14px',
                   color: '#A4A5A5',
                 }}>
-                  Didn't receive OTP?
+                  {t('didntReceiveOtp')}
                 </span>
                 <button
                   onClick={handleResendOtp}
@@ -1104,7 +1106,7 @@ const BookAppointmentPage = () => {
                     padding: 0,
                   }}
                 >
-                  {resendCountdown > 0 ? `Resend in ${resendCountdown}s` : 'Resend OTP'}
+                  {resendCountdown > 0 ? `${t('resendIn')} ${resendCountdown}s` : t('resendOtp')}
                 </button>
               </div>
             )}
@@ -1123,7 +1125,7 @@ const BookAppointmentPage = () => {
                 fontSize: '14px',
                 color: '#A4A5A5',
               }}>
-                Already registered?
+                {t('alreadyRegistered')}
               </span>
               <Link to="/login" style={{
                 fontFamily: 'Nunito, sans-serif',
@@ -1132,7 +1134,7 @@ const BookAppointmentPage = () => {
                 color: '#0B67E7',
                 textDecoration: 'underline',
               }}>
-                Sign in
+                {t('signIn')}
               </Link>
             </div>
             
@@ -1165,7 +1167,7 @@ const BookAppointmentPage = () => {
                   fontSize: '14px',
                   color: '#FFFFFF',
                 }}>
-                  {isOtpSent ? 'Verify OTP' : 'Send OTP'}
+                  {isOtpSent ? t('verifyOtp') : t('sendOtp')}
                 </span>
               </button>
             </div>
@@ -1201,7 +1203,7 @@ const BookAppointmentPage = () => {
               color: '#0155CB',
               margin: 0,
             }}>
-              Identity Verification
+              {t('identityVerification')}
             </h2>
             
             {renderProgressBar()}
@@ -1215,7 +1217,7 @@ const BookAppointmentPage = () => {
               color: '#061F42',
               margin: '24px 0 0 0',
             }}>
-              Enter either your ID Number or Medical Record Number to verify your identity
+              {t('identityVerificationInstructions')}
             </p>
           </div>
           
@@ -1229,8 +1231,8 @@ const BookAppointmentPage = () => {
             maxWidth: '100%',
           }}>
             <InputField
-              label="ID Number"
-              placeholder="Enter your ID Number"
+              label={t('idNumber')}
+              placeholder={t('enterIdNumber')}
               value={verificationData.nationalId}
               onChange={handleNationalIdChange}
               disabled={!!verificationData.medicalRecordNumber}
@@ -1251,14 +1253,14 @@ const BookAppointmentPage = () => {
                 fontSize: '14px',
                 color: '#A4A5A5',
               }}>
-                OR
+                {t('or')}
               </span>
               <div style={{ flex: 1, height: '1px', background: '#DADADA' }} />
             </div>
             
             <InputField
-              label="Medical Record Number (MR)"
-              placeholder="Enter your Medical Record Number"
+              label={t('medicalRecordNumber')}
+              placeholder={t('enterMedicalRecordNumber')}
               value={verificationData.medicalRecordNumber}
               onChange={handleMedicalRecordNumberChange}
               disabled={!!verificationData.nationalId}
@@ -1292,7 +1294,7 @@ const BookAppointmentPage = () => {
                     color: '#1E40AF',
                     margin: '0 0 4px 0',
                   }}>
-                    Patient Record Found
+                    {t('patientRecordFound')}
                   </p>
                   <p style={{
                     fontFamily: 'Nunito, sans-serif',
@@ -1302,7 +1304,7 @@ const BookAppointmentPage = () => {
                     color: '#1E40AF',
                     margin: 0,
                   }}>
-                    Your information has been pre-filled from hospital records. Pre-filled fields cannot be edited.
+                    {t('patientRecordFoundMessage')}
                   </p>
                 </div>
               </div>
@@ -1337,7 +1339,7 @@ const BookAppointmentPage = () => {
                   fontSize: '14px',
                   color: '#374151',
                 }}>
-                  Back
+                  {t('back')}
                 </span>
               </button>
               
@@ -1361,7 +1363,7 @@ const BookAppointmentPage = () => {
                   fontSize: '14px',
                   color: '#FFFFFF',
                 }}>
-                  Next
+                  {t('next')}
                 </span>
               </button>
             </div>
@@ -1398,7 +1400,7 @@ const BookAppointmentPage = () => {
               color: '#0155CB',
               margin: 0,
             }}>
-              Create Profile
+              {t('createProfile')}
             </h2>
             
             {renderProgressBar()}
@@ -1414,7 +1416,7 @@ const BookAppointmentPage = () => {
               maxWidth: '100%',
               padding: window.innerWidth <= 768 ? '0 8px' : '0',
             }}>
-              Fill in your information to be able to create your profile and verify your identity, when finished, click 'Next'. We will send you an OTP where you can fill it in the next step.
+              {t('createProfileInstructions')}
             </p>
           </div>
           
@@ -1465,7 +1467,7 @@ const BookAppointmentPage = () => {
                 display: 'block',
                 marginBottom: '4px',
               }}>
-                {profileData.profilePhoto ? profileData.profilePhoto.name : 'Upload profile photo'}
+                {profileData.profilePhoto ? profileData.profilePhoto.name : t('uploadProfilePhoto')}
               </span>
               <span style={{
                 fontFamily: 'Nunito, sans-serif',
@@ -1475,7 +1477,7 @@ const BookAppointmentPage = () => {
               }}>
                 {profileData.profilePhoto 
                   ? `${(profileData.profilePhoto.size / 1024).toFixed(1)} KB`
-                  : 'JPEG, PNG or GIF (max 2MB)'}
+                  : t('imageFileTypes')}
               </span>
             </div>
             
@@ -1539,7 +1541,7 @@ const BookAppointmentPage = () => {
                 fontSize: '14px',
                 color: profileData.profilePhoto ? '#374151' : '#FFFFFF',
               }}>
-                {profileData.profilePhoto ? 'Change' : 'Upload'}
+                {profileData.profilePhoto ? t('change') : t('upload')}
               </span>
               <input
                 type="file"
@@ -1579,7 +1581,7 @@ const BookAppointmentPage = () => {
               fontSize: '14px',
               color: '#A4A5A5',
             }}>
-              Already registered?
+              {t('alreadyRegistered')}
             </span>
             <Link to="/login" style={{
               fontFamily: 'Nunito, sans-serif',
@@ -1588,7 +1590,7 @@ const BookAppointmentPage = () => {
               color: '#0B67E7',
               textDecoration: 'underline',
             }}>
-              Sign in
+              {t('signIn')}
             </Link>
           </div>
           
@@ -1619,7 +1621,7 @@ const BookAppointmentPage = () => {
                   color: '#1E40AF',
                   margin: '0 0 4px 0',
                 }}>
-                  Hospital Records Found
+                  {t('hospitalRecordsFound')}
                 </p>
                 <p style={{
                   fontFamily: 'Nunito, sans-serif',
@@ -1629,7 +1631,7 @@ const BookAppointmentPage = () => {
                   color: '#1E40AF',
                   margin: 0,
                 }}>
-                  Your information has been pre-filled from hospital records. Pre-filled fields cannot be edited.
+                  {t('patientRecordFoundMessage')}
                 </p>
               </div>
             </div>
@@ -1651,31 +1653,31 @@ const BookAppointmentPage = () => {
               width: window.innerWidth <= 768 ? '100%' : 'auto',
             }}>
               <InputField
-                label="First Name"
-                placeholder="Type your first name"
+                label={t('firstName')}
+                placeholder={t('typeFirstName')}
                 value={profileData.firstName}
                 onChange={(value) => handleInputChange('firstName', value)}
                 disabled={!!verificationData.hisPatientData?.first_name}
                 required
               />
               <InputField
-                label="Middle Name(s)"
-                placeholder="Type your middle name(s)"
+                label={t('middleName')}
+                placeholder={t('typeMiddleName')}
                 value={profileData.middleName}
                 onChange={(value) => handleInputChange('middleName', value)}
                 disabled={!!verificationData.hisPatientData?.middle_name}
               />
               <InputField
-                label="Last Name"
-                placeholder="Type your last name"
+                label={t('lastName')}
+                placeholder={t('typeLastName')}
                 value={profileData.lastName}
                 onChange={(value) => handleInputChange('lastName', value)}
                 disabled={!!verificationData.hisPatientData?.last_name}
                 required
               />
               <InputField
-                label="Nationality"
-                placeholder="Select your nationality"
+                label={t('nationality')}
+                placeholder={t('selectNationality')}
                 value={profileData.nationality}
                 onChange={(value) => handleInputChange('nationality', value)}
                 disabled={!!verificationData.hisPatientData?.nationality && ['saudi', 'uae', 'egypt', 'jordan', 'other'].includes(verificationData.hisPatientData.nationality.toLowerCase())}
@@ -1745,16 +1747,16 @@ const BookAppointmentPage = () => {
                 required
               />
               <InputField
-                label="MR (Medical Record Number)"
-                placeholder="Enter your hospital MR number"
+                label={t('mrNumber')}
+                placeholder={t('enterMrNumber')}
                 value={profileData.medicalRecordNumber}
                 onChange={(value) => handleInputChange('medicalRecordNumber', value)}
                 disabled={!!verificationData.hisPatientData?.medical_record_number}
                 required={!profileData.nationalId}
               />
               <InputField
-                label="National ID"
-                placeholder="Enter your National ID number"
+                label={t('nationalId')}
+                placeholder={t('enterNationalId')}
                 value={profileData.nationalId}
                 onChange={(value) => handleInputChange('nationalId', value)}
                 disabled={!!verificationData.hisPatientData?.national_id}
@@ -1771,20 +1773,20 @@ const BookAppointmentPage = () => {
               width: window.innerWidth <= 768 ? '100%' : 'auto',
             }}>
               <InputField
-                label="Gender"
-                placeholder="Select your gender"
+                label={t('gender')}
+                placeholder={t('selectGender')}
                 value={profileData.gender}
                 onChange={(value) => handleInputChange('gender', value)}
                 disabled={!!verificationData.hisPatientData?.gender}
                 hasDropdown
                 options={[
-                  { value: 'male', label: 'Male' },
-                  { value: 'female', label: 'Female' },
+                  { value: 'male', label: t('male') },
+                  { value: 'female', label: t('female') },
                 ]}
                 required
               />
               <InputField
-                label="Date of Birth"
+                label={t('dateOfBirth')}
                 placeholder="DD/MM/YYYY"
                 value={profileData.dateOfBirth}
                 onChange={(value) => handleInputChange('dateOfBirth', value)}
@@ -1793,33 +1795,33 @@ const BookAppointmentPage = () => {
                 required
               />
               <InputField
-                label="Marital Status"
-                placeholder="Select your marital status"
+                label={t('maritalStatus')}
+                placeholder={t('selectMaritalStatus')}
                 value={profileData.maritalStatus}
                 onChange={(value) => handleInputChange('maritalStatus', value)}
                 hasDropdown
                 options={[
-                  { value: 'single', label: 'Single' },
-                  { value: 'married', label: 'Married' },
-                  { value: 'divorced', label: 'Divorced' },
-                  { value: 'widowed', label: 'Widowed' },
+                  { value: 'single', label: t('single') },
+                  { value: 'married', label: t('married') },
+                  { value: 'divorced', label: t('divorced') },
+                  { value: 'widowed', label: t('widowed') },
                 ]}
               />
               <InputField
-                label="Religion"
-                placeholder="Select your religion"
+                label={t('religion')}
+                placeholder={t('selectReligion')}
                 value={profileData.religion}
                 onChange={(value) => handleInputChange('religion', value)}
                 hasDropdown
                 options={[
-                  { value: 'islam', label: 'Islam' },
-                  { value: 'christianity', label: 'Christianity' },
-                  { value: 'other', label: 'Other' },
+                  { value: 'islam', label: t('islam') },
+                  { value: 'christianity', label: t('christianity') },
+                  { value: 'other', label: t('other') },
                 ]}
               />
               <InputField
-                label="Address"
-                placeholder="Address line 1&#10;Address line 2&#10;Address line 3"
+                label={t('address')}
+                placeholder={t('addressPlaceholder')}
                 value={profileData.address}
                 onChange={(value) => handleInputChange('address', value)}
                 type="textarea"
@@ -1843,8 +1845,8 @@ const BookAppointmentPage = () => {
           }}>
             <div style={{ flex: 1, width: window.innerWidth <= 768 ? '100%' : 'auto' }}>
               <InputField
-                label="Email"
-                placeholder="Type your email"
+                label={t('email')}
+                placeholder={t('typeEmail')}
                 value={profileData.email}
                 onChange={(value) => handleInputChange('email', value)}
                 type="email"
@@ -1863,8 +1865,8 @@ const BookAppointmentPage = () => {
           }}>
             <div style={{ flex: 1, width: window.innerWidth <= 768 ? '100%' : 'auto' }}>
               <InputField
-                label="Enter Password"
-                placeholder="Type your password"
+                label={t('enterPassword')}
+                placeholder={t('typePassword')}
                 value={profileData.password}
                 onChange={(value) => handleInputChange('password', value)}
                 type="password"
@@ -1873,8 +1875,8 @@ const BookAppointmentPage = () => {
             </div>
             <div style={{ flex: 1, width: window.innerWidth <= 768 ? '100%' : 'auto' }}>
               <InputField
-                label="Re-enter Password"
-                placeholder="Confirm password"
+                label={t('reenterPassword')}
+                placeholder={t('confirmPassword')}
                 value={profileData.confirmPassword}
                 onChange={(value) => handleInputChange('confirmPassword', value)}
                 type="password"
@@ -1916,7 +1918,7 @@ const BookAppointmentPage = () => {
                 fontSize: '14px',
                 color: '#061F42',
               }}>
-                Back
+                {t('back')}
               </span>
             </button>
             
@@ -1941,7 +1943,7 @@ const BookAppointmentPage = () => {
                 fontSize: '14px',
                 color: '#FFFFFF',
               }}>
-                {isSubmitting ? 'Creating...' : 'Create Profile'}
+                {isSubmitting ? t('creating') : t('createProfileButton')}
               </span>
             </button>
           </div>
@@ -1988,7 +1990,7 @@ const BookAppointmentPage = () => {
                 color: '#0155CB',
                 margin: 0,
               }}>
-                Choose Your Doctor
+                {t('chooseYourDoctor')}
               </h2>
               
               {renderProgressBar()}
@@ -2005,7 +2007,7 @@ const BookAppointmentPage = () => {
               margin: 0,
               padding: window.innerWidth <= 768 ? '0 8px' : '0',
             }}>
-              Choose from the following options in order to find your preferred Doctor
+              {t('chooseDoctorInstructions')}
             </p>
           </div>
           
@@ -2029,7 +2031,7 @@ const BookAppointmentPage = () => {
               {/* Select Branch */}
               <div style={{ flex: 1, width: window.innerWidth <= 768 ? '100%' : 'auto' }}>
                 <CustomSelect
-                  placeholder={loadingInitialData ? "Loading..." : "Select Branch"}
+                  placeholder={loadingInitialData ? t('loadingCalendar') : t('selectBranch')}
                   value={doctorSelection.branch}
                   onChange={(value) => setDoctorSelection(prev => ({ ...prev, branch: value, specialty: '', doctor: '', selectedDate: '', selectedSlot: '' }))}
                   options={branches.map(b => ({ value: b.id.toString(), label: b.name }))}
@@ -2040,7 +2042,7 @@ const BookAppointmentPage = () => {
               {/* Select Specialty */}
               <div style={{ flex: 1, width: window.innerWidth <= 768 ? '100%' : 'auto' }}>
                 <CustomSelect
-                  placeholder={loadingInitialData ? "Loading..." : "Select Specialty"}
+                  placeholder={loadingInitialData ? t('loadingCalendar') : t('selectSpecialty')}
                   value={doctorSelection.specialty}
                   onChange={(value) => setDoctorSelection(prev => ({ ...prev, specialty: value, doctor: '', selectedDate: '', selectedSlot: '' }))}
                   options={filteredDepartments.map(dept => ({ value: dept.id.toString(), label: dept.name }))}
@@ -2051,7 +2053,7 @@ const BookAppointmentPage = () => {
               {/* Select Doctor */}
               <div style={{ flex: 1 }}>
                 <CustomSelect
-                  placeholder="Select Doctor"
+                  placeholder={t('selectDoctor')}
                   value={doctorSelection.doctor}
                   onChange={(value) => {
                     const doctor = doctors.find(d => d.id === parseInt(value));
@@ -2107,7 +2109,7 @@ const BookAppointmentPage = () => {
                     type="text"
                     value={doctorSelection.doctorSearch}
                     onChange={(e) => setDoctorSelection(prev => ({ ...prev, doctorSearch: e.target.value }))}
-                    placeholder="Type Doctor's name"
+                    placeholder={t('typeDoctorName')}
                     style={{
                       flex: 1,
                       border: 'none',
@@ -2216,7 +2218,7 @@ const BookAppointmentPage = () => {
                 color: '#061F42',
                 alignSelf: 'flex-start',
               }}>
-                Select Date & Time for your appointment
+                {t('selectDateTime')}
               </span>
               
               {/* Loading State */}
@@ -2255,7 +2257,7 @@ const BookAppointmentPage = () => {
                       fontSize: '14px',
                       color: '#6B7280',
                     }}>
-                      Loading calendar...
+                      {t('loadingCalendar')}
                     </span>
                   </div>
                 </div>
@@ -2272,7 +2274,7 @@ const BookAppointmentPage = () => {
                   borderRadius: '12px',
                   width: '100%',
                 }}>
-                   Please select a doctor to view available dates
+                   {t('selectDoctorToViewDates')}
                 </div>
               )}
               
@@ -2318,7 +2320,7 @@ const BookAppointmentPage = () => {
                           display: 'block',
                           marginBottom: '8px',
                         }}>
-                          Selected Date
+                          {t('selectedDate')}
                         </span>
                         <span style={{
                           fontFamily: 'Nunito, sans-serif',
@@ -2374,7 +2376,7 @@ const BookAppointmentPage = () => {
                                 paddingRight: '36px',
                               }}
                             >
-                              <option value="" disabled style={{ color: '#9EA2AE' }}>Select time slot</option>
+                              <option value="" disabled style={{ color: '#9EA2AE' }}>{t('selectTimeSlot')}</option>
                               {availableTimeSlots.map((slot) => (
                                 <option key={slot.time} value={slot.time} style={{ color: '#061F42' }}>
                                   {slot.time} {slot.shift_name ? `(${slot.shift_name})` : ''}
@@ -2420,7 +2422,7 @@ const BookAppointmentPage = () => {
                               fontSize: '12px',
                               color: '#0369A1',
                             }}>
-                              ✓ {availableTimeSlots.length} slot{availableTimeSlots.length > 1 ? 's' : ''} available
+                              ✓ {availableTimeSlots.length} {availableTimeSlots.length > 1 ? t('slotsAvailable') : t('slotAvailable')}
                             </span>
                           </div>
                         </div>
@@ -2435,7 +2437,7 @@ const BookAppointmentPage = () => {
                           borderRadius: '8px',
                           border: '1px solid #FEE2E2',
                         }}>
-                          No available time slots for this date
+                          {t('noTimeSlotsAvailable')}
                         </div>
                       )}
                     </div>
@@ -2454,7 +2456,7 @@ const BookAppointmentPage = () => {
                   borderRadius: '12px',
                   width: '100%',
                 }}>
-                  No available slots found for this doctor in the next 30 days.
+                  {t('noSlotsForDoctor')}
                 </div>
               )}
             </div>
@@ -2484,7 +2486,7 @@ const BookAppointmentPage = () => {
                   lineHeight: '24px',
                   color: '#061F42',
                 }}>
-                  Summary
+                  {t('summary')}
                 </span>
                 
                 {/* Summary Pills - shown when selections are made */}
@@ -2606,7 +2608,7 @@ const BookAppointmentPage = () => {
                 color: '#061F42',
                 marginLeft: '8px',
               }}>
-                Back
+                {t('back')}
               </span>
             </button>
             
@@ -2636,7 +2638,7 @@ const BookAppointmentPage = () => {
                 lineHeight: '16px',
                 color: isFormValid ? '#FFFFFF' : '#9EA2AE',
               }}>
-                Next
+                {t('next')}
               </span>
             </button>
           </div>
@@ -2695,7 +2697,7 @@ const BookAppointmentPage = () => {
               color: '#0155CB',
               margin: 0,
             }}>
-              Confirm Appointment
+              {t('confirmAppointment')}
             </h2>
             
             {renderProgressBar()}
@@ -2712,7 +2714,7 @@ const BookAppointmentPage = () => {
             margin: 0,
             padding: window.innerWidth <= 768 ? '0 8px' : '0',
           }}>
-            Confirm your appointment
+            {t('confirmYourAppointment')}
           </p>
         </div>
         
@@ -2753,7 +2755,7 @@ const BookAppointmentPage = () => {
                 lineHeight: '24px',
                 color: '#061F42',
               }}>
-                Summary
+                {t('summary')}
               </span>
               
               <div style={{
@@ -2763,7 +2765,7 @@ const BookAppointmentPage = () => {
                 lineHeight: '19px',
                 color: '#061F42',
               }}>
-                Your appointment is scheduled at {getTranslatedField(selectedBranch?.name, '')} - {getTranslatedField(selectedDepartment?.name, '')} - {getTranslatedField(selectedDoctor?.name, '')} - {formatAppointmentDate(doctorSelection.selectedDate, doctorSelection.selectedSlot)}
+                {t('appointmentScheduledAt')} {getTranslatedField(selectedBranch?.name, '')} - {getTranslatedField(selectedDepartment?.name, '')} - {getTranslatedField(selectedDoctor?.name, '')} - {formatAppointmentDate(doctorSelection.selectedDate, doctorSelection.selectedSlot)}
               </div>
               
               {/* Warning Badge */}
@@ -2791,7 +2793,7 @@ const BookAppointmentPage = () => {
                   color: '#061F42',
                   flex: 1,
                 }}>
-                  If you couldn't attend for any reason, please reschedule your appointment through my bookings or call 920022404.
+                  {t('rescheduleWarning')}
                 </span>
               </div>
             </div>
@@ -2821,7 +2823,7 @@ const BookAppointmentPage = () => {
                 color: '#061F42',
                 flex: 1,
               }}>
-                Please arrive 15 minutes before your appointment time.
+                {t('arriveEarly')}
               </span>
             </div>
           </div>
@@ -2866,7 +2868,7 @@ const BookAppointmentPage = () => {
               color: '#061F42',
               marginLeft: '8px',
             }}>
-              Back
+              {t('back')}
             </span>
           </button>
           
@@ -2893,7 +2895,7 @@ const BookAppointmentPage = () => {
               lineHeight: '16px',
               color: '#FFFFFF',
             }}>
-              {isSubmitting ? 'Confirming...' : 'Confirm'}
+              {isSubmitting ? t('confirming') : t('confirm')}
             </span>
           </button>
         </div>
@@ -2934,7 +2936,7 @@ const BookAppointmentPage = () => {
               color: '#0155CB',
               margin: 0,
             }}>
-              Booking Confirmed
+              {t('bookingConfirmed')}
             </h2>
             
             {/* Info Badge */}
@@ -2962,7 +2964,7 @@ const BookAppointmentPage = () => {
                 color: '#061F42',
                 flex: 1,
               }}>
-                Please arrive 15 minutes before your appointment time.
+                {t('arriveEarly')}
               </span>
             </div>
             
@@ -3027,7 +3029,7 @@ const BookAppointmentPage = () => {
                   lineHeight: '20px',
                   color: '#FFFFFF',
                 }}>
-                  View My Appointments
+                  {t('viewMyAppointments')}
                 </span>
               </button>
             </div>
@@ -3052,7 +3054,7 @@ const BookAppointmentPage = () => {
       <main style={{
         background: '#C9F3FF',
         minHeight: 'calc(100vh - 200px)',
-        padding: window.innerWidth <= 768 ? '20px 16px' : '40px 20px',
+        padding: window.innerWidth <= 768 ? '20px 16px' : '5px 5px',
       }}>
         <div style={{
           maxWidth: '1200px',
@@ -3066,7 +3068,7 @@ const BookAppointmentPage = () => {
             color: '#061F42',
             marginBottom: window.innerWidth <= 768 ? '16px' : '24px',
           }}>
-            Book Appointment
+            {t('bookAppointmentTitle')}
           </h1>
           
           {/* Card Container */}

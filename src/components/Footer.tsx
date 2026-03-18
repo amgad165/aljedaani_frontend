@@ -1,25 +1,48 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useState, useEffect } from 'react';
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://api.jedaanihospitals.com/api';
+
+interface Branch {
+  id: number;
+  name: {
+    en: string;
+    ar: string;
+  };
+  is_active: boolean;
+}
 
 const Footer = () => {
-  const { t } = useTranslation('pages');
+  const { t, i18n } = useTranslation('pages');
+  const [hospitals, setHospitals] = useState<Branch[]>([]);
 
-  const hospitals = [
-    { name: t('alSafaHospital'), id: 'al-safa' },
-    { name: t('ghulailHospital'), id: 'ghulail' },
-    { name: t('ibnSinaHospital'), id: 'ibn-sina' }
-  ];
+  useEffect(() => {
+    // Fetch active branches from API
+    fetch(`${API_BASE_URL}/branches`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && Array.isArray(data.data)) {
+          const activeBranches = data.data.filter((branch: Branch) => branch.is_active);
+          setHospitals(activeBranches);
+        }
+      })
+      .catch(err => console.error('Failed to load branches:', err));
+  }, []);
 
   const quickLinks = [
-    { label: t('findADoctor'), href: '/doctors' },
+    { label: t('myProfile'), href: '/profile' },
     { label: t('labResult'), href: '/profile?tab=lab-reports' },
-    { label: t('radiologyResult'), href: '/profile?tab=radiology-reports' },
+    { label: t('radiologyResult'), href: '/profile?tab=rad-reports' },
     { label: t('medicalReports'), href: '/profile?tab=medical-reports' }
   ];
 
+  const handleProfileLinkClick = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const categoryLinks = [
-    { label: t('myProfile'), href: '/profile' },
-    { label: t('testimonials'), href: '/#testimonials' },
+    { label: t('findADoctor'), href: '/doctors' },
     { label: t('submitComplaint'), href: '/profile?tab=complaints' },
     { label: t('patientExperience'), href: '/#patient-experience' },
     { label: t('privacyPolicy'), href: '/#privacy-policy' }
@@ -217,9 +240,11 @@ const Footer = () => {
               marginBottom: '24px',
             }}>
               {hospitals.map((hospital) => (
-                <div
+                <Link
                   key={hospital.id}
-                  style={{ position: 'relative' }}
+                  to={`/branches?id=${hospital.id}`}
+                  style={{ position: 'relative', textDecoration: 'none' }}
+                  onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
                 >
                   <div style={{
                     display: 'flex',
@@ -232,10 +257,10 @@ const Footer = () => {
                       <path d="M8 1C5.24 1 3 3.24 3 6C3 9.5 8 14 8 14S13 9.5 13 6C13 3.24 10.76 1 8 1ZM8 8C6.9 8 6 7.1 6 6C6 4.9 6.9 4 8 4C9.1 4 10 4.9 10 6C10 7.1 9.1 8 8 8Z" fill="#FFFFFF"/>
                     </svg>
                     <span className="footer-link" style={{ margin: 0 }}>
-                      {hospital.name}
+                      {i18n.language === 'ar' ? hospital.name.ar : hospital.name.en}
                     </span>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
 
@@ -274,7 +299,11 @@ const Footer = () => {
             }}>
               {quickLinks.map((link) => (
                 <li key={link.label}>
-                  <Link to={link.href} className="footer-link">
+                  <Link 
+                    to={link.href} 
+                    className="footer-link"
+                    onClick={handleProfileLinkClick}
+                  >
                     {link.label}
                   </Link>
                 </li>

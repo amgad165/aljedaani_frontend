@@ -107,9 +107,9 @@ Our leaders believe in leading by example, maintaining open communication, and e
         paddingBottom: isMobile ? '30px' : '60px',
       }}>
         <div style={{
-          maxWidth: '1760px',
+          maxWidth: '1400px',
           margin: '0 auto',
-          padding: isMobile ? '0 16px' : '0 160px',
+          padding: isMobile ? '0 16px' : '12px',
         }}>
           {/* Page Title */}
           <div style={{

@@ -114,7 +114,6 @@ background: linear-gradient(180deg, #8FF5F7 0%, #14C8F9 100%);
   background: center/cover no-repeat;
   width: 100%;
   border-radius: 12px;
-  border: 2px solid white;
   min-height: 259px;
   display: flex;
   align-items: flex-end;
