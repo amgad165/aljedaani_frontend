@@ -259,6 +259,7 @@ const MobileNavbar = () => {
                 border: '2px solid #FFFFFF',
                 borderRadius: '8px',
                 textAlign: 'center',
+                marginTop: '16px',
               }}
             >
               {t('bookAppointment')}

@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { branchesService, type Branch } from '../services/branchesService';
 import { getTranslatedField } from '../utils/localeHelpers';
-import { departmentsService, type Department } from '../services/departmentsService';
-import { doctorsService, type Doctor } from '../services/doctorsService';
+import { type Department } from '../services/departmentsService';
+import { type Doctor } from '../services/doctorsService';
 import { useResponsiveNavbar } from '../hooks/useResponsiveNavbar';
 import Footer from '../components/Footer';
 import { CardSkeleton } from '../components/LoadingComponents';
@@ -725,18 +725,10 @@ const BranchesPage: React.FC = () => {
 
     const fetchBranchData = async () => {
       try {
-        // Fetch doctors for this branch
-        const doctorsData = await doctorsService.getDoctors({
-          active: true,
-          branch_id: selectedBranch.id,
-        });
-        setDoctors(doctorsData.data);
-
-        // Get unique departments from doctors
-        const deptIds = new Set(doctorsData.data.map(d => d.department_id));
-        const allDepartments = await departmentsService.getDepartments({ active: true });
-        const branchDepartments = allDepartments.departments.filter((d: Department) => deptIds.has(d.id));
-        setDepartments(branchDepartments);
+        // Fetch branch details (doctors and departments) in a single API call
+        const branchData = await branchesService.getBranchDetails(selectedBranch.id);
+        setDoctors(branchData.doctors);
+        setDepartments(branchData.departments);
 
         // Update URL
         setSearchParams({ id: selectedBranch.id.toString() });

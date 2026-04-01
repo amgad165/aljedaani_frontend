@@ -1,17 +1,26 @@
 import { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
+
+interface MultilingualText {
+  en?: string;
+  ar?: string;
+}
 
 interface Appointment {
   id: number | string;
   source?: string;
-  department: string;
+  department: string | MultilingualText;
   department_icon?: string;
-  doctor_name: string;
+  doctor_name: string | MultilingualText;
   doctor_image?: string;
-  branch: string;
+  branch: string | MultilingualText;
   appointment_date: string;
   appointment_time: string;
   appointment_datetime: string;
   status: string;
+  specialty?: string;
+  specialty_ar?: string;
+  branch_ar?: string;
 }
 
 const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
@@ -103,6 +112,8 @@ const BackButton = ({ onClick }: { onClick: () => void }) => (
 
 // Appointment Card Component
 const AppointmentCard = ({ appointment }: { appointment: Appointment }) => {
+  const { i18n } = useTranslation('pages');
+
   const formatDate = (dateString: string) => {
     // Parse YYYY-MM-DD format without timezone conversion
     const [year, month, day] = dateString.split('-');
@@ -116,6 +127,33 @@ const AppointmentCard = ({ appointment }: { appointment: Appointment }) => {
     const ampm = hour >= 12 ? 'pm' : 'am';
     const hour12 = hour % 12 || 12;
     return `${hour12.toString().padStart(2, '0')}:${minutes} ${ampm}`;
+  };
+
+  const getLocalizedText = (text: string | { en?: string; ar?: string } | undefined, defaultText: string = 'N/A'): string => {
+    if (!text) return defaultText;
+    if (typeof text === 'string') return text;
+    
+    const currentLang = i18n.language;
+    if (currentLang === 'ar') {
+      return text.ar || text.en || defaultText;
+    }
+    return text.en || text.ar || defaultText;
+  };
+
+  const getDepartmentText = (): string => {
+    const currentLang = i18n.language;
+    if (currentLang === 'ar' && appointment.specialty_ar) {
+      return appointment.specialty_ar;
+    }
+    return getLocalizedText(appointment.department, 'N/A');
+  };
+
+  const getBranchText = (): string => {
+    const currentLang = i18n.language;
+    if (currentLang === 'ar' && appointment.branch_ar) {
+      return appointment.branch_ar;
+    }
+    return getLocalizedText(appointment.branch, 'N/A');
   };
 
   const getStatusBadge = () => {
@@ -155,7 +193,7 @@ const AppointmentCard = ({ appointment }: { appointment: Appointment }) => {
       opacity: appointment.status === 'cancelled' ? 0.7 : 1,
     }}>
       {/* Doctor Image */}
-      <DoctorImage imageUrl={appointment.doctor_image} doctorName={appointment.doctor_name} />
+      <DoctorImage imageUrl={appointment.doctor_image} doctorName={getLocalizedText(appointment.doctor_name, 'N/A')} />
 
       {/* Doctor Name */}
       <div style={{
@@ -167,7 +205,7 @@ const AppointmentCard = ({ appointment }: { appointment: Appointment }) => {
         textAlign: 'center',
         color: '#061F42',
       }}>
-        {appointment.doctor_name}
+        {getLocalizedText(appointment.doctor_name, 'N/A')}
       </div>
 
       {/* Branch and Department in one line */}
@@ -208,7 +246,7 @@ const AppointmentCard = ({ appointment }: { appointment: Appointment }) => {
             lineHeight: '16px',
             color: '#6A6A6A',
           }}>
-            {appointment.branch}
+            {getBranchText()}
           </span>
         </div>
         <div style={{
@@ -231,7 +269,7 @@ const AppointmentCard = ({ appointment }: { appointment: Appointment }) => {
             lineHeight: '16px',
             color: '#1F57A4',
           }}>
-            {appointment.department}
+            {getDepartmentText()}
           </span>
         </div>
       </div>

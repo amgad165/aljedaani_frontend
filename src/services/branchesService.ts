@@ -86,27 +86,53 @@ class BranchesService {
     with_galleries?: boolean;
   }): Promise<Branch> {
     const url = new URL(`${this.baseUrl}/branches/${id}`);
-    
+
     if (params?.with_doctors) {
       url.searchParams.append('with_doctors', 'true');
     }
-    
+
     if (params?.with_galleries) {
       url.searchParams.append('with_galleries', 'true');
     }
 
     const response = await fetch(url.toString());
-    
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-    
+
     const result: ApiResponse<Branch> = await response.json();
-    
+
     if (!result.success) {
       throw new Error(result.message || 'Failed to fetch branch');
     }
-    
+
+    return result.data;
+  }
+
+  async getBranchDetails(id: number): Promise<{
+    branch: Branch;
+    doctors: any[];
+    departments: any[];
+  }> {
+    const url = new URL(`${this.baseUrl}/branches/${id}/details`);
+
+    const response = await fetch(url.toString());
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result: ApiResponse<{
+      branch: Branch;
+      doctors: any[];
+      departments: any[];
+    }> = await response.json();
+
+    if (!result.success) {
+      throw new Error(result.message || 'Failed to fetch branch details');
+    }
+
     return result.data;
   }
 }

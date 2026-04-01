@@ -282,21 +282,28 @@ const AdminDepartmentTabs: React.FC = () => {
         main_description_ar: mainDescObj.ar || '',
         quote_text_en: quoteTextObj.en || '',
         quote_text_ar: quoteTextObj.ar || '',
-        sub_sections: (Array.isArray(currentContent.sub_sections) ? currentContent.sub_sections : []).map(s => {
-          const sTitleObj = (typeof s.title === 'object' && s.title !== null) ? s.title : { en: s.title || '', ar: '' };
-          const sDescObj = (typeof s.description === 'object' && s.description !== null) ? s.description : { en: s.description || '', ar: '' };
-          return {
-            image: s.image || '',
-            mobile_image: s.mobile_image || '',
-            title_en: sTitleObj.en || '',
-            title_ar: sTitleObj.ar || '',
-            description_en: sDescObj.en || '',
-            description_ar: sDescObj.ar || '',
-            position: s.position || 'left',
-            imageFile: null,
-            imagePreview: s.image || ''
-          };
-        }),
+        sub_sections: (() => {
+          let subSectionsData = currentContent.sub_sections;
+          // Handle old format where spatie wrapped it: {en: [...]}
+          if (subSectionsData && typeof subSectionsData === 'object' && !Array.isArray(subSectionsData)) {
+            subSectionsData = (subSectionsData as any).en || [];
+          }
+          return (Array.isArray(subSectionsData) ? subSectionsData : []).map(s => {
+            const sTitleObj = (typeof s.title === 'object' && s.title !== null) ? s.title : { en: s.title || '', ar: '' };
+            const sDescObj = (typeof s.description === 'object' && s.description !== null) ? s.description : { en: s.description || '', ar: '' };
+            return {
+              image: s.image || '',
+              mobile_image: s.mobile_image || '',
+              title_en: sTitleObj.en || '',
+              title_ar: sTitleObj.ar || '',
+              description_en: sDescObj.en || '',
+              description_ar: sDescObj.ar || '',
+              position: s.position || 'left',
+              imageFile: null,
+              imagePreview: s.image || ''
+            };
+          });
+        })(),
         service_list: (() => {
           let serviceListData = currentContent.service_list;
           // Handle old format where spatie wrapped it: {en: [...]}
@@ -483,29 +490,36 @@ const AdminDepartmentTabs: React.FC = () => {
           ? updatedContent.quote_text 
           : { en: updatedContent.quote_text || '', ar: '' };
         
-        setFormData(prev => ({ 
-          ...prev, 
+        setFormData(prev => ({
+          ...prev,
           main_image: updatedContent.main_image || '',
           mobile_image: updatedContent.mobile_image || '',
           main_description_en: mainDescObj.en || '',
           main_description_ar: mainDescObj.ar || '',
           quote_text_en: quoteTextObj.en || '',
           quote_text_ar: quoteTextObj.ar || '',
-          sub_sections: (Array.isArray(updatedContent.sub_sections) ? updatedContent.sub_sections : []).map((s: SubSection) => {
-            const sTitleObj = (typeof s.title === 'object' && s.title !== null) ? s.title : { en: s.title || '', ar: '' };
-            const sDescObj = (typeof s.description === 'object' && s.description !== null) ? s.description : { en: s.description || '', ar: '' };
-            return {
-              image: s.image || '',
-              mobile_image: s.mobile_image || '',
-              title_en: sTitleObj.en || '',
-              title_ar: sTitleObj.ar || '',
-              description_en: sDescObj.en || '',
-              description_ar: sDescObj.ar || '',
-              position: s.position || 'left',
-              imageFile: null,
-              imagePreview: s.image || ''
-            };
-          }),
+          sub_sections: (() => {
+            let subSectionsData = updatedContent.sub_sections;
+            // Handle old format where spatie wrapped it: {en: [...]}
+            if (subSectionsData && typeof subSectionsData === 'object' && !Array.isArray(subSectionsData)) {
+              subSectionsData = (subSectionsData as any).en || [];
+            }
+            return (Array.isArray(subSectionsData) ? subSectionsData : []).map((s: SubSection) => {
+              const sTitleObj = (typeof s.title === 'object' && s.title !== null) ? s.title : { en: s.title || '', ar: '' };
+              const sDescObj = (typeof s.description === 'object' && s.description !== null) ? s.description : { en: s.description || '', ar: '' };
+              return {
+                image: s.image || '',
+                mobile_image: s.mobile_image || '',
+                title_en: sTitleObj.en || '',
+                title_ar: sTitleObj.ar || '',
+                description_en: sDescObj.en || '',
+                description_ar: sDescObj.ar || '',
+                position: s.position || 'left',
+                imageFile: null,
+                imagePreview: s.image || ''
+              };
+            });
+          })(),
           service_list: (() => {
             let serviceListData = updatedContent.service_list;
             // Handle old format where spatie wrapped it: {en: [...]}

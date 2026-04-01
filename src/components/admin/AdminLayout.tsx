@@ -63,6 +63,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
         { path: '/admin/his-shifts', label: 'Shifts' },
         { path: '/admin/his-shift-defines', label: 'Shift Defines' },
         { path: '/admin/his-shift-define-details', label: 'Shift Assignments' },
+        { path: '/admin/his-shift-define-detail-deleted-records', label: 'Deleted Assignments' },
       ]
     },
     { path: '/admin/testimonials', label: 'Testimonials', icon: 'testimonial' },

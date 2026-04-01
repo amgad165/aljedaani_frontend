@@ -537,7 +537,7 @@ const DepartmentsPage: React.FC = () => {
       {/* Departments Grid */}
       <div style={{
         display: 'grid',
-        gridTemplateColumns: isMobile ? '1fr' : 'repeat(5, 1fr)',
+        gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(5, 1fr)',
         gap: isMobile ? '16px' : '24px',
         width: '100%',
         marginBottom: isMobile ? '24px' : '40px',

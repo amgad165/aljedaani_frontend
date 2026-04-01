@@ -45,6 +45,7 @@ import AdminHisConsultations from './components/admin/AdminHisConsultations';
 import AdminHisShifts from './components/admin/AdminHisShifts';
 import AdminHisShiftDefines from './components/admin/AdminHisShiftDefines';
 import AdminHisShiftDefineDetails from './components/admin/AdminHisShiftDefineDetails';
+import AdminHisShiftDefineDetailDeletedRecords from './components/admin/AdminHisShiftDefineDetailDeletedRecords';
 import DoctorAvailability from './components/admin/DoctorAvailability';
 import PatientDetails from './components/admin/PatientDetails';
 import AdminContactSubmissions from './components/admin/AdminContactSubmissions';
@@ -207,6 +208,11 @@ function App() {
           <Route path="/admin/his-shift-define-details" element={
             <ProtectedRoute>
               <AdminHisShiftDefineDetails />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/his-shift-define-detail-deleted-records" element={
+            <ProtectedRoute>
+              <AdminHisShiftDefineDetailDeletedRecords />
             </ProtectedRoute>
           } />
           <Route path="/admin/contact-submissions" element={

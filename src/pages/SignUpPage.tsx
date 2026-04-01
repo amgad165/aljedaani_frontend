@@ -6,6 +6,7 @@ import Footer from '../components/Footer';
 import CustomSelect from '../components/CustomSelect';
 import ToastContainer from '../components/ToastContainer';
 import { useToast } from '../hooks/useToast';
+import { useTranslation } from 'react-i18next';
 
 // Step types
 type StepStatus = 'completed' | 'current' | 'upcoming';
@@ -102,6 +103,7 @@ const InputField = ({
       alignItems: 'flex-start',
       gap: '8px',
       width: '100%',
+      boxSizing: 'border-box',
     }}>
       <label style={{
         fontFamily: 'Nunito, sans-serif',
@@ -119,6 +121,7 @@ const InputField = ({
         padding: '12px',
         gap: '12px',
         width: '100%',
+        maxWidth: '100%',
         height: type === 'textarea' ? '72px' : '44px',
         border: '1.5px solid #D1D5DB',
         borderRadius: '10px',
@@ -149,8 +152,8 @@ const InputField = ({
               outline: 'none',
               fontFamily: 'Nunito, sans-serif',
               fontWeight: 500,
-              fontSize: '14px',
-              lineHeight: '16px',
+              fontSize: '16px',
+              lineHeight: '18px',
               color: '#061F42',
               resize: 'none',
               height: '100%',
@@ -160,9 +163,15 @@ const InputField = ({
           />
         ) : (
           <input
-            type={isPasswordField && !showPassword ? 'password' : type}
+            type={isPasswordField ? (showPassword ? 'text' : 'password') : type}
             value={value}
             onChange={(e) => onChange(e.target.value)}
+            onKeyDown={(e) => {
+              // Blur input on Enter key to dismiss keyboard on iOS
+              if (e.key === 'Enter' && type !== 'textarea') {
+                e.currentTarget.blur();
+              }
+            }}
             placeholder={placeholder}
             disabled={disabled}
             style={{
@@ -171,7 +180,7 @@ const InputField = ({
               outline: 'none',
               fontFamily: 'Nunito, sans-serif',
               fontWeight: 500,
-              fontSize: '14px',
+              fontSize: '16px',
               lineHeight: '16px',
               color: '#061F42',
               background: 'transparent',
@@ -216,12 +225,13 @@ const SignUpPage = () => {
   const { clearError } = useAuth();
   const navigate = useNavigate();
   const { toasts, removeToast, success, error: showError, warning } = useToast();
-  
+  const { t } = useTranslation('pages');
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentStep, setCurrentStep] = useState(1); // 1: Phone, 2: ID/MR Check, 3: Profile
   const [isOtpSent, setIsOtpSent] = useState(false);
   const [resendCountdown, setResendCountdown] = useState(0);
-  
+
   const [verificationData, setVerificationData] = useState<VerificationData>({
     mobileNumber: '',
     otpCode: '',
@@ -233,7 +243,7 @@ const SignUpPage = () => {
     hisPatientExists: false,
     hisPatientData: null,
   });
-  
+
   const [profileData, setProfileData] = useState<ProfileData>({
     profilePhoto: null,
     firstName: '',
@@ -260,17 +270,40 @@ const SignUpPage = () => {
     }
   }, [resendCountdown]);
 
+  // Handle clicking/tapping outside inputs to blur them (dismiss keyboard on iOS)
+  useEffect(() => {
+    const handleTouchStart = (e: TouchEvent) => {
+      const target = e.target as HTMLElement;
+      // If user taps outside an input/textarea/button, blur the active element
+      if (
+        document.activeElement &&
+        document.activeElement.tagName !== 'BODY' &&
+        !target.matches('input, textarea, button, a, label, select')
+      ) {
+        (document.activeElement as HTMLElement).blur();
+      }
+    };
+
+    document.addEventListener('touchstart', handleTouchStart);
+    return () => document.removeEventListener('touchstart', handleTouchStart);
+  }, []);
+
   const getSteps = (): StepInfo[] => {
     return [
-      { id: 1, title: 'Phone Verification', status: currentStep > 1 ? 'completed' : currentStep === 1 ? 'current' : 'upcoming' },
-      { id: 2, title: 'Identity Verification', status: currentStep > 2 ? 'completed' : currentStep === 2 ? 'current' : 'upcoming' },
-      { id: 3, title: 'Create Profile', status: currentStep === 3 ? 'current' : currentStep > 3 ? 'completed' : 'upcoming' },
+      { id: 1, title: t('phoneVerification'), status: currentStep > 1 ? 'completed' : currentStep === 1 ? 'current' : 'upcoming' },
+      { id: 2, title: t('identityVerification'), status: currentStep > 2 ? 'completed' : currentStep === 2 ? 'current' : 'upcoming' },
+      { id: 3, title: t('createProfile'), status: currentStep === 3 ? 'current' : currentStep > 3 ? 'completed' : 'upcoming' },
     ];
   };
 
   const handleSendOtp = async () => {
+    // Blur active input to dismiss keyboard on iOS
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
+
     if (!verificationData.mobileNumber) {
-      warning('Please enter your mobile number');
+      warning(t('pleaseEnterMobileNumber'));
       return;
     }
 
@@ -325,12 +358,17 @@ const SignUpPage = () => {
   };
 
   const handleVerifyOtp = async () => {
+    // Blur active input to dismiss keyboard on iOS
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
+
     if (!verificationData.otpCode) {
-      warning('Please enter the OTP code');
+      warning(t('pleaseEnterOtpCode'));
       return;
     }
     if (!verificationData.verificationId) {
-      showError('Verification session expired. Please request a new OTP.');
+      showError(t('verificationSessionExpired'));
       return;
     }
 
@@ -351,13 +389,13 @@ const SignUpPage = () => {
         setCurrentStep(2); // Move to ID/MR verification step
         success(result.message);
       } else {
-        showError('Invalid OTP. Please try again.');
+        showError(t('invalidOtp'));
       }
     } catch (err: unknown) {
       if (typeof err === 'object' && err !== null && 'message' in err) {
         showError((err as { message: string }).message);
       } else {
-        showError('OTP verification failed. Please try again.');
+        showError(t('otpVerificationFailed'));
       }
     } finally {
       setIsSubmitting(false);
@@ -365,9 +403,14 @@ const SignUpPage = () => {
   };
 
   const handleCheckUserByPhoneAndId = async () => {
+    // Blur active input to dismiss keyboard on iOS
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
+
     // Validate that at least one ID is provided
     if (!verificationData.nationalId && !verificationData.medicalRecordNumber) {
-      warning('Please enter either ID Number or Medical Record Number');
+      warning(t('pleaseEnterIdOrMr'));
       return;
     }
 
@@ -415,10 +458,10 @@ const SignUpPage = () => {
               nationalId: data.patient_data.national_id || verificationData.nationalId,
             }));
           }
-          success('Record found! Your information has been pre-filled.');
+          success(t('recordFoundPreFilled'));
         } else {
           // New patient - no pre-fill needed
-          success('Ready to create your profile.');
+          success(t('readyToCreateProfile'));
         }
 
         setVerificationData(prev => ({
@@ -428,10 +471,10 @@ const SignUpPage = () => {
         }));
         setCurrentStep(3); // Move to profile creation step
       } else {
-        showError(data.message || 'Failed to verify identity.');
+        showError(data.message || t('failedToVerifyIdentity'));
       }
     } catch (err) {
-      showError('Network error. Please try again.');
+      showError(t('networkError'));
       console.error('ID verification error:', err);
     } finally {
       setIsSubmitting(false);
@@ -457,37 +500,42 @@ const SignUpPage = () => {
   };
 
   const handleProfileSubmit = async () => {
+    // Blur active input to dismiss keyboard on iOS
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
+
     // Validate required fields
     if (!profileData.firstName || !profileData.lastName || !profileData.email || !profileData.password) {
-      warning('Please fill in all required fields');
+      warning(t('pleaseFieldInAllRequiredFields'));
       return;
     }
     if (!profileData.gender) {
-      warning('Please select your gender');
+      warning(t('pleaseSelectGender'));
       return;
     }
     if (!profileData.dateOfBirth) {
-      warning('Please enter your date of birth');
+      warning(t('pleaseEnterDateOfBirth'));
       return;
     }
     if (!profileData.nationality) {
-      warning('Please select your nationality');
+      warning(t('pleaseSelectNationality'));
       return;
     }
     if (!profileData.medicalRecordNumber && !profileData.nationalId) {
-      warning('Please enter either Medical Record Number (MR) or ID Number');
+      warning(t('pleaseEnterMrOrId'));
       return;
     }
     if (profileData.password !== profileData.confirmPassword) {
-      showError('Passwords do not match');
+      showError(t('passwordsDoNotMatch'));
       return;
     }
     if (profileData.password.length < 8) {
-      showError('Password must be at least 8 characters');
+      showError(t('passwordMinEightCharacters'));
       return;
     }
     if (!verificationData.verificationToken) {
-      showError('Phone verification expired. Please start over.');
+      showError(t('phoneVerificationExpired'));
       return;
     }
 
@@ -527,7 +575,7 @@ const SignUpPage = () => {
       } else if (typeof err === 'object' && err !== null && 'message' in err) {
         showError((err as { message: string }).message);
       } else {
-        showError('Registration failed. Please try again.');
+        showError(t('registrationFailed'));
       }
     } finally {
       setIsSubmitting(false);
@@ -543,22 +591,23 @@ const SignUpPage = () => {
 
   const renderProgressBar = () => {
     const steps = getSteps();
-    
+
     return (
       <div style={{
         display: 'flex',
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        padding: '24px 36px',
+        padding: 'clamp(16px, 4vw, 24px) clamp(16px, 6vw, 36px)',
         background: '#FFFFFF',
         borderRadius: '12px',
         position: 'relative',
         isolation: 'isolate',
         width: '100%',
         maxWidth: '612px',
-        minWidth: '500px',
-        height: '80px',
+        minWidth: 'min(320px, 100%)',
+        height: 'auto',
+        minHeight: '80px',
         marginTop: '16px',
       }}>
         {/* Connection Lines */}
@@ -568,8 +617,8 @@ const SignUpPage = () => {
           flexDirection: 'row',
           alignItems: 'center',
           height: '5px',
-          left: '51px',
-          right: '51px',
+          left: 'clamp(20px, 8vw, 51px)',
+          right: 'clamp(20px, 8vw, 51px)',
           top: 'calc(50% - 2.5px)',
           zIndex: 0,
           gap: '0',
@@ -658,6 +707,7 @@ const SignUpPage = () => {
             flexDirection: 'column',
             alignItems: 'center',
             width: '100%',
+            boxSizing: 'border-box',
           }}>
             <h2 style={{
               fontFamily: 'Nunito, sans-serif',
@@ -668,7 +718,7 @@ const SignUpPage = () => {
               color: '#0155CB',
               margin: 0,
             }}>
-              Phone Verification
+              {t('phoneVerification')}
             </h2>
             
             {renderProgressBar()}
@@ -681,8 +731,9 @@ const SignUpPage = () => {
               textAlign: 'center',
               color: '#061F42',
               margin: '24px 0 0 0',
+              padding: '0 clamp(16px, 4vw, 0px)',
             }}>
-              Enter your mobile number and verify with OTP
+              {t('enterMobileAndVerifyOtp')}
             </p>
           </div>
           
@@ -691,21 +742,24 @@ const SignUpPage = () => {
             flexDirection: 'column',
             alignItems: 'center',
             gap: '12px',
-            width: '300px',
+            width: '100%',
+            maxWidth: '300px',
+            padding: '0 clamp(8px, 2vw, 0px)',
+            boxSizing: 'border-box',
           }}>
             <InputField
-              label="Mobile Number"
-              placeholder="Type your mobile number"
+              label={t('mobileNumber')}
+              placeholder={t('typeMobileNumber')}
               value={verificationData.mobileNumber}
               onChange={(value) => setVerificationData(prev => ({ ...prev, mobileNumber: value }))}
               type="tel"
               required
             />
-            
+
             {isOtpSent && (
               <InputField
-                label="OTP Code"
-                placeholder="Enter OTP code"
+                label={t('otpCode')}
+                placeholder={t('enterOtpCode')}
                 value={verificationData.otpCode}
                 onChange={(value) => setVerificationData(prev => ({ ...prev, otpCode: value }))}
                 required
@@ -726,7 +780,7 @@ const SignUpPage = () => {
                   fontSize: '14px',
                   color: '#A4A5A5',
                 }}>
-                  Didn't receive OTP?
+                  {t('didntReceiveOtp')}
                 </span>
                 <button
                   onClick={handleResendOtp}
@@ -743,7 +797,7 @@ const SignUpPage = () => {
                     padding: 0,
                   }}
                 >
-                  {resendCountdown > 0 ? `Resend in ${resendCountdown}s` : 'Resend OTP'}
+                  {resendCountdown > 0 ? t('resendIn', { count: resendCountdown }) : t('resendOtp')}
                 </button>
               </div>
             )}
@@ -761,7 +815,7 @@ const SignUpPage = () => {
                 fontSize: '14px',
                 color: '#A4A5A5',
               }}>
-                Already registered?
+                {t('alreadyRegistered')}
               </span>
               <Link to="/login" style={{
                 fontFamily: 'Nunito, sans-serif',
@@ -770,7 +824,7 @@ const SignUpPage = () => {
                 color: '#0B67E7',
                 textDecoration: 'underline',
               }}>
-                Sign in
+                {t('signIn')}
               </Link>
             </div>
             
@@ -779,8 +833,10 @@ const SignUpPage = () => {
               paddingTop: '12px',
               borderTop: '1px solid #DADADA',
               display: 'flex',
+              flexWrap: 'wrap',
               justifyContent: 'flex-end',
               marginTop: '24px',
+              gap: '12px',
             }}>
               <button
                 onClick={isOtpSent ? handleVerifyOtp : handleSendOtp}
@@ -794,6 +850,7 @@ const SignUpPage = () => {
                   borderRadius: '8px',
                   border: 'none',
                   cursor: isSubmitting ? 'not-allowed' : 'pointer',
+                  minWidth: '100px',
                 }}
               >
                 <span style={{
@@ -802,7 +859,7 @@ const SignUpPage = () => {
                   fontSize: '14px',
                   color: '#FFFFFF',
                 }}>
-                  {isOtpSent ? 'Verify OTP' : 'Send OTP'}
+                  {isOtpSent ? t('verifyOtp') : t('sendOtp')}
                 </span>
               </button>
             </div>
@@ -826,6 +883,7 @@ const SignUpPage = () => {
             flexDirection: 'column',
             alignItems: 'center',
             width: '100%',
+            boxSizing: 'border-box',
           }}>
             <h2 style={{
               fontFamily: 'Nunito, sans-serif',
@@ -836,7 +894,7 @@ const SignUpPage = () => {
               color: '#0155CB',
               margin: 0,
             }}>
-              Identity Verification
+              {t('identityVerification')}
             </h2>
             
             {renderProgressBar()}
@@ -850,8 +908,9 @@ const SignUpPage = () => {
               color: '#061F42',
               margin: '24px 0 0 0',
               maxWidth: '500px',
+              padding: '0 clamp(16px, 4vw, 0px)',
             }}>
-              Enter either your ID Number or Medical Record Number to verify your identity
+              {t('enterIdOrMrToVerify')}
             </p>
           </div>
           
@@ -860,7 +919,10 @@ const SignUpPage = () => {
             flexDirection: 'column',
             alignItems: 'center',
             gap: '12px',
-            width: '400px',
+            width: '100%',
+            maxWidth: '400px',
+            padding: '0 clamp(8px, 2vw, 0px)',
+            boxSizing: 'border-box',
           }}>
             {/* National ID Input */}
             <div style={{
@@ -869,6 +931,7 @@ const SignUpPage = () => {
               alignItems: 'flex-start',
               gap: '8px',
               width: '100%',
+              boxSizing: 'border-box',
             }}>
               <label style={{
                 fontFamily: 'Nunito, sans-serif',
@@ -877,7 +940,7 @@ const SignUpPage = () => {
                 lineHeight: '24px',
                 color: '#061F42',
               }}>
-                ID Number
+                {t('idNumber')}
               </label>
               <div style={{
                 boxSizing: 'border-box',
@@ -886,6 +949,7 @@ const SignUpPage = () => {
                 padding: '12px',
                 gap: '12px',
                 width: '100%',
+                maxWidth: '100%',
                 height: '44px',
                 border: '1.5px solid #D1D5DB',
                 borderRadius: '10px',
@@ -894,15 +958,20 @@ const SignUpPage = () => {
               }}>
                 <input
                   type="text"
-                  placeholder="Enter your ID Number"
+                  placeholder={t('enterYourIdNumber')}
                   value={verificationData.nationalId}
                   onChange={(e) => handleNationalIdChange(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.currentTarget.blur();
+                    }
+                  }}
                   disabled={!!verificationData.medicalRecordNumber}
                   style={{
                     flex: 1,
                     fontFamily: 'Nunito, sans-serif',
                     fontWeight: 400,
-                    fontSize: '14px',
+                    fontSize: '16px',
                     lineHeight: '20px',
                     color: '#061F42',
                     border: 'none',
@@ -933,7 +1002,7 @@ const SignUpPage = () => {
                 fontWeight: 600,
                 color: '#6B7280',
               }}>
-                OR
+                {t('or')}
               </span>
               <div style={{
                 flex: 1,
@@ -949,6 +1018,7 @@ const SignUpPage = () => {
               alignItems: 'flex-start',
               gap: '8px',
               width: '100%',
+              boxSizing: 'border-box',
             }}>
               <label style={{
                 fontFamily: 'Nunito, sans-serif',
@@ -957,7 +1027,7 @@ const SignUpPage = () => {
                 lineHeight: '24px',
                 color: '#061F42',
               }}>
-                Medical Record Number
+                {t('medicalRecordNumber')}
               </label>
               <div style={{
                 boxSizing: 'border-box',
@@ -966,6 +1036,7 @@ const SignUpPage = () => {
                 padding: '12px',
                 gap: '12px',
                 width: '100%',
+                maxWidth: '100%',
                 height: '44px',
                 border: '1.5px solid #D1D5DB',
                 borderRadius: '10px',
@@ -974,15 +1045,20 @@ const SignUpPage = () => {
               }}>
                 <input
                   type="text"
-                  placeholder="Enter your Medical Record Number"
+                  placeholder={t('enterYourMrNumber')}
                   value={verificationData.medicalRecordNumber}
                   onChange={(e) => handleMedicalRecordNumberChange(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.currentTarget.blur();
+                    }
+                  }}
                   disabled={!!verificationData.nationalId}
                   style={{
                     flex: 1,
                     fontFamily: 'Nunito, sans-serif',
                     fontWeight: 400,
-                    fontSize: '14px',
+                    fontSize: '16px',
                     lineHeight: '20px',
                     color: '#061F42',
                     border: 'none',
@@ -1007,7 +1083,7 @@ const SignUpPage = () => {
                 fontSize: '14px',
                 color: '#A4A5A5',
               }}>
-                Already registered?
+                {t('alreadyRegistered')}
               </span>
               <Link to="/login" style={{
                 fontFamily: 'Nunito, sans-serif',
@@ -1016,7 +1092,7 @@ const SignUpPage = () => {
                 color: '#0B67E7',
                 textDecoration: 'underline',
               }}>
-                Sign in
+                {t('signIn')}
               </Link>
             </div>
             
@@ -1025,8 +1101,10 @@ const SignUpPage = () => {
               paddingTop: '12px',
               borderTop: '1px solid #DADADA',
               display: 'flex',
+              flexWrap: 'wrap',
               justifyContent: 'space-between',
               marginTop: '24px',
+              gap: '12px',
             }}>
               <button
                 onClick={() => setCurrentStep(1)}
@@ -1040,6 +1118,7 @@ const SignUpPage = () => {
                   border: '1px solid #061F42',
                   borderRadius: '8px',
                   cursor: isSubmitting ? 'not-allowed' : 'pointer',
+                  minWidth: '80px',
                 }}
               >
                 <span style={{
@@ -1048,7 +1127,7 @@ const SignUpPage = () => {
                   fontSize: '14px',
                   color: '#061F42',
                 }}>
-                  Back
+                  {t('back')}
                 </span>
               </button>
 
@@ -1064,6 +1143,7 @@ const SignUpPage = () => {
                   borderRadius: '8px',
                   border: 'none',
                   cursor: (isSubmitting || (!verificationData.nationalId && !verificationData.medicalRecordNumber)) ? 'not-allowed' : 'pointer',
+                  minWidth: '100px',
                 }}
               >
                 <span style={{
@@ -1072,7 +1152,7 @@ const SignUpPage = () => {
                   fontSize: '14px',
                   color: '#FFFFFF',
                 }}>
-                  Continue
+                  {t('continue')}
                 </span>
               </button>
             </div>
@@ -1089,6 +1169,7 @@ const SignUpPage = () => {
         gap: '24px',
         width: '100%',
         maxWidth: '616px',
+        padding: '0 clamp(8px, 2vw, 0px)',
       }}>
         <div style={{
           display: 'flex',
@@ -1105,11 +1186,11 @@ const SignUpPage = () => {
             color: '#0155CB',
             margin: 0,
           }}>
-            Create Profile
+            {t('createProfile')}
           </h2>
-          
+
           {renderProgressBar()}
-          
+
           <p style={{
             fontFamily: 'Nunito, sans-serif',
             fontWeight: 600,
@@ -1119,8 +1200,9 @@ const SignUpPage = () => {
             color: '#061F42',
             margin: '24px 0 0 0',
             maxWidth: '616px',
+            padding: '0 clamp(16px, 4vw, 0px)',
           }}>
-            Fill in your information to create your profile and verify your identity
+            {t('fillInformationCreateProfile')}
           </p>
         </div>
         
@@ -1128,9 +1210,10 @@ const SignUpPage = () => {
         {verificationData.hisPatientExists && verificationData.hisPatientData && (
           <div style={{
             display: 'flex',
+            flexWrap: 'wrap',
             alignItems: 'flex-start',
             gap: '12px',
-            padding: '16px',
+            padding: 'clamp(12px, 3vw, 16px)',
             width: '100%',
             background: '#EFF6FF',
             border: '1px solid #BFDBFE',
@@ -1140,26 +1223,26 @@ const SignUpPage = () => {
               <circle cx="12" cy="12" r="10" stroke="#3B82F6" strokeWidth="2"/>
               <path d="M12 16V12M12 8H12.01" stroke="#3B82F6" strokeWidth="2" strokeLinecap="round"/>
             </svg>
-            <div style={{ flex: 1 }}>
+            <div style={{ flex: 1, minWidth: 'min(200px, 100%)' }}>
               <p style={{
                 fontFamily: 'Nunito, sans-serif',
                 fontWeight: 700,
-                fontSize: '14px',
+                fontSize: 'clamp(13px, 3vw, 14px)',
                 lineHeight: '20px',
                 color: '#1E40AF',
                 margin: '0 0 4px 0',
               }}>
-                HIS Record Found
+                {t('hisRecordFound')}
               </p>
               <p style={{
                 fontFamily: 'Nunito, sans-serif',
                 fontWeight: 400,
-                fontSize: '14px',
-                lineHeight: '20px',
+                fontSize: 'clamp(12px, 2.8vw, 14px)',
+                lineHeight: '18px',
                 color: '#1E40AF',
                 margin: 0,
               }}>
-                Your information from our hospital system has been pre-filled. Pre-filled fields (shown with gray background) cannot be edited. Please complete the remaining fields.
+                {t('hisRecordFoundDescription')}
               </p>
             </div>
           </div>
@@ -1169,9 +1252,10 @@ const SignUpPage = () => {
         <div style={{
           boxSizing: 'border-box',
           display: 'flex',
+          flexWrap: 'wrap',
           alignItems: 'center',
-          padding: '16px',
-          gap: '16px',
+          padding: 'clamp(12px, 3vw, 16px)',
+          gap: 'clamp(8px, 2vw, 16px)',
           width: '100%',
           background: '#F9FAFB',
           border: '1.5px solid #E5E7EB',
@@ -1179,10 +1263,10 @@ const SignUpPage = () => {
           transition: 'border-color 0.2s ease',
         }}>
           <div style={{
-            width: '72px',
-            height: '72px',
+            width: 'clamp(56px, 15vw, 72px)',
+            height: 'clamp(56px, 15vw, 72px)',
             borderRadius: '50%',
-            background: profileData.profilePhoto 
+            background: profileData.profilePhoto
               ? `url(${URL.createObjectURL(profileData.profilePhoto)}) center/cover no-repeat`
               : 'linear-gradient(135deg, #E0E7FF 0%, #C7D2FE 100%)',
             display: 'flex',
@@ -1200,27 +1284,27 @@ const SignUpPage = () => {
               </svg>
             )}
           </div>
-          
-          <div style={{ flex: 1 }}>
+          <div style={{ flex: 1, minWidth: 'min(150px, 100%)' }}>
             <span style={{
               fontFamily: 'Nunito, sans-serif',
               fontWeight: 700,
-              fontSize: '16px',
+              fontSize: 'clamp(14px, 3vw, 16px)',
               color: '#061F42',
               display: 'block',
               marginBottom: '4px',
+              wordBreak: 'break-word',
             }}>
-              {profileData.profilePhoto ? profileData.profilePhoto.name : 'Upload profile photo'}
+              {profileData.profilePhoto ? profileData.profilePhoto.name : t('uploadProfilePhoto')}
             </span>
             <span style={{
               fontFamily: 'Nunito, sans-serif',
               fontWeight: 400,
-              fontSize: '12px',
+              fontSize: 'clamp(11px, 2.5vw, 12px)',
               color: '#6B7280',
             }}>
               {profileData.profilePhoto 
                 ? `${(profileData.profilePhoto.size / 1024).toFixed(1)} KB`
-                : 'JPEG, PNG or GIF (max 2MB)'}
+                : t('imageFormatMax2mb')}
             </span>
           </div>
           
@@ -1246,19 +1330,20 @@ const SignUpPage = () => {
               </svg>
             </button>
           )}
-          
           <label style={{
             boxSizing: 'border-box',
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
-            padding: '10px 16px',
+            padding: 'clamp(8px, 2vw, 10px) clamp(12px, 3vw, 16px)',
             gap: '8px',
             background: profileData.profilePhoto ? '#F3F4F6' : '#061F42',
             border: profileData.profilePhoto ? '1px solid #D1D5DB' : 'none',
             borderRadius: '8px',
             cursor: 'pointer',
             transition: 'all 0.2s ease',
+            minWidth: '80px',
+            flexShrink: 0,
           }}
           onMouseEnter={(e) => {
             if (profileData.profilePhoto) {
@@ -1279,10 +1364,10 @@ const SignUpPage = () => {
             <span style={{
               fontFamily: 'Nunito, sans-serif',
               fontWeight: 600,
-              fontSize: '14px',
+              fontSize: 'clamp(12px, 3vw, 14px)',
               color: profileData.profilePhoto ? '#374151' : '#FFFFFF',
             }}>
-              {profileData.profilePhoto ? 'Change' : 'Upload'}
+              {profileData.profilePhoto ? t('changePhoto') : t('uploadPhoto')}
             </span>
             <input
               type="file"
@@ -1293,11 +1378,11 @@ const SignUpPage = () => {
                 if (file) {
                   const validTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif'];
                   if (!validTypes.includes(file.type)) {
-                    warning('Please upload a valid image file (JPEG, PNG, or GIF)');
+                    warning(t('invalidImageFile'));
                     return;
                   }
                   if (file.size > 2 * 1024 * 1024) {
-                    warning('Image size must be less than 2MB');
+                    warning(t('imageSizeMax2MB'));
                     return;
                   }
                 }
@@ -1319,7 +1404,7 @@ const SignUpPage = () => {
             fontSize: '14px',
             color: '#A4A5A5',
           }}>
-            Already registered?
+            {t('alreadyRegistered')}
           </span>
           <Link to="/login" style={{
             fontFamily: 'Nunito, sans-serif',
@@ -1328,7 +1413,7 @@ const SignUpPage = () => {
             color: '#0B67E7',
             textDecoration: 'underline',
           }}>
-            Sign in
+            {t('signIn')}
           </Link>
         </div>
         
@@ -1336,41 +1421,45 @@ const SignUpPage = () => {
         <div style={{
           display: 'flex',
           flexDirection: 'row',
+          flexWrap: 'wrap',
           gap: '16px',
           width: '100%',
+          boxSizing: 'border-box',
         }}>
           <div style={{
             display: 'flex',
             flexDirection: 'column',
             gap: '24px',
             flex: 1,
+            minWidth: 'min(280px, 100%)',
+            boxSizing: 'border-box',
           }}>
             <InputField
-              label="First Name"
-              placeholder="Type your first name"
+              label={t('firstName')}
+              placeholder={t('typeFirstName')}
               value={profileData.firstName}
               onChange={(value) => handleInputChange('firstName', value)}
               required
               disabled={!!verificationData.hisPatientData?.first_name}
             />
             <InputField
-              label="Middle Name(s)"
-              placeholder="Type your middle name(s)"
+              label={t('middleName')}
+              placeholder={t('typeMiddleName')}
               value={profileData.middleName}
               onChange={(value) => handleInputChange('middleName', value)}
               disabled={!!verificationData.hisPatientData?.middle_name}
             />
             <InputField
-              label="Last Name"
-              placeholder="Type your last name"
+              label={t('lastName')}
+              placeholder={t('typeLastName')}
               value={profileData.lastName}
               onChange={(value) => handleInputChange('lastName', value)}
               required
               disabled={!!verificationData.hisPatientData?.last_name}
             />
             <InputField
-              label="Nationality"
-              placeholder="Select your nationality"
+              label={t('nationality')}
+              placeholder={t('selectNationality')}
               value={profileData.nationality}
               onChange={(value) => handleInputChange('nationality', value)}
               hasDropdown
@@ -1440,45 +1529,46 @@ const SignUpPage = () => {
               disabled={!!verificationData.hisPatientData?.nationality && ['saudi', 'uae', 'egypt', 'jordan', 'other'].includes(verificationData.hisPatientData.nationality.toLowerCase())}
             />
             <InputField
-              label="MR (Medical Record Number)"
-              placeholder="Enter your hospital MR number"
+              label={t('mrNumberLabel')}
+              placeholder={t('enterHospitalMrNumber')}
               value={profileData.medicalRecordNumber}
               onChange={(value) => handleInputChange('medicalRecordNumber', value)}
               required={!profileData.nationalId}
               disabled={!!verificationData.hisPatientData?.medical_record_number}
             />
             <InputField
-              label="ID Number"
-              placeholder="Enter your ID number"
+              label={t('idNumber')}
+              placeholder={t('enterYourIdNumber')}
               value={profileData.nationalId}
               onChange={(value) => handleInputChange('nationalId', value)}
               required={!profileData.medicalRecordNumber}
               disabled={!!verificationData.hisPatientData?.national_id}
             />
           </div>
-          
           <div style={{
             display: 'flex',
             flexDirection: 'column',
             gap: '24px',
             flex: 1,
+            minWidth: 'min(280px, 100%)',
+            boxSizing: 'border-box',
           }}>
             <InputField
-              label="Gender"
-              placeholder="Select your gender"
+              label={t('gender')}
+              placeholder={t('selectGender')}
               value={profileData.gender}
               onChange={(value) => handleInputChange('gender', value)}
               hasDropdown
               options={[
-                { value: 'male', label: 'Male' },
-                { value: 'female', label: 'Female' },
+                { value: 'male', label: t('male') },
+                { value: 'female', label: t('female') },
               ]}
               required
               disabled={!!verificationData.hisPatientData?.gender}
             />
             <InputField
-              label="Date of Birth"
-              placeholder="DD/MM/YYYY"
+              label={t('dateOfBirth')}
+              placeholder={t('dateFormat')}
               value={profileData.dateOfBirth}
               onChange={(value) => handleInputChange('dateOfBirth', value)}
               type="date"
@@ -1486,33 +1576,33 @@ const SignUpPage = () => {
               disabled={!!verificationData.hisPatientData?.date_of_birth}
             />
             <InputField
-              label="Marital Status"
-              placeholder="Select your marital status"
+              label={t('maritalStatus')}
+              placeholder={t('selectMaritalStatus')}
               value={profileData.maritalStatus}
               onChange={(value) => handleInputChange('maritalStatus', value)}
               hasDropdown
               options={[
-                { value: 'single', label: 'Single' },
-                { value: 'married', label: 'Married' },
-                { value: 'divorced', label: 'Divorced' },
-                { value: 'widowed', label: 'Widowed' },
+                { value: 'single', label: t('single') },
+                { value: 'married', label: t('married') },
+                { value: 'divorced', label: t('divorced') },
+                { value: 'widowed', label: t('widowed') },
               ]}
             />
             <InputField
-              label="Religion"
-              placeholder="Select your religion"
+              label={t('religion')}
+              placeholder={t('selectReligion')}
               value={profileData.religion}
               onChange={(value) => handleInputChange('religion', value)}
               hasDropdown
               options={[
-                { value: 'islam', label: 'Islam' },
-                { value: 'christianity', label: 'Christianity' },
-                { value: 'other', label: 'Other' },
+                { value: 'islam', label: t('islam') },
+                { value: 'christianity', label: t('christianity') },
+                { value: 'other', label: t('other') },
               ]}
             />
             <InputField
-              label="Address"
-              placeholder="Address line 1&#10;Address line 2&#10;Address line 3"
+              label={t('address')}
+              placeholder={t('addressPlaceholder')}
               value={profileData.address}
               onChange={(value) => handleInputChange('address', value)}
               type="textarea"
@@ -1529,42 +1619,46 @@ const SignUpPage = () => {
         {/* Email Row */}
         <div style={{
           display: 'flex',
+          flexWrap: 'wrap',
           gap: '24px',
           width: '100%',
+          boxSizing: 'border-box',
         }}>
-          <div style={{ flex: 1 }}>
+          <div style={{ flex: 1, minWidth: 'min(280px, 100%)', boxSizing: 'border-box' }}>
             <InputField
-              label="Email"
-              placeholder="Type your email"
+              label={t('email')}
+              placeholder={t('typeEmail')}
               value={profileData.email}
               onChange={(value) => handleInputChange('email', value)}
               type="email"
               required
             />
           </div>
-          <div style={{ flex: 1 }} />
+          <div style={{ flex: 1, minWidth: 'min(280px, 100%)' }} />
         </div>
-        
+
         {/* Password Row */}
         <div style={{
           display: 'flex',
+          flexWrap: 'wrap',
           gap: '24px',
           width: '100%',
+          boxSizing: 'border-box',
         }}>
-          <div style={{ flex: 1 }}>
+          <div style={{ flex: 1, minWidth: 'min(280px, 100%)', boxSizing: 'border-box' }}>
             <InputField
-              label="Enter Password"
-              placeholder="Type your password"
+              label={t('enterPassword')}
+              placeholder={t('typePassword')}
               value={profileData.password}
               onChange={(value) => handleInputChange('password', value)}
               type="password"
               required
             />
           </div>
-          <div style={{ flex: 1 }}>
+          <div style={{ flex: 1, minWidth: 'min(280px, 100%)', boxSizing: 'border-box' }}>
             <InputField
-              label="Re-enter Password"
-              placeholder="Confirm password"
+              label={t('reenterPassword')}
+              placeholder={t('confirmPassword')}
               value={profileData.confirmPassword}
               onChange={(value) => handleInputChange('confirmPassword', value)}
               type="password"
@@ -1579,8 +1673,10 @@ const SignUpPage = () => {
           paddingTop: '12px',
           borderTop: '1px solid #DADADA',
           display: 'flex',
+          flexWrap: 'wrap',
           justifyContent: 'space-between',
           alignItems: 'center',
+          gap: '12px',
         }}>
           <button
             onClick={() => setCurrentStep(1)}
@@ -1595,6 +1691,7 @@ const SignUpPage = () => {
               border: '1px solid #061F42',
               borderRadius: '8px',
               cursor: 'pointer',
+              minWidth: '100px',
             }}
           >
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -1606,10 +1703,10 @@ const SignUpPage = () => {
               fontSize: '14px',
               color: '#061F42',
             }}>
-              Back
+              {t('back')}
             </span>
           </button>
-          
+
           <button
             onClick={handleProfileSubmit}
             disabled={isSubmitting}
@@ -1623,6 +1720,7 @@ const SignUpPage = () => {
               border: 'none',
               cursor: isSubmitting ? 'not-allowed' : 'pointer',
               opacity: isSubmitting ? 0.7 : 1,
+              minWidth: '100px',
             }}
           >
             <span style={{
@@ -1631,7 +1729,7 @@ const SignUpPage = () => {
               fontSize: '14px',
               color: '#FFFFFF',
             }}>
-              {isSubmitting ? 'Creating...' : 'Create Profile'}
+              {isSubmitting ? t('creating') : t('createProfile')}
             </span>
           </button>
         </div>
@@ -1640,15 +1738,19 @@ const SignUpPage = () => {
   };
 
   return (
-    <div className="page-wrapper" style={{ minHeight: '100vh' }}>
+    <div className="page-wrapper" style={{
+      minHeight: '100vh',
+      maxWidth: '100vw',
+    }}>
       {ResponsiveNavbar}
-      
+
       <div style={{ height: '180px', background: '#C9F3FF' }} />
-      
+
       <main style={{
         background: '#C9F3FF',
         minHeight: 'calc(100vh - 200px)',
-        padding: '40px 20px',
+        padding: '40px clamp(12px, 3vw, 20px)',
+        maxWidth: '100vw',
       }}>
         <div style={{
           maxWidth: '1200px',
@@ -1657,21 +1759,29 @@ const SignUpPage = () => {
           <h1 style={{
             fontFamily: 'Nunito, sans-serif',
             fontWeight: 700,
-            fontSize: '32px',
+            fontSize: 'clamp(24px, 5vw, 32px)',
             color: '#061F42',
             marginBottom: '24px',
           }}>
-            Sign Up
+            {t('signUp')}
           </h1>
-          
+
           <div style={{
             background: '#FCFCFC',
             boxShadow: '0px 4px 5px rgba(0, 0, 0, 0.25)',
             borderRadius: '12px',
-            padding: '24px',
+            padding: 'clamp(16px, 4vw, 24px)',
             display: 'flex',
             justifyContent: 'center',
-          }}>
+            maxWidth: '100%',
+          }}
+          onClick={(e) => {
+            // Blur active input when clicking outside (dismiss keyboard on iOS)
+            if (e.target === e.currentTarget && document.activeElement instanceof HTMLElement) {
+              document.activeElement.blur();
+            }
+          }}
+          >
             {renderStep()}
           </div>
         </div>

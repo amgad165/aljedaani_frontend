@@ -1,19 +1,28 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import Calendar from '../../components/Calendar';
+
+interface MultilingualText {
+  en?: string;
+  ar?: string;
+}
 
 interface Appointment {
   id: number | string;
   source?: string;
-  department: string;
+  department: string | MultilingualText;
   department_icon?: string;
-  doctor_name: string;
+  doctor_name: string | MultilingualText;
   doctor_image?: string;
-  branch: string;
+  branch: string | MultilingualText;
   appointment_date: string;
   appointment_time: string;
   appointment_datetime: string;
   status: string;
   doctor_id?: number;
+  specialty?: string;
+  specialty_ar?: string;
+  branch_ar?: string;
 }
 
 interface TimeSlot {
@@ -127,13 +136,14 @@ const CancelModal = ({
 }) => {
   const [selectedReason, setSelectedReason] = useState('');
   const [customReason, setCustomReason] = useState('');
+  const { t } = useTranslation('pages');
 
   const reasons = [
-    'Schedule conflict',
-    'Personal emergency',
-    'Health improved',
-    'Found another doctor',
-    'Other',
+    t('scheduleConflict'),
+    t('personalEmergency'),
+    t('healthImproved'),
+    t('foundAnotherDoctor'),
+    t('other'),
   ];
 
   if (!isOpen) return null;
@@ -174,7 +184,7 @@ const CancelModal = ({
           color: '#061F42',
           marginBottom: '16px',
         }}>
-          Cancel Appointment
+          {t('cancelAppointment')}
         </h2>
         
         <p style={{
@@ -183,7 +193,7 @@ const CancelModal = ({
           color: '#6A6A6A',
           marginBottom: '24px',
         }}>
-          Please select a reason for cancellation:
+          {t('selectReasonForCancellation')}
         </p>
 
         <div style={{ marginBottom: '16px' }}>
@@ -213,11 +223,11 @@ const CancelModal = ({
           ))}
         </div>
 
-        {selectedReason === 'Other' && (
+        {selectedReason === t('other') && (
           <textarea
             value={customReason}
             onChange={(e) => setCustomReason(e.target.value)}
-            placeholder="Please specify your reason..."
+            placeholder={t('specifyYourReason')}
             style={{
               width: '100%',
               minHeight: '100px',
@@ -253,25 +263,25 @@ const CancelModal = ({
               opacity: loading ? 0.5 : 1,
             }}
           >
-            Close
+            {t('close')}
           </button>
           <button
             onClick={handleConfirm}
-            disabled={loading || !selectedReason || (selectedReason === 'Other' && !customReason.trim())}
+            disabled={loading || !selectedReason || (selectedReason === t('other') && !customReason.trim())}
             style={{
               padding: '12px 24px',
               background: '#d32f2f',
               color: '#FFFFFF',
               border: 'none',
               borderRadius: '8px',
-              cursor: (loading || !selectedReason || (selectedReason === 'Other' && !customReason.trim())) ? 'not-allowed' : 'pointer',
+              cursor: (loading || !selectedReason || (selectedReason === t('other') && !customReason.trim())) ? 'not-allowed' : 'pointer',
               fontFamily: 'Nunito, sans-serif',
               fontWeight: 600,
               fontSize: '16px',
-              opacity: (loading || !selectedReason || (selectedReason === 'Other' && !customReason.trim())) ? 0.5 : 1,
+              opacity: (loading || !selectedReason || (selectedReason === t('other') && !customReason.trim())) ? 0.5 : 1,
             }}
           >
-            {loading ? 'Cancelling...' : 'Confirm Cancellation'}
+            {loading ? t('cancelling') : t('confirmCancellation')}
           </button>
         </div>
       </div>
@@ -298,14 +308,9 @@ const RescheduleModal = ({
   const [availableSlots, setAvailableSlots] = useState<DaySchedule[]>([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [slotsError, setSlotsError] = useState('');
+  const { t } = useTranslation('pages');
 
-  useEffect(() => {
-    if (isOpen && appointment.doctor_id) {
-      fetchAvailableSlots();
-    }
-  }, [isOpen, appointment.doctor_id]);
-
-  const fetchAvailableSlots = async () => {
+  const fetchAvailableSlots = useCallback(async () => {
     setLoadingSlots(true);
     setSlotsError('');
     try {
@@ -339,7 +344,13 @@ const RescheduleModal = ({
     } finally {
       setLoadingSlots(false);
     }
-  };
+  }, [appointment.doctor_id]);
+
+  useEffect(() => {
+    if (isOpen && appointment.doctor_id) {
+      fetchAvailableSlots();
+    }
+  }, [isOpen, appointment.doctor_id, fetchAvailableSlots]);
 
   const availableDates = availableSlots
     .filter(day => day.slots.some(slot => slot.available))
@@ -385,7 +396,7 @@ const RescheduleModal = ({
           color: '#061F42',
           marginBottom: '16px',
         }}>
-          Reschedule Appointment
+          {t('rescheduleAppointment')}
         </h2>
 
         <p style={{
@@ -394,7 +405,7 @@ const RescheduleModal = ({
           color: '#6A6A6A',
           marginBottom: '24px',
         }}>
-          Doctor: <strong>{appointment.doctor_name}</strong>
+          Doctor: <strong>{typeof appointment.doctor_name === 'string' ? appointment.doctor_name : (appointment.doctor_name.en || appointment.doctor_name.ar || 'N/A')}</strong>
         </p>
 
         {loadingSlots ? (
@@ -404,7 +415,7 @@ const RescheduleModal = ({
             fontFamily: 'Nunito, sans-serif',
             color: '#6A6A6A',
           }}>
-            Loading available slots...
+            {t('loadingAvailableSlots')}
           </div>
         ) : slotsError ? (
           <div style={{
@@ -431,7 +442,7 @@ const RescheduleModal = ({
                 marginBottom: '12px',
                 alignSelf: 'flex-start',
               }}>
-                Select a new date:
+                {t('selectNewDate')}
               </h3>
               <Calendar
                 availableDates={availableDates}
@@ -450,7 +461,7 @@ const RescheduleModal = ({
                   color: '#061F42',
                   marginBottom: '12px',
                 }}>
-                  Select a time:
+                  {t('selectTime')}
                 </h3>
                 {availableTimeSlots.length > 0 ? (
                   <div style={{
@@ -484,7 +495,7 @@ const RescheduleModal = ({
                     fontFamily: 'Nunito, sans-serif',
                     color: '#6A6A6A',
                   }}>
-                    No available time slots for this date.
+                    {t('noAvailableTimeSlots')}
                   </p>
                 )}
               </div>
@@ -514,7 +525,7 @@ const RescheduleModal = ({
               opacity: loading ? 0.5 : 1,
             }}
           >
-            Close
+            {t('close')}
           </button>
           <button
             onClick={handleConfirm}
@@ -532,7 +543,7 @@ const RescheduleModal = ({
               opacity: (loading || !selectedDate || !selectedTime) ? 0.5 : 1,
             }}
           >
-            {loading ? 'Rescheduling...' : 'Confirm Reschedule'}
+            {loading ? t('rescheduling') : t('confirmReschedule')}
           </button>
         </div>
       </div>
@@ -550,6 +561,8 @@ const AppointmentCard = ({
   onCancel: (id: number) => void;
   onReschedule: (appointment: Appointment) => void;
 }) => {
+  const { i18n, t } = useTranslation('pages');
+
   const formatDate = (dateString: string) => {
     // Parse YYYY-MM-DD format without timezone conversion
     const [year, month, day] = dateString.split('-');
@@ -563,6 +576,42 @@ const AppointmentCard = ({
     const ampm = hour >= 12 ? 'pm' : 'am';
     const hour12 = hour % 12 || 12;
     return `${hour12.toString().padStart(2, '0')}:${minutes} ${ampm}`;
+  };
+
+  const getLocalizedText = (text: string | { en?: string; ar?: string } | undefined, defaultText: string = 'N/A'): string => {
+    if (!text) return defaultText;
+    if (typeof text === 'string') return text;
+    
+    const currentLang = i18n.language;
+    if (currentLang === 'ar') {
+      return text.ar || text.en || defaultText;
+    }
+    return text.en || text.ar || defaultText;
+  };
+
+  // Get department name in current language
+  const getDepartmentText = (): string => {
+    const currentLang = i18n.language;
+    // Prefer the API multilingual department field when available.
+    const localizedDepartment = getLocalizedText(appointment.department, '');
+    if (localizedDepartment) {
+      return localizedDepartment;
+    }
+
+    // Fallback for older payloads that used specialty/specialty_ar fields.
+    if (currentLang === 'ar' && appointment.specialty_ar) {
+      return appointment.specialty_ar;
+    }
+    return appointment.specialty || 'N/A';
+  };
+
+  // Get branch name in current language
+  const getBranchText = (): string => {
+    const currentLang = i18n.language;
+    if (currentLang === 'ar' && appointment.branch_ar) {
+      return appointment.branch_ar;
+    }
+    return getLocalizedText(appointment.branch, 'N/A');
   };
 
   return (
@@ -582,7 +631,7 @@ const AppointmentCard = ({
       borderRadius: '12px',
     }}>
       {/* Doctor Image */}
-      <DoctorImage imageUrl={appointment.doctor_image} doctorName={appointment.doctor_name} />
+      <DoctorImage imageUrl={appointment.doctor_image} doctorName={getLocalizedText(appointment.doctor_name, 'N/A')} />
 
       {/* Doctor Name */}
       <div style={{
@@ -594,7 +643,7 @@ const AppointmentCard = ({
         textAlign: 'center',
         color: '#061F42',
       }}>
-        {appointment.doctor_name}
+        {getLocalizedText(appointment.doctor_name, 'N/A')}
       </div>
 
       {/* Branch and Department in one line */}
@@ -635,7 +684,7 @@ const AppointmentCard = ({
             lineHeight: '16px',
             color: '#6A6A6A',
           }}>
-            {appointment.branch}
+            {getBranchText()}
           </span>
         </div>
         <div style={{
@@ -658,7 +707,7 @@ const AppointmentCard = ({
             lineHeight: '16px',
             color: '#1F57A4',
           }}>
-            {appointment.department}
+            {getDepartmentText()}
           </span>
         </div>
       </div>
@@ -715,7 +764,7 @@ const AppointmentCard = ({
             fontSize: '12px',
             color: '#856404',
           }}>
-             Waiting for Confirmation
+             {t('waitingForConfirmation')}
           </span>
         </div>
       )}
@@ -775,7 +824,7 @@ const AppointmentCard = ({
               color: '#FFFFFF',
               textAlign: 'center',
             }}>
-              Cancel
+              {t('cancel')}
             </span>
           </div>
         </button>
@@ -826,7 +875,7 @@ const AppointmentCard = ({
               color: '#FFFFFF',
               textAlign: 'center',
             }}>
-              Reschedule
+              {t('reschedule')}
             </span>
           </div>
         </button>
@@ -841,6 +890,7 @@ const UpcomingAppointmentsView = ({ onBack, onStatsChange }: { onBack: () => voi
   const [error, setError] = useState<string | null>(null);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const hasFetchedRef = useRef(false);
+  const { t } = useTranslation('pages');
 
   // Modal states
   const [showCancelModal, setShowCancelModal] = useState(false);
@@ -924,7 +974,7 @@ const UpcomingAppointmentsView = ({ onBack, onStatsChange }: { onBack: () => voi
       const data = await response.json();
 
       if (data.success) {
-        setToast({ message: 'Appointment cancelled successfully', type: 'success' });
+        setToast({ message: t('appointmentCancelledSuccessfully'), type: 'success' });
         setShowCancelModal(false);
         setSelectedAppointment(null);
         // Refresh the appointments list
@@ -934,7 +984,7 @@ const UpcomingAppointmentsView = ({ onBack, onStatsChange }: { onBack: () => voi
           onStatsChange();
         }
       } else {
-        setToast({ message: data.message || 'Failed to cancel appointment', type: 'error' });
+        setToast({ message: data.message || t('failedToCancelAppointment'), type: 'error' });
       }
     } catch (err) {
       console.error('Error cancelling appointment:', err);
@@ -954,7 +1004,8 @@ const UpcomingAppointmentsView = ({ onBack, onStatsChange }: { onBack: () => voi
       // Convert 12-hour format (05:10 PM) to 24-hour format with seconds (17:10:00)
       const convertTo24Hour = (time12h: string): string => {
         const [time, modifier] = time12h.split(' ');
-        let [hours, minutes] = time.split(':');
+        const [rawHours, minutes] = time.split(':');
+        let hours = rawHours;
         
         if (hours === '12') {
           hours = '00';
@@ -985,7 +1036,7 @@ const UpcomingAppointmentsView = ({ onBack, onStatsChange }: { onBack: () => voi
       const data = await response.json();
 
       if (data.success) {
-        setToast({ message: 'Appointment rescheduled successfully. Waiting for hospital confirmation.', type: 'success' });
+        setToast({ message: t('appointmentRescheduledSuccessfully'), type: 'success' });
         setShowRescheduleModal(false);
         setSelectedAppointment(null);
         
@@ -1030,11 +1081,11 @@ const UpcomingAppointmentsView = ({ onBack, onStatsChange }: { onBack: () => voi
           }
         }
       } else {
-        setToast({ message: data.message || 'Failed to reschedule appointment', type: 'error' });
+        setToast({ message: data.message || t('failedToRescheduleAppointment'), type: 'error' });
       }
     } catch (err) {
       console.error('Error rescheduling appointment:', err);
-      setToast({ message: 'Failed to reschedule appointment', type: 'error' });
+      setToast({ message: t('failedToRescheduleAppointment'), type: 'error' });
     } finally {
       setActionLoading(false);
     }
@@ -1056,7 +1107,7 @@ const UpcomingAppointmentsView = ({ onBack, onStatsChange }: { onBack: () => voi
           fontSize: '16px',
           color: '#061F42',
         }}>
-          Loading appointments...
+          {t('loading')}
         </span>
       </div>
     );

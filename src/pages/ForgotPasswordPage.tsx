@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useResponsiveNavbar } from '../hooks/useResponsiveNavbar';
 import Footer from '../components/Footer';
 import ToastContainer from '../components/ToastContainer';
@@ -59,7 +60,7 @@ const InputField = ({
         opacity: disabled ? 0.6 : 1,
       }}>
         <input
-          type={isPasswordField && !showPassword ? 'password' : type}
+          type={isPasswordField ? (showPassword ? 'text' : 'password') : type}
           placeholder={placeholder}
           value={value}
           onChange={(e) => onChange(e.target.value)}
@@ -94,12 +95,12 @@ const InputField = ({
           >
             {showPassword ? (
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M3 3L21 21M10.5 10.677A2 2 0 1013.323 13.5M7.362 7.561C5.68 8.74 4.279 10.42 3 12c1.889 3.733 5.043 6 9 6 1.55 0 3.046-.354 4.417-.991m2.183-1.574C20.521 13.827 21.72 12.175 22.5 10.5c-1.889-3.733-5.043-6-9-6a9.706 9.706 0 00-2.538.331" stroke="#6B7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z" stroke="#6B7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <circle cx="12" cy="12" r="3" stroke="#6B7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             ) : (
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z" stroke="#6B7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                <circle cx="12" cy="12" r="3" stroke="#6B7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M3 3L21 21M10.5 10.677A2 2 0 1013.323 13.5M7.362 7.561C5.68 8.74 4.279 10.42 3 12c1.889 3.733 5.043 6 9 6 1.55 0 3.046-.354 4.417-.991m2.183-1.574C20.521 13.827 21.72 12.175 22.5 10.5c-1.889-3.733-5.043-6-9-6a9.706 9.706 0 00-2.538.331" stroke="#6B7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             )}
           </button>
@@ -112,6 +113,7 @@ const InputField = ({
 const ForgotPasswordPage = () => {
   const ResponsiveNavbar = useResponsiveNavbar();
   const navigate = useNavigate();
+  const { t } = useTranslation('pages');
   const { toasts, removeToast, success: showSuccess } = useToast();
   const [currentStep, setCurrentStep] = useState(1); // 1: Identifier, 2: OTP, 3: New Password
   const [nationalId, setNationalId] = useState('');
@@ -132,7 +134,7 @@ const ForgotPasswordPage = () => {
     const identifier = nationalId || medicalRecordNumber;
     
     if (!identifier) {
-      setError('Please enter ID Number or Medical Record Number');
+      setError(t('pleaseEnterIdOrMr'));
       return;
     }
     
@@ -156,19 +158,19 @@ const ForgotPasswordPage = () => {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.message || 'Failed to send OTP. Please try again.');
+        setError(data.message || t('failedToSendOtp'));
         return;
       }
 
       if (data.success) {
         setMaskedPhone(data.phone);
-        showSuccess(`OTP sent to ${data.phone}`);
+        showSuccess(t('otpSentTo', { phone: data.phone }));
         setCurrentStep(2);
       } else {
-        setError(data.message || 'Failed to send OTP');
+        setError(data.message || t('failedToSendOtp'));
       }
     } catch (err) {
-      setError('Network error. Please try again.');
+      setError(t('networkError'));
       console.error('Forgot password error:', err);
     } finally {
       setIsLoading(false);
@@ -178,7 +180,7 @@ const ForgotPasswordPage = () => {
   const handleOtpSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!otpCode || otpCode.length !== 6) {
-      setError('Please enter a valid 6-digit OTP');
+      setError(t('validOtpRequired'));
       return;
     }
     
@@ -206,19 +208,19 @@ const ForgotPasswordPage = () => {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.message || 'Invalid OTP. Please try again.');
+        setError(data.message || t('invalidOtp'));
         return;
       }
 
       if (data.success) {
         setVerificationToken(data.verification_token);
-        showSuccess('OTP verified successfully!');
+        showSuccess(t('otpVerifiedSuccessfully'));
         setCurrentStep(3);
       } else {
-        setError(data.message || 'OTP verification failed');
+        setError(data.message || t('otpVerificationFailed'));
       }
     } catch (err) {
-      setError('Network error. Please try again.');
+      setError(t('networkError'));
       console.error('OTP verification error:', err);
     } finally {
       setIsLoading(false);
@@ -229,12 +231,12 @@ const ForgotPasswordPage = () => {
     e.preventDefault();
     
     if (!password || password.length < 8) {
-      setError('Password must be at least 8 characters');
+      setError(t('passwordMinEightCharacters'));
       return;
     }
     
     if (password !== passwordConfirmation) {
-      setError('Passwords do not match');
+      setError(t('passwordsDoNotMatch'));
       return;
     }
     
@@ -264,7 +266,7 @@ const ForgotPasswordPage = () => {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.message || 'Failed to reset password. Please try again.');
+        setError(data.message || t('failedToResetPassword'));
         return;
       }
 
@@ -274,10 +276,10 @@ const ForgotPasswordPage = () => {
           navigate('/login');
         }, 2000);
       } else {
-        setError(data.message || 'Password reset failed');
+        setError(data.message || t('resetPasswordFailed'));
       }
     } catch (err) {
-      setError('Network error. Please try again.');
+      setError(t('networkError'));
       console.error('Password reset error:', err);
     } finally {
       setIsLoading(false);
@@ -314,18 +316,19 @@ const ForgotPasswordPage = () => {
   return (
     <div style={{
       minHeight: '100vh',
-      backgroundColor: '#F0FBFC',
+      backgroundColor: '#c9f3ff',
     }}>
       {ResponsiveNavbar}
       
-      <div style={{ height: '180px', background: '#F0FBFC' }} />
+      <div style={{ height: '180px', background: '#c9f3ff' }} />
       
       <div style={{
         display: 'flex',
-        alignItems: 'center',
+        alignItems: 'flex-start',
         justifyContent: 'center',
         padding: '40px 20px 80px',
         minHeight: 'calc(100vh - 180px)',
+        marginTop: '40px',
       }}>
         <div style={{
           width: '100%',
@@ -349,7 +352,7 @@ const ForgotPasswordPage = () => {
               color: '#061F42',
               marginBottom: '8px',
             }}>
-              Reset Password
+              {t('resetPassword')}
             </h1>
             <p style={{
               fontFamily: 'Nunito, sans-serif',
@@ -358,9 +361,9 @@ const ForgotPasswordPage = () => {
               lineHeight: '20px',
               color: '#6B7280',
             }}>
-              {currentStep === 1 && 'Enter your ID Number or Medical Record Number'}
-              {currentStep === 2 && `Enter the OTP sent to ${maskedPhone}`}
-              {currentStep === 3 && 'Enter your new password'}
+              {currentStep === 1 && t('enterIdOrMrForgotPassword')}
+              {currentStep === 2 && t('enterOtpSentTo', { phone: maskedPhone })}
+              {currentStep === 3 && t('enterNewPassword')}
             </p>
           </div>
 
@@ -412,8 +415,8 @@ const ForgotPasswordPage = () => {
               gap: '24px',
             }}>
               <InputField
-                label="ID Number"
-                placeholder="Enter your ID Number"
+                label={t('idNumber')}
+                placeholder={t('enterYourIdNumber')}
                 value={nationalId}
                 onChange={handleNationalIdChange}
                 disabled={!!medicalRecordNumber}
@@ -434,7 +437,7 @@ const ForgotPasswordPage = () => {
                   fontSize: '14px',
                   color: '#6B7280',
                 }}>
-                  OR
+                  {t('or')}
                 </span>
                 <div style={{
                   flex: 1,
@@ -444,8 +447,8 @@ const ForgotPasswordPage = () => {
               </div>
 
               <InputField
-                label="Medical Record Number"
-                placeholder="Enter your Medical Record Number"
+                label={t('medicalRecordNumber')}
+                placeholder={t('enterYourMrNumber')}
                 value={medicalRecordNumber}
                 onChange={handleMedicalRecordChange}
                 disabled={!!nationalId}
@@ -477,7 +480,7 @@ const ForgotPasswordPage = () => {
                   }
                 }}
               >
-                {isLoading ? 'Sending OTP...' : 'Send OTP'}
+                {isLoading ? t('sendingOtp') : t('sendOtp')}
               </button>
 
               <div style={{
@@ -491,7 +494,7 @@ const ForgotPasswordPage = () => {
                   textDecoration: 'none',
                   fontWeight: 600,
                 }}>
-                  Back to Login
+                  {t('backToLogin')}
                 </Link>
               </div>
             </form>
@@ -505,8 +508,8 @@ const ForgotPasswordPage = () => {
               gap: '24px',
             }}>
               <InputField
-                label="OTP Code"
-                placeholder="Enter 6-digit OTP"
+                label={t('otpCode')}
+                placeholder={t('enter6DigitCode')}
                 value={otpCode}
                 onChange={setOtpCode}
                 type="text"
@@ -539,7 +542,7 @@ const ForgotPasswordPage = () => {
                   }
                 }}
               >
-                Verify OTP
+                {t('verifyOtp')}
               </button>
 
               <button
@@ -558,7 +561,7 @@ const ForgotPasswordPage = () => {
                   transition: 'all 0.2s',
                 }}
               >
-                Back
+                {t('back')}
               </button>
             </form>
           )}
@@ -571,8 +574,8 @@ const ForgotPasswordPage = () => {
               gap: '24px',
             }}>
               <InputField
-                label="New Password"
-                placeholder="Enter new password (min 8 characters)"
+                label={t('newPassword')}
+                placeholder={t('enterNewPasswordMin8')}
                 value={password}
                 onChange={setPassword}
                 type="password"
@@ -580,8 +583,8 @@ const ForgotPasswordPage = () => {
               />
 
               <InputField
-                label="Confirm Password"
-                placeholder="Confirm your new password"
+                label={t('confirmPassword')}
+                placeholder={t('confirmNewPassword')}
                 value={passwordConfirmation}
                 onChange={setPasswordConfirmation}
                 type="password"
@@ -614,7 +617,7 @@ const ForgotPasswordPage = () => {
                   }
                 }}
               >
-                {isLoading ? 'Resetting Password...' : 'Reset Password'}
+                {isLoading ? t('resettingPassword') : t('resetPassword')}
               </button>
 
               <button
@@ -634,7 +637,7 @@ const ForgotPasswordPage = () => {
                   transition: 'all 0.2s',
                 }}
               >
-                Back
+                {t('back')}
               </button>
             </form>
           )}

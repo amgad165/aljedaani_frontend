@@ -4,6 +4,7 @@ import type { ProfileData } from './types';
 import {
   CalendarIcon,
   DocumentIcon,
+  IdCardIcon,
 } from './icons';
 import MyVitals from '../../components/patient/MyVitals';
 import ChiefComplaints from '../../components/patient/ChiefComplaints';
@@ -33,6 +34,7 @@ const DashboardCard = ({
   hasAvatar = false,
   avatarUrl = '',
   name = '',
+  mrNumber = '',
   onClick,
 }: { 
   title: string; 
@@ -41,6 +43,7 @@ const DashboardCard = ({
   hasAvatar?: boolean;
   avatarUrl?: string;
   name?: string;
+  mrNumber?: string;
   onClick?: () => void;
 }) => (
   <div onClick={onClick} style={{
@@ -50,7 +53,7 @@ const DashboardCard = ({
     justifyContent: 'center',
     alignItems: 'center',
     padding: '12px',
-    gap: '12px',
+    gap: '7px',
     width: '100%',
     maxWidth: window.innerWidth <= 768 ? '100%' : '496px',
     height: '172px',
@@ -109,6 +112,29 @@ const DashboardCard = ({
         }}>
           {name}
         </div>
+        
+        {/* MR Number */}
+        {mrNumber && (
+          <div style={{
+            display: 'flex',
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: '8px',
+            width: '100%',
+            justifyContent: 'center',
+          }}>
+            <IdCardIcon color="#A4A5A5" />
+            <span style={{
+              fontFamily: 'Nunito, sans-serif',
+              fontWeight: 600,
+              fontSize: '14px',
+              lineHeight: '16px',
+              color: '#A4A5A5',
+            }}>
+              MR: {mrNumber}
+            </span>
+          </div>
+        )}
       </>
     ) : (
       <>
@@ -407,6 +433,7 @@ const DashboardTab = ({ profileData }: DashboardTabProps) => {
         hasAvatar={true}
         avatarUrl={profileData.avatar}
         name={profileData.name}
+        mrNumber={profileData.medicalRecordNumber}
       />
 
       {/* My Vitals Card */}

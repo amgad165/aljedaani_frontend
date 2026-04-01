@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useResponsiveNavbar } from '../hooks/useResponsiveNavbar';
 import Footer from '../components/Footer';
 import ToastContainer from '../components/ToastContainer';
@@ -56,16 +57,28 @@ const InputField = ({
         backgroundColor: '#FFFFFF',
       }}>
         <input
-          type={isPasswordField && !showPassword ? 'password' : 'text'}
+          type={isPasswordField ? (showPassword ? 'text' : 'password') : type}
           placeholder={placeholder}
           value={value}
           onChange={(e) => onChange(e.target.value)}
+          onKeyDown={(e) => {
+            // Blur input on Enter key to dismiss keyboard on iOS
+            if (e.key === 'Enter') {
+              e.currentTarget.blur();
+              // Trigger form submit if within a form
+              const form = e.currentTarget.closest('form');
+              if (form) {
+                form.requestSubmit();
+              }
+            }
+          }}
           required={required}
+          inputMode={type === 'tel' ? 'tel' : type === 'email' ? 'email' : 'text'}
           style={{
             flex: 1,
             fontFamily: 'Nunito, sans-serif',
             fontWeight: 400,
-            fontSize: '14px',
+            fontSize: '16px',
             lineHeight: '20px',
             color: '#061F42',
             border: 'none',
@@ -106,6 +119,7 @@ const InputField = ({
 
 const LoginPage = () => {
   const ResponsiveNavbar = useResponsiveNavbar();
+  const { t } = useTranslation('pages');
   const { toasts, removeToast, success, info } = useToast();
   const [currentStep, setCurrentStep] = useState(1); // 1: Credentials, 2: OTP
   const [nationalId, setNationalId] = useState('');
@@ -115,21 +129,44 @@ const LoginPage = () => {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
+  // Handle clicking/tapping outside inputs to blur them (dismiss keyboard on iOS)
+  useEffect(() => {
+    const handleTouchStart = (e: TouchEvent) => {
+      const target = e.target as HTMLElement;
+      // If user taps outside an input/textarea/button, blur the active element
+      if (
+        document.activeElement &&
+        document.activeElement.tagName !== 'BODY' &&
+        !target.matches('input, textarea, button, a, label')
+      ) {
+        (document.activeElement as HTMLElement).blur();
+      }
+    };
+
+    document.addEventListener('touchstart', handleTouchStart);
+    return () => document.removeEventListener('touchstart', handleTouchStart);
+  }, []);
+
   const handleCredentialsSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
+    // Blur active input to dismiss keyboard on iOS
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
+
     // Determine which ID type is being used
     const idType = nationalId ? 'national_id' : 'medical_record';
     const identifier = nationalId || medicalRecordNumber;
-    
+
     if (!identifier || !password) {
-      setError('Please fill in ID Number or Medical Record Number and password');
+      setError(t('fillInIdAndPassword'));
       return;
     }
-    
+
     setError('');
     setIsLoading(true);
-    
+
     try {
       const response = await fetch(`${API_BASE_URL}/auth/login-with-id`, {
         method: 'POST',
@@ -147,7 +184,7 @@ const LoginPage = () => {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.message || 'Login failed. Please check your credentials.');
+        setError(data.message || t('loginFailed'));
         return;
       }
 
@@ -155,10 +192,10 @@ const LoginPage = () => {
         success(`OTP sent to ${data.phone}${data.otp ? ` (Debug: ${data.otp})` : ''}`);
         setCurrentStep(2);
       } else {
-        setError(data.message || 'Failed to send OTP');
+        setError(data.message || t('failedToSendOtp'));
       }
     } catch (err) {
-      setError('Network error. Please try again.');
+      setError(t('networkError'));
       console.error('Login error:', err);
     } finally {
       setIsLoading(false);
@@ -167,18 +204,24 @@ const LoginPage = () => {
 
   const handleOtpVerification = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Blur active input to dismiss keyboard on iOS
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
+
     if (!otpCode || otpCode.length !== 6) {
-      setError('Please enter a valid 6-digit OTP');
+      setError(t('validOtpRequired'));
       return;
     }
-    
+
     // Determine which ID type is being used
     const idType = nationalId ? 'national_id' : 'medical_record';
     const identifier = nationalId || medicalRecordNumber;
-    
+
     setError('');
     setIsLoading(true);
-    
+
     try {
       const response = await fetch(`${API_BASE_URL}/auth/login/otp/verify`, {
         method: 'POST',
@@ -196,7 +239,7 @@ const LoginPage = () => {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.message || 'Invalid OTP. Please try again.');
+        setError(data.message || t('invalidOtp'));
         return;
       }
 
@@ -208,10 +251,10 @@ const LoginPage = () => {
         // Redirect to home and reload to update auth context
         window.location.href = '/';
       } else {
-        setError(data.message || 'OTP verification failed');
+        setError(data.message || t('otpVerificationFailed'));
       }
     } catch (err) {
-      setError('Network error. Please try again.');
+      setError(t('networkError'));
       console.error('OTP verification error:', err);
     } finally {
       setIsLoading(false);
@@ -243,18 +286,19 @@ const LoginPage = () => {
   return (
     <div style={{
       minHeight: '100vh',
-      backgroundColor: '#F0FBFC',
+      backgroundColor: '#c9f3ff',
     }}>
       {ResponsiveNavbar}
       
-      <div style={{ height: '180px', background: '#F0FBFC' }} />
+      <div style={{ height: '180px', background: '#c9f3ff' }} />
       
       <div style={{
         display: 'flex',
-        alignItems: 'center',
+        alignItems: 'flex-start',
         justifyContent: 'center',
         padding: '40px 20px 80px',
         minHeight: 'calc(100vh - 180px)',
+        marginTop: '40px',
       }}>
         <div style={{
           width: '100%',
@@ -278,7 +322,7 @@ const LoginPage = () => {
               color: '#061F42',
               marginBottom: '8px',
             }}>
-              Sign In
+              {t('signIn')}
             </h1>
             <p style={{
               fontFamily: 'Nunito, sans-serif',
@@ -287,7 +331,7 @@ const LoginPage = () => {
               lineHeight: '24px',
               color: '#6B7280',
             }}>
-              Welcome to Jedaani Hospitals
+              {t('welcomeToJedaani')}
             </p>
           </div>
 
@@ -333,7 +377,7 @@ const LoginPage = () => {
                     lineHeight: '24px',
                     color: '#061F42',
                   }}>
-                   ID Number
+                   {t('idNumber')}
                   </label>
                   <div style={{
                     boxSizing: 'border-box',
@@ -350,7 +394,7 @@ const LoginPage = () => {
                   }}>
                     <input
                       type="text"
-                      placeholder="Enter your ID Number"
+                      placeholder={t('enterIdNumber')}
                       value={nationalId}
                       onChange={(e) => handleNationalIdChange(e.target.value)}
                       disabled={!!medicalRecordNumber}
@@ -388,7 +432,7 @@ const LoginPage = () => {
                     fontWeight: 600,
                     color: '#6B7280',
                   }}>
-                    OR
+                    {t('or')}
                   </span>
                   <div style={{
                     flex: 1,
@@ -412,7 +456,7 @@ const LoginPage = () => {
                     lineHeight: '24px',
                     color: '#061F42',
                   }}>
-                    Medical Record Number
+                    {t('medicalRecordNumber')}
                   </label>
                   <div style={{
                     boxSizing: 'border-box',
@@ -429,7 +473,7 @@ const LoginPage = () => {
                   }}>
                     <input
                       type="text"
-                      placeholder="Enter your Medical Record Number"
+                      placeholder={t('enterMedicalRecordNumber')}
                       value={medicalRecordNumber}
                       onChange={(e) => handleMedicalRecordNumberChange(e.target.value)}
                       disabled={!!nationalId}
@@ -450,8 +494,8 @@ const LoginPage = () => {
                 </div>
 
                 <InputField
-                  label="Enter Password"
-                  placeholder="Type your password"
+                  label={t('enterPassword')}
+                  placeholder={t('typePassword')}
                   value={password}
                   onChange={setPassword}
                   type="password"
@@ -471,7 +515,7 @@ const LoginPage = () => {
                       textDecoration: 'none',
                     }}
                   >
-                    Forgot Password?
+                    {t('forgotPassword')}
                   </Link>
                 </div>
 
@@ -499,7 +543,7 @@ const LoginPage = () => {
                     e.currentTarget.style.backgroundColor = '#061F42';
                   }}
                 >
-                  Sign in
+                  {t('signIn')}
                 </button>
               </div>
             </form>
@@ -524,13 +568,13 @@ const LoginPage = () => {
                     lineHeight: '20px',
                     color: '#6B7280',
                   }}>
-                    We've sent a verification code to your registered mobile number
+                    {t('verificationCodeSent')}
                   </p>
                 </div>
 
                 <InputField
-                  label="Enter OTP"
-                  placeholder="Enter 6-digit code"
+                  label={t('enterOtp')}
+                  placeholder={t('enter6DigitCode')}
                   value={otpCode}
                   onChange={(value) => {
                     // Only allow numbers and max 6 digits
@@ -548,7 +592,7 @@ const LoginPage = () => {
                   <button
                     type="button"
                     onClick={() => {
-                      info('OTP resent to your mobile number');
+                      info(t('otpResentMessage'));
                     }}
                     style={{
                       fontFamily: 'Nunito, sans-serif',
@@ -561,7 +605,7 @@ const LoginPage = () => {
                       textDecoration: 'underline',
                     }}
                   >
-                    Resend OTP
+                    {t('resendOtp')}
                   </button>
                 </div>
 
@@ -586,7 +630,7 @@ const LoginPage = () => {
                       transition: 'all 0.3s ease',
                     }}
                   >
-                    Back
+                    {t('back')}
                   </button>
                   
                   <button
@@ -615,7 +659,7 @@ const LoginPage = () => {
                       e.currentTarget.style.backgroundColor = '#061F42';
                     }}
                   >
-                    Verify & Sign In
+                    {t('verifySignIn')}
                   </button>
                 </div>
               </div>
@@ -639,7 +683,7 @@ const LoginPage = () => {
               fontSize: '14px',
               color: '#6B7280',
             }}>
-              OR
+              {t('or')}
             </span>
             <div style={{
               flex: 1,
@@ -658,7 +702,7 @@ const LoginPage = () => {
               fontSize: '14px',
               color: '#6B7280',
             }}>
-              Not registered yet?{' '}
+              {t('notRegisteredYet')}{' '}
               <Link
                 to="/signup"
                 style={{
@@ -667,7 +711,7 @@ const LoginPage = () => {
                   textDecoration: 'none',
                 }}
               >
-                Create Profile
+                {t('createProfile')}
               </Link>
             </p>
           </div>
