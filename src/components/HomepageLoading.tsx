@@ -9,6 +9,8 @@ const HomepageLoading: React.FC<HomepageLoadingProps> = ({ isLoading }) => {
   const [fadeOut, setFadeOut] = useState(false);
 
   useEffect(() => {
+    let hideTimer: ReturnType<typeof setTimeout> | null = null;
+
     if (isLoading) {
       setShouldRender(true);
       setFadeOut(false);
@@ -16,8 +18,14 @@ const HomepageLoading: React.FC<HomepageLoadingProps> = ({ isLoading }) => {
       // Start fade out animation
       setFadeOut(true);
       // Remove component after fade completes
-      setTimeout(() => setShouldRender(false), 1200);
+      hideTimer = setTimeout(() => setShouldRender(false), 1200);
     }
+
+    return () => {
+      if (hideTimer) {
+        clearTimeout(hideTimer);
+      }
+    };
   }, [isLoading]);
 
   if (!shouldRender) {

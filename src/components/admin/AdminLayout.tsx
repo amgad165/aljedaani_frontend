@@ -69,6 +69,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
     { path: '/admin/testimonials', label: 'Testimonials', icon: 'testimonial' },
     { path: '/admin/excellence-centers', label: 'Excellence Centers', icon: 'excellence' },
     { path: '/admin/offers', label: 'Offers', icon: 'offers' },
+    { path: '/admin/hero-sliders', label: 'Hero Sliders', icon: 'slider' },
     { path: '/admin/articles', label: 'Articles', icon: 'articles' },
     { path: '/admin/contact-submissions', label: 'Contact Submissions', icon: 'contact' },
   ];
@@ -159,6 +160,14 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2">
             <path d="M12 2L2 7l10 5 10-5-10-5z" />
             <path d="M2 17l10 5 10-5M2 12l10 5 10-5" />
+          </svg>
+        );
+      case 'slider':
+        return (
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2">
+            <rect x="3" y="5" width="18" height="14" rx="2" />
+            <path d="M3 15l5-4 4 3 4-5 5 6" />
+            <circle cx="9" cy="9" r="1" fill={color} stroke="none" />
           </svg>
         );
       case 'contact':

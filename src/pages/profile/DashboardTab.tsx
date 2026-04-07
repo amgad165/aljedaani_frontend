@@ -442,7 +442,6 @@ const DashboardTab = ({ profileData }: DashboardTabProps) => {
         icon={
           <img src="/assets/images/profile/Heart-Rate.png" alt="Heart Rate" style={{ width: '24px', height: '24px' }} />
         }
-        onClick={() => setShowVitals(true)}
       >
         {/* Empty state - can be expanded later */}
       </DashboardCard>
@@ -471,7 +470,6 @@ const DashboardTab = ({ profileData }: DashboardTabProps) => {
         icon={
           <img src="/assets/images/profile/complaints.png" alt="Chief Complaints" style={{ width: '24px', height: '24px' }} />
         }
-        onClick={() => setShowChiefComplaints(true)}
       >
         {/* Empty state - can be expanded later */}
       </DashboardCard>
@@ -482,7 +480,6 @@ const DashboardTab = ({ profileData }: DashboardTabProps) => {
         icon={
           <img src="/assets/images/profile/history.png" alt="History" style={{ width: '24px', height: '24px' }} />
         }
-        onClick={() => setShowHistory(true)}
       >
         {/* Empty state - can be expanded later */}
       </DashboardCard>

@@ -27,6 +27,8 @@ const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api'
 
 // Doctor Image Component
 const DoctorImage = ({ imageUrl, doctorName }: { imageUrl?: string; doctorName: string }) => {
+  const fallbackImage = '/assets/images/general/person_template.png';
+
   if (imageUrl) {
     return (
       <div style={{
@@ -48,12 +50,15 @@ const DoctorImage = ({ imageUrl, doctorName }: { imageUrl?: string; doctorName: 
             borderRadius: '50%',
             border: '2px solid #E0E0E0',
           }}
+          onError={(e) => {
+            (e.currentTarget as HTMLImageElement).src = fallbackImage;
+          }}
         />
       </div>
     );
   }
 
-  // Fallback icon if no image provided
+  // Use default profile image if no image is provided
   return (
     <div style={{
       display: 'flex',
@@ -63,13 +68,20 @@ const DoctorImage = ({ imageUrl, doctorName }: { imageUrl?: string; doctorName: 
       padding: '0px',
       width: '64px',
       height: '64px',
-      background: '#E8EEF7',
       borderRadius: '50%',
-      border: '2px solid #E0E0E0',
+      overflow: 'hidden',
     }}>
-      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M12 12C14.21 12 16 10.21 16 8C16 5.79 14.21 4 12 4C9.79 4 8 5.79 8 8C8 10.21 9.79 12 12 12ZM12 14C9.33 14 4 15.34 4 18V20H20V18C20 15.34 14.67 14 12 14Z" fill="#1F57A4"/>
-      </svg>
+      <img
+        src={fallbackImage}
+        alt={doctorName}
+        style={{
+          width: '64px',
+          height: '64px',
+          objectFit: 'cover',
+          borderRadius: '50%',
+          border: '2px solid #E0E0E0',
+        }}
+      />
     </div>
   );
 };

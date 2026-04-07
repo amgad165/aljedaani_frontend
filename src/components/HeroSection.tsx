@@ -260,6 +260,9 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
 const HeroSection = () => {
   const navigate = useNavigate();
   const [isLoaded, setIsLoaded] = useState(false);
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [displaySlide, setDisplaySlide] = useState(0);
+  const [incomingSlide, setIncomingSlide] = useState<number | null>(null);
   const { data: homepageData } = useHomepageData();
   const { t } = useTranslation('pages');
   
@@ -275,12 +278,44 @@ const HeroSection = () => {
 
   // Get branches from context
   const branches = homepageData?.branches || [];
+  const heroSlides = (homepageData?.hero_sliders || []).filter((slide: any) => Boolean(slide?.image_url));
 
   // Trigger entrance animation
   useEffect(() => {
     const timer = setTimeout(() => setIsLoaded(true), 100);
     return () => clearTimeout(timer);
   }, []);
+
+  useEffect(() => {
+    setCurrentSlide(0);
+    setDisplaySlide(0);
+    setIncomingSlide(null);
+  }, [heroSlides.length]);
+
+  useEffect(() => {
+    if (heroSlides.length <= 1) return;
+
+    const interval = window.setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
+    }, 2000);
+
+    return () => window.clearInterval(interval);
+  }, [heroSlides.length]);
+
+  useEffect(() => {
+    if (currentSlide === displaySlide) return;
+
+    setIncomingSlide(currentSlide);
+
+    const settle = window.setTimeout(() => {
+      setDisplaySlide(currentSlide);
+      setIncomingSlide(null);
+    }, 650);
+
+    return () => {
+      window.clearTimeout(settle);
+    };
+  }, [currentSlide, displaySlide]);
 
   // Load departments from context when available
   useEffect(() => {
@@ -375,9 +410,57 @@ const HeroSection = () => {
     }
   };
 
+  const getSlideImage = (slideIndex: number) => {
+    const slide = heroSlides[slideIndex];
+    if (window.innerWidth <= 768 && slide?.mobile_image_url) {
+      return slide.mobile_image_url;
+    }
+    return slide?.image_url || '/assets/img/hero-img.webp';
+  };
+
+  const displayImage = getSlideImage(displaySlide);
+  const incomingImage = incomingSlide !== null ? getSlideImage(incomingSlide) : null;
+
   return (
-    <section style={{ backgroundImage: "url('/assets/img/hero-img.webp')" }} className="hero-sec">
-      <div className="container">
+    <section style={{ position: 'relative', overflow: 'hidden' }} className="hero-sec">
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          backgroundImage: `url('${displayImage}')`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          zIndex: 0,
+        }}
+      />
+      {incomingImage && (
+        <div
+          key={`incoming-${incomingSlide}`}
+          style={{
+            position: 'absolute',
+            inset: 0,
+            backgroundImage: `url('${incomingImage}')`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            zIndex: 1,
+            animation: 'heroSlideIn 0.65s ease forwards',
+            willChange: 'opacity, transform',
+          }}
+        />
+      )}
+      <div className="container" style={{ position: 'relative', zIndex: 2 }}>
+        <style>{`
+          @keyframes heroSlideIn {
+            from {
+              opacity: 0;
+              transform: translateX(5%);
+            }
+            to {
+              opacity: 1;
+              transform: translateX(0);
+            }
+          }
+        `}</style>
         <div 
           className="content-wrapper-1"
           style={{
@@ -441,11 +524,15 @@ const HeroSection = () => {
 
           <div className="icon-wrapper">
             <ul className="pagination">
-              <li className="active"></li>
-              <li></li>
-              <li></li>
-              <li></li>
-              <li></li>
+              {(heroSlides.length > 0 ? heroSlides : [null]).map((_, index) => (
+                <li
+                  key={index}
+                  className={index === currentSlide ? 'active' : ''}
+                  onClick={() => setCurrentSlide(index)}
+                  style={{ cursor: 'pointer' }}
+                  aria-label={`Slide ${index + 1}`}
+                ></li>
+              ))}
             </ul>
           </div>
         </div>

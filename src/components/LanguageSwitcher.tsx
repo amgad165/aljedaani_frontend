@@ -1,12 +1,26 @@
 import { useTranslation } from 'react-i18next';
 import { useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 const LanguageSwitcher = () => {
   const { i18n } = useTranslation();
   const [isChanging, setIsChanging] = useState(false);
+  const location = useLocation();
+  const navigate = useNavigate();
   
   const currentLanguage = i18n.language || 'en';
   const isArabic = currentLanguage === 'ar';
+
+  const withLanguagePrefix = (pathname: string, lang: string): string => {
+    const segments = pathname.split('/').filter(Boolean);
+
+    if (segments.length > 0 && (segments[0] === 'en' || segments[0] === 'ar')) {
+      segments[0] = lang;
+      return `/${segments.join('/')}`;
+    }
+
+    return pathname === '/' ? `/${lang}` : `/${lang}${pathname}`;
+  };
 
   useEffect(() => {
     // Set HTML dir attribute
@@ -23,6 +37,8 @@ const LanguageSwitcher = () => {
     
     try {
       await i18n.changeLanguage(newLang);
+      const localizedPath = withLanguagePrefix(location.pathname, newLang);
+      navigate(`${localizedPath}${location.search}${location.hash}`, { replace: true });
       
       // Ensure minimum loading time for visible feedback
       const elapsed = Date.now() - startTime;

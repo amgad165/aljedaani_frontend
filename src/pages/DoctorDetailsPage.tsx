@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next';
 import { doctorsService, type Doctor } from '../services/doctorsService';
 import type { ServiceItem } from '../services/departmentsService';
 import { useResponsiveNavbar } from '../hooks/useResponsiveNavbar';
-import DoctorFilters from '../components/DoctorFilters';
 import { LoadingSpinner } from '../components/LoadingComponents';
 import { EASINGS } from '../utils/animations';
 import FloatingContactButtons from '../components/FloatingContactButtons';
@@ -267,13 +266,11 @@ const DoctorDetailsPage: React.FC = () => {
           maxWidth: window.innerWidth <= 768 ? '100%' : '1400px',
           boxSizing: 'border-box',
         }}>
-          {/* Title and Filters Row */}
+          {/* Title Row */}
           <div style={{
             display: 'flex',
-            flexDirection: window.innerWidth <= 768 ? 'column' : 'row',
-            justifyContent: 'space-between',
-            alignItems: window.innerWidth <= 768 ? 'stretch' : 'center',
-            gap: '16px',
+            justifyContent: 'flex-start',
+            alignItems: 'center',
             marginBottom: '8px',
             padding: window.innerWidth <= 768 ? '12px 16px' : '12px 16px 12px 24px',
             background: '#FFFFFF',
@@ -292,26 +289,6 @@ const DoctorDetailsPage: React.FC = () => {
             }}>
               {i18n.language === 'ar' ? 'الأطباء' : 'Doctors'}
             </h1>
-            
-            {/* Filters on the right */}
-            <div style={{
-              display: 'flex',
-              flexDirection: window.innerWidth <= 768 ? 'column' : 'row',
-              alignItems: window.innerWidth <= 768 ? 'stretch' : 'center',
-              gap: '12px',
-            }}>
-              <DoctorFilters 
-                showTitle={false}
-                initialDepartmentId={doctor.department_id}
-                initialBranchId={doctor.branch_id || undefined}
-                containerStyle={{ 
-                  background: 'transparent',
-                  boxShadow: 'none',
-                  padding: '0',
-                  minHeight: 'auto',
-                }}
-              />
-            </div>
           </div>
 
           {/* Breadcrumb */}

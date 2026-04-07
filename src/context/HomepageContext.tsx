@@ -7,6 +7,7 @@ interface HomepageData {
   departments: any[];
   excellence_centers: any[];
   offers: any[];
+  hero_sliders: any[];
 }
 
 interface HomepageContextType {
