@@ -221,6 +221,127 @@ const AdminDoctors: React.FC = () => {
     }
   };
 
+  const parseLocalizedText = (value: unknown, fallbackLocale: 'en' | 'ar' = 'en'): { en: string; ar: string } => {
+    if (value == null) {
+      return { en: '', ar: '' };
+    }
+
+    if (typeof value === 'object') {
+      const obj = value as Record<string, unknown>;
+      return {
+        en: typeof obj.en === 'string' ? obj.en : '',
+        ar: typeof obj.ar === 'string' ? obj.ar : '',
+      };
+    }
+
+    if (typeof value === 'string') {
+      try {
+        const parsed = JSON.parse(value);
+        if (parsed && typeof parsed === 'object') {
+          const obj = parsed as Record<string, unknown>;
+          return {
+            en: typeof obj.en === 'string' ? obj.en : '',
+            ar: typeof obj.ar === 'string' ? obj.ar : '',
+          };
+        }
+      } catch {
+        // Plain text fallback below.
+      }
+
+      return fallbackLocale === 'ar'
+        ? { en: '', ar: value }
+        : { en: value, ar: '' };
+    }
+
+    return { en: '', ar: '' };
+  };
+
+  const normalizeServicesForForm = (rawServices: unknown): ServiceItem[] => {
+    if (!rawServices) {
+      return [];
+    }
+
+    let services: unknown = rawServices;
+
+    if (typeof services === 'string') {
+      try {
+        services = JSON.parse(services);
+      } catch {
+        return [];
+      }
+    }
+
+    let sourceLocale: 'en' | 'ar' = 'en';
+    let list: unknown[] = [];
+
+    if (Array.isArray(services)) {
+      list = services;
+    } else if (services && typeof services === 'object') {
+      const obj = services as Record<string, unknown>;
+      const enList = Array.isArray(obj.en) ? obj.en : [];
+      const arList = Array.isArray(obj.ar) ? obj.ar : [];
+
+      if (enList.length > 0) {
+        sourceLocale = 'en';
+        list = enList;
+      } else if (arList.length > 0) {
+        sourceLocale = 'ar';
+        list = arList;
+      } else {
+        list = Object.values(obj);
+      }
+    }
+
+    if (!Array.isArray(list)) {
+      return [];
+    }
+
+    return list
+      .map((service) => {
+        if (!service || typeof service !== 'object') {
+          return null;
+        }
+
+        const item = service as Record<string, unknown>;
+
+        if (
+          typeof item.title_en === 'string' ||
+          typeof item.title_ar === 'string' ||
+          typeof item.description_en === 'string' ||
+          typeof item.description_ar === 'string'
+        ) {
+          return {
+            title_en: typeof item.title_en === 'string' ? item.title_en : '',
+            title_ar: typeof item.title_ar === 'string' ? item.title_ar : '',
+            description_en: typeof item.description_en === 'string' ? item.description_en : '',
+            description_ar: typeof item.description_ar === 'string' ? item.description_ar : '',
+          } as ServiceItem;
+        }
+
+        const title = parseLocalizedText(item.title, sourceLocale);
+        const description = parseLocalizedText(item.description, sourceLocale);
+
+        return {
+          title_en: title.en,
+          title_ar: title.ar,
+          description_en: description.en,
+          description_ar: description.ar,
+        } as ServiceItem;
+      })
+      .filter((service): service is ServiceItem => {
+        if (!service) {
+          return false;
+        }
+
+        return (
+          service.title_en.trim() !== '' ||
+          service.title_ar.trim() !== '' ||
+          service.description_en.trim() !== '' ||
+          service.description_ar.trim() !== ''
+        );
+      });
+  };
+
   const openDrawer = (doctor?: Doctor) => {
     if (doctor) {
       setEditingDoctor(doctor);
@@ -230,111 +351,6 @@ const AdminDoctors: React.FC = () => {
       const locationObj = typeof doctor.location === 'object' && doctor.location !== null ? doctor.location : { en: doctor.location || '', ar: '' };
       const educationObj = typeof doctor.education === 'object' && doctor.education !== null ? doctor.education : { en: doctor.education || '', ar: '' };
       const specializationObj = typeof doctor.specialization === 'object' && doctor.specialization !== null ? doctor.specialization : { en: doctor.specialization || '', ar: '' };
-      
-      // Transform services from backend format to frontend format
-      const transformOutpatientServices = (services: any): ServiceItem[] => {
-        console.log('=== TRANSFORMING SERVICES ===');
-        console.log('Raw services received:', services);
-        
-        // Handle null/undefined
-        if (!services) {
-          console.log('Services is null/undefined');
-          return [];
-        }
-        
-        // Handle string (parse it)
-        if (typeof services === 'string') {
-          console.log('Services is a string, parsing...');
-          try {
-            services = JSON.parse(services);
-            console.log('Parsed services:', services);
-          } catch (e) {
-            console.error('Failed to parse services:', e);
-            return [];
-          }
-        }
-        
-        // Handle nested format: { en: [...], ar: [...] } - extract the 'en' array
-        if (services && typeof services === 'object' && !Array.isArray(services) && services.en) {
-          console.log('Services has nested format with "en" key, extracting...');
-          services = services.en;
-          console.log('Extracted services:', services);
-        }
-        
-        // Convert object to array if needed (e.g., {0: {...}, 1: {...}} => [{...}, {...}])
-        if (!Array.isArray(services) && typeof services === 'object') {
-          console.log('Services is an object, converting to array...');
-          services = Object.values(services);
-          console.log('Converted services:', services);
-        }
-        
-        // Ensure it's an array
-        if (!Array.isArray(services)) {
-          console.warn('Services is not an array:', services);
-          return [];
-        }
-        
-        // If empty array
-        if (services.length === 0) {
-          console.log('Services is empty array');
-          return [];
-        }
-        
-        const transformed = services.map((service, index) => {
-          console.log(`Processing service ${index}:`, service);
-          
-          if (service.title_en !== undefined) {
-            // Already in frontend format
-            console.log(`Service ${index} already in frontend format`);
-            return service as ServiceItem;
-          }
-          
-          // Parse title and description (they may be JSON strings or objects)
-          let titleObj = service.title;
-          let descObj = service.description;
-          
-          console.log(`Service ${index} title before parse:`, titleObj);
-          console.log(`Service ${index} description before parse:`, descObj);
-          
-          // Ensure titleObj and descObj are objects
-          if (!titleObj) {
-            titleObj = { en: '', ar: '' };
-          } else if (typeof titleObj === 'string') {
-            try {
-              titleObj = JSON.parse(titleObj);
-            } catch (e) {
-              titleObj = { en: titleObj, ar: '' };
-            }
-          }
-          
-          if (!descObj) {
-            descObj = { en: '', ar: '' };
-          } else if (typeof descObj === 'string') {
-            try {
-              descObj = JSON.parse(descObj);
-            } catch (e) {
-              descObj = { en: descObj, ar: '' };
-            }
-          }
-          
-          console.log(`Service ${index} title after parse:`, titleObj);
-          console.log(`Service ${index} description after parse:`, descObj);
-          
-          const result = {
-            title_en: titleObj?.en || '',
-            title_ar: titleObj?.ar || '',
-            description_en: descObj?.en || '',
-            description_ar: descObj?.ar || ''
-          };
-          
-          console.log(`Service ${index} final result:`, result);
-          
-          return result;
-        });
-        
-        console.log('Final transformed services:', transformed);
-        return transformed;
-      };
       
       const newFormData: FormData = {
         doctor_code: doctor.doctor_code || '',
@@ -354,8 +370,8 @@ const AdminDoctors: React.FC = () => {
         status: doctor.status,
         is_active: doctor.is_active,
         order: doctor.order?.toString() || '0',
-        outpatient_services: transformOutpatientServices(doctor.outpatient_services || []),
-        inpatient_services: transformOutpatientServices(doctor.inpatient_services || []),
+        outpatient_services: normalizeServicesForForm(doctor.outpatient_services || []),
+        inpatient_services: normalizeServicesForForm(doctor.inpatient_services || []),
       };
       setFormData(newFormData);
       setImagePreview(doctor.image_url || '');

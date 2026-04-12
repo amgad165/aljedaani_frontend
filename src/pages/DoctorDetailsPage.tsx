@@ -174,56 +174,98 @@ const DoctorDetailsPage: React.FC = () => {
   }
 
   const statusStyle = getStatusStyle(doctor.status);
+
+  const parseLocalizedText = (value: unknown, fallbackLocale: 'en' | 'ar'): { en: string; ar: string } => {
+    if (value == null) {
+      return { en: '', ar: '' };
+    }
+
+    if (typeof value === 'object') {
+      const obj = value as Record<string, unknown>;
+      return {
+        en: typeof obj.en === 'string' ? obj.en : '',
+        ar: typeof obj.ar === 'string' ? obj.ar : '',
+      };
+    }
+
+    if (typeof value === 'string') {
+      try {
+        const parsed = JSON.parse(value);
+        if (parsed && typeof parsed === 'object') {
+          const obj = parsed as Record<string, unknown>;
+          return {
+            en: typeof obj.en === 'string' ? obj.en : '',
+            ar: typeof obj.ar === 'string' ? obj.ar : '',
+          };
+        }
+      } catch {
+        // Plain text fallback below.
+      }
+
+      return fallbackLocale === 'ar'
+        ? { en: '', ar: value }
+        : { en: value, ar: '' };
+    }
+
+    return { en: '', ar: '' };
+  };
   
   // Extract services based on current language and transform to ServiceItem format
   // Services come from backend in bilingual format: {en: [...], ar: [...]}
   // Each service has title and description as JSON strings that need to be parsed
-  const extractServices = (services: any): ServiceItem[] => {
+  const extractServices = (services: unknown): ServiceItem[] => {
     if (!services) return [];
     
-    let servicesArray: any[] = [];
+    let servicesArray: unknown[] = [];
+    let sourceLocale: 'en' | 'ar' = 'en';
     
     // If services is already an array, use it
     if (Array.isArray(services)) {
       servicesArray = services;
     } 
     // If it's an object with language keys, extract the current language
-    else if (typeof services === 'object' && (services.en || services.ar)) {
+    else if (typeof services === 'object') {
+      const servicesObj = services as Record<string, unknown>;
+      if (!servicesObj.en && !servicesObj.ar) {
+        return [];
+      }
+
       const currentLang = i18n.language as 'en' | 'ar';
-      const langServices = services[currentLang] || services['en'] || [];
+      const currentLangServices = servicesObj[currentLang];
+      const hasCurrentLang = Array.isArray(currentLangServices) && currentLangServices.length > 0;
+      const fallbackLang: 'en' | 'ar' = currentLang === 'en' ? 'ar' : 'en';
+      const fallbackLangServices = servicesObj[fallbackLang];
+      const langServices = hasCurrentLang ? currentLangServices : fallbackLangServices;
+      sourceLocale = hasCurrentLang ? currentLang : fallbackLang;
       servicesArray = Array.isArray(langServices) ? langServices : [];
-    } else {
-      return [];
     }
     
     // Transform each service to match ServiceItem interface
     return servicesArray.map((service) => {
+      if (!service || typeof service !== 'object') {
+        return {
+          title_en: '',
+          title_ar: '',
+          description_en: '',
+          description_ar: '',
+        } as ServiceItem;
+      }
+
+      const serviceObj = service as Record<string, unknown>;
+
       // If already in correct format (title_en, title_ar, etc.)
-      if (service.title_en !== undefined) {
-        return service as ServiceItem;
+      if (serviceObj.title_en !== undefined) {
+        return {
+          title_en: typeof serviceObj.title_en === 'string' ? serviceObj.title_en : '',
+          title_ar: typeof serviceObj.title_ar === 'string' ? serviceObj.title_ar : '',
+          description_en: typeof serviceObj.description_en === 'string' ? serviceObj.description_en : '',
+          description_ar: typeof serviceObj.description_ar === 'string' ? serviceObj.description_ar : '',
+        } as ServiceItem;
       }
       
       // Parse title and description if they're JSON strings
-      let titleObj = service.title;
-      let descObj = service.description;
-      
-      // Parse title
-      if (typeof titleObj === 'string') {
-        try {
-          titleObj = JSON.parse(titleObj);
-        } catch (e) {
-          titleObj = { en: titleObj, ar: '' };
-        }
-      }
-      
-      // Parse description
-      if (typeof descObj === 'string') {
-        try {
-          descObj = JSON.parse(descObj);
-        } catch (e) {
-          descObj = { en: descObj, ar: '' };
-        }
-      }
+      const titleObj = parseLocalizedText(serviceObj.title, sourceLocale);
+      const descObj = parseLocalizedText(serviceObj.description, sourceLocale);
       
       // Return in ServiceItem format
       return {
