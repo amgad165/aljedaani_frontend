@@ -15,6 +15,7 @@ const ContactPage: React.FC = () => {
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [hoveredBranch, setHoveredBranch] = useState<number | null>(null);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
 
@@ -25,6 +26,13 @@ const ContactPage: React.FC = () => {
     email: '',
     message: ''
   });
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     const fetchBranches = async () => {
@@ -109,7 +117,7 @@ const ContactPage: React.FC = () => {
         display: 'flex',
         alignItems: 'flex-start',
         justifyContent: 'center',
-        padding: window.innerWidth <= 768 ? '90px 16px 40px' : '131px 20px 40px',
+        padding: isMobile ? '90px 16px 40px' : '131px 20px 40px',
         direction: i18n.language === 'ar' ? 'rtl' : 'ltr',
       }}>
         <div style={{
@@ -117,7 +125,7 @@ const ContactPage: React.FC = () => {
           maxWidth: '1400px',
           display: 'flex',
           flexDirection: 'column',
-          gap: '16px',
+          gap: '12px',
         }}>
           {/* Page Title */}
           <div style={{
@@ -125,16 +133,16 @@ const ContactPage: React.FC = () => {
             flexDirection: 'row',
             justifyContent: 'center',
             alignItems: 'center',
-            padding: window.innerWidth <= 768 ? '8px 12px' : '10px 32px',
+            padding: isMobile ? '10px 16px' : '10px 32px',
             background: '#FFFFFF',
             borderRadius: '15px',
-            height: window.innerWidth <= 768 ? 'auto' : '80px',
+            height: isMobile ? 'auto' : '80px',
           }}>
             <h1 style={{
               fontFamily: 'Nunito, sans-serif',
               fontWeight: 600,
-              fontSize: window.innerWidth <= 768 ? '24px' : '44px',
-              lineHeight: '50px',
+              fontSize: isMobile ? '28px' : '44px',
+              lineHeight: isMobile ? '32px' : '50px',
               textAlign: i18n.language === 'ar' ? 'right' : 'left',
               color: '#061F42',
               margin: 0,
@@ -150,14 +158,14 @@ const ContactPage: React.FC = () => {
             flexDirection: 'row',
             justifyContent: 'center',
             alignItems: 'center',
-            padding: '10px 32px',
-            height: '58px',
+            padding: isMobile ? '6px 16px' : '10px 32px',
+            minHeight: isMobile ? 'auto' : '58px',
           }}>
             <h2 style={{
               fontFamily: 'Nunito, sans-serif',
               fontWeight: 700,
-              fontSize: '24px',
-              lineHeight: '38px',
+              fontSize: isMobile ? '22px' : '24px',
+              lineHeight: isMobile ? '30px' : '38px',
               textAlign: 'center',
               color: '#061F42',
               margin: 0,
@@ -170,7 +178,7 @@ const ContactPage: React.FC = () => {
           {/* Branch Cards */}
           <div style={{
             display: 'flex',
-            flexDirection: window.innerWidth <= 768 ? 'column' : 'row',
+            flexDirection: isMobile ? 'column' : 'row',
             alignItems: 'center',
             gap: '24px',
             width: '100%',
@@ -383,10 +391,10 @@ const ContactPage: React.FC = () => {
             onSubmit={handleSubmit}
             style={{
               display: 'flex',
-              flexDirection: window.innerWidth <= 768 ? 'column' : 'row',
+              flexDirection: isMobile ? 'column' : 'row',
               alignItems: 'flex-start',
               padding: '16px',
-              gap: '24px',
+              gap: isMobile ? '16px' : '24px',
               width: '100%',
               background: '#FFFFFF',
               borderRadius: '12px',

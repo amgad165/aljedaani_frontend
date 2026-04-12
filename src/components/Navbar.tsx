@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../hooks/useAuth';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { branchesService, type Branch } from '../services/branchesService';
 import { getTranslatedField } from '../utils/localeHelpers';
 import LanguageSwitcher from './LanguageSwitcher';
@@ -17,6 +17,7 @@ interface NavItem {
 
 const Navbar = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { t } = useTranslation('pages');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
@@ -66,6 +67,42 @@ const Navbar = () => {
     navigate(`/branches?id=${branchId}`);
   };
 
+  const normalizePath = (pathname: string) => {
+    const lowered = pathname.toLowerCase();
+    const withoutLocale = lowered.replace(/^\/(en|ar)(?=\/|$)/, '') || '/';
+    const trimmed = withoutLocale.replace(/\/+$/, '');
+    return trimmed || '/';
+  };
+
+  const currentPath = normalizePath(location.pathname);
+
+  const matchesAnyPath = (paths: string[]) =>
+    paths.some((path) => currentPath === path || currentPath.startsWith(`${path}/`));
+
+  const isItemActive = (item: NavItem) => {
+    if (item.isBranchesDropdown) {
+      return matchesAnyPath(['/branches', '/branch']);
+    }
+
+    if (item.isMediaDropdown) {
+      return matchesAnyPath(['/articles', '/article', '/news', '/media']);
+    }
+
+    if (item.href === '/departments') {
+      return matchesAnyPath(['/departments', '/department']);
+    }
+
+    if (item.href === '/doctors') {
+      return matchesAnyPath(['/doctors', '/doctor']);
+    }
+
+    if (item.href.startsWith('/')) {
+      return currentPath === item.href || currentPath.startsWith(`${item.href}/`);
+    }
+
+    return false;
+  };
+
   const navItems: NavItem[] = [
     { label: t('aboutUs'), href: '/about' },
     { label: t('branches'), href: '/branches', hasDropdown: true, isBranchesDropdown: true },
@@ -74,7 +111,7 @@ const Navbar = () => {
     { label: t('pharmacies'), href: '#' },
     { label: t('patientExperience'), href: '#' },
     { label: t('media'), href: '#', hasDropdown: true, isMediaDropdown: true },
-    { label: t('careers'), href: '#'},
+    { label: t('careers'), href: '/careers'},
     { label: t('contact'), href: '/contact'},
   ];
 
@@ -97,6 +134,43 @@ const Navbar = () => {
             text-align: center;
             color: #063069;
             text-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+          }
+          .menu-links .menu-link-trigger {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding-bottom: 6px;
+            color: inherit;
+            text-decoration: none;
+            transition: color 0.25s ease;
+          }
+          .menu-links .menu-link-trigger::after {
+            content: '';
+            position: absolute;
+            inset-inline-start: 0;
+            bottom: 0;
+            width: 100%;
+            height: 3px;
+            border-radius: 999px;
+            background: linear-gradient(90deg, #00ABDA 0%, #0155CB 100%);
+            box-shadow: 0 2px 10px rgba(0, 171, 218, 0.35);
+            transform: scaleX(0);
+            transform-origin: center;
+            transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+          }
+          .menu-links .menu-link-item:hover > .menu-link-trigger,
+          .menu-links .menu-link-item:focus-within > .menu-link-trigger,
+          .menu-links .menu-link-item-active > .menu-link-trigger {
+            color: #0155CB;
+          }
+          .menu-links .menu-link-item:hover > .menu-link-trigger::after,
+          .menu-links .menu-link-item:focus-within > .menu-link-trigger::after,
+          .menu-links .menu-link-item-active > .menu-link-trigger::after {
+            transform: scaleX(1);
+          }
+          .menu-links .menu-link-item-active > .menu-link-trigger {
+            font-weight: 700;
           }
         `}
       </style>
@@ -315,10 +389,13 @@ const Navbar = () => {
         <div className={`bottom-header ${isMenuOpen ? 'mobile-open' : ''}`}>
           <div className="container">
             <ul className="menu-links">
-              {navItems.map((item) => (
+              {navItems.map((item) => {
+                const isActive = isItemActive(item);
+
+                return (
                 <li
                   key={item.label}
-                  className={item.hasDropdown ? 'dropdown-s1' : ''}
+                  className={`${item.hasDropdown ? 'dropdown-s1 ' : ''}menu-link-item${isActive ? ' menu-link-item-active' : ''}`}
                   ref={item.isBranchesDropdown ? branchesDropdownRef : item.isMediaDropdown ? mediaDropdownRef : undefined}
                   style={{ position: 'relative' }}
                 >
@@ -327,11 +404,11 @@ const Navbar = () => {
                     <>
                       <a 
                         href="#"
+                        className="menu-link-trigger"
                         onClick={(e) => {
                           e.preventDefault();
                           setIsBranchesDropdownOpen(!isBranchesDropdownOpen);
                         }}
-                        style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
                       >
                         {item.label}
                       </a>
@@ -573,11 +650,11 @@ const Navbar = () => {
                     <>
                       <a
                         href="#"
+                        className="menu-link-trigger"
                         onClick={(e) => {
                           e.preventDefault();
                           setIsMediaDropdownOpen(!isMediaDropdownOpen);
                         }}
-                        style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
                       >
                         {item.label}
                       </a>
@@ -686,19 +763,53 @@ const Navbar = () => {
                               <path d="M6 12L10 8L6 4" stroke="#9CA3AF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                             </svg>
                           </Link>
+
+                          <Link
+                            to="/news"
+                            onClick={() => setIsMediaDropdownOpen(false)}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '12px',
+                              padding: '12px 16px',
+                              borderRadius: '10px',
+                              fontFamily: 'Nunito, sans-serif',
+                              fontWeight: 600,
+                              fontSize: '14px',
+                              color: '#061F42',
+                              textDecoration: 'none',
+                              transition: 'background 0.2s ease',
+                            }}
+                            onMouseEnter={(e) => { e.currentTarget.style.background = '#F0FDFF'; }}
+                            onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+                          >
+                            <div style={{
+                              width: '36px', height: '36px', borderRadius: '8px',
+                              background: 'linear-gradient(135deg, #0155CB 0%, #00ABDA 100%)',
+                              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                            }}>
+                              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                                <path d="M7 5H17M7 9H17M7 13H14M5 3H19V21H5V3Z" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                              </svg>
+                            </div>
+                            News
+                            <svg style={{ marginInlineStart: 'auto' }} width="16" height="16" viewBox="0 0 16 16" fill="none">
+                              <path d="M6 12L10 8L6 4" stroke="#9CA3AF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                          </Link>
                         </div>
                       </div>
                     </>
                   ) : item.href.startsWith('/') ? (
-                    <Link to={item.href}>{item.label}</Link>
+                    <Link to={item.href} className="menu-link-trigger">{item.label}</Link>
                   ) : (
-                    <a href={item.href}>{item.label}</a>
+                    <a href={item.href} className="menu-link-trigger">{item.label}</a>
                   )}
                   {item.hasDropdown && !item.isBranchesDropdown && !item.isMediaDropdown && (
                     <img src="/assets/img/icons/dropdown.svg" className="d-block" width="10" height="18" alt="Dropdown Icon" />
                   )}
                 </li>
-              ))}
+              )})}
             </ul>
           </div>
         </div>

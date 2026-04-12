@@ -20,6 +20,11 @@ import AboutUsPage from './pages/AboutUsPage';
 import TestimonialDetailPage from './pages/TestimonialDetailPage';
 import ArticlesPage from './pages/ArticlesPage';
 import ArticleDetailsPage from './pages/ArticleDetailsPage';
+import NewsPage from './pages/NewsPage';
+import NewsDetailsPage from './pages/NewsDetailsPage';
+import CareersPage from './pages/CareersPage';
+import CareerDetailsPage from './pages/CareerDetailsPage';
+import CareerApplicationSuccessPage from './pages/CareerApplicationSuccessPage';
 // Admin Pages
 import AdminLogin from './components/admin/AdminLogin';
 import AdminDashboard from './components/admin/AdminDashboard';
@@ -51,6 +56,8 @@ import DoctorAvailability from './components/admin/DoctorAvailability';
 import PatientDetails from './components/admin/PatientDetails';
 import AdminContactSubmissions from './components/admin/AdminContactSubmissions';
 import AdminArticles from './components/admin/AdminArticles';
+import AdminNews from './components/admin/AdminNews';
+import AdminCareers from './components/admin/AdminCareers';
 import ProtectedRoute from './components/admin/ProtectedRoute';
 import './App.css';
 
@@ -112,6 +119,26 @@ const ROUTE_SEO: Record<SupportedLang, Record<string, SeoEntry>> = {
       title: 'Article | Aljedaani Hospitals',
       description: 'Read a health article from Aljedaani Hospitals.',
     },
+    '/news': {
+      title: 'News | Aljedaani Hospitals',
+      description: 'Read the latest hospital news and announcements from Aljedaani Hospitals.',
+    },
+    '/news/:id': {
+      title: 'News Details | Aljedaani Hospitals',
+      description: 'Read a news update from Aljedaani Hospitals.',
+    },
+    '/careers': {
+      title: 'Careers | Aljedaani Hospitals',
+      description: 'Explore open positions and career opportunities at Aljedaani Hospitals.',
+    },
+    '/careers/:id': {
+      title: 'Career Details | Aljedaani Hospitals',
+      description: 'Review career details and apply for opportunities at Aljedaani Hospitals.',
+    },
+    '/careers/:id/success': {
+      title: 'Application Submitted | Aljedaani Hospitals',
+      description: 'Your career application has been submitted successfully.',
+    },
     default: {
       title: 'Aljedaani Hospitals',
       description: 'Aljedaani Group of Hospitals - trusted healthcare services in Jeddah.',
@@ -164,6 +191,26 @@ const ROUTE_SEO: Record<SupportedLang, Record<string, SeoEntry>> = {
       title: 'مقال صحي | مستشفيات الجدعاني',
       description: 'اقرأ مقالاً صحياً من مستشفيات الجدعاني.',
     },
+    '/news': {
+      title: 'الأخبار | مستشفيات الجدعاني',
+      description: 'اطلع على أحدث أخبار وإعلانات مستشفيات الجدعاني.',
+    },
+    '/news/:id': {
+      title: 'تفاصيل الخبر | مستشفيات الجدعاني',
+      description: 'اقرأ تحديثاً إخبارياً من مستشفيات الجدعاني.',
+    },
+    '/careers': {
+      title: 'الوظائف | مستشفيات الجدعاني',
+      description: 'استكشف الوظائف الشاغرة وفرص العمل في مستشفيات الجدعاني.',
+    },
+    '/careers/:id': {
+      title: 'تفاصيل الوظيفة | مستشفيات الجدعاني',
+      description: 'راجع تفاصيل الوظيفة وقدّم على الفرص المتاحة في مستشفيات الجدعاني.',
+    },
+    '/careers/:id/success': {
+      title: 'تم إرسال طلب التوظيف | مستشفيات الجدعاني',
+      description: 'تم إرسال طلب التوظيف بنجاح.',
+    },
     default: {
       title: 'مستشفيات الجدعاني',
       description: 'مستشفيات الجدعاني - رعاية صحية موثوقة في جدة.',
@@ -197,9 +244,12 @@ const buildRoutePath = (prefix: string, routePath: string): string => {
 };
 
 const getSeoRouteKey = (pathname: string): string => {
+  if (/^\/careers\/[^/]+\/success$/.test(pathname)) return '/careers/:id/success';
   if (pathname.startsWith('/doctors/')) return '/doctors/:id';
   if (pathname.startsWith('/departments/')) return '/departments/:id';
   if (pathname.startsWith('/articles/')) return '/articles/:id';
+  if (pathname.startsWith('/news/')) return '/news/:id';
+  if (pathname.startsWith('/careers/')) return '/careers/:id';
   return pathname;
 };
 
@@ -301,6 +351,11 @@ function AppRouter() {
     { path: '/about', element: <AboutUsPage /> },
     { path: '/articles', element: <ArticlesPage /> },
     { path: '/articles/:id', element: <ArticleDetailsPage /> },
+    { path: '/news', element: <NewsPage /> },
+    { path: '/news/:id', element: <NewsDetailsPage /> },
+    { path: '/careers', element: <CareersPage /> },
+    { path: '/careers/:id', element: <CareerDetailsPage /> },
+    { path: '/careers/:id/success', element: <CareerApplicationSuccessPage /> },
   ];
 
   return (
@@ -362,6 +417,16 @@ function AppRouter() {
         <Route path="/admin/articles" element={
           <ProtectedRoute>
             <AdminArticles />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/news" element={
+          <ProtectedRoute>
+            <AdminNews />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/careers" element={
+          <ProtectedRoute>
+            <AdminCareers />
           </ProtectedRoute>
         } />
         <Route path="/admin/otp-logs" element={
