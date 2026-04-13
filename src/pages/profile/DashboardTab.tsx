@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useLocation, useNavigate } from 'react-router-dom';
 import type { ProfileData } from './types';
 import {
   CalendarIcon,
@@ -164,7 +165,7 @@ const DashboardCard = ({
 );
 
 // Stats Display Component
-const StatsDisplay = ({ items }: { items: { value: number; label: string }[] }) => (
+const StatsDisplay = ({ items }: { items: { value: number; label: string; onClick?: () => void }[] }) => (
   <div style={{
     display: 'flex',
     flexDirection: 'row',
@@ -181,13 +182,61 @@ const StatsDisplay = ({ items }: { items: { value: number; label: string }[] }) 
         gap: '4px',
       }}>
         <div style={{
-          fontFamily: 'Nunito, sans-serif',
-          fontWeight: 700,
-          fontSize: '24px',
-          lineHeight: '32px',
-          color: '#061F42',
+          display: 'flex',
+          justifyContent: 'center',
+          width: '100%',
         }}>
-          {item.value}
+          <button
+            type="button"
+            onClick={item.onClick}
+            style={{
+              border: 'none',
+              background: 'transparent',
+              padding: 0,
+              margin: 0,
+              cursor: item.onClick ? 'pointer' : 'default',
+              fontFamily: 'Nunito, sans-serif',
+              fontWeight: 700,
+              fontSize: '24px',
+              lineHeight: '32px',
+              color: '#061F42',
+              textDecoration: 'none',
+              textUnderlineOffset: '3px',
+              textDecorationThickness: '2px',
+              borderRadius: '4px',
+              transform: item.onClick ? 'translateY(0) scale(1)' : 'none',
+              transition: 'color 0.2s ease, text-decoration-color 0.2s ease, transform 0.18s ease',
+            }}
+            onMouseEnter={(e) => {
+              if (item.onClick) {
+                (e.currentTarget as HTMLButtonElement).style.color = '#00ABDA';
+                (e.currentTarget as HTMLButtonElement).style.textDecoration = 'underline';
+                (e.currentTarget as HTMLButtonElement).style.textDecorationColor = '#00ABDA';
+                (e.currentTarget as HTMLButtonElement).style.textDecorationThickness = '3px';
+                (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(-1px) scale(1.08)';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (item.onClick) {
+                (e.currentTarget as HTMLButtonElement).style.color = '#061F42';
+                (e.currentTarget as HTMLButtonElement).style.textDecoration = 'none';
+                (e.currentTarget as HTMLButtonElement).style.textDecorationColor = 'transparent';
+                (e.currentTarget as HTMLButtonElement).style.textDecorationThickness = '2px';
+                (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(0) scale(1)';
+              }
+            }}
+            onFocus={(e) => {
+              if (item.onClick) {
+                (e.currentTarget as HTMLButtonElement).style.outline = '2px solid #00ABDA';
+                (e.currentTarget as HTMLButtonElement).style.outlineOffset = '2px';
+              }
+            }}
+            onBlur={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.outline = 'none';
+            }}
+          >
+            {item.value}
+          </button>
         </div>
         <div style={{
           fontFamily: 'Nunito, sans-serif',
@@ -205,6 +254,8 @@ const StatsDisplay = ({ items }: { items: { value: number; label: string }[] }) 
 
 const DashboardTab = ({ profileData }: DashboardTabProps) => {
   const { t } = useTranslation('pages');
+  const navigate = useNavigate();
+  const location = useLocation();
   const [showVitals, setShowVitals] = useState(false);
   const [showChiefComplaints, setShowChiefComplaints] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
@@ -237,6 +288,22 @@ const DashboardTab = ({ profileData }: DashboardTabProps) => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const navigateToProfileTab = (
+    tab: 'appointments' | 'lab-reports' | 'rad-reports' | 'medical-reports',
+    view?: 'upcoming' | 'past'
+  ) => {
+    const params = new URLSearchParams();
+    params.set('tab', tab);
+    if (view) {
+      params.set('view', view);
+    }
+
+    navigate({
+      pathname: location.pathname,
+      search: `?${params.toString()}`,
+    });
   };
 
   if (showChiefComplaints) {
@@ -449,18 +516,18 @@ const DashboardTab = ({ profileData }: DashboardTabProps) => {
       {/* Total Appointments Card */}
       <DashboardCard title={t('dashboardTotalAppointments')} icon={<CalendarIcon />}>
         <StatsDisplay items={[
-          { value: stats?.appointments.total ?? 0, label: t('dashboardTotal') },
-          { value: stats?.appointments.upcoming ?? 0, label: t('dashboardUpcoming') },
-          { value: stats?.appointments.past ?? 0, label: t('dashboardPast') },
+          { value: stats?.appointments.total ?? 0, label: t('dashboardTotal'), onClick: () => navigateToProfileTab('appointments') },
+          { value: stats?.appointments.upcoming ?? 0, label: t('dashboardUpcoming'), onClick: () => navigateToProfileTab('appointments', 'upcoming') },
+          { value: stats?.appointments.past ?? 0, label: t('dashboardPast'), onClick: () => navigateToProfileTab('appointments', 'past') },
         ]} />
       </DashboardCard>
 
       {/* My Documents Card */}
       <DashboardCard title={t('dashboardMyDocuments')} icon={<DocumentIcon />}>
         <StatsDisplay items={[
-          { value: stats?.documents.lab_reports ?? 0, label: t('dashboardLabReports') },
-          { value: stats?.documents.rad_reports ?? 0, label: t('dashboardRadReports') },
-          { value: stats?.documents.medical_reports ?? 0, label: t('dashboardMedical') },
+          { value: stats?.documents.lab_reports ?? 0, label: t('dashboardLabReports'), onClick: () => navigateToProfileTab('lab-reports') },
+          { value: stats?.documents.rad_reports ?? 0, label: t('dashboardRadReports'), onClick: () => navigateToProfileTab('rad-reports') },
+          { value: stats?.documents.medical_reports ?? 0, label: t('dashboardMedical'), onClick: () => navigateToProfileTab('medical-reports') },
         ]} />
       </DashboardCard>
 

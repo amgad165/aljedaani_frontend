@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import UpcomingAppointmentsView from './UpcomingAppointmentsView';
 import PastAppointmentsView from './PastAppointmentsView';
@@ -194,6 +194,7 @@ type ViewType = 'main' | 'upcoming' | 'past';
 const AppointmentsTab = () => {
   const { t } = useTranslation('pages');
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [currentView, setCurrentView] = useState<ViewType>('main');
   const [upcomingCount, setUpcomingCount] = useState(0);
   const [pastCount, setPastCount] = useState(0);
@@ -205,6 +206,29 @@ const AppointmentsTab = () => {
     hasFetchedRef.current = true;
     fetchAppointmentStats();
   }, []);
+
+  useEffect(() => {
+    const viewParam = searchParams.get('view');
+    if (viewParam === 'upcoming' || viewParam === 'past') {
+      setCurrentView(viewParam);
+      return;
+    }
+
+    setCurrentView('main');
+  }, [searchParams]);
+
+  const updateAppointmentViewInUrl = (view: ViewType) => {
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.set('tab', 'appointments');
+
+    if (view === 'main') {
+      nextParams.delete('view');
+    } else {
+      nextParams.set('view', view);
+    }
+
+    setSearchParams(nextParams, { replace: true });
+  };
 
   const fetchAppointmentStats = async () => {
     try {
@@ -235,6 +259,7 @@ const AppointmentsTab = () => {
 
   const handleBackToMain = () => {
     setCurrentView('main');
+    updateAppointmentViewInUrl('main');
     // Reset the ref so stats will be fetched again
     hasFetchedRef.current = false;
     fetchAppointmentStats();
@@ -299,7 +324,10 @@ const AppointmentsTab = () => {
             count={pastCount}
             color="#1F57A4"
             icon={<CalendarLateIcon />}
-            onClick={() => setCurrentView('past')}
+            onClick={() => {
+              setCurrentView('past');
+              updateAppointmentViewInUrl('past');
+            }}
           />
 
            {/* Upcoming Appointments */}
@@ -308,7 +336,10 @@ const AppointmentsTab = () => {
             count={upcomingCount}
             color="#00ABDA"
             icon={<CalendarAddIcon />}
-            onClick={() => setCurrentView('upcoming')}
+            onClick={() => {
+              setCurrentView('upcoming');
+              updateAppointmentViewInUrl('upcoming');
+            }}
           />
         </div>
       )}

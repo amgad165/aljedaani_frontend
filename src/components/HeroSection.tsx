@@ -23,6 +23,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
   disabled = false,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isMobileViewport, setIsMobileViewport] = useState(() => window.innerWidth <= 768);
   const [searchTerm, setSearchTerm] = useState('');
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -52,6 +53,12 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
     }
   }, [isOpen]);
 
+  useEffect(() => {
+    const handleResize = () => setIsMobileViewport(window.innerWidth <= 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const handleSelect = (optionId: number) => {
     onChange(optionId.toString());
     setIsOpen(false);
@@ -73,7 +80,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
         className="form-select"
         style={{
           cursor: disabled ? 'not-allowed' : 'pointer',
-          opacity: disabled ? 0.3: 0.6,
+          opacity: disabled ? 0.3 : 1,
           background: '#F3F4F6',
           backgroundColor: '#F3F4F6',
           border: isOpen ? '2px solid #00ABDA' : '1px solid #E5E7EB',
@@ -102,17 +109,19 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
         <div
           style={{
             position: 'absolute',
-            bottom: '100%',
+            top: isMobileViewport ? '100%' : undefined,
+            bottom: isMobileViewport ? undefined : '100%',
             left: 0,
             right: 0,
-            marginBottom: '8px',
+            marginTop: isMobileViewport ? '8px' : 0,
+            marginBottom: isMobileViewport ? 0 : '8px',
             background: '#FFFFFF',
             borderRadius: '12px',
             boxShadow: '0 10px 40px rgba(0, 0, 0, 0.12)',
             border: '1px solid #E5E7EB',
-            zIndex: 9999,
+            zIndex: 10010,
             overflow: 'hidden',
-            animation: 'slideUp 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+            animation: `${isMobileViewport ? 'slideDown' : 'slideUp'} 0.25s cubic-bezier(0.4, 0, 0.2, 1)`,
           }}
         >
           {/* Search Input */}
@@ -260,11 +269,12 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
 const HeroSection = () => {
   const navigate = useNavigate();
   const [isLoaded, setIsLoaded] = useState(false);
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth <= 768);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [displaySlide, setDisplaySlide] = useState(0);
   const [incomingSlide, setIncomingSlide] = useState<number | null>(null);
   const { data: homepageData } = useHomepageData();
-  const { t } = useTranslation('pages');
+  const { t, i18n } = useTranslation('pages');
   
   // Data states
   const [departments, setDepartments] = useState<Department[]>([]);
@@ -284,6 +294,12 @@ const HeroSection = () => {
   useEffect(() => {
     const timer = setTimeout(() => setIsLoaded(true), 100);
     return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   useEffect(() => {
@@ -421,6 +437,276 @@ const HeroSection = () => {
   const displayImage = getSlideImage(displaySlide);
   const incomingImage = incomingSlide !== null ? getSlideImage(incomingSlide) : null;
 
+  const mobileTitleStyle = {
+    fontSize: i18n.language === 'ar' ? '28px' : '30px',
+    lineHeight: i18n.language === 'ar' ? '34px' : '36px',
+    marginBottom: '12px',
+    color: '#FFFFFF',
+    textShadow: '0 2px 10px rgba(0, 0, 0, 0.35)',
+  } as const;
+
+  const desktopFilterForm = (
+    <form className="form" onSubmit={handleSearch}>
+      <div className="input-wrapper d-flex flex-column position-relative">
+        <CustomSelect
+          options={branches.map(b => ({ id: b.id, name: b.name }))}
+          value={selectedBranch}
+          onChange={handleBranchChange}
+          placeholder={t('selectBranch')}
+        />
+      </div>
+      <div className="input-wrapper d-flex flex-column position-relative">
+        <CustomSelect
+          options={filteredDepartments.map(dept => ({ id: dept.id, name: dept.name }))}
+          value={selectedDepartment}
+          onChange={handleDepartmentChange}
+          placeholder={t('selectDepartment')}
+        />
+      </div>
+      <div className="input-wrapper d-flex flex-column position-relative">
+        <CustomSelect
+          options={doctors.map(d => ({ id: d.id, name: d.name }))}
+          value={selectedDoctor}
+          onChange={(value) => setSelectedDoctor(value)}
+          placeholder={t('selectDoctor')}
+          disabled={doctors.length === 0}
+        />
+      </div>
+      <button type="submit" className="icon">
+        <img src="/assets/img/icons/search.svg" width="24" height="24" alt="Search Icon" />
+      </button>
+    </form>
+  );
+
+  const mobileFilterForm = (
+    <form
+      onSubmit={handleSearch}
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '10px',
+      }}
+    >
+      <div>
+        <CustomSelect
+          options={branches.map(b => ({ id: b.id, name: b.name }))}
+          value={selectedBranch}
+          onChange={handleBranchChange}
+          placeholder={t('selectBranch')}
+        />
+      </div>
+      <div>
+        <CustomSelect
+          options={filteredDepartments.map(dept => ({ id: dept.id, name: dept.name }))}
+          value={selectedDepartment}
+          onChange={handleDepartmentChange}
+          placeholder={t('selectDepartment')}
+        />
+      </div>
+      <div>
+        <CustomSelect
+          options={doctors.map(d => ({ id: d.id, name: d.name }))}
+          value={selectedDoctor}
+          onChange={(value) => setSelectedDoctor(value)}
+          placeholder={t('selectDoctor')}
+          disabled={doctors.length === 0}
+        />
+      </div>
+      <button
+        type="submit"
+        style={{
+          height: '44px',
+          border: 'none',
+          borderRadius: '12px',
+          background: '#061F42',
+          color: '#FFFFFF',
+          fontSize: '14px',
+          fontWeight: 700,
+          cursor: 'pointer',
+        }}
+      >
+        {i18n.language === 'ar' ? 'بحث' : 'Search'}
+      </button>
+    </form>
+  );
+
+  if (isMobile) {
+    return (
+      <section
+        style={{
+          position: 'relative',
+          overflow: 'visible',
+          marginTop: '70px',
+          paddingTop: 0,
+          paddingBottom: 0,
+        }}
+        className="hero-sec"
+      >
+        <style>{`
+          @keyframes heroSlideIn {
+            from {
+              opacity: 0;
+              transform: translateX(5%);
+            }
+            to {
+              opacity: 1;
+              transform: translateX(0);
+            }
+          }
+        `}</style>
+
+        <div
+          style={{
+            position: 'relative',
+            height: '340px',
+            overflow: 'hidden',
+          }}
+        >
+          <div
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundImage: `url('${displayImage}')`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center top',
+              zIndex: 0,
+            }}
+          />
+          {incomingImage && (
+            <div
+              key={`incoming-${incomingSlide}`}
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundImage: `url('${incomingImage}')`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center top',
+                zIndex: 1,
+                animation: 'heroSlideIn 0.65s ease forwards',
+                willChange: 'opacity, transform',
+              }}
+            />
+          )}
+
+          <div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              background: 'linear-gradient(180deg, rgba(6,31,66,0.16) 0%, rgba(6,31,66,0.45) 100%)',
+              zIndex: 2,
+            }}
+          />
+
+          <div
+            className="container"
+            style={{
+              position: 'relative',
+              zIndex: 3,
+              height: '100%',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
+              paddingTop: '18px',
+              paddingBottom: '14px',
+            }}
+          >
+            <div
+              style={{
+                opacity: isLoaded ? 1 : 0,
+                transform: isLoaded ? 'translateY(0)' : 'translateY(20px)',
+                transition: 'opacity 0.7s cubic-bezier(0.4, 0, 0.2, 1), transform 0.7s cubic-bezier(0.4, 0, 0.2, 1)',
+                maxWidth: '320px',
+              }}
+            >
+              <h1 style={mobileTitleStyle} className="fw-exbold">
+                {t('trustedCareAcross')}<br />
+                <span className="fw-exbold main-title text-primary-light">{t('theKingdom')}</span>
+              </h1>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <a
+                href="/book-appointment"
+                className="btn btn-primary w-100"
+                style={{
+                  padding: '10px 16px',
+                  borderRadius: '12px',
+                  fontWeight: 700,
+                }}
+              >
+                {t('bookAppointment')}
+              </a>
+
+              <div className="icon-wrapper" style={{ display: 'flex', justifyContent: 'center' }}>
+                <ul
+                  className="pagination"
+                  style={{
+                    margin: 0,
+                    padding: 0,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                  }}
+                >
+                  {(heroSlides.length > 0 ? heroSlides : [null]).map((_, index) => (
+                    <li
+                      key={index}
+                      className={index === currentSlide ? 'active' : ''}
+                      onClick={() => setCurrentSlide(index)}
+                      style={{
+                        cursor: 'pointer',
+                        width: index === currentSlide ? '22px' : '8px',
+                        height: '8px',
+                        borderRadius: '999px',
+                        listStyle: 'none',
+                        background: index === currentSlide ? '#15C9FA' : 'rgba(255, 255, 255, 0.75)',
+                        transition: 'all 0.25s ease',
+                        border: '1px solid rgba(6, 31, 66, 0.25)',
+                      }}
+                      aria-label={`Slide ${index + 1}`}
+                    ></li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div
+          className="container"
+          style={{
+            paddingTop: '12px',
+            paddingBottom: '12px',
+            position: 'relative',
+            zIndex: 30,
+            overflow: 'visible',
+          }}
+        >
+          <div
+            style={{
+              background: '#FFFFFF',
+              borderRadius: '16px',
+              padding: '12px',
+              boxShadow: '0 8px 24px rgba(6, 31, 66, 0.1)',
+              overflow: 'visible',
+              opacity: isLoaded ? 1 : 0,
+              transform: isLoaded ? 'translateY(0)' : 'translateY(20px)',
+              transition: 'opacity 0.7s cubic-bezier(0.4, 0, 0.2, 1) 0.2s, transform 0.7s cubic-bezier(0.4, 0, 0.2, 1) 0.2s',
+            }}
+          >
+            {mobileFilterForm}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section style={{ position: 'relative', overflow: 'hidden' }} className="hero-sec">
       <div
@@ -491,36 +777,7 @@ const HeroSection = () => {
             justifyContent: 'center'
           }}
         >
-          <form className="form" onSubmit={handleSearch}>
-            <div className="input-wrapper d-flex flex-column position-relative">
-              <CustomSelect
-                options={branches.map(b => ({ id: b.id, name: b.name }))}
-                value={selectedBranch}
-                onChange={handleBranchChange}
-                placeholder={t('selectBranch')}
-              />
-            </div>
-            <div className="input-wrapper d-flex flex-column position-relative">
-              <CustomSelect
-                options={filteredDepartments.map(dept => ({ id: dept.id, name: dept.name }))}
-                value={selectedDepartment}
-                onChange={handleDepartmentChange}
-                placeholder={t('selectDepartment')}
-              />
-            </div>
-            <div className="input-wrapper d-flex flex-column position-relative">
-              <CustomSelect
-                options={doctors.map(d => ({ id: d.id, name: d.name }))}
-                value={selectedDoctor}
-                onChange={(value) => setSelectedDoctor(value)}
-                placeholder={t('selectDoctor')}
-                disabled={doctors.length === 0}
-              />
-            </div>
-            <button type="submit" className="icon">
-              <img src="/assets/img/icons/search.svg" width="24" height="24" alt="Search Icon" />
-            </button>
-          </form>
+          {desktopFilterForm}
 
           <div className="icon-wrapper">
             <ul className="pagination">

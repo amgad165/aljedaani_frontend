@@ -148,13 +148,17 @@ const Navbar = () => {
           .menu-links .menu-link-trigger::after {
             content: '';
             position: absolute;
-            inset-inline-start: 0;
-            bottom: 0;
-            width: 100%;
-            height: 3px;
-            border-radius: 999px;
-            background: linear-gradient(90deg, #00ABDA 0%, #0155CB 100%);
-            box-shadow: 0 2px 10px rgba(0, 171, 218, 0.35);
+            inset-inline: -16px;
+            bottom: 1px;
+            border-bottom: 3px solid transparent;
+            border-image: linear-gradient(
+              to right,
+              rgba(0, 171, 218, 0) 0%,
+              #00ABDA 30%,
+              #0155CB 70%,
+              rgba(1, 85, 203, 0) 100%
+            );
+            border-image-slice: 1;
             transform: scaleX(0);
             transform-origin: center;
             transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);

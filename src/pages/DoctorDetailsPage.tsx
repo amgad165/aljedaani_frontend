@@ -174,6 +174,7 @@ const DoctorDetailsPage: React.FC = () => {
   }
 
   const statusStyle = getStatusStyle(doctor.status);
+  const departmentFilterId = doctor.department?.id ?? doctor.department_id;
 
   const parseLocalizedText = (value: unknown, fallbackLocale: 'en' | 'ar'): { en: string; ar: string } => {
     if (value == null) {
@@ -362,7 +363,7 @@ const DoctorDetailsPage: React.FC = () => {
               </span>
               {i18n.language === 'ar' ? ' < ' : ' > '}
               <span 
-                onClick={() => navigate(`/doctors`)}
+                onClick={() => navigate(departmentFilterId ? `/doctors?department=${departmentFilterId}` : '/doctors')}
                 style={{
                   cursor: 'pointer',
                   textDecoration: 'underline',
