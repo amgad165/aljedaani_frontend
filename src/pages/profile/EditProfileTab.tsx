@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { ProfileData } from './types';
-import CustomSelect from '../../components/CustomSelect';
 import { 
   IdCardIcon, 
   BirthdayIcon, 
@@ -182,44 +181,12 @@ const InputField = ({
   </div>
 );
 
-// Verify Button Component
-const VerifyButton = () => {
-  const { t } = useTranslation('pages');
-  return (
-    <button style={{
-      display: 'flex',
-      flexDirection: 'row',
-      justifyContent: 'center',
-      alignItems: 'center',
-      padding: '6px 8px',
-      width: '59px',
-      height: '24px',
-      borderRadius: '8px',
-      border: 'none',
-      background: 'transparent',
-      cursor: 'pointer',
-    }}>
-      <span style={{
-        fontFamily: 'Nunito, sans-serif',
-        fontWeight: 600,
-        fontSize: '10px',
-        lineHeight: '12px',
-        color: '#9EA2AE',
-      }}>
-        {t('editProfileVerifyButton')}
-      </span>
-    </button>
-  );
-};
-
 const EditProfileTab = ({ profileData, onSave, onUpdate }: EditProfileTabProps) => {
   const { t } = useTranslation('pages');
   const [formData, setFormData] = useState({
     email: profileData.email || '',
     phone: profileData.phone || '',
     address: profileData.address || '',
-    maritalStatus: profileData.maritalStatus || '',
-    religion: profileData.religion || '',
   });
   const [passwordData, setPasswordData] = useState({
     current_password: '',
@@ -313,8 +280,6 @@ const EditProfileTab = ({ profileData, onSave, onUpdate }: EditProfileTabProps) 
       // Add other fields only if they have values
       if (formData.phone) formDataToSend.append('phone', formData.phone);
       if (formData.address) formDataToSend.append('address', formData.address);
-      if (formData.maritalStatus) formDataToSend.append('marital_status', formData.maritalStatus);
-      if (formData.religion) formDataToSend.append('religion', formData.religion);
 
       const response = await fetch(`${API_BASE_URL}/user/update`, {
         method: 'POST',
@@ -627,7 +592,7 @@ const EditProfileTab = ({ profileData, onSave, onUpdate }: EditProfileTabProps) 
               gap: '12px',
               flex: 1,
             }}>
-              {/* Change Email with Verify */}
+              {/* Change Email */}
               <div style={{
                 display: 'flex',
                 flexDirection: 'column',
@@ -644,10 +609,9 @@ const EditProfileTab = ({ profileData, onSave, onUpdate }: EditProfileTabProps) 
                   onChange={(value) => handleInputChange('email', value)}
                   disabled={true}
                 />
-                <VerifyButton />
               </div>
 
-              {/* Change Mobile Number with Verify */}
+              {/* Change Mobile Number */}
               <div style={{
                 display: 'flex',
                 flexDirection: 'column',
@@ -662,8 +626,8 @@ const EditProfileTab = ({ profileData, onSave, onUpdate }: EditProfileTabProps) 
                   placeholder={t('editProfileMobilePlaceholder')}
                   value={formData.phone}
                   onChange={(value) => handleInputChange('phone', value)}
+                  disabled={true}
                 />
-                <VerifyButton />
               </div>
             </div>
 
@@ -685,35 +649,6 @@ SAU"
                 value={formData.address}
                 onChange={(value) => handleInputChange('address', value)}
                 multiline={true}
-              />
-
-              {/* Marital Status */}
-              <CustomSelect
-                label={t('editProfileMaritalStatus')}
-                placeholder={t('editProfileMaritalPlaceholder')}
-                value={formData.maritalStatus}
-                onChange={(value) => handleInputChange('maritalStatus', value)}
-                width={window.innerWidth <= 768 ? '100%' : '368px'}
-                options={[
-                  { value: 'single', label: t('editProfileMaritalSingle') },
-                  { value: 'married', label: t('editProfileMaritalMarried') },
-                  { value: 'divorced', label: t('editProfileMaritalDivorced') },
-                  { value: 'widowed', label: t('editProfileMaritalWidowed') },
-                ]}
-              />
-
-              {/* Religion */}
-              <CustomSelect
-                label={t('editProfileReligion')}
-                placeholder={t('editProfileReligionPlaceholder')}
-                value={formData.religion}
-                onChange={(value) => handleInputChange('religion', value)}
-                width={window.innerWidth <= 768 ? '100%' : '368px'}
-                options={[
-                  { value: 'islam', label: t('editProfileReligionIslam') },
-                  { value: 'christianity', label: t('editProfileReligionChristianity') },
-                  { value: 'other', label: t('editProfileReligionOther') },
-                ]}
               />
             </div>
           </div>
