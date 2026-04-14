@@ -259,6 +259,14 @@ const BookAppointmentPage = () => {
   const { isAuthenticated, user, register, clearError } = useAuth();
   const [searchParams] = useSearchParams();
   const { toasts, removeToast, success, error: showError, warning } = useToast();
+
+  // TEMP BUSINESS RULE (easy to revert): allow signup only for users matched in HIS.
+  // To revert later, set this to false (or remove the related checks below).
+  const HIS_ONLY_SIGNUP = true;
+
+  // TEMP UI RULE (easy to revert): hide optional profile fields on signup.
+  // Set to true to show Nationality, Marital Status, Religion, and Address again.
+  const SHOW_OPTIONAL_PROFILE_FIELDS = false;
   
   // Local loading state for the form submission
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -698,6 +706,16 @@ const BookAppointmentPage = () => {
           }
           success('Record found! Your information has been pre-filled.');
         } else {
+          if (HIS_ONLY_SIGNUP) {
+            showError('Please visit the hospital to register your MRN ID before signing up.');
+            setVerificationData(prev => ({
+              ...prev,
+              hisPatientExists: false,
+              hisPatientData: null,
+            }));
+            return;
+          }
+
           // New patient - no pre-fill needed
           success('Ready to create your profile.');
         }
@@ -751,7 +769,7 @@ const BookAppointmentPage = () => {
       warning('Please enter your date of birth');
       return;
     }
-    if (!profileData.nationality) {
+    if (SHOW_OPTIONAL_PROFILE_FIELDS && !profileData.nationality) {
       warning('Please select your nationality');
       return;
     }
@@ -765,6 +783,10 @@ const BookAppointmentPage = () => {
     }
     if (profileData.password.length < 8) {
       showError('Password must be at least 8 characters');
+      return;
+    }
+    if (HIS_ONLY_SIGNUP && !verificationData.hisPatientExists) {
+      showError('Please visit the hospital to register your MRN ID before signing up.');
       return;
     }
 
@@ -782,12 +804,12 @@ const BookAppointmentPage = () => {
         last_name: profileData.lastName,
         gender: profileData.gender,
         date_of_birth: profileData.dateOfBirth,
-        marital_status: profileData.maritalStatus || undefined,
-        nationality: profileData.nationality,
-        religion: profileData.religion || undefined,
+        marital_status: SHOW_OPTIONAL_PROFILE_FIELDS ? (profileData.maritalStatus || undefined) : undefined,
+        nationality: SHOW_OPTIONAL_PROFILE_FIELDS ? profileData.nationality : '',
+        religion: SHOW_OPTIONAL_PROFILE_FIELDS ? (profileData.religion || undefined) : undefined,
         medical_record_number: profileData.medicalRecordNumber || undefined,
         national_id: profileData.nationalId || undefined,
-        address: profileData.address || undefined,
+        address: SHOW_OPTIONAL_PROFILE_FIELDS ? (profileData.address || undefined) : undefined,
         phone: verificationData.mobileNumber,
         verification_token: verificationData.verificationToken || undefined,
         profile_photo: profileData.profilePhoto || undefined,
@@ -1111,33 +1133,7 @@ const BookAppointmentPage = () => {
               </div>
             )}
             
-            {/* Already registered link */}
-            <div style={{
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              gap: '4px',
-              marginTop: '8px',
-            }}>
-              <span style={{
-                fontFamily: 'Nunito, sans-serif',
-                fontWeight: 600,
-                fontSize: '14px',
-                color: '#A4A5A5',
-              }}>
-                {t('alreadyRegistered')}
-              </span>
-              <Link to="/login" style={{
-                fontFamily: 'Nunito, sans-serif',
-                fontWeight: 600,
-                fontSize: '14px',
-                color: '#0B67E7',
-                textDecoration: 'underline',
-              }}>
-                {t('signIn')}
-              </Link>
-            </div>
-            
+
             {/* Action Button */}
             <div style={{
               width: '100%',
@@ -1568,31 +1564,7 @@ const BookAppointmentPage = () => {
             </label>
           </div>
           
-          {/* Already registered link */}
-          <div style={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            gap: '4px',
-          }}>
-            <span style={{
-              fontFamily: 'Nunito, sans-serif',
-              fontWeight: 600,
-              fontSize: '14px',
-              color: '#A4A5A5',
-            }}>
-              {t('alreadyRegistered')}
-            </span>
-            <Link to="/login" style={{
-              fontFamily: 'Nunito, sans-serif',
-              fontWeight: 600,
-              fontSize: '14px',
-              color: '#0B67E7',
-              textDecoration: 'underline',
-            }}>
-              {t('signIn')}
-            </Link>
-          </div>
+
           
           {/* HIS Patient Data Info Banner */}
           {verificationData.hisPatientExists && verificationData.hisPatientData && (
@@ -1675,14 +1647,15 @@ const BookAppointmentPage = () => {
                 disabled={!!verificationData.hisPatientData?.last_name}
                 required
               />
-              <InputField
-                label={t('nationality')}
-                placeholder={t('selectNationality')}
-                value={profileData.nationality}
-                onChange={(value) => handleInputChange('nationality', value)}
-                disabled={!!verificationData.hisPatientData?.nationality && ['saudi', 'uae', 'egypt', 'jordan', 'other'].includes(verificationData.hisPatientData.nationality.toLowerCase())}
-                hasDropdown
-                options={[
+              {SHOW_OPTIONAL_PROFILE_FIELDS && (
+                <InputField
+                  label={t('nationality')}
+                  placeholder={t('selectNationality')}
+                  value={profileData.nationality}
+                  onChange={(value) => handleInputChange('nationality', value)}
+                  disabled={!!verificationData.hisPatientData?.nationality && ['saudi', 'uae', 'egypt', 'jordan', 'other'].includes(verificationData.hisPatientData.nationality.toLowerCase())}
+                  hasDropdown
+                  options={[
                   { value: 'afghanistan', label: 'Afghanistan' },
                   { value: 'albania', label: 'Albania' },
                   { value: 'algeria', label: 'Algeria' },
@@ -1743,25 +1716,30 @@ const BookAppointmentPage = () => {
                   { value: 'usa', label: 'United States' },
                   { value: 'yemen', label: 'Yemen' },
                   { value: 'other', label: 'Other' },
-                ]}
-                required
-              />
-              <InputField
-                label={t('mrNumber')}
-                placeholder={t('enterMrNumber')}
-                value={profileData.medicalRecordNumber}
-                onChange={(value) => handleInputChange('medicalRecordNumber', value)}
-                disabled={!!verificationData.hisPatientData?.medical_record_number}
-                required={!profileData.nationalId}
-              />
-              <InputField
-                label={t('nationalId')}
-                placeholder={t('enterNationalId')}
-                value={profileData.nationalId}
-                onChange={(value) => handleInputChange('nationalId', value)}
-                disabled={!!verificationData.hisPatientData?.national_id}
-                required={!profileData.medicalRecordNumber}
-              />
+                  ]}
+                  required
+                />
+              )}
+              {SHOW_OPTIONAL_PROFILE_FIELDS && (
+                <InputField
+                  label={t('mrNumber')}
+                  placeholder={t('enterMrNumber')}
+                  value={profileData.medicalRecordNumber}
+                  onChange={(value) => handleInputChange('medicalRecordNumber', value)}
+                  disabled={!!verificationData.hisPatientData?.medical_record_number}
+                  required={!profileData.nationalId}
+                />
+              )}
+              {SHOW_OPTIONAL_PROFILE_FIELDS && (
+                <InputField
+                  label={t('nationalId')}
+                  placeholder={t('enterNationalId')}
+                  value={profileData.nationalId}
+                  onChange={(value) => handleInputChange('nationalId', value)}
+                  disabled={!!verificationData.hisPatientData?.national_id}
+                  required={!profileData.medicalRecordNumber}
+                />
+              )}
             </div>
             
             {/* Right Column */}
@@ -1794,38 +1772,64 @@ const BookAppointmentPage = () => {
                 type="date"
                 required
               />
-              <InputField
-                label={t('maritalStatus')}
-                placeholder={t('selectMaritalStatus')}
-                value={profileData.maritalStatus}
-                onChange={(value) => handleInputChange('maritalStatus', value)}
-                hasDropdown
-                options={[
-                  { value: 'single', label: t('single') },
-                  { value: 'married', label: t('married') },
-                  { value: 'divorced', label: t('divorced') },
-                  { value: 'widowed', label: t('widowed') },
-                ]}
-              />
-              <InputField
-                label={t('religion')}
-                placeholder={t('selectReligion')}
-                value={profileData.religion}
-                onChange={(value) => handleInputChange('religion', value)}
-                hasDropdown
-                options={[
-                  { value: 'islam', label: t('islam') },
-                  { value: 'christianity', label: t('christianity') },
-                  { value: 'other', label: t('other') },
-                ]}
-              />
-              <InputField
-                label={t('address')}
-                placeholder={t('addressPlaceholder')}
-                value={profileData.address}
-                onChange={(value) => handleInputChange('address', value)}
-                type="textarea"
-              />
+              {!SHOW_OPTIONAL_PROFILE_FIELDS && (
+                <InputField
+                  label={t('mrNumber')}
+                  placeholder={t('enterMrNumber')}
+                  value={profileData.medicalRecordNumber}
+                  onChange={(value) => handleInputChange('medicalRecordNumber', value)}
+                  disabled={!!verificationData.hisPatientData?.medical_record_number}
+                  required={!profileData.nationalId}
+                />
+              )}
+              {!SHOW_OPTIONAL_PROFILE_FIELDS && (
+                <InputField
+                  label={t('nationalId')}
+                  placeholder={t('enterNationalId')}
+                  value={profileData.nationalId}
+                  onChange={(value) => handleInputChange('nationalId', value)}
+                  disabled={!!verificationData.hisPatientData?.national_id}
+                  required={!profileData.medicalRecordNumber}
+                />
+              )}
+              {SHOW_OPTIONAL_PROFILE_FIELDS && (
+                <InputField
+                  label={t('maritalStatus')}
+                  placeholder={t('selectMaritalStatus')}
+                  value={profileData.maritalStatus}
+                  onChange={(value) => handleInputChange('maritalStatus', value)}
+                  hasDropdown
+                  options={[
+                    { value: 'single', label: t('single') },
+                    { value: 'married', label: t('married') },
+                    { value: 'divorced', label: t('divorced') },
+                    { value: 'widowed', label: t('widowed') },
+                  ]}
+                />
+              )}
+              {SHOW_OPTIONAL_PROFILE_FIELDS && (
+                <InputField
+                  label={t('religion')}
+                  placeholder={t('selectReligion')}
+                  value={profileData.religion}
+                  onChange={(value) => handleInputChange('religion', value)}
+                  hasDropdown
+                  options={[
+                    { value: 'islam', label: t('islam') },
+                    { value: 'christianity', label: t('christianity') },
+                    { value: 'other', label: t('other') },
+                  ]}
+                />
+              )}
+              {SHOW_OPTIONAL_PROFILE_FIELDS && (
+                <InputField
+                  label={t('address')}
+                  placeholder={t('addressPlaceholder')}
+                  value={profileData.address}
+                  onChange={(value) => handleInputChange('address', value)}
+                  type="textarea"
+                />
+              )}
             </div>
           </div>
           

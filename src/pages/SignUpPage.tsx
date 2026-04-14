@@ -226,6 +226,15 @@ const SignUpPage = () => {
   const navigate = useNavigate();
   const { toasts, removeToast, success, error: showError, warning } = useToast();
   const { t } = useTranslation('pages');
+  const isMobile = window.innerWidth <= 768;
+
+  // TEMP BUSINESS RULE (easy to revert): allow signup only for users matched in HIS.
+  // To revert later, set this to false (or remove the related checks below).
+  const HIS_ONLY_SIGNUP = true;
+
+  // TEMP UI RULE (easy to revert): hide optional profile fields on signup.
+  // Set to true to show Nationality, Marital Status, Religion, and Address again.
+  const SHOW_OPTIONAL_PROFILE_FIELDS = false;
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentStep, setCurrentStep] = useState(1); // 1: Phone, 2: ID/MR Check, 3: Profile
@@ -460,6 +469,16 @@ const SignUpPage = () => {
           }
           success(t('recordFoundPreFilled'));
         } else {
+          if (HIS_ONLY_SIGNUP) {
+            showError('Please visit the hospital to register your MRN ID before signing up.');
+            setVerificationData(prev => ({
+              ...prev,
+              hisPatientExists: false,
+              hisPatientData: null,
+            }));
+            return;
+          }
+
           // New patient - no pre-fill needed
           success(t('readyToCreateProfile'));
         }
@@ -518,7 +537,7 @@ const SignUpPage = () => {
       warning(t('pleaseEnterDateOfBirth'));
       return;
     }
-    if (!profileData.nationality) {
+    if (SHOW_OPTIONAL_PROFILE_FIELDS && !profileData.nationality) {
       warning(t('pleaseSelectNationality'));
       return;
     }
@@ -538,6 +557,10 @@ const SignUpPage = () => {
       showError(t('phoneVerificationExpired'));
       return;
     }
+    if (HIS_ONLY_SIGNUP && !verificationData.hisPatientExists) {
+      showError('Please visit the hospital to register your MRN ID before signing up.');
+      return;
+    }
 
     setIsSubmitting(true);
     clearError();
@@ -553,12 +576,12 @@ const SignUpPage = () => {
         last_name: profileData.lastName,
         gender: profileData.gender,
         date_of_birth: profileData.dateOfBirth,
-        marital_status: profileData.maritalStatus || undefined,
-        nationality: profileData.nationality,
-        religion: profileData.religion || undefined,
+        marital_status: SHOW_OPTIONAL_PROFILE_FIELDS ? (profileData.maritalStatus || undefined) : undefined,
+        nationality: SHOW_OPTIONAL_PROFILE_FIELDS ? profileData.nationality : '',
+        religion: SHOW_OPTIONAL_PROFILE_FIELDS ? (profileData.religion || undefined) : undefined,
         medical_record_number: profileData.medicalRecordNumber || undefined,
         national_id: profileData.nationalId || undefined,
-        address: profileData.address || undefined,
+        address: SHOW_OPTIONAL_PROFILE_FIELDS ? (profileData.address || undefined) : undefined,
         phone: verificationData.mobileNumber,
         profile_photo: profileData.profilePhoto || undefined,
       }, verificationData.verificationToken);
@@ -1457,93 +1480,99 @@ const SignUpPage = () => {
               required
               disabled={!!verificationData.hisPatientData?.last_name}
             />
-            <InputField
-              label={t('nationality')}
-              placeholder={t('selectNationality')}
-              value={profileData.nationality}
-              onChange={(value) => handleInputChange('nationality', value)}
-              hasDropdown
-              options={[
-                { value: 'afghanistan', label: 'Afghanistan' },
-                { value: 'albania', label: 'Albania' },
-                { value: 'algeria', label: 'Algeria' },
-                { value: 'argentina', label: 'Argentina' },
-                { value: 'australia', label: 'Australia' },
-                { value: 'austria', label: 'Austria' },
-                { value: 'bahrain', label: 'Bahrain' },
-                { value: 'bangladesh', label: 'Bangladesh' },
-                { value: 'belgium', label: 'Belgium' },
-                { value: 'brazil', label: 'Brazil' },
-                { value: 'canada', label: 'Canada' },
-                { value: 'china', label: 'China' },
-                { value: 'denmark', label: 'Denmark' },
-                { value: 'egypt', label: 'Egypt' },
-                { value: 'finland', label: 'Finland' },
-                { value: 'france', label: 'France' },
-                { value: 'germany', label: 'Germany' },
-                { value: 'greece', label: 'Greece' },
-                { value: 'india', label: 'India' },
-                { value: 'indonesia', label: 'Indonesia' },
-                { value: 'iran', label: 'Iran' },
-                { value: 'iraq', label: 'Iraq' },
-                { value: 'ireland', label: 'Ireland' },
-                { value: 'italy', label: 'Italy' },
-                { value: 'japan', label: 'Japan' },
-                { value: 'jordan', label: 'Jordan' },
-                { value: 'kuwait', label: 'Kuwait' },
-                { value: 'lebanon', label: 'Lebanon' },
-                { value: 'libya', label: 'Libya' },
-                { value: 'malaysia', label: 'Malaysia' },
-                { value: 'mexico', label: 'Mexico' },
-                { value: 'morocco', label: 'Morocco' },
-                { value: 'netherlands', label: 'Netherlands' },
-                { value: 'new_zealand', label: 'New Zealand' },
-                { value: 'nigeria', label: 'Nigeria' },
-                { value: 'norway', label: 'Norway' },
-                { value: 'oman', label: 'Oman' },
-                { value: 'pakistan', label: 'Pakistan' },
-                { value: 'palestine', label: 'Palestine' },
-                { value: 'philippines', label: 'Philippines' },
-                { value: 'poland', label: 'Poland' },
-                { value: 'portugal', label: 'Portugal' },
-                { value: 'qatar', label: 'Qatar' },
-                { value: 'russia', label: 'Russia' },
-                { value: 'saudi', label: 'Saudi Arabia' },
-                { value: 'south_africa', label: 'South Africa' },
-                { value: 'south_korea', label: 'South Korea' },
-                { value: 'spain', label: 'Spain' },
-                { value: 'sudan', label: 'Sudan' },
-                { value: 'sweden', label: 'Sweden' },
-                { value: 'switzerland', label: 'Switzerland' },
-                { value: 'syria', label: 'Syria' },
-                { value: 'thailand', label: 'Thailand' },
-                { value: 'tunisia', label: 'Tunisia' },
-                { value: 'turkey', label: 'Turkey' },
-                { value: 'uae', label: 'United Arab Emirates' },
-                { value: 'uk', label: 'United Kingdom' },
-                { value: 'usa', label: 'United States' },
-                { value: 'yemen', label: 'Yemen' },
-                { value: 'other', label: 'Other' },
-              ]}
-              required
-              disabled={!!verificationData.hisPatientData?.nationality && ['saudi', 'uae', 'egypt', 'jordan', 'other'].includes(verificationData.hisPatientData.nationality.toLowerCase())}
-            />
-            <InputField
-              label={t('mrNumberLabel')}
-              placeholder={t('enterHospitalMrNumber')}
-              value={profileData.medicalRecordNumber}
-              onChange={(value) => handleInputChange('medicalRecordNumber', value)}
-              required={!profileData.nationalId}
-              disabled={!!verificationData.hisPatientData?.medical_record_number}
-            />
-            <InputField
-              label={t('idNumber')}
-              placeholder={t('enterYourIdNumber')}
-              value={profileData.nationalId}
-              onChange={(value) => handleInputChange('nationalId', value)}
-              required={!profileData.medicalRecordNumber}
-              disabled={!!verificationData.hisPatientData?.national_id}
-            />
+            {SHOW_OPTIONAL_PROFILE_FIELDS && (
+              <InputField
+                label={t('nationality')}
+                placeholder={t('selectNationality')}
+                value={profileData.nationality}
+                onChange={(value) => handleInputChange('nationality', value)}
+                hasDropdown
+                options={[
+                  { value: 'afghanistan', label: 'Afghanistan' },
+                  { value: 'albania', label: 'Albania' },
+                  { value: 'algeria', label: 'Algeria' },
+                  { value: 'argentina', label: 'Argentina' },
+                  { value: 'australia', label: 'Australia' },
+                  { value: 'austria', label: 'Austria' },
+                  { value: 'bahrain', label: 'Bahrain' },
+                  { value: 'bangladesh', label: 'Bangladesh' },
+                  { value: 'belgium', label: 'Belgium' },
+                  { value: 'brazil', label: 'Brazil' },
+                  { value: 'canada', label: 'Canada' },
+                  { value: 'china', label: 'China' },
+                  { value: 'denmark', label: 'Denmark' },
+                  { value: 'egypt', label: 'Egypt' },
+                  { value: 'finland', label: 'Finland' },
+                  { value: 'france', label: 'France' },
+                  { value: 'germany', label: 'Germany' },
+                  { value: 'greece', label: 'Greece' },
+                  { value: 'india', label: 'India' },
+                  { value: 'indonesia', label: 'Indonesia' },
+                  { value: 'iran', label: 'Iran' },
+                  { value: 'iraq', label: 'Iraq' },
+                  { value: 'ireland', label: 'Ireland' },
+                  { value: 'italy', label: 'Italy' },
+                  { value: 'japan', label: 'Japan' },
+                  { value: 'jordan', label: 'Jordan' },
+                  { value: 'kuwait', label: 'Kuwait' },
+                  { value: 'lebanon', label: 'Lebanon' },
+                  { value: 'libya', label: 'Libya' },
+                  { value: 'malaysia', label: 'Malaysia' },
+                  { value: 'mexico', label: 'Mexico' },
+                  { value: 'morocco', label: 'Morocco' },
+                  { value: 'netherlands', label: 'Netherlands' },
+                  { value: 'new_zealand', label: 'New Zealand' },
+                  { value: 'nigeria', label: 'Nigeria' },
+                  { value: 'norway', label: 'Norway' },
+                  { value: 'oman', label: 'Oman' },
+                  { value: 'pakistan', label: 'Pakistan' },
+                  { value: 'palestine', label: 'Palestine' },
+                  { value: 'philippines', label: 'Philippines' },
+                  { value: 'poland', label: 'Poland' },
+                  { value: 'portugal', label: 'Portugal' },
+                  { value: 'qatar', label: 'Qatar' },
+                  { value: 'russia', label: 'Russia' },
+                  { value: 'saudi', label: 'Saudi Arabia' },
+                  { value: 'south_africa', label: 'South Africa' },
+                  { value: 'south_korea', label: 'South Korea' },
+                  { value: 'spain', label: 'Spain' },
+                  { value: 'sudan', label: 'Sudan' },
+                  { value: 'sweden', label: 'Sweden' },
+                  { value: 'switzerland', label: 'Switzerland' },
+                  { value: 'syria', label: 'Syria' },
+                  { value: 'thailand', label: 'Thailand' },
+                  { value: 'tunisia', label: 'Tunisia' },
+                  { value: 'turkey', label: 'Turkey' },
+                  { value: 'uae', label: 'United Arab Emirates' },
+                  { value: 'uk', label: 'United Kingdom' },
+                  { value: 'usa', label: 'United States' },
+                  { value: 'yemen', label: 'Yemen' },
+                  { value: 'other', label: 'Other' },
+                ]}
+                required
+                disabled={!!verificationData.hisPatientData?.nationality && ['saudi', 'uae', 'egypt', 'jordan', 'other'].includes(verificationData.hisPatientData.nationality.toLowerCase())}
+              />
+            )}
+            {SHOW_OPTIONAL_PROFILE_FIELDS && (
+              <InputField
+                label={t('mrNumberLabel')}
+                placeholder={t('enterHospitalMrNumber')}
+                value={profileData.medicalRecordNumber}
+                onChange={(value) => handleInputChange('medicalRecordNumber', value)}
+                required={!profileData.nationalId}
+                disabled={!!verificationData.hisPatientData?.medical_record_number}
+              />
+            )}
+            {SHOW_OPTIONAL_PROFILE_FIELDS && (
+              <InputField
+                label={t('idNumber')}
+                placeholder={t('enterYourIdNumber')}
+                value={profileData.nationalId}
+                onChange={(value) => handleInputChange('nationalId', value)}
+                required={!profileData.medicalRecordNumber}
+                disabled={!!verificationData.hisPatientData?.national_id}
+              />
+            )}
           </div>
           <div style={{
             display: 'flex',
@@ -1575,38 +1604,64 @@ const SignUpPage = () => {
               required
               disabled={!!verificationData.hisPatientData?.date_of_birth}
             />
-            <InputField
-              label={t('maritalStatus')}
-              placeholder={t('selectMaritalStatus')}
-              value={profileData.maritalStatus}
-              onChange={(value) => handleInputChange('maritalStatus', value)}
-              hasDropdown
-              options={[
-                { value: 'single', label: t('single') },
-                { value: 'married', label: t('married') },
-                { value: 'divorced', label: t('divorced') },
-                { value: 'widowed', label: t('widowed') },
-              ]}
-            />
-            <InputField
-              label={t('religion')}
-              placeholder={t('selectReligion')}
-              value={profileData.religion}
-              onChange={(value) => handleInputChange('religion', value)}
-              hasDropdown
-              options={[
-                { value: 'islam', label: t('islam') },
-                { value: 'christianity', label: t('christianity') },
-                { value: 'other', label: t('other') },
-              ]}
-            />
-            <InputField
-              label={t('address')}
-              placeholder={t('addressPlaceholder')}
-              value={profileData.address}
-              onChange={(value) => handleInputChange('address', value)}
-              type="textarea"
-            />
+            {!SHOW_OPTIONAL_PROFILE_FIELDS && (
+              <InputField
+                label={t('mrNumberLabel')}
+                placeholder={t('enterHospitalMrNumber')}
+                value={profileData.medicalRecordNumber}
+                onChange={(value) => handleInputChange('medicalRecordNumber', value)}
+                required={!profileData.nationalId}
+                disabled={!!verificationData.hisPatientData?.medical_record_number}
+              />
+            )}
+            {!SHOW_OPTIONAL_PROFILE_FIELDS && (
+              <InputField
+                label={t('idNumber')}
+                placeholder={t('enterYourIdNumber')}
+                value={profileData.nationalId}
+                onChange={(value) => handleInputChange('nationalId', value)}
+                required={!profileData.medicalRecordNumber}
+                disabled={!!verificationData.hisPatientData?.national_id}
+              />
+            )}
+            {SHOW_OPTIONAL_PROFILE_FIELDS && (
+              <InputField
+                label={t('maritalStatus')}
+                placeholder={t('selectMaritalStatus')}
+                value={profileData.maritalStatus}
+                onChange={(value) => handleInputChange('maritalStatus', value)}
+                hasDropdown
+                options={[
+                  { value: 'single', label: t('single') },
+                  { value: 'married', label: t('married') },
+                  { value: 'divorced', label: t('divorced') },
+                  { value: 'widowed', label: t('widowed') },
+                ]}
+              />
+            )}
+            {SHOW_OPTIONAL_PROFILE_FIELDS && (
+              <InputField
+                label={t('religion')}
+                placeholder={t('selectReligion')}
+                value={profileData.religion}
+                onChange={(value) => handleInputChange('religion', value)}
+                hasDropdown
+                options={[
+                  { value: 'islam', label: t('islam') },
+                  { value: 'christianity', label: t('christianity') },
+                  { value: 'other', label: t('other') },
+                ]}
+              />
+            )}
+            {SHOW_OPTIONAL_PROFILE_FIELDS && (
+              <InputField
+                label={t('address')}
+                placeholder={t('addressPlaceholder')}
+                value={profileData.address}
+                onChange={(value) => handleInputChange('address', value)}
+                type="textarea"
+              />
+            )}
           </div>
         </div>
         
@@ -1744,12 +1799,12 @@ const SignUpPage = () => {
     }}>
       {ResponsiveNavbar}
 
-      <div style={{ height: '180px', background: '#C9F3FF' }} />
+      <div style={{ height: isMobile ? '100px' : '165px', background: '#C9F3FF' }} />
 
       <main style={{
         background: '#C9F3FF',
-        minHeight: 'calc(100vh - 200px)',
-        padding: '40px clamp(12px, 3vw, 20px)',
+        minHeight: isMobile ? 'calc(100vh - 100px)' : 'calc(100vh - 185px)',
+        padding: isMobile ? '12px 12px 28px' : '30px clamp(12px, 3vw, 20px)',
         maxWidth: '100vw',
       }}>
         <div style={{

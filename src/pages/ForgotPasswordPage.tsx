@@ -115,6 +115,7 @@ const ForgotPasswordPage = () => {
   const navigate = useNavigate();
   const { t } = useTranslation('pages');
   const { toasts, removeToast, success: showSuccess } = useToast();
+  const isMobile = window.innerWidth <= 768;
   const [currentStep, setCurrentStep] = useState(1); // 1: Identifier, 2: OTP, 3: New Password
   const [nationalId, setNationalId] = useState('');
   const [medicalRecordNumber, setMedicalRecordNumber] = useState('');
@@ -320,22 +321,22 @@ const ForgotPasswordPage = () => {
     }}>
       {ResponsiveNavbar}
       
-      <div style={{ height: '180px', background: '#c9f3ff' }} />
+      <div style={{ height: isMobile ? '100px' : '165px', background: '#c9f3ff' }} />
       
       <div style={{
         display: 'flex',
         alignItems: 'flex-start',
         justifyContent: 'center',
-        padding: '40px 20px 80px',
-        minHeight: 'calc(100vh - 180px)',
-        marginTop: '40px',
+        padding: isMobile ? '12px 12px 48px' : '28px 20px 80px',
+        minHeight: isMobile ? 'calc(100vh - 100px)' : 'calc(100vh - 165px)',
+        marginTop: isMobile ? '0px' : '24px',
       }}>
         <div style={{
           width: '100%',
           maxWidth: '480px',
           backgroundColor: '#FFFFFF',
-          borderRadius: '20px',
-          padding: '40px',
+          borderRadius: isMobile ? '14px' : '20px',
+          padding: isMobile ? '20px 16px' : '40px',
           boxShadow: '0px 4px 20px rgba(0, 0, 0, 0.08)',
           border: '2px solid #15C9FA',
         }}>

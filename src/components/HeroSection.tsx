@@ -80,13 +80,17 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
         className="form-select"
         style={{
           cursor: disabled ? 'not-allowed' : 'pointer',
-          opacity: disabled ? 0.3 : 1,
-          background: '#F3F4F6',
-          backgroundColor: '#F3F4F6',
-          border: isOpen ? '2px solid #00ABDA' : '1px solid #E5E7EB',
+          opacity: disabled ? 0.75 : 1,
+          background: 'rgba(255, 255, 255, 0.14)',
+          backgroundColor: 'rgba(255, 255, 255, 0.14)',
+          border: isOpen ? '2px solid #15C9FA' : 'none',
           boxShadow: isOpen ? '0 4px 12px rgba(0, 171, 218, 0.15)' : undefined,
-          color: selectedOption ? '#000000' : 'rgb(1, 4, 8)',
-          fontWeight: selectedOption ? 700 : 600,
+          color: selectedOption ? '#061F42' : 'rgba(6, 31, 66, 0.92)',
+          fontWeight: 400,
+          minHeight: isMobileViewport ? '38px' : '44px',
+          padding: isMobileViewport ? '8px 36px 8px 12px' : '12px 40px 12px 16px',
+          borderRadius: isMobileViewport ? '8px' : '10px',
+          fontSize: isMobileViewport ? '13px' : '14px',
         }}
       >
         {selectedOption ? getTranslatedField(selectedOption.name, '') : placeholder}
@@ -97,9 +101,20 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
           transform: `translateY(-50%) ${isOpen ? 'rotate(180deg)' : 'rotate(0deg)'}`,
           transition: 'transform 0.3s ease',
           pointerEvents: 'none',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: isMobileViewport ? '16px' : '20px',
+            height: isMobileViewport ? '16px' : '20px',
         }}>
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-            <path d="M5 7.5L10 12.5L15 7.5" stroke="#6B7280" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          <svg width={isMobileViewport ? '16' : '20'} height={isMobileViewport ? '16' : '20'} viewBox="0 0 20 20" fill="none">
+            <path
+              d="M5 7.5L10 12.5L15 7.5"
+              stroke="rgba(6, 31, 66, 0.92)"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
           </svg>
         </div>
       </div>
@@ -126,18 +141,18 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
         >
           {/* Search Input */}
           <div style={{
-            padding: '12px',
+            padding: isMobileViewport ? '8px' : '12px',
             borderBottom: '1px solid #F3F4F6',
           }}>
             <div style={{
               display: 'flex',
               alignItems: 'center',
-              padding: '10px 14px',
+              padding: isMobileViewport ? '8px 10px' : '10px 14px',
               background: '#F9FAFB',
               borderRadius: '8px',
               border: '1px solid #E5E7EB',
             }}>
-              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" style={{ marginRight: '10px' }}>
+              <svg width={isMobileViewport ? '16' : '18'} height={isMobileViewport ? '16' : '18'} viewBox="0 0 18 18" fill="none" style={{ marginRight: isMobileViewport ? '8px' : '10px' }}>
                 <path d="M16.5 16.5L12.375 12.375M14.25 8.25C14.25 11.5637 11.5637 14.25 8.25 14.25C4.93629 14.25 2.25 11.5637 2.25 8.25C2.25 4.93629 4.93629 2.25 8.25 2.25C11.5637 2.25 14.25 4.93629 14.25 8.25Z" stroke="#9CA3AF" strokeWidth="1.5" strokeLinecap="round"/>
               </svg>
               <input
@@ -152,7 +167,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
                   background: 'transparent',
                   outline: 'none',
                   fontFamily: 'Nunito, sans-serif',
-                  fontSize: '14px',
+                  fontSize: isMobileViewport ? '13px' : '14px',
                   color: '#374151',
                 }}
               />
@@ -161,19 +176,19 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
 
           {/* Options List */}
           <div style={{
-            maxHeight: '240px',
+            maxHeight: isMobileViewport ? '200px' : '240px',
             overflowY: 'auto',
-            padding: '8px',
+            padding: isMobileViewport ? '6px' : '8px',
           }}>
             {!value && (
               <div
                 onClick={() => handleSelect(0)}
                 style={{
-                  padding: '12px 14px',
+                  padding: isMobileViewport ? '9px 10px' : '12px 14px',
                   borderRadius: '8px',
                   cursor: 'pointer',
                   fontFamily: 'Nunito, sans-serif',
-                  fontSize: '14px',
+                  fontSize: isMobileViewport ? '13px' : '14px',
                   color: '#9CA3AF',
                   transition: 'background 0.15s ease',
                 }}
@@ -185,11 +200,11 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
             )}
             {filteredOptions.length === 0 ? (
               <div style={{
-                padding: '20px',
+                padding: isMobileViewport ? '14px' : '20px',
                 textAlign: 'center',
                 color: '#9CA3AF',
                 fontFamily: 'Nunito, sans-serif',
-                fontSize: '14px',
+                fontSize: isMobileViewport ? '13px' : '14px',
               }}>
                 No results found
               </div>
@@ -199,12 +214,12 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
                   key={option.id}
                   onClick={() => handleSelect(option.id)}
                   style={{
-                    padding: '12px 14px',
+                    padding: isMobileViewport ? '9px 10px' : '12px 14px',
                     borderRadius: '8px',
                     cursor: 'pointer',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '10px',
+                    gap: isMobileViewport ? '8px' : '10px',
                     background: value === option.id.toString() ? '#E0F7FA' : 'transparent',
                     transition: 'all 0.15s ease',
                     animation: `slideIn 0.2s ease ${index * 0.03}s both`,
@@ -219,13 +234,13 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
                   }}
                 >
                   {value === option.id.toString() && (
-                    <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                    <svg width={isMobileViewport ? '16' : '18'} height={isMobileViewport ? '16' : '18'} viewBox="0 0 18 18" fill="none">
                       <path d="M15 4.5L6.75 12.75L3 9" stroke="#00ABDA" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                     </svg>
                   )}
                   <span style={{
                     fontFamily: 'Nunito, sans-serif',
-                    fontSize: '14px',
+                    fontSize: isMobileViewport ? '13px' : '14px',
                     fontWeight: value === option.id.toString() ? 600 : 400,
                     color: value === option.id.toString() ? '#00838F' : '#374151',
                     flex: 1,
@@ -484,7 +499,7 @@ const HeroSection = () => {
       style={{
         display: 'flex',
         flexDirection: 'column',
-        gap: '10px',
+        gap: '8px',
       }}
     >
       <div>
@@ -515,13 +530,13 @@ const HeroSection = () => {
       <button
         type="submit"
         style={{
-          height: '44px',
+          height: '38px',
           border: 'none',
-          borderRadius: '12px',
+          borderRadius: '10px',
           background: '#061F42',
           color: '#FFFFFF',
-          fontSize: '14px',
-          fontWeight: 700,
+          fontSize: '13px',
+          fontWeight: 600,
           cursor: 'pointer',
         }}
       >
@@ -539,6 +554,7 @@ const HeroSection = () => {
           marginTop: '70px',
           paddingTop: 0,
           paddingBottom: 0,
+          background: '#8FF5F7',
         }}
         className="hero-sec"
       >
@@ -558,7 +574,7 @@ const HeroSection = () => {
         <div
           style={{
             position: 'relative',
-            height: '340px',
+            height: '460px',
             overflow: 'hidden',
           }}
         >
@@ -617,6 +633,49 @@ const HeroSection = () => {
             }}
           >
             <div
+              className="icon-wrapper"
+              style={{
+                position: 'absolute',
+                left: '10px',
+                top: '56%',
+                transform: 'translateY(-50%)',
+                display: 'flex',
+                justifyContent: 'center',
+              }}
+            >
+              <ul
+                className="pagination"
+                style={{
+                  margin: 0,
+                  padding: 0,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '8px',
+                }}
+              >
+                {(heroSlides.length > 0 ? heroSlides : [null]).map((_, index) => (
+                  <li
+                    key={index}
+                    className={index === currentSlide ? 'active' : ''}
+                    onClick={() => setCurrentSlide(index)}
+                    style={{
+                      cursor: 'pointer',
+                      width: '8px',
+                      height: index === currentSlide ? '22px' : '8px',
+                      borderRadius: '999px',
+                      listStyle: 'none',
+                      background: index === currentSlide ? '#15C9FA' : 'rgba(255, 255, 255, 0.75)',
+                      transition: 'all 0.25s ease',
+                      border: '1px solid rgba(6, 31, 66, 0.25)',
+                    }}
+                    aria-label={`Slide ${index + 1}`}
+                  ></li>
+                ))}
+              </ul>
+            </div>
+
+            <div
               style={{
                 opacity: isLoaded ? 1 : 0,
                 transform: isLoaded ? 'translateY(0)' : 'translateY(20px)',
@@ -630,7 +689,7 @@ const HeroSection = () => {
               </h1>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '60px' }}>
               <a
                 href="/book-appointment"
                 className="btn btn-primary w-100"
@@ -638,42 +697,11 @@ const HeroSection = () => {
                   padding: '10px 16px',
                   borderRadius: '12px',
                   fontWeight: 700,
+                  width: '100%',
                 }}
               >
                 {t('bookAppointment')}
               </a>
-
-              <div className="icon-wrapper" style={{ display: 'flex', justifyContent: 'center' }}>
-                <ul
-                  className="pagination"
-                  style={{
-                    margin: 0,
-                    padding: 0,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                  }}
-                >
-                  {(heroSlides.length > 0 ? heroSlides : [null]).map((_, index) => (
-                    <li
-                      key={index}
-                      className={index === currentSlide ? 'active' : ''}
-                      onClick={() => setCurrentSlide(index)}
-                      style={{
-                        cursor: 'pointer',
-                        width: index === currentSlide ? '22px' : '8px',
-                        height: '8px',
-                        borderRadius: '999px',
-                        listStyle: 'none',
-                        background: index === currentSlide ? '#15C9FA' : 'rgba(255, 255, 255, 0.75)',
-                        transition: 'all 0.25s ease',
-                        border: '1px solid rgba(6, 31, 66, 0.25)',
-                      }}
-                      aria-label={`Slide ${index + 1}`}
-                    ></li>
-                  ))}
-                </ul>
-              </div>
             </div>
           </div>
         </div>
@@ -681,8 +709,9 @@ const HeroSection = () => {
         <div
           className="container"
           style={{
-            paddingTop: '12px',
+            paddingTop: 0,
             paddingBottom: '12px',
+            marginTop: '-60px',
             position: 'relative',
             zIndex: 30,
             overflow: 'visible',
@@ -690,10 +719,12 @@ const HeroSection = () => {
         >
           <div
             style={{
-              background: '#FFFFFF',
-              borderRadius: '16px',
-              padding: '12px',
-              boxShadow: '0 8px 24px rgba(6, 31, 66, 0.1)',
+              background: 'rgba(6, 31, 66, 0.16)',
+              border: '1px solid rgba(255, 255, 255, 0.24)',
+              borderRadius: '12px',
+              padding: '8px',
+              boxShadow: '0 8px 24px rgba(6, 31, 66, 0.2)',
+              backdropFilter: 'blur(8px)',
               overflow: 'visible',
               opacity: isLoaded ? 1 : 0,
               transform: isLoaded ? 'translateY(0)' : 'translateY(20px)',
