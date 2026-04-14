@@ -396,18 +396,21 @@ const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onLearnMore, onBookNow 
 interface SpecialtyItemProps {
   name: string;
   icon?: string;
+  isMobile?: boolean;
 }
 
-const SpecialtyItem: React.FC<SpecialtyItemProps> = ({ name, icon }) => (
+const SpecialtyItem: React.FC<SpecialtyItemProps> = ({ name, icon, isMobile = false }) => (
   <div style={{
     display: 'flex',
     flexDirection: 'row',
     alignItems: 'center',
-    padding: '0px 0px 0px 12px',
-    gap: '8px',
+    padding: isMobile ? '12px 12px 12px 14px' : '14px 14px 14px 16px',
+    gap: isMobile ? '12px' : '14px',
     width: '100%',
-    minHeight: '32px',
-    borderRadius: '12px',
+    minHeight: isMobile ? '68px' : '80px',
+    borderRadius: '14px',
+    background: '#F8FCFF',
+    border: '1px solid #DDF2FA',
   }}>
     <div style={{
       display: 'flex',
@@ -415,22 +418,24 @@ const SpecialtyItem: React.FC<SpecialtyItemProps> = ({ name, icon }) => (
       justifyContent: 'center',
       alignItems: 'center',
       padding: '0px',
-      width: '28px',
-      height: '28px',
+      width: isMobile ? '44px' : '52px',
+      height: isMobile ? '44px' : '52px',
       flexShrink: 0,
+      borderRadius: '10px',
+      background: '#EAF9FE',
     }}>
       {icon ? (
         <img 
           src={icon} 
           alt={name}
           style={{
-            width: '20px',
-            height: '20px',
+            width: isMobile ? '28px' : '34px',
+            height: isMobile ? '28px' : '34px',
             objectFit: 'contain',
           }}
         />
       ) : (
-        <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
+        <svg width={isMobile ? '24' : '30'} height={isMobile ? '24' : '30'} viewBox="0 0 18 18" fill="none">
           <path d="M9 1L11 7H17L12 11L14 17L9 13L4 17L6 11L1 7H7L9 1Z" stroke="#00ABDA" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
       )}
@@ -439,12 +444,13 @@ const SpecialtyItem: React.FC<SpecialtyItemProps> = ({ name, icon }) => (
       fontFamily: 'Varela, sans-serif',
       fontStyle: 'normal',
       fontWeight: 400,
-      fontSize: '14px',
-      lineHeight: '20px',
+      fontSize: isMobile ? '15px' : '17px',
+      lineHeight: isMobile ? '22px' : '24px',
       color: '#364153',
       overflow: 'hidden',
-      textOverflow: 'ellipsis',
-      whiteSpace: 'nowrap',
+      display: '-webkit-box',
+      WebkitLineClamp: 2,
+      WebkitBoxOrient: 'vertical',
     }}>
       {name}
     </span>
@@ -457,9 +463,10 @@ interface ContactItemProps {
   title: string;
   lines: string[];
   isMobile?: boolean;
+  href?: string;
 }
 
-const ContactItem: React.FC<ContactItemProps> = ({ icon, title, lines, isMobile = false }) => {
+const ContactItem: React.FC<ContactItemProps> = ({ icon, title, lines, isMobile = false, href }) => {
   const renderIcon = () => {
     switch (icon) {
       case 'address':
@@ -485,16 +492,21 @@ const ContactItem: React.FC<ContactItemProps> = ({ icon, title, lines, isMobile 
     }
   };
 
-  return (
-    <div style={{
-      display: 'flex',
-      flexDirection: 'row',
-      justifyContent: 'center',
-      alignItems: 'center',
-      padding: '0px',
-      gap: isMobile ? '12px' : '16px',
-      flex: 1,
-    }}>
+  const wrapperStyle: React.CSSProperties = {
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'flex-start',
+    padding: '0px',
+    gap: isMobile ? '12px' : '16px',
+    flex: 1,
+    textDecoration: 'none',
+    cursor: href ? 'pointer' : 'default',
+    transition: 'opacity 0.2s ease',
+  };
+
+  const content = (
+    <>
       <div style={{
         display: 'flex',
         flexDirection: 'row',
@@ -505,6 +517,7 @@ const ContactItem: React.FC<ContactItemProps> = ({ icon, title, lines, isMobile 
         height: '40px',
         background: '#E1F9FF',
         borderRadius: '50%',
+        marginTop: '2px',
       }}>
         {renderIcon()}
       </div>
@@ -541,6 +554,31 @@ const ContactItem: React.FC<ContactItemProps> = ({ icon, title, lines, isMobile 
           </p>
         ))}
       </div>
+    </>
+  );
+
+  if (href) {
+    return (
+      <a
+        href={href}
+        target={icon === 'address' ? '_blank' : undefined}
+        rel={icon === 'address' ? 'noopener noreferrer' : undefined}
+        style={wrapperStyle}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.opacity = '0.85';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.opacity = '1';
+        }}
+      >
+        {content}
+      </a>
+    );
+  }
+
+  return (
+    <div style={wrapperStyle}>
+      {content}
     </div>
   );
 };
@@ -763,6 +801,12 @@ const BranchesPage: React.FC = () => {
     });
     navigate(`/book-appointment?${params.toString()}`);
   };
+
+  const addressMapUrl = selectedBranch?.map_url || undefined;
+  const phoneHref = selectedBranch?.phone
+    ? `tel:${selectedBranch.phone.replace(/\s+/g, '')}`
+    : undefined;
+  const emailHref = selectedBranch?.email ? `mailto:${selectedBranch.email}` : undefined;
 
   if (loading) {
     return (
@@ -1404,12 +1448,12 @@ const BranchesPage: React.FC = () => {
                   }}>
                     {departments.length > 0 ? (
                       departments.map(dept => (
-                        <SpecialtyItem key={dept.id} name={getTranslatedField(dept.name, '')} icon={dept.icon} />
+                        <SpecialtyItem key={dept.id} name={getTranslatedField(dept.name, '')} icon={dept.icon} isMobile={isMobile} />
                       ))
                     ) : (
                       // Fallback if no departments loaded
                       ['Anaesthesia', 'Medical Imaging', 'Breast Care', 'Neonatologist', 'Nephrology', 'Cardiothoracic Surgery', 'Cardiology', 'Neurology'].map((name, i) => (
-                        <SpecialtyItem key={i} name={name} />
+                        <SpecialtyItem key={i} name={name} isMobile={isMobile} />
                       ))
                     )}
                   </div>
@@ -1456,18 +1500,21 @@ const BranchesPage: React.FC = () => {
                         `Jeddah 21442, Saudi Arabia`
                       ]}
                       isMobile={isMobile}
+                      href={addressMapUrl}
                     />
                     <ContactItem
                       icon="phone"
                       title={t('phone')}
                       lines={[selectedBranch.phone || '+966 12 345 6789']}
                       isMobile={isMobile}
+                      href={phoneHref}
                     />
                     <ContactItem
                       icon="email"
                       title={t('email')}
                       lines={[selectedBranch.email || 'ghulail@medicalcenter.sa']}
                       isMobile={isMobile}
+                      href={emailHref}
                     />
                   </div>
                 </div>
@@ -1518,37 +1565,29 @@ const BranchesPage: React.FC = () => {
                         onClick={() => scrollDoctors('left')}
                         style={{
                           position: 'absolute',
-                          left: isMobile ? '-8px' : '0',
+                          left: isMobile ? '4px' : '0',
                           top: '50%',
                           transform: 'translateY(-50%)',
-                          width: isMobile ? '36px' : '50px',
-                          height: isMobile ? '36px' : '50px',
-                          borderRadius: '50%',
-                          backgroundColor: '#ffffff',
-                          border: '2px solid #1a7a7a',
-                          color: '#1a7a7a',
+                          width: 'auto',
+                          height: 'auto',
+                          backgroundColor: 'transparent',
+                          border: 'none',
                           cursor: 'pointer',
-                          display: isMobile ? 'none' : 'flex',
+                          display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
                           zIndex: 100,
                           transition: 'all 0.3s ease',
-                          boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+                          boxShadow: 'none',
                         }}
                         onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = '#1a7a7a';
-                          e.currentTarget.style.color = '#ffffff';
                           e.currentTarget.style.transform = 'translateY(-50%) scale(1.1)';
                         }}
                         onMouseLeave={(e) => {
-                          e.currentTarget.style.backgroundColor = '#ffffff';
-                          e.currentTarget.style.color = '#1a7a7a';
                           e.currentTarget.style.transform = 'translateY(-50%) scale(1)';
                         }}
                       >
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                          <polyline points="15 18 9 12 15 6"></polyline>
-                        </svg>
+                        <img src="/assets/images/general/leftarrow-light.svg" width="36" height="36" alt="Previous" />
                       </button>
                     )}
 
@@ -1607,38 +1646,30 @@ const BranchesPage: React.FC = () => {
                         disabled={!canScrollDoctorRight}
                         style={{
                           position: 'absolute',
-                          right: isMobile ? '-8px' : '0',
+                          right: isMobile ? '4px' : '0',
                           top: '50%',
                           transform: 'translateY(-50%)',
-                          width: isMobile ? '36px' : '50px',
-                          height: isMobile ? '36px' : '50px',
-                          borderRadius: '50%',
-                          backgroundColor: '#ffffff',
-                          border: '2px solid #1a7a7a',
-                          color: '#1a7a7a',
+                          width: 'auto',
+                          height: 'auto',
+                          backgroundColor: 'transparent',
+                          border: 'none',
                           cursor: canScrollDoctorRight ? 'pointer' : 'not-allowed',
-                          display: isMobile ? 'none' : 'flex',
+                          display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
                           zIndex: 100,
                           transition: 'all 0.3s ease',
-                          boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+                          boxShadow: 'none',
                           opacity: canScrollDoctorRight ? 1 : 0.4,
                         }}
                         onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = '#1a7a7a';
-                          e.currentTarget.style.color = '#ffffff';
                           e.currentTarget.style.transform = 'translateY(-50%) scale(1.1)';
                         }}
                         onMouseLeave={(e) => {
-                          e.currentTarget.style.backgroundColor = '#ffffff';
-                          e.currentTarget.style.color = '#1a7a7a';
                           e.currentTarget.style.transform = 'translateY(-50%) scale(1)';
                         }}
                       >
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                          <polyline points="9 18 15 12 9 6"></polyline>
-                        </svg>
+                        <img src="/assets/images/general/righarrow-light.svg" width="36" height="36" alt="Next" />
                       </button>
                     )}
                   </div>
@@ -1731,11 +1762,10 @@ const BranchesPage: React.FC = () => {
               left: isMobile ? '8px' : '24px',
               top: '50%',
               transform: 'translateY(-50%)',
-              width: isMobile ? '44px' : '64px',
-              height: isMobile ? '44px' : '64px',
-              background: 'rgba(255, 255, 255, 0.1)',
-              border: '2px solid rgba(255, 255, 255, 0.3)',
-              borderRadius: '50%',
+              width: 'auto',
+              height: 'auto',
+              background: 'transparent',
+              border: 'none',
               cursor: 'pointer',
               display: 'flex',
               justifyContent: 'center',
@@ -1744,19 +1774,13 @@ const BranchesPage: React.FC = () => {
               zIndex: 10001,
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';
-              e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.5)';
               e.currentTarget.style.transform = 'translateY(-50%) scale(1.1)';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
-              e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.3)';
               e.currentTarget.style.transform = 'translateY(-50%) scale(1)';
             }}
           >
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-              <path d="M15 18L9 12L15 6" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
+            <img src="/assets/images/general/leftarrow-light.svg" width="40" height="40" alt="Previous image" />
           </button>
 
           {/* Main Image */}
@@ -1819,11 +1843,10 @@ const BranchesPage: React.FC = () => {
               right: isMobile ? '8px' : '24px',
               top: '50%',
               transform: 'translateY(-50%)',
-              width: isMobile ? '44px' : '64px',
-              height: isMobile ? '44px' : '64px',
-              background: 'rgba(255, 255, 255, 0.1)',
-              border: '2px solid rgba(255, 255, 255, 0.3)',
-              borderRadius: '50%',
+              width: 'auto',
+              height: 'auto',
+              background: 'transparent',
+              border: 'none',
               cursor: 'pointer',
               display: 'flex',
               justifyContent: 'center',
@@ -1832,19 +1855,13 @@ const BranchesPage: React.FC = () => {
               zIndex: 10001,
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';
-              e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.5)';
               e.currentTarget.style.transform = 'translateY(-50%) scale(1.1)';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
-              e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.3)';
               e.currentTarget.style.transform = 'translateY(-50%) scale(1)';
             }}
           >
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-              <path d="M9 18L15 12L9 6" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
+            <img src="/assets/images/general/righarrow-light.svg" width="40" height="40" alt="Next image" />
           </button>
 
           {/* Thumbnail Strip */}

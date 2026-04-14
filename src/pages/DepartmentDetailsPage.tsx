@@ -812,8 +812,8 @@ const DepartmentDetailsPage: React.FC = () => {
               top: '50%',
               transform: 'translateY(-50%)',
               zIndex: 10,
-              width: '32px',
-              height: '32px',
+              width: '40px',
+              height: '40px',
               borderRadius: '50%',
               background: 'rgba(255, 255, 255, 0.95)',
               border: '2px solid #15C9FA',
@@ -833,7 +833,7 @@ const DepartmentDetailsPage: React.FC = () => {
               e.currentTarget.style.transform = 'translateY(-50%) scale(1)';
             }}
           >
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <svg width="18" height="18" viewBox="0 0 12 12" fill="none">
               <path d="M7.5 2L3.5 6L7.5 10" stroke="#061F42" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
           </button>
@@ -849,8 +849,8 @@ const DepartmentDetailsPage: React.FC = () => {
               top: '50%',
               transform: 'translateY(-50%)',
               zIndex: 10,
-              width: '32px',
-              height: '32px',
+              width: '40px',
+              height: '40px',
               borderRadius: '50%',
               background: 'rgba(255, 255, 255, 0.95)',
               border: '2px solid #15C9FA',
@@ -870,7 +870,7 @@ const DepartmentDetailsPage: React.FC = () => {
               e.currentTarget.style.transform = 'translateY(-50%) scale(1)';
             }}
           >
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <svg width="18" height="18" viewBox="0 0 12 12" fill="none">
               <path d="M4.5 2L8.5 6L4.5 10" stroke="#061F42" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
           </button>
@@ -2407,7 +2407,17 @@ const DepartmentDetailsPage: React.FC = () => {
               >
                 {t('departments')}
               </span>
-              {i18n.language === 'ar' ? ' ← ' : ' > '}
+              <span style={{
+                fontSize: window.innerWidth <= 768 ? '20px' : '24px',
+                fontWeight: 700,
+                lineHeight: 1,
+                display: 'inline-flex',
+                alignItems: 'center',
+                margin: '0 6px',
+                verticalAlign: 'middle',
+              }}>
+                {i18n.language === 'ar' ? '←' : '>'}
+              </span>
               <span style={{
                 color: '#061F42',
               }}>
@@ -2553,45 +2563,34 @@ const DepartmentDetailsPage: React.FC = () => {
                 overflow: 'hidden',
               }}>
                 {/* Left Arrow */}
-                {doctors.length > (window.innerWidth <= 768 ? 1 : 4) && canScrollDoctorLeft && window.innerWidth > 768 && (
+                {doctors.length > (window.innerWidth <= 768 ? 1 : 4) && canScrollDoctorLeft && (
                   <button 
                     onClick={() => scrollDoctors('left')}
                     style={{
                       position: 'absolute',
-                      left: '0',
+                      left: window.innerWidth <= 768 ? '4px' : '0',
                       top: '50%',
                       transform: 'translateY(-50%)',
-                      width: '50px',
-                      height: '50px',
-                      borderRadius: '50%',
-                      backgroundColor: '#ffffff',
-                      border: '2px solid #1a7a7a',
-                      color: '#1a7a7a',
+                      width: 'auto',
+                      height: 'auto',
+                      backgroundColor: 'transparent',
+                      border: 'none',
                       cursor: 'pointer',
-                      fontSize: '24px',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                       zIndex: 100,
                       transition: 'all 0.3s ease',
-                      boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+                      boxShadow: 'none',
                     }}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = '#1a7a7a';
-                      e.currentTarget.style.color = '#ffffff';
                       e.currentTarget.style.transform = 'translateY(-50%) scale(1.1)';
-                      e.currentTarget.style.boxShadow = '0 6px 20px rgba(26,122,122,0.4)';
                     }}
                     onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = '#ffffff';
-                      e.currentTarget.style.color = '#1a7a7a';
                       e.currentTarget.style.transform = 'translateY(-50%) scale(1)';
-                      e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
                     }}
                   >
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                      <polyline points="15 18 9 12 15 6"></polyline>
-                    </svg>
+                    <img src="/assets/images/general/leftarrow-light.svg" width="36" height="36" alt="Previous" />
                   </button>
                 )}
 
@@ -2628,51 +2627,40 @@ const DepartmentDetailsPage: React.FC = () => {
                 </div>
 
                 {/* Right Arrow */}
-                {doctors.length > (window.innerWidth <= 768 ? 1 : 4) && window.innerWidth > 768 && (
+                {doctors.length > (window.innerWidth <= 768 ? 1 : 4) && (
                   <button 
                     onClick={() => scrollDoctors('right')}
                     disabled={!canScrollDoctorRight}
                     style={{
                       position: 'absolute',
-                      right: '0',
+                      right: window.innerWidth <= 768 ? '4px' : '0',
                       top: '50%',
                       transform: 'translateY(-50%)',
-                      width: '50px',
-                      height: '50px',
-                      borderRadius: '50%',
-                      backgroundColor: '#ffffff',
-                      border: '2px solid #1a7a7a',
-                      color: '#1a7a7a',
+                      width: 'auto',
+                      height: 'auto',
+                      backgroundColor: 'transparent',
+                      border: 'none',
                       cursor: canScrollDoctorRight ? 'pointer' : 'not-allowed',
-                      fontSize: '24px',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                       zIndex: 100,
                       transition: 'all 0.3s ease',
-                      boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+                      boxShadow: 'none',
                       opacity: canScrollDoctorRight ? 1 : 0.5,
                     }}
                     onMouseEnter={(e) => {
                       if (canScrollDoctorRight) {
-                        e.currentTarget.style.backgroundColor = '#1a7a7a';
-                        e.currentTarget.style.color = '#ffffff';
                         e.currentTarget.style.transform = 'translateY(-50%) scale(1.1)';
-                        e.currentTarget.style.boxShadow = '0 6px 20px rgba(26,122,122,0.4)';
                       }
                     }}
                     onMouseLeave={(e) => {
                       if (canScrollDoctorRight) {
-                        e.currentTarget.style.backgroundColor = '#ffffff';
-                        e.currentTarget.style.color = '#1a7a7a';
                         e.currentTarget.style.transform = 'translateY(-50%) scale(1)';
-                        e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
                       }
                     }}
                   >
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                      <polyline points="9 18 15 12 9 6"></polyline>
-                    </svg>
+                    <img src="/assets/images/general/righarrow-light.svg" width="36" height="36" alt="Next" />
                   </button>
                 )}
               </div>

@@ -16,6 +16,7 @@ export interface Branch {
   region?: string;
   description?: string;
   address?: string;
+  map_url?: string;
   phone?: string;
   email?: string;
   latitude?: number;

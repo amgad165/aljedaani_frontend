@@ -46,7 +46,6 @@ const AboutUsPage = () => {
     overview: {
       id: 'overview',
       title: t('aboutTabOverview'),
-      tagline: t('aboutOverviewTagline'),
       subtitle: t('aboutOverviewSubtitle'),
       content: ``,
       imageUrl: '/assets/img/about/overview-image.jpg',
@@ -203,7 +202,7 @@ Our leaders believe in leading by example, maintaining open communication, and e
                         display: 'flex',
                         flexDirection: 'column',
                         justifyContent: 'center',
-                        alignItems: isMobile ? 'center' : (tab.id === 'overview' ? 'center' : 'flex-start'),
+                        alignItems: isMobile ? 'center' : (tab.id === 'overview' ? 'flex-start' : 'flex-start'),
                         padding: isMobile ? '8px 12px' : '12px',
                         gap: '12px',
                         width: isMobile ? 'auto' : '100%',
@@ -348,7 +347,7 @@ Our leaders believe in leading by example, maintaining open communication, and e
 
                 {/* Overview Tab */}
                 {activeTab === 'overview' && (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? '16px' : '24px', width: '100%' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? '16px' : '6px', width: '100%' }}>
                     <h1 style={{
                       fontFamily: 'Nunito, sans-serif',
                       fontWeight: 700,

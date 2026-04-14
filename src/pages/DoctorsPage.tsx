@@ -973,9 +973,7 @@ const DoctorsPage: React.FC = () => {
                 (e.currentTarget as HTMLElement).style.background = 'transparent';
               }}
             >
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#061F42" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M15 18l-6-6 6-6" />
-              </svg>
+              <img src="/assets/images/general/leftarrow-light.svg" width="40" height="40" alt="Previous page" />
             </button>
 
             {/* Page Numbers */}
@@ -1018,9 +1016,7 @@ const DoctorsPage: React.FC = () => {
                 (e.currentTarget as HTMLElement).style.background = 'transparent';
               }}
             >
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#061F42" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M9 18l6-6-6-6" />
-              </svg>
+              <img src="/assets/images/general/righarrow-light.svg" width="40" height="40" alt="Next page" />
             </button>
           </div>
         </div>

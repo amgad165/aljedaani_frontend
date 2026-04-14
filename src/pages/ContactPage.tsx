@@ -6,6 +6,31 @@ import { getTranslatedField } from '../utils/localeHelpers';
 import FloatingContactButtons from '../components/FloatingContactButtons';
 import Footer from '../components/Footer';
 
+const MapPinIcon: React.FC = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <path
+      d="M12 22C12 22 19 15.5 19 10.5C19 6.35786 15.866 3 12 3C8.13401 3 5 6.35786 5 10.5C5 15.5 12 22 12 22Z"
+      stroke="#FFFFFF"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <circle cx="12" cy="10.5" r="2.5" stroke="#FFFFFF" strokeWidth="1.8" />
+  </svg>
+);
+
+const PhoneCallIcon: React.FC = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <path
+      d="M22 16.92V20.5C22 21.0523 21.5523 21.5 21 21.5C10.2304 21.5 2.5 13.7696 2.5 3C2.5 2.44772 2.94772 2 3.5 2H7.09C7.58076 2 7.99924 2.35555 8.07855 2.83986L8.68887 6.56032C8.74892 6.92633 8.6032 7.2948 8.30992 7.51773L5.944 9.31595C7.12044 12.1851 9.3149 14.3796 12.1841 15.556L13.9823 13.1901C14.2052 12.8968 14.5737 12.7511 14.9397 12.8111L18.6601 13.4214C19.1444 13.5008 19.5 13.9192 19.5 14.41V16.92"
+      stroke="#FFFFFF"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
 const ContactPage: React.FC = () => {
   const { t, i18n } = useTranslation('pages');
   const ResponsiveNavbar = useResponsiveNavbar();
@@ -229,6 +254,12 @@ const ContactPage: React.FC = () => {
                     position: 'relative',
                     overflow: 'hidden',
                     cursor: 'pointer',
+                    transition: 'transform 0.32s ease, box-shadow 0.32s ease, border-color 0.32s ease',
+                    boxShadow: hoveredBranch === branch.id
+                      ? '0 14px 32px rgba(6, 31, 66, 0.28)'
+                      : '0 7px 18px rgba(6, 31, 66, 0.18)',
+                    borderColor: hoveredBranch === branch.id ? '#BAEEFF' : '#FFFFFF',
+                    transform: hoveredBranch === branch.id ? 'translateY(-6px)' : 'translateY(0)',
                   }}>
                     {/* Bottom Overlay - Always visible */}
                     <div style={{
@@ -236,21 +267,22 @@ const ContactPage: React.FC = () => {
                       bottom: 0,
                       left: 0,
                       right: 0,
-                      height: '20%',
-                      background: 'rgba(79, 79, 79, 0.8)',
+                      height: '35%',
+                      background: 'linear-gradient(180deg, rgba(6, 31, 66, 0) 0%, rgba(6, 31, 66, 0.82) 100%)',
                       display: 'flex',
-                      alignItems: 'center',
-                      padding: '12px',
+                      alignItems: 'flex-end',
+                      padding: '12px 14px',
                       opacity: hoveredBranch === branch.id ? 0 : 1,
                       transition: 'opacity 0.3s ease',
                     }}>
                       <h3 style={{
                         fontFamily: 'Nunito, sans-serif',
                         fontWeight: 700,
-                        fontSize: '18px',
+                        fontSize: '20px',
                         lineHeight: '24px',
                         color: '#FFFFFF',
                         margin: 0,
+                        textShadow: '0 2px 8px rgba(0, 0, 0, 0.45)',
                       }}>
                         {getTranslatedField(branch.name, '')}
                       </h3>
@@ -262,24 +294,25 @@ const ContactPage: React.FC = () => {
                       flexDirection: 'column',
                       justifyContent: 'space-between',
                       alignItems: 'flex-start',
-                      padding: '12px',
-                      gap: '8px',
+                      padding: '14px',
+                      gap: '12px',
                       width: '100%',
                       height: '100%',
-                      background: 'rgba(79, 79, 79, 0.8)',
+                      background: 'linear-gradient(180deg, rgba(6, 31, 66, 0.25) 0%, rgba(6, 31, 66, 0.86) 100%)',
                       borderRadius: '12px',
-                      opacity: hoveredBranch === branch.id ? 1 : 0,
+                      opacity: hoveredBranch === branch.id || isMobile ? 1 : 0,
                       transition: 'opacity 0.3s ease',
                     }}>
                       {/* Branch Name */}
                       <h3 style={{
                         fontFamily: 'Nunito, sans-serif',
                         fontWeight: 700,
-                        fontSize: '24px',
-                        lineHeight: '38px',
+                        fontSize: '22px',
+                        lineHeight: '30px',
                         color: '#FFFFFF',
                         margin: 0,
                         alignSelf: 'stretch',
+                        textShadow: '0 2px 10px rgba(0, 0, 0, 0.45)',
                       }}>
                         {getTranslatedField(branch.name, '')}
                       </h3>
@@ -308,25 +341,32 @@ const ContactPage: React.FC = () => {
                               flexDirection: 'row',
                               justifyContent: 'center',
                               alignItems: 'center',
-                              padding: '6px 8px',
-                              height: '24px',
-                              background: '#15C9FA',
-                              borderRadius: '8px',
-                              border: 'none',
+                              padding: '8px 10px',
+                              height: '34px',
+                              background: 'linear-gradient(135deg, #0CA8D5 0%, #0A7ECB 100%)',
+                              borderRadius: '10px',
+                              border: '1px solid rgba(255, 255, 255, 0.35)',
                               cursor: 'pointer',
                               flex: 1,
-                              gap: '4px',
+                              gap: '6px',
+                              boxShadow: '0 6px 16px rgba(4, 20, 43, 0.35)',
+                              transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.transform = 'translateY(-1px)';
+                              e.currentTarget.style.boxShadow = '0 9px 18px rgba(4, 20, 43, 0.42)';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.transform = 'translateY(0)';
+                              e.currentTarget.style.boxShadow = '0 6px 16px rgba(4, 20, 43, 0.35)';
                             }}
                           >
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                              <path d="M11 3L13 5L11 7" stroke="#FFFFFF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                              <path d="M5 13L3 11L5 9" stroke="#FFFFFF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                            </svg>
+                            <MapPinIcon />
                             <span style={{
                               fontFamily: 'Nunito, sans-serif',
                               fontWeight: 600,
-                              fontSize: '10px',
-                              lineHeight: '12px',
+                              fontSize: '11px',
+                              lineHeight: '13px',
                               color: '#FFFFFF',
                             }}>
                               View Location
@@ -341,24 +381,32 @@ const ContactPage: React.FC = () => {
                               flexDirection: 'row',
                               justifyContent: 'center',
                               alignItems: 'center',
-                              padding: '6px 8px',
-                              height: '24px',
-                              background: '#15C9FA',
-                              borderRadius: '8px',
-                              border: 'none',
+                              padding: '8px 10px',
+                              height: '34px',
+                              background: 'linear-gradient(135deg, #12B6E6 0%, #0B89D3 100%)',
+                              borderRadius: '10px',
+                              border: '1px solid rgba(255, 255, 255, 0.35)',
                               cursor: 'pointer',
                               flex: 1,
-                              gap: '4px',
+                              gap: '6px',
+                              boxShadow: '0 6px 16px rgba(4, 20, 43, 0.35)',
+                              transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.transform = 'translateY(-1px)';
+                              e.currentTarget.style.boxShadow = '0 9px 18px rgba(4, 20, 43, 0.42)';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.transform = 'translateY(0)';
+                              e.currentTarget.style.boxShadow = '0 6px 16px rgba(4, 20, 43, 0.35)';
                             }}
                           >
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                              <path d="M14.5 11.5V13.5C14.5 13.7652 14.3946 14.0196 14.2071 14.2071C14.0196 14.3946 13.7652 14.5 13.5 14.5C10.3993 14.2056 7.42015 12.9192 5.11162 10.7584C2.97231 8.75878 1.50378 6.25774 0.875 3.58333C0.875 3.31812 0.980357 3.06377 1.16789 2.87623C1.35543 2.68869 1.60978 2.58333 1.875 2.58333H3.875C4.10043 2.58333 4.31754 2.66667 4.48214 2.81667C4.64674 2.96667 4.74766 3.17333 4.765 3.39583C4.795 3.81667 4.865 4.23417 4.975 4.6425C5.03299 4.85917 5.015 5.08917 4.925 5.29583C4.835 5.50333 4.675 5.67667 4.475 5.79167L3.165 6.58333C4.165 8.775 5.85 10.5167 7.925 11.5833L8.665 10.25C8.77167 10.05 8.935 9.89 9.13417 9.79917C9.33333 9.70833 9.55583 9.69083 9.76667 9.75C10.1633 9.8625 10.5683 9.93333 10.9783 9.9625C11.2042 9.98 11.4092 10.0825 11.5575 10.2492C11.7067 10.4158 11.7883 10.635 11.7867 10.8617V13.5H14.5Z" stroke="#FFFFFF" strokeWidth="1.5"/>
-                            </svg>
+                            <PhoneCallIcon />
                             <span style={{
                               fontFamily: 'Nunito, sans-serif',
                               fontWeight: 600,
-                              fontSize: '10px',
-                              lineHeight: '12px',
+                              fontSize: '11px',
+                              lineHeight: '13px',
                               color: '#FFFFFF',
                             }}>
                               {t('callNow')}

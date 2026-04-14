@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import AdminLayout from './AdminLayout';
+import * as XLSX from 'xlsx';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
 
@@ -67,12 +68,11 @@ const AdminAppointments: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [filterSyncStatus, setFilterSyncStatus] = useState<string>('all');
+  const [filterStartDate, setFilterStartDate] = useState<string>('');
+  const [filterEndDate, setFilterEndDate] = useState<string>('');
+  const [exporting, setExporting] = useState(false);
 
-  useEffect(() => {
-    fetchAppointments();
-  }, [currentPage, searchTerm, filterStatus, filterSyncStatus]);
-
-  const fetchAppointments = async () => {
+  const fetchAppointments = useCallback(async () => {
     setLoading(true);
     try {
       const token = localStorage.getItem('auth_token');
@@ -81,6 +81,8 @@ const AdminAppointments: React.FC = () => {
         search: searchTerm,
         ...(filterStatus !== 'all' && { status: filterStatus }),
         ...(filterSyncStatus !== 'all' && { synced_to_his: filterSyncStatus }),
+        ...(filterStartDate && { start_date: filterStartDate }),
+        ...(filterEndDate && { end_date: filterEndDate }),
       });
 
       const response = await fetch(`${API_BASE_URL}/admin/appointments?${params}`, {
@@ -103,11 +105,75 @@ const AdminAppointments: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentPage, searchTerm, filterStatus, filterSyncStatus, filterStartDate, filterEndDate]);
+
+  useEffect(() => {
+    fetchAppointments();
+  }, [fetchAppointments]);
 
   const handleSearchChange = (value: string) => {
     setSearchTerm(value);
     setCurrentPage(1);
+  };
+
+  const exportToExcel = async () => {
+    setExporting(true);
+    try {
+      const token = localStorage.getItem('auth_token');
+      const params = new URLSearchParams({
+        page: '1',
+        per_page: '10000',
+        search: searchTerm,
+        ...(filterStatus !== 'all' && { status: filterStatus }),
+        ...(filterSyncStatus !== 'all' && { synced_to_his: filterSyncStatus }),
+        ...(filterStartDate && { start_date: filterStartDate }),
+        ...(filterEndDate && { end_date: filterEndDate }),
+      });
+
+      const response = await fetch(`${API_BASE_URL}/admin/appointments?${params}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch appointments for export');
+      }
+
+      const result = await response.json();
+      const exportRows: Appointment[] = result.data || [];
+
+      const rows = exportRows.map((a) => ({
+        'Appointment ID': a.id,
+        'Patient Name': a.patient_name || '',
+        Phone: a.patient_phone || '',
+        Email: a.patient_email || '',
+        MRN: a.medical_record_number || '',
+        'National ID': a.national_id || '',
+        Doctor: getTranslatableName(a.doctor?.name),
+        Department: getTranslatableName(a.department?.name),
+        Branch: getTranslatableName(a.branch?.name),
+        Date: a.appointment_date || '',
+        Time: a.appointment_time || '',
+        Status: a.status || '',
+        'HIS Synced': a.synced_to_his ? 'Yes' : 'No',
+        Source: a.booking_source || '',
+        'Created At': a.created_at || '',
+      }));
+
+      const worksheet = XLSX.utils.json_to_sheet(rows);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Appointments');
+
+      const today = new Date().toISOString().slice(0, 10);
+      XLSX.writeFile(workbook, `appointments_${today}.xlsx`);
+    } catch (error) {
+      console.error('Error exporting appointments:', error);
+      alert('Failed to export appointments');
+    } finally {
+      setExporting(false);
+    }
   };
 
   const formatDate = (dateString: string) => {
@@ -198,6 +264,23 @@ const AdminAppointments: React.FC = () => {
               Manage web-booked appointments
             </p>
           </div>
+          <button
+            onClick={exportToExcel}
+            disabled={exporting || loading}
+            style={{
+              fontFamily: 'Nunito, sans-serif',
+              padding: '10px 18px',
+              borderRadius: '8px',
+              border: 'none',
+              background: exporting || loading ? '#9ca3af' : '#0a4d68',
+              color: '#fff',
+              fontSize: '14px',
+              fontWeight: '600',
+              cursor: exporting || loading ? 'not-allowed' : 'pointer',
+            }}
+          >
+            {exporting ? 'Exporting...' : 'Export to Excel'}
+          </button>
         </div>
 
         {/* Stats Cards */}
@@ -276,7 +359,7 @@ const AdminAppointments: React.FC = () => {
         }}>
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
             gap: '16px',
           }}>
             <div>
@@ -370,6 +453,64 @@ const AdminAppointments: React.FC = () => {
                 <option value="true">Synced</option>
                 <option value="false">Not Synced</option>
               </select>
+            </div>
+
+            <div>
+              <label style={{
+                fontFamily: 'Nunito, sans-serif',
+                display: 'block',
+                marginBottom: '8px',
+                fontSize: '14px',
+                fontWeight: '500',
+                color: '#374151',
+              }}>
+                From Date
+              </label>
+              <input
+                type="date"
+                value={filterStartDate}
+                onChange={(e) => {
+                  setFilterStartDate(e.target.value);
+                  setCurrentPage(1);
+                }}
+                style={{
+                  fontFamily: 'Nunito, sans-serif',
+                  width: '100%',
+                  padding: '10px 16px',
+                  border: '1px solid #d1d5db',
+                  borderRadius: '8px',
+                  fontSize: '14px',
+                }}
+              />
+            </div>
+
+            <div>
+              <label style={{
+                fontFamily: 'Nunito, sans-serif',
+                display: 'block',
+                marginBottom: '8px',
+                fontSize: '14px',
+                fontWeight: '500',
+                color: '#374151',
+              }}>
+                To Date
+              </label>
+              <input
+                type="date"
+                value={filterEndDate}
+                onChange={(e) => {
+                  setFilterEndDate(e.target.value);
+                  setCurrentPage(1);
+                }}
+                style={{
+                  fontFamily: 'Nunito, sans-serif',
+                  width: '100%',
+                  padding: '10px 16px',
+                  border: '1px solid #d1d5db',
+                  borderRadius: '8px',
+                  fontSize: '14px',
+                }}
+              />
             </div>
           </div>
         </div>
@@ -744,14 +885,6 @@ const AdminAppointments: React.FC = () => {
                         {selectedAppointment.synced_to_his ? 'Synced' : 'Pending'}
                       </div>
                     </div>
-                    {selectedAppointment.his_appointment_code && (
-                      <div>
-                        <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '12px', color: '#6b7280' }}>HIS Appointment Code</div>
-                        <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '14px', fontWeight: '500', color: '#111827' }}>
-                          {selectedAppointment.his_appointment_code}
-                        </div>
-                      </div>
-                    )}
                     <div>
                       <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '12px', color: '#6b7280' }}>Sync Attempts</div>
                       <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '14px', fontWeight: '500', color: '#111827' }}>

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useHomepageData } from '../context/HomepageContext';
 import { type Department } from '../services/departmentsService';
 import { doctorsService, type Doctor } from '../services/doctorsService';
@@ -690,8 +691,8 @@ const HeroSection = () => {
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '60px' }}>
-              <a
-                href="/book-appointment"
+              <Link
+                to="/book-appointment"
                 className="btn btn-primary w-100"
                 style={{
                   padding: '10px 16px',
@@ -701,7 +702,7 @@ const HeroSection = () => {
                 }}
               >
                 {t('bookAppointment')}
-              </a>
+              </Link>
             </div>
           </div>
         </div>
@@ -793,9 +794,9 @@ const HeroSection = () => {
               {t('trustedCareAcross')}<br />
               <span className="fw-exbold main-title text-primary-light">{t('theKingdom')}</span>
             </h1>
-            <a style={{ padding: '12px 20px' }} href="/book-appointment" className="btn btn-primary w-100">
+            <Link style={{ padding: '12px 20px' }} to="/book-appointment" className="btn btn-primary w-100">
               {t('bookAppointment')}
-            </a>
+            </Link>
           </div>
         </div>
 

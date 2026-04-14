@@ -51,15 +51,20 @@ const DoctorDetailsPage: React.FC = () => {
 
   const renderServiceItem = (service: ServiceItem, index: number, isLast: boolean) => (
     <div key={index} style={{ direction: i18n.language === 'ar' ? 'rtl' : 'ltr' }}>
+      {(() => {
+        const isMobileView = window.innerWidth <= 768;
+        return (
+          <>
       {/* Service Item - Title Row */}
       <div style={{
         display: 'flex',
         flexDirection: 'row',
-        alignItems: 'center',
+        alignItems: 'flex-start',
         padding: '0px',
-        gap: '4px',
+        gap: isMobileView ? '6px' : '4px',
         width: '100%',
-        height: '20px',
+        minHeight: '20px',
+        height: 'auto',
       }}>
         {/* Bullet */}
         <div style={{
@@ -68,16 +73,20 @@ const DoctorDetailsPage: React.FC = () => {
           background: '#061F42',
           borderRadius: '50%',
           flexShrink: 0,
+          marginTop: isMobileView ? '7px' : '6px',
         }} />
         {/* Title */}
         <span style={{
           fontFamily: 'Nunito, sans-serif',
           fontStyle: 'normal',
           fontWeight: 700,
-          fontSize: '16px',
-          lineHeight: '20px',
+          fontSize: isMobileView ? '15px' : '16px',
+          lineHeight: isMobileView ? '22px' : '20px',
           color: '#061F42',
           textAlign: i18n.language === 'ar' ? 'right' : 'left',
+          whiteSpace: 'normal',
+          wordBreak: 'break-word',
+          flex: 1,
         }}>
           {getTranslatedField({ en: service.title_en, ar: service.title_ar }, '')}:
         </span>
@@ -86,6 +95,7 @@ const DoctorDetailsPage: React.FC = () => {
       {/* Description */}
       <div style={{
         width: '100%',
+        marginTop: isMobileView ? '6px' : '4px',
         fontFamily: 'Nunito, sans-serif',
         fontStyle: 'normal',
         fontWeight: 400,
@@ -115,6 +125,9 @@ const DoctorDetailsPage: React.FC = () => {
           }} />
         </div>
       )}
+          </>
+        );
+      })()}
     </div>
   );
 
@@ -361,7 +374,17 @@ const DoctorDetailsPage: React.FC = () => {
               >
                 {i18n.language === 'ar' ? 'الأطباء' : 'Doctors'}
               </span>
-              {i18n.language === 'ar' ? ' < ' : ' > '}
+              <span style={{
+                fontSize: window.innerWidth <= 768 ? '20px' : '24px',
+                fontWeight: 700,
+                lineHeight: 1,
+                display: 'inline-flex',
+                alignItems: 'center',
+                margin: '0 6px',
+                verticalAlign: 'middle',
+              }}>
+                {i18n.language === 'ar' ? '<' : '>'}
+              </span>
               <span 
                 onClick={() => navigate(departmentFilterId ? `/doctors?department=${departmentFilterId}` : '/doctors')}
                 style={{
@@ -375,7 +398,17 @@ const DoctorDetailsPage: React.FC = () => {
               >
                 {getTranslatedField(doctor.department?.name, i18n.language === 'ar' ? 'التخصص' : 'Specialty')}
               </span>
-              {i18n.language === 'ar' ? ' < ' : ' > '}
+              <span style={{
+                fontSize: window.innerWidth <= 768 ? '20px' : '24px',
+                fontWeight: 700,
+                lineHeight: 1,
+                display: 'inline-flex',
+                alignItems: 'center',
+                margin: '0 6px',
+                verticalAlign: 'middle',
+              }}>
+                {i18n.language === 'ar' ? '<' : '>'}
+              </span>
               <span style={{
                 color: '#061F42',
               }}>

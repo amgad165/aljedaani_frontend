@@ -12,12 +12,12 @@ const MobileNavbar = () => {
   const navItems = [
     { label: t('aboutUs'), href: '/about' },
     { label: t('branches'), href: '/branches' },
-    { label: t('pharmacies'), href: '#' },
     { label: t('departments'), href: '/departments' },
     { label: t('doctors'), href: '/doctors' },
-    { label: t('patientExperience'), href: '#' },
-    { label: t('media'), href: '#' },
-    { label: t('more'), href: '#' },
+    { label: t('careers'), href: '/careers' },
+    { label: t('contact'), href: '/contact' },
+    { label: `${t('media')} - Articles`, href: '/articles' },
+    { label: `${t('media')} - News`, href: '/news' },
   ];
 
   return (
@@ -40,7 +40,7 @@ const MobileNavbar = () => {
         height: '70px',
       }}>
         {/* Logo */}
-        <a href="/" style={{ display: 'flex', alignItems: 'center' }}>
+        <Link to="/" style={{ display: 'flex', alignItems: 'center' }}>
           <img 
             src="/assets/images/Logo/logo_white.svg" 
             width="120" 
@@ -48,48 +48,61 @@ const MobileNavbar = () => {
             alt="Logo" 
             style={{ objectFit: 'contain' }}
           />
-        </a>
+        </Link>
 
-        {/* Hamburger Button */}
-        <button
-          onClick={() => setIsMenuOpen(!isMenuOpen)}
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'space-around',
-            width: '28px',
-            height: '24px',
-            background: 'transparent',
-            border: 'none',
-            cursor: 'pointer',
-            padding: 0,
-          }}
-        >
-          <span style={{
-            width: '100%',
-            height: '3px',
-            background: '#FFFFFF',
-            borderRadius: '3px',
-            transition: 'all 0.3s',
-            transform: isMenuOpen ? 'translateY(8px) rotate(45deg)' : 'none',
-          }}></span>
-          <span style={{
-            width: '100%',
-            height: '3px',
-            background: '#FFFFFF',
-            borderRadius: '3px',
-            transition: 'all 0.3s',
-            opacity: isMenuOpen ? 0 : 1,
-          }}></span>
-          <span style={{
-            width: '100%',
-            height: '3px',
-            background: '#FFFFFF',
-            borderRadius: '3px',
-            transition: 'all 0.3s',
-            transform: isMenuOpen ? 'translateY(-10px) rotate(-45deg)' : 'none',
-          }}></span>
-        </button>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+        }}>
+          <div style={{
+            transform: 'scale(0.8)',
+            transformOrigin: 'center right',
+          }}>
+            <LanguageSwitcher />
+          </div>
+
+          {/* Hamburger Button */}
+          <button
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-around',
+              width: '28px',
+              height: '24px',
+              background: 'transparent',
+              border: 'none',
+              cursor: 'pointer',
+              padding: 0,
+            }}
+          >
+            <span style={{
+              width: '100%',
+              height: '3px',
+              background: '#FFFFFF',
+              borderRadius: '3px',
+              transition: 'all 0.3s',
+              transform: isMenuOpen ? 'translateY(8px) rotate(45deg)' : 'none',
+            }}></span>
+            <span style={{
+              width: '100%',
+              height: '3px',
+              background: '#FFFFFF',
+              borderRadius: '3px',
+              transition: 'all 0.3s',
+              opacity: isMenuOpen ? 0 : 1,
+            }}></span>
+            <span style={{
+              width: '100%',
+              height: '3px',
+              background: '#FFFFFF',
+              borderRadius: '3px',
+              transition: 'all 0.3s',
+              transform: isMenuOpen ? 'translateY(-10px) rotate(-45deg)' : 'none',
+            }}></span>
+          </button>
+        </div>
       </div>
 
       {/* Mobile Menu */}
@@ -107,9 +120,9 @@ const MobileNavbar = () => {
           {/* Navigation Links */}
           <nav style={{ padding: '16px' }}>
             {navItems.map((item) => (
-              <a
+              <Link
                 key={item.label}
-                href={item.href}
+                to={item.href}
                 onClick={() => setIsMenuOpen(false)}
                 style={{
                   display: 'block',
@@ -127,7 +140,7 @@ const MobileNavbar = () => {
                 onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
               >
                 {item.label}
-              </a>
+              </Link>
             ))}
           </nav>
 
@@ -137,15 +150,6 @@ const MobileNavbar = () => {
             borderTop: '1px solid rgba(255, 255, 255, 0.2)',
             marginTop: '8px',
           }}>
-            {/* Language Switcher */}
-            <div style={{
-              marginBottom: '16px',
-              display: 'flex',
-              justifyContent: 'center',
-            }}>
-              <LanguageSwitcher />
-            </div>
-
             {isAuthenticated && user ? (
               <>
                 <Link

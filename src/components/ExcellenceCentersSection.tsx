@@ -387,58 +387,7 @@ const ExcellenceCentersSection = () => {
                         {getTranslatedField(center.name, '')}
                       </span>
 
-                      {/* View Location Button - Hidden by default */}
-                      <a 
-                        href={center.map_url || '#'}
-                        target={center.map_url ? '_blank' : undefined}
-                        rel={center.map_url ? 'noopener noreferrer' : undefined}
-                        onClick={(e) => {
-                          if (!center.map_url || isDragging) {
-                            e.preventDefault();
-                          }
-                        }}
-                        className="view-location-btn"
-                        style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '8px',
-                          padding: '10px 16px',
-                          backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                          borderRadius: '12px',
-                          fontSize: '14px',
-                          fontWeight: 600,
-                          fontFamily: 'Nunito, sans-serif',
-                          color: '#061F42',
-                          textDecoration: 'none',
-                          alignSelf: 'flex-start',
-                          opacity: 0,
-                          cursor: center.map_url ? 'pointer' : 'not-allowed',
-                          pointerEvents: center.map_url ? 'auto' : 'none',
-                          transition: 'all 0.3s ease',
-                          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)'
-                        }}
-                        onMouseEnter={(e) => {
-                          if (center.map_url) {
-                            e.currentTarget.style.backgroundColor = '#15C9FA';
-                            e.currentTarget.style.color = '#FFFFFF';
-                            e.currentTarget.style.transform = 'translateY(-2px)';
-                            e.currentTarget.style.boxShadow = '0 4px 12px rgba(21, 201, 250, 0.4)';
-                          }
-                        }}
-                        onMouseLeave={(e) => {
-                          if (center.map_url) {
-                            e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.95)';
-                            e.currentTarget.style.color = '#061F42';
-                            e.currentTarget.style.transform = 'translateY(0)';
-                            e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.15)';
-                          }
-                        }}
-                      >
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" fill="currentColor"/>
-                        </svg>
-                        {t('viewLocation')}
-                      </a>
+
                     </div>
                   </div>
                 </div>

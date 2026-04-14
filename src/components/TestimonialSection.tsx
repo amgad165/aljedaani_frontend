@@ -18,19 +18,13 @@ interface DoctorCard {
   description: string;
 }
 
-// Navigation Icon - defined outside component
+// Navigation Icon - standardized shared arrow assets
 const RightArrowIcon = () => (
-  <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="24" cy="24" r="24" fill="#FFFFFF"/>
-    <path d="M20 18L28 26L20 34" stroke="#061F42" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-  </svg>
+  <img src="/assets/images/general/righarrow-light.svg" width="48" height="48" alt="Next" />
 );
 
 const LeftArrowIcon = () => (
-  <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="24" cy="24" r="24" fill="#FFFFFF"/>
-    <path d="M28 18L20 26L28 34" stroke="#061F42" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-  </svg>
+  <img src="/assets/images/general/leftarrow-light.svg" width="48" height="48" alt="Previous" />
 );
 
 const TestimonialSection = () => {
