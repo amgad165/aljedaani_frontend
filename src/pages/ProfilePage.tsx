@@ -31,6 +31,12 @@ const ProfilePage = () => {
     }
   }, [searchParams]);
 
+  useEffect(() => {
+    if (isAuthenticated && refreshUser) {
+      refreshUser();
+    }
+  }, [isAuthenticated]);
+
   const tabs: TabInfo[] = [
     { id: 'dashboard', label: t('profileDashboard'), width: 'auto' },
     { id: 'edit-profile', label: t('profileEditProfile'), width: 'auto' },
@@ -50,10 +56,10 @@ const ProfilePage = () => {
     name: user?.name || 'Ghassan Jasmy',
     avatar: user?.profile_photo || '/assets/images/general/person_template.png',
     email: user?.email || 'patient@gmail.com',
-    phone: user?.phone || '+966 58 XXX XXXX',
+    phone: user?.his_patient_phone || user?.phone || '+966 58 XXX XXXX',
     medicalRecordNumber: user?.his_patient_file_number || user?.medical_record_number || 'N/A',
     nationalId: user?.national_id || 'N/A',
-    dateOfBirth: user?.date_of_birth || '08/12/1988',
+    dateOfBirth: user?.his_patient_dob || user?.date_of_birth || '08/12/1988',
     address: user?.address || '3885 Al Bandariyyah Street Al Falah\nRiyadh 13314\nSAU',
     maritalStatus: user?.marital_status || '',
     religion: user?.religion || '',
@@ -65,6 +71,7 @@ const ProfilePage = () => {
       new: 0,
       old: 0,
     },
+    isHisPatient: user?.is_his_patient || false,
   };
 
   // Tab Button Component

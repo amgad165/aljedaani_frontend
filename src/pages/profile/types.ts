@@ -26,6 +26,7 @@ export interface ProfileData {
     new: number;
     old: number;
   };
+  isHisPatient?: boolean;
 }
 
 export interface User {
