@@ -272,7 +272,7 @@ const ContactPage: React.FC = () => {
                       display: 'flex',
                       alignItems: 'flex-end',
                       padding: '12px 14px',
-                      opacity: hoveredBranch === branch.id ? 0 : 1,
+                      opacity: isMobile ? 0 : (hoveredBranch === branch.id ? 0 : 1),
                       transition: 'opacity 0.3s ease',
                     }}>
                       <h3 style={{

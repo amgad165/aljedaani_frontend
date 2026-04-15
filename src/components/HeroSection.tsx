@@ -88,10 +88,10 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
           boxShadow: isOpen ? '0 4px 12px rgba(0, 171, 218, 0.15)' : undefined,
           color: selectedOption ? '#061F42' : 'rgba(6, 31, 66, 0.92)',
           fontWeight: 400,
-          minHeight: isMobileViewport ? '38px' : '44px',
-          padding: isMobileViewport ? '8px 36px 8px 12px' : '12px 40px 12px 16px',
-          borderRadius: isMobileViewport ? '8px' : '10px',
-          fontSize: isMobileViewport ? '13px' : '14px',
+          minHeight: isMobileViewport ? '34px' : '44px',
+          padding: isMobileViewport ? '6px 32px 6px 10px' : '12px 40px 12px 16px',
+          borderRadius: isMobileViewport ? '6px' : '10px',
+          fontSize: isMobileViewport ? '12px' : '14px',
         }}
       >
         {selectedOption ? getTranslatedField(selectedOption.name, '') : placeholder}
@@ -500,7 +500,7 @@ const HeroSection = () => {
       style={{
         display: 'flex',
         flexDirection: 'column',
-        gap: '8px',
+        gap: '4px',
       }}
     >
       <div>
@@ -531,12 +531,12 @@ const HeroSection = () => {
       <button
         type="submit"
         style={{
-          height: '38px',
+          height: '34px',
           border: 'none',
-          borderRadius: '10px',
+          borderRadius: '8px',
           background: '#061F42',
           color: '#FFFFFF',
-          fontSize: '13px',
+          fontSize: '12px',
           fontWeight: 600,
           cursor: 'pointer',
         }}
@@ -575,7 +575,7 @@ const HeroSection = () => {
         <div
           style={{
             position: 'relative',
-            height: '460px',
+            height: '580px',
             overflow: 'hidden',
           }}
         >

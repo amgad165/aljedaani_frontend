@@ -549,6 +549,9 @@ const AdminAppointments: React.FC = () => {
                         Date & Time
                       </th>
                       <th style={{ fontFamily: 'Nunito, sans-serif', padding: '16px', textAlign: 'left', fontSize: '14px', fontWeight: '600', color: '#374151' }}>
+                        Created At
+                      </th>
+                      <th style={{ fontFamily: 'Nunito, sans-serif', padding: '16px', textAlign: 'left', fontSize: '14px', fontWeight: '600', color: '#374151' }}>
                         Status
                       </th>
                       <th style={{ fontFamily: 'Nunito, sans-serif', padding: '16px', textAlign: 'left', fontSize: '14px', fontWeight: '600', color: '#374151' }}>
@@ -597,6 +600,14 @@ const AdminAppointments: React.FC = () => {
                           </div>
                           <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '14px', color: '#6b7280' }}>
                             {formatTime(appointment.appointment_time)}
+                          </div>
+                        </td>
+                        <td style={{ padding: '16px' }}>
+                          <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '14px', color: '#111827' }}>
+                            {formatDate(appointment.created_at)}
+                          </div>
+                          <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '14px', color: '#6b7280' }}>
+                            {new Date(appointment.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                           </div>
                         </td>
                         <td style={{ padding: '16px' }}>

@@ -122,12 +122,12 @@ Our leaders believe in leading by example, maintaining open communication, and e
           }}>
             <h1 style={{
               fontFamily: 'Nunito, sans-serif',
-              fontStyle: 'normal',
-              fontWeight: 600,
+              fontWeight: 700,
               fontSize: isMobile ? '28px' : '48px',
               lineHeight: isMobile ? '32px' : '50px',
               color: '#061F42',
               margin: 0,
+              textAlign: isRTL ? 'right' : 'left',
             }}>
               {t('aboutPageTitle')}
             </h1>
@@ -165,7 +165,7 @@ Our leaders believe in leading by example, maintaining open communication, and e
               flexDirection: 'column',
               alignItems: 'flex-start',
               padding: isMobile ? '12px' : '24px',
-              gap: isMobile ? '16px' : '24px',
+              gap: isMobile ? '7px' : '7px',
               width: '100%',
               background: '#FCFCFC',
               boxShadow: '0px 4px 5px rgba(0, 0, 0, 0.25)',
@@ -332,14 +332,15 @@ Our leaders believe in leading by example, maintaining open communication, and e
                 {/* Render different content based on active tab */}
                 {activeTab === 'overview' && (
                   <p style={{
-                    fontFamily: 'Nunito, sans-serif',
+                    fontFamily: 'Varela, sans-serif',
                     fontStyle: 'normal',
                     fontWeight: 400,
-                    fontSize: '18px',
-                    lineHeight: '29px',
+                    fontSize: isMobile ? '14px' : '16px',
+                    lineHeight: isMobile ? '22px' : '26px',
                     color: '#4A5565',
                     margin: 0,
                     whiteSpace: 'pre-line',
+                    textAlign: isRTL ? 'right' : 'left',
                   }}>
                     {currentContent.content}
                   </p>
@@ -347,43 +348,47 @@ Our leaders believe in leading by example, maintaining open communication, and e
 
                 {/* Overview Tab */}
                 {activeTab === 'overview' && (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? '16px' : '6px', width: '100%' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? '7px' : '7px', width: '100%' }}>
                     <h1 style={{
                       fontFamily: 'Nunito, sans-serif',
                       fontWeight: 700,
-                      fontSize: isMobile ? '24px' : '31px',
-                      lineHeight: isMobile ? '32px' : '42px',
+                      fontSize: isMobile ? '28px' : '32px',
+                      lineHeight: isMobile ? '32px' : '40px',
                       color: '#061F42',
                       margin: 0,
+                      textAlign: isRTL ? 'right' : 'left',
                     }}>
                       {t('aboutOverviewMainTitle')}
                     </h1>
                     <p style={{
-                      fontFamily: 'Nunito, sans-serif',
+                      fontFamily: 'Varela, sans-serif',
                       fontWeight: 400,
-                      fontSize: isMobile ? '16px' : '18px',
-                      lineHeight: isMobile ? '24px' : '29px',
+                      fontSize: isMobile ? '14px' : '16px',
+                      lineHeight: isMobile ? '22px' : '26px',
                       color: '#4A5565',
                       margin: 0,
+                      textAlign: isRTL ? 'right' : 'left',
                     }} dangerouslySetInnerHTML={{ __html: t('aboutOverviewIntro1') }}>
                     </p>
                     <p style={{
-                      fontFamily: 'Nunito, sans-serif',
+                      fontFamily: 'Varela, sans-serif',
                       fontWeight: 400,
-                      fontSize: isMobile ? '16px' : '18px',
-                      lineHeight: isMobile ? '24px' : '29px',
+                      fontSize: isMobile ? '14px' : '16px',
+                      lineHeight: isMobile ? '22px' : '26px',
                       color: '#4A5565',
                       margin: 0,
+                      textAlign: isRTL ? 'right' : 'left',
                     }}>
                       {t('aboutExperiencedCareText')} <strong>"{t('aboutExperiencedCareSlogan')}"</strong>
                     </p>
                     <p style={{
-                      fontFamily: 'Nunito, sans-serif',
+                      fontFamily: 'Varela, sans-serif',
                       fontWeight: 400,
-                      fontSize: isMobile ? '16px' : '18px',
-                      lineHeight: isMobile ? '24px' : '29px',
+                      fontSize: isMobile ? '14px' : '16px',
+                      lineHeight: isMobile ? '22px' : '26px',
                       color: '#4A5565',
                       margin: 0,
+                      textAlign: isRTL ? 'right' : 'left',
                     }} dangerouslySetInnerHTML={{ __html: t('aboutOverviewIntro2') }}>
                     </p>
 
@@ -391,38 +396,42 @@ Our leaders believe in leading by example, maintaining open communication, and e
                       fontFamily: 'Nunito, sans-serif',
                       fontWeight: 700,
                       fontSize: isMobile ? '20px' : '24px',
-                      lineHeight: isMobile ? '28px' : '32px',
+                      lineHeight: isMobile ? '28px' : '36px',
                       color: '#061F42',
-                      margin: '16px 0 0 0',
+                      margin: isMobile ? '8px 0 0 0' : '12px 0 0 0',
+                      textAlign: isRTL ? 'right' : 'left',
                     }}>
                       {t('aboutOverviewSpecialtiesTitle')}
                     </h2>
                     <p style={{
-                      fontFamily: 'Nunito, sans-serif',
+                      fontFamily: 'Varela, sans-serif',
                       fontWeight: 400,
-                      fontSize: isMobile ? '16px' : '18px',
-                      lineHeight: isMobile ? '24px' : '29px',
+                      fontSize: isMobile ? '14px' : '16px',
+                      lineHeight: isMobile ? '22px' : '26px',
                       color: '#4A5565',
                       margin: 0,
+                      textAlign: isRTL ? 'right' : 'left',
                     }} dangerouslySetInnerHTML={{ __html: t('aboutOverviewSpecialties1') }}>
                     </p>
                     <p style={{
-                      fontFamily: 'Nunito, sans-serif',
+                      fontFamily: 'Varela, sans-serif',
                       fontWeight: 400,
-                      fontSize: isMobile ? '16px' : '18px',
-                      lineHeight: isMobile ? '24px' : '29px',
+                      fontSize: isMobile ? '14px' : '16px',
+                      lineHeight: isMobile ? '22px' : '26px',
                       color: '#4A5565',
                       margin: 0,
+                      textAlign: isRTL ? 'right' : 'left',
                     }}>
                       {t('aboutOverviewSpecialties2')}
                     </p>
                     <p style={{
-                      fontFamily: 'Nunito, sans-serif',
+                      fontFamily: 'Varela, sans-serif',
                       fontWeight: 400,
-                      fontSize: isMobile ? '16px' : '18px',
-                      lineHeight: isMobile ? '24px' : '29px',
+                      fontSize: isMobile ? '14px' : '16px',
+                      lineHeight: isMobile ? '22px' : '26px',
                       color: '#4A5565',
                       margin: 0,
+                      textAlign: isRTL ? 'right' : 'left',
                     }}>
                       {t('aboutOverviewSpecialties3')}
                     </p>
@@ -431,37 +440,41 @@ Our leaders believe in leading by example, maintaining open communication, and e
                       fontFamily: 'Nunito, sans-serif',
                       fontWeight: 700,
                       fontSize: isMobile ? '20px' : '24px',
-                      lineHeight: isMobile ? '28px' : '32px',
+                      lineHeight: isMobile ? '28px' : '36px',
                       color: '#061F42',
-                      margin: '16px 0 0 0',
+                      margin: isMobile ? '8px 0 0 0' : '12px 0 0 0',
+                      textAlign: isRTL ? 'right' : 'left',
                     }}>
                       {t('aboutOverviewInfraTitle')}
                     </h2>
                     <p style={{
-                      fontFamily: 'Nunito, sans-serif',
+                      fontFamily: 'Varela, sans-serif',
                       fontWeight: 400,
-                      fontSize: isMobile ? '16px' : '18px',
-                      lineHeight: isMobile ? '24px' : '29px',
+                      fontSize: isMobile ? '14px' : '16px',
+                      lineHeight: isMobile ? '22px' : '26px',
                       color: '#4A5565',
                       margin: 0,
+                      textAlign: isRTL ? 'right' : 'left',
                     }} dangerouslySetInnerHTML={{ __html: t('aboutOverviewInfra1') }}>
                     </p>
                     <p style={{
-                      fontFamily: 'Nunito, sans-serif',
+                      fontFamily: 'Varela, sans-serif',
                       fontWeight: 400,
-                      fontSize: isMobile ? '16px' : '18px',
-                      lineHeight: isMobile ? '24px' : '29px',
+                      fontSize: isMobile ? '14px' : '16px',
+                      lineHeight: isMobile ? '22px' : '26px',
                       color: '#4A5565',
                       margin: 0,
+                      textAlign: isRTL ? 'right' : 'left',
                     }} dangerouslySetInnerHTML={{ __html: t('aboutOverviewInfra2') }}>
                     </p>
                     <p style={{
-                      fontFamily: 'Nunito, sans-serif',
+                      fontFamily: 'Varela, sans-serif',
                       fontWeight: 400,
-                      fontSize: isMobile ? '16px' : '18px',
-                      lineHeight: isMobile ? '24px' : '29px',
+                      fontSize: isMobile ? '14px' : '16px',
+                      lineHeight: isMobile ? '22px' : '26px',
                       color: '#4A5565',
                       margin: 0,
+                      textAlign: isRTL ? 'right' : 'left',
                     }} dangerouslySetInnerHTML={{ __html: t('aboutOverviewInfra3') }}>
                     </p>
 
@@ -469,19 +482,21 @@ Our leaders believe in leading by example, maintaining open communication, and e
                       fontFamily: 'Nunito, sans-serif',
                       fontWeight: 700,
                       fontSize: isMobile ? '20px' : '24px',
-                      lineHeight: isMobile ? '28px' : '32px',
+                      lineHeight: isMobile ? '28px' : '36px',
                       color: '#061F42',
-                      margin: '16px 0 0 0',
+                      margin: isMobile ? '8px 0 0 0' : '12px 0 0 0',
+                      textAlign: isRTL ? 'right' : 'left',
                     }}>
                       {t('aboutOverviewPresenceTitle')}
                     </h2>
                     <p style={{
-                      fontFamily: 'Nunito, sans-serif',
+                      fontFamily: 'Varela, sans-serif',
                       fontWeight: 400,
-                      fontSize: isMobile ? '16px' : '18px',
-                      lineHeight: isMobile ? '24px' : '29px',
+                      fontSize: isMobile ? '14px' : '16px',
+                      lineHeight: isMobile ? '22px' : '26px',
                       color: '#4A5565',
                       margin: 0,
+                      textAlign: isRTL ? 'right' : 'left',
                     }} dangerouslySetInnerHTML={{ __html: t('aboutOverviewPresence') }}>
                     </p>
 
@@ -489,19 +504,21 @@ Our leaders believe in leading by example, maintaining open communication, and e
                       fontFamily: 'Nunito, sans-serif',
                       fontWeight: 700,
                       fontSize: isMobile ? '20px' : '24px',
-                      lineHeight: isMobile ? '28px' : '32px',
+                      lineHeight: isMobile ? '28px' : '36px',
                       color: '#061F42',
-                      margin: '16px 0 0 0',
+                      margin: isMobile ? '8px 0 0 0' : '12px 0 0 0',
+                      textAlign: isRTL ? 'right' : 'left',
                     }}>
                       {t('aboutOverviewCentersTitle')}
                     </h2>
                     <p style={{
-                      fontFamily: 'Nunito, sans-serif',
+                      fontFamily: 'Varela, sans-serif',
                       fontWeight: 400,
-                      fontSize: isMobile ? '16px' : '18px',
-                      lineHeight: isMobile ? '24px' : '29px',
+                      fontSize: isMobile ? '14px' : '16px',
+                      lineHeight: isMobile ? '22px' : '26px',
                       color: '#4A5565',
                       margin: 0,
+                      textAlign: isRTL ? 'right' : 'left',
                     }} dangerouslySetInnerHTML={{ __html: t('aboutOverviewCenters') }}>
                     </p>
                   </div>
@@ -509,7 +526,7 @@ Our leaders believe in leading by example, maintaining open communication, and e
 
                 {/* Mission & Vision Tab */}
                 {activeTab === 'mission' && (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? '16px' : '24px', width: '100%' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? '7px' : '7px', width: '100%' }}>
                     {/* Our Mission */}
                     <div style={{
                       boxSizing: 'border-box',
@@ -566,14 +583,15 @@ Our leaders believe in leading by example, maintaining open communication, and e
                       </div>
                       {/* Paragraph */}
                       <p style={{
-                        fontFamily: 'Nunito, sans-serif',
+                        fontFamily: 'Varela, sans-serif',
                         fontStyle: 'normal',
                         fontWeight: 400,
-                        fontSize: '18px',
-                        lineHeight: '29px',
+                        fontSize: isMobile ? '14px' : '16px',
+                        lineHeight: isMobile ? '22px' : '26px',
                         color: '#4A5565',
                         margin: 0,
                         width: '100%',
+                        textAlign: isRTL ? 'right' : 'left',
                       }} dangerouslySetInnerHTML={{ __html: t('aboutMissionText') }}>
                       </p>
                     </div>
@@ -633,14 +651,15 @@ Our leaders believe in leading by example, maintaining open communication, and e
                       </div>
                       {/* Paragraph */}
                       <p style={{
-                        fontFamily: 'Nunito, sans-serif',
+                        fontFamily: 'Varela, sans-serif',
                         fontStyle: 'normal',
                         fontWeight: 400,
-                        fontSize: '18px',
-                        lineHeight: '29px',
+                        fontSize: isMobile ? '14px' : '16px',
+                        lineHeight: isMobile ? '22px' : '26px',
                         color: '#4A5565',
                         margin: 0,
                         width: '100%',
+                        textAlign: isRTL ? 'right' : 'left',
                       }}>
                        {t('aboutVisionText')}
                       </p>
@@ -709,7 +728,7 @@ Our leaders believe in leading by example, maintaining open communication, and e
                               {value.title}
                             </h4>
                             <p style={{
-                              fontFamily: 'Nunito, sans-serif',
+                              fontFamily: 'Varela, sans-serif',
                               fontWeight: 400,
                               fontSize: isMobile ? '13px' : '14px',
                               lineHeight: isMobile ? '20px' : '22px',
@@ -739,10 +758,10 @@ Our leaders believe in leading by example, maintaining open communication, and e
                       {t('aboutAwardsHeading')}
                     </h3>
                     <p style={{
-                      fontFamily: 'Nunito, sans-serif',
+                      fontFamily: 'Varela, sans-serif',
                       fontWeight: 400,
                       fontSize: isMobile ? '14px' : '16px',
-                      lineHeight: isMobile ? '22px' : '24px',
+                      lineHeight: isMobile ? '22px' : '26px',
                       color: '#6B7280',
                       margin: isMobile ? '0 0 24px 0' : '0 0 32px 0',
                     }}>
@@ -751,7 +770,7 @@ Our leaders believe in leading by example, maintaining open communication, and e
                     <div style={{
                       display: 'grid',
                       gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)',
-                      gap: isMobile ? '16px' : '24px',
+                      gap: isMobile ? '7px' : '7px',
                       width: '100%',
                     }}>
                       {[
@@ -817,7 +836,7 @@ Our leaders believe in leading by example, maintaining open communication, and e
                     flexDirection: 'column',
                     alignItems: 'flex-start',
                     padding: isMobile ? '16px' : '24px 33px 1px 24px',
-                    gap: isMobile ? '16px' : '24px',
+                    gap: isMobile ? '7px' : '7px',
                     width: '100%',
                     background: '#FFFFFF',
                     border: '1px solid #F3F4F6',
@@ -848,7 +867,7 @@ Our leaders believe in leading by example, maintaining open communication, and e
                     <div style={{
                       display: 'grid',
                       gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)',
-                      gap: isMobile ? '16px' : '24px',
+                      gap: isMobile ? '7px' : '7px',
                       width: '100%',
                     }}>
                       {[

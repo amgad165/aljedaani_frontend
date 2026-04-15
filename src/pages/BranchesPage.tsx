@@ -404,11 +404,11 @@ const SpecialtyItem: React.FC<SpecialtyItemProps> = ({ name, icon, isMobile = fa
     display: 'flex',
     flexDirection: 'row',
     alignItems: 'center',
-    padding: isMobile ? '12px 12px 12px 14px' : '14px 14px 14px 16px',
-    gap: isMobile ? '12px' : '14px',
+    padding: isMobile ? '10px 10px 10px 12px' : '14px 14px 14px 16px',
+    gap: isMobile ? '10px' : '14px',
     width: '100%',
-    minHeight: isMobile ? '68px' : '80px',
-    borderRadius: '14px',
+    minHeight: isMobile ? '58px' : '80px',
+    borderRadius: isMobile ? '12px' : '14px',
     background: '#F8FCFF',
     border: '1px solid #DDF2FA',
   }}>
@@ -418,10 +418,10 @@ const SpecialtyItem: React.FC<SpecialtyItemProps> = ({ name, icon, isMobile = fa
       justifyContent: 'center',
       alignItems: 'center',
       padding: '0px',
-      width: isMobile ? '44px' : '52px',
-      height: isMobile ? '44px' : '52px',
+      width: isMobile ? '36px' : '52px',
+      height: isMobile ? '36px' : '52px',
       flexShrink: 0,
-      borderRadius: '10px',
+      borderRadius: isMobile ? '8px' : '10px',
       background: '#EAF9FE',
     }}>
       {icon ? (
@@ -429,13 +429,13 @@ const SpecialtyItem: React.FC<SpecialtyItemProps> = ({ name, icon, isMobile = fa
           src={icon} 
           alt={name}
           style={{
-            width: isMobile ? '28px' : '34px',
-            height: isMobile ? '28px' : '34px',
+            width: isMobile ? '22px' : '34px',
+            height: isMobile ? '22px' : '34px',
             objectFit: 'contain',
           }}
         />
       ) : (
-        <svg width={isMobile ? '24' : '30'} height={isMobile ? '24' : '30'} viewBox="0 0 18 18" fill="none">
+        <svg width={isMobile ? '20' : '30'} height={isMobile ? '20' : '30'} viewBox="0 0 18 18" fill="none">
           <path d="M9 1L11 7H17L12 11L14 17L9 13L4 17L6 11L1 7H7L9 1Z" stroke="#00ABDA" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
       )}
@@ -444,8 +444,8 @@ const SpecialtyItem: React.FC<SpecialtyItemProps> = ({ name, icon, isMobile = fa
       fontFamily: 'Varela, sans-serif',
       fontStyle: 'normal',
       fontWeight: 400,
-      fontSize: isMobile ? '15px' : '17px',
-      lineHeight: isMobile ? '22px' : '24px',
+      fontSize: isMobile ? '13px' : '17px',
+      lineHeight: isMobile ? '18px' : '24px',
       color: '#364153',
       overflow: 'hidden',
       display: '-webkit-box',
@@ -699,9 +699,10 @@ const BranchesPage: React.FC = () => {
 
   const scrollDoctors = (direction: 'left' | 'right') => {
     if (doctorScrollRef.current) {
-      const cardWidth = 300;
-      const gap = 20;
-      const scrollAmount = (cardWidth + gap) * 2;
+      const firstCard = doctorScrollRef.current.firstElementChild as HTMLElement | null;
+      const gap = isMobile ? 8 : 20;
+      const cardWidth = firstCard?.getBoundingClientRect().width || 300;
+      const scrollAmount = isMobile ? cardWidth + gap : (cardWidth + gap) * 2;
       
       const currentScroll = doctorScrollRef.current.scrollLeft;
       const targetScroll = direction === 'left' 
@@ -1422,13 +1423,13 @@ const BranchesPage: React.FC = () => {
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'flex-start',
-                  padding: '24px',
-                  gap: '24px',
+                  padding: isMobile ? '16px' : '24px',
+                  gap: isMobile ? '16px' : '24px',
                   width: '100%',
                   background: '#FFFFFF',
                   border: '1px solid #F3F4F6',
                   boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.1), 0px 1px 2px -1px rgba(0, 0, 0, 0.1)',
-                  borderRadius: '20px',
+                  borderRadius: isMobile ? '12px' : '20px',
                 }}>
                   <h3 style={{
                     fontFamily: 'Nunito, sans-serif',
@@ -1442,7 +1443,9 @@ const BranchesPage: React.FC = () => {
                   </h3>
                   <div style={{
                     display: 'grid',
-                    gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)',
+                    gridTemplateColumns: isMobile
+                      ? (window.innerWidth <= 420 ? '1fr' : 'repeat(2, 1fr)')
+                      : 'repeat(4, 1fr)',
                     gap: isMobile ? '12px 8px' : '16px 12px',
                     width: '100%',
                   }}>
@@ -1603,21 +1606,26 @@ const BranchesPage: React.FC = () => {
                         ref={doctorScrollRef}
                         style={{
                           display: 'flex',
-                          gap: isMobile ? '12px' : '20px',
+                          gap: isMobile ? '8px' : '20px',
                           overflowX: 'auto',
                           overflowY: 'hidden',
                           scrollbarWidth: 'none',
                           msOverflowStyle: 'none',
-                          padding: isMobile ? '0 8px' : '0',
+                          padding: isMobile ? '0 calc((100% - min(300px, calc(100vw - 80px))) / 2)' : '0',
                           WebkitOverflowScrolling: 'touch',
+                          scrollSnapType: isMobile ? 'x mandatory' : 'none',
+                          scrollPaddingInline: isMobile ? 'calc((100% - min(300px, calc(100vw - 80px))) / 2)' : '0',
                         }}
                       >
                         {doctors.length > 0 ? (
                           doctors.map(doctor => (
                             <div key={doctor.id} style={{ 
-                              flex: isMobile ? '0 0 calc(100vw - 48px)' : '0 0 280px',
-                              minWidth: isMobile ? 'calc(100vw - 48px)' : '280px',
-                              maxWidth: isMobile ? 'calc(100vw - 48px)' : '300px',
+                              display: 'block',
+                              flex: isMobile ? '0 0 auto' : '0 0 280px',
+                              width: isMobile ? 'min(300px, calc(100vw - 80px))' : '280px',
+                              minWidth: isMobile ? 'min(300px, calc(100vw - 80px))' : '280px',
+                              maxWidth: isMobile ? 'min(300px, calc(100vw - 80px))' : '300px',
+                              scrollSnapAlign: isMobile ? 'center' : 'none',
                             }}>
                               <DoctorCard doctor={doctor} onLearnMore={handleLearnMore} onBookNow={handleBookNow} />
                             </div>

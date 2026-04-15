@@ -379,7 +379,7 @@ background: linear-gradient(180deg, #8FF5F7 0%, #14C8F9 100%);
     max-width: 100%;
   }
   .main-sec .card-sec {
-    padding-top: clamp(60px, 10vw, 120px);
+    padding-top: clamp(40px, 10vw, 120px);
     margin-top: 0;
   }
   .main-sec .banner-sec {

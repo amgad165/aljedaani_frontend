@@ -5,6 +5,7 @@ import { departmentsService, type Department, type DepartmentTabContent, type Do
 import { type Testimonial } from '../services/testimonialsService';
 import { useResponsiveNavbar } from '../hooks/useResponsiveNavbar';
 import { LoadingSpinner } from '../components/LoadingComponents';
+import Footer from '../components/Footer';
 import { EASINGS } from '../utils/animations';
 import FloatingContactButtons from '../components/FloatingContactButtons';
 import { getTranslatedField } from '../utils/localeHelpers';
@@ -453,9 +454,11 @@ const DepartmentDetailsPage: React.FC = () => {
 
   const scrollDoctors = (direction: 'left' | 'right') => {
     if (doctorScrollRef.current) {
-      const cardWidth = 300; // Width of one doctor card
-      const gap = 20; // Gap between cards
-      const scrollAmount = (cardWidth + gap) * 2; // Scroll 2 cards at a time
+      const firstCard = doctorScrollRef.current.firstElementChild as HTMLElement | null;
+      const isMobile = window.innerWidth <= 768;
+      const gap = isMobile ? 8 : 20;
+      const cardWidth = firstCard?.getBoundingClientRect().width || 300;
+      const scrollAmount = isMobile ? cardWidth + gap : (cardWidth + gap) * 2;
       
       const currentScroll = doctorScrollRef.current.scrollLeft;
       const targetScroll = direction === 'left' 
@@ -812,30 +815,30 @@ const DepartmentDetailsPage: React.FC = () => {
               top: '50%',
               transform: 'translateY(-50%)',
               zIndex: 10,
-              width: '40px',
-              height: '40px',
-              borderRadius: '50%',
-              background: 'rgba(255, 255, 255, 0.95)',
-              border: '2px solid #15C9FA',
+              width: 'auto',
+              height: 'auto',
+              padding: '0',
+              background: 'transparent',
+              border: 'none',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               cursor: 'pointer',
-              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
               transition: 'all 0.2s ease',
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = '#15C9FA';
               e.currentTarget.style.transform = 'translateY(-50%) scale(1.1)';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.95)';
               e.currentTarget.style.transform = 'translateY(-50%) scale(1)';
             }}
           >
-            <svg width="18" height="18" viewBox="0 0 12 12" fill="none">
-              <path d="M7.5 2L3.5 6L7.5 10" stroke="#061F42" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
+            <img
+              src="/assets/images/general/leftarrow-light.svg"
+              width="34"
+              height="34"
+              alt="Previous"
+            />
           </button>
         )}
 
@@ -849,30 +852,30 @@ const DepartmentDetailsPage: React.FC = () => {
               top: '50%',
               transform: 'translateY(-50%)',
               zIndex: 10,
-              width: '40px',
-              height: '40px',
-              borderRadius: '50%',
-              background: 'rgba(255, 255, 255, 0.95)',
-              border: '2px solid #15C9FA',
+              width: 'auto',
+              height: 'auto',
+              padding: '0',
+              background: 'transparent',
+              border: 'none',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               cursor: 'pointer',
-              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
               transition: 'all 0.2s ease',
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = '#15C9FA';
               e.currentTarget.style.transform = 'translateY(-50%) scale(1.1)';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.95)';
               e.currentTarget.style.transform = 'translateY(-50%) scale(1)';
             }}
           >
-            <svg width="18" height="18" viewBox="0 0 12 12" fill="none">
-              <path d="M4.5 2L8.5 6L4.5 10" stroke="#061F42" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
+            <img
+              src="/assets/images/general/righarrow-light.svg"
+              width="34"
+              height="34"
+              alt="Next"
+            />
           </button>
         )}
 
@@ -2294,9 +2297,12 @@ const DepartmentDetailsPage: React.FC = () => {
       <div style={{
         minHeight: '100vh',
         background: '#C9F3FF',
+        display: 'flex',
+        flexDirection: 'column',
       }}>
         {ResponsiveNavbar}
         <div style={{
+          flex: 1,
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'center',
@@ -2328,6 +2334,7 @@ const DepartmentDetailsPage: React.FC = () => {
             {t('backToDepartments')}
           </button>
         </div>
+        <Footer />
       </div>
     );
   }
@@ -2605,20 +2612,24 @@ const DepartmentDetailsPage: React.FC = () => {
                   ref={doctorScrollRef}
                   style={{
                     display: 'flex',
-                    gap: window.innerWidth <= 768 ? '12px' : '20px',
+                    gap: window.innerWidth <= 768 ? '8px' : '20px',
                     overflowX: 'auto',
                     overflowY: 'hidden',
                     scrollbarWidth: 'none',
                     msOverflowStyle: 'none',
-                    padding: window.innerWidth <= 768 ? '0 8px' : '0',
+                    padding: window.innerWidth <= 768 ? '0 calc((100% - min(300px, calc(100vw - 80px))) / 2)' : '0',
                     WebkitOverflowScrolling: 'touch',
+                    scrollSnapType: window.innerWidth <= 768 ? 'x mandatory' : 'none',
+                    scrollPaddingInline: window.innerWidth <= 768 ? 'calc((100% - min(300px, calc(100vw - 80px))) / 2)' : '0',
                   }}
                 >
                   {doctors.map((doctor, index) => (
                     <div key={doctor.id} style={{ 
-                      flex: window.innerWidth <= 768 ? '0 0 calc(100vw - 48px)' : '0 0 300px',
-                      minWidth: window.innerWidth <= 768 ? 'calc(100vw - 48px)' : '300px',
-                      maxWidth: window.innerWidth <= 768 ? 'calc(100vw - 48px)' : '300px',
+                      flex: window.innerWidth <= 768 ? '0 0 auto' : '0 0 300px',
+                      width: window.innerWidth <= 768 ? 'min(300px, calc(100vw - 80px))' : '300px',
+                      minWidth: window.innerWidth <= 768 ? 'min(300px, calc(100vw - 80px))' : '300px',
+                      maxWidth: window.innerWidth <= 768 ? 'min(300px, calc(100vw - 80px))' : '300px',
+                      scrollSnapAlign: window.innerWidth <= 768 ? 'center' : 'none',
                     }}>
                       {renderDoctorCard(doctor, index)}
                     </div>
@@ -2668,6 +2679,7 @@ const DepartmentDetailsPage: React.FC = () => {
           )}
         </div>
       </div>
+      <Footer />
       
       {/* Animation Styles */}
       <style>{animationStyles}</style>

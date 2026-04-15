@@ -3,7 +3,7 @@ import { useAuth } from '../hooks/useAuth';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { branchesService, type Branch } from '../services/branchesService';
 import { getTranslatedField } from '../utils/localeHelpers';
-import LanguageSwitcher from './LanguageSwitcher';
+import { LanguageSwitcher } from './LanguageSwitcher';
 import { useTranslation } from 'react-i18next';
 
 interface NavItem {
@@ -175,6 +175,12 @@ const Navbar = () => {
           }
           .menu-links .menu-link-item-active > .menu-link-trigger {
             font-weight: 700;
+          }
+          .navbar-lang-switch {
+            margin-left: 18px;
+            margin-right: 0;
+            display: inline-block;
+            vertical-align: middle;
           }
         `}
       </style>
@@ -375,7 +381,7 @@ const Navbar = () => {
                   </>
                 )}
                 <Link to="/book-appointment" className="btn btn-outline">{t('bookAppointment')}</Link>
-                <LanguageSwitcher />
+                <span className="navbar-lang-switch"><LanguageSwitcher /></span>
               </div>
               <button 
                 className={`hamburger ${isMenuOpen ? 'open' : ''}`}
