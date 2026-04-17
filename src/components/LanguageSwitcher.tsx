@@ -2,15 +2,16 @@ import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
-export function LanguageSwitcher(): JSX.Element {
+export function LanguageSwitcher(): React.ReactElement {
   const { i18n } = useTranslation();
   const [isChanging, setIsChanging] = useState(false);
-  const [isHovering, setIsHovering] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
 
   const currentLanguage = i18n.language || 'en';
   const isArabic = currentLanguage === 'ar';
+  const targetLanguage = isArabic ? 'en' : 'ar';
+  const targetLanguageLabel = isArabic ? 'EN' : 'ع';
 
   const withLanguagePrefix = (pathname: string, lang: string): string => {
     const segments = pathname.split('/').filter(Boolean);
@@ -48,12 +49,9 @@ export function LanguageSwitcher(): JSX.Element {
     <div
       onClick={() => {
         if (!isChanging) {
-          const newLang = isArabic ? 'en' : 'ar';
-          toggleLanguage(newLang);
+          toggleLanguage(targetLanguage);
         }
       }}
-      onMouseEnter={() => !isChanging && setIsHovering(true)}
-      onMouseLeave={() => !isChanging && setIsHovering(false)}
       style={{
         display: 'inline-flex',
         alignItems: 'center',
@@ -66,7 +64,7 @@ export function LanguageSwitcher(): JSX.Element {
           display: 'inline-flex',
           alignItems: 'center',
           justifyContent: 'center',
-          gap: isHovering ? '12px' : '0',
+          gap: '0',
           padding: '8px 14px',
           cursor: isChanging ? 'wait' : 'pointer',
           fontFamily: 'Nunito, sans-serif',
@@ -83,8 +81,7 @@ export function LanguageSwitcher(): JSX.Element {
           userSelect: 'none',
           transition: 'all 0.3s ease',
           whiteSpace: 'nowrap',
-          minWidth: isHovering ? 'auto' : '40px',
-          justifyContent: 'center',
+          minWidth: '40px',
         }}
         onMouseEnter={(e) => {
           if (!isChanging) {
@@ -99,56 +96,19 @@ export function LanguageSwitcher(): JSX.Element {
           e.currentTarget.style.boxShadow = '0 4px 16px rgba(0, 0, 0, 0.15), inset 0 1px 1px rgba(255, 255, 255, 0.2)';
         }}
       >
-        {/* English Option */}
-        <div
+        <span
           style={{
             color: '#FFFFFF',
             fontWeight: 700,
-            transition: 'all 0.3s ease',
-            opacity: isArabic && !isHovering ? 0 : isArabic && isHovering ? 0.6 : 1,
-            width: isHovering ? 'auto' : isArabic ? '0px' : '20px',
             cursor: isChanging ? 'wait' : 'pointer',
             textAlign: 'center',
-            minWidth: isHovering && isArabic ? '25px' : '0px',
-            fontSize: '13px',
+            fontSize: targetLanguage === 'ar' ? '15px' : '13px',
+            minWidth: '20px',
             pointerEvents: 'none',
           }}
         >
-          EN
-        </div>
-
-        {/* Separator - Only show when hovering */}
-        {isHovering && (
-          <span
-            style={{
-              color: '#FFFFFF',
-              fontWeight: 300,
-              opacity: 0.3,
-              fontSize: '13px',
-              pointerEvents: 'none',
-            }}
-          >
-            |
-          </span>
-        )}
-
-        {/* Arabic Option */}
-        <div
-          style={{
-            color: '#FFFFFF',
-            fontWeight: 700,
-            transition: 'all 0.3s ease',
-            opacity: !isArabic && !isHovering ? 0 : !isArabic && isHovering ? 0.6 : 1,
-            width: isHovering ? 'auto' : !isArabic ? '0px' : '20px',
-            cursor: isChanging ? 'wait' : 'pointer',
-            textAlign: 'center',
-            minWidth: isHovering && !isArabic ? '25px' : '0px',
-            fontSize: '15px',
-            pointerEvents: 'none',
-          }}
-        >
-          ع
-        </div>
+          {targetLanguageLabel}
+        </span>
       </div>
     </div>
   );

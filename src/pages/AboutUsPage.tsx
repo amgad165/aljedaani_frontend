@@ -165,7 +165,7 @@ Our leaders believe in leading by example, maintaining open communication, and e
               flexDirection: 'column',
               alignItems: 'flex-start',
               padding: isMobile ? '12px' : '24px',
-              gap: isMobile ? '7px' : '7px',
+              gap: isMobile ? '10px' : '7px',
               width: '100%',
               background: '#FCFCFC',
               boxShadow: '0px 4px 5px rgba(0, 0, 0, 0.25)',
@@ -348,12 +348,12 @@ Our leaders believe in leading by example, maintaining open communication, and e
 
                 {/* Overview Tab */}
                 {activeTab === 'overview' && (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? '7px' : '7px', width: '100%' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? '15px' : '7px', width: '100%' }}>
                     <h1 style={{
                       fontFamily: 'Nunito, sans-serif',
                       fontWeight: 700,
-                      fontSize: isMobile ? '28px' : '32px',
-                      lineHeight: isMobile ? '32px' : '40px',
+                      fontSize: isMobile ? '26px' : '32px',
+                      lineHeight: isMobile ? '36px' : '40px',
                       color: '#061F42',
                       margin: 0,
                       textAlign: isRTL ? 'right' : 'left',

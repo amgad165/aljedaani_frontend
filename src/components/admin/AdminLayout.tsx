@@ -226,7 +226,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
           
           html[lang="ar"] [data-admin-page="true"] *,
           [dir="rtl"] [data-admin-page="true"] * {
-            font-family: 'BC Arabic', 'Nunito' !important;
+            font-family: 'Noto Naskh Arabic', 'Nunito' !important;
           }
         `}
       </style>
