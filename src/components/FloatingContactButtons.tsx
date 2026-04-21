@@ -27,6 +27,7 @@ const FloatingContactButtons = () => {
       </style>
       <div
         className="floating-buttons"
+        data-nosnippet="true"
         style={{
           position: 'fixed',
           right: '20px',

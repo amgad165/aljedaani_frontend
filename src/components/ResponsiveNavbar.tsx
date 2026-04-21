@@ -62,7 +62,7 @@ const ResponsiveNavbar = () => {
   };
 
   return (
-    <header className="responsive-navbar">
+    <header className="responsive-navbar" data-nosnippet="true">
       {/* Top Bar - Desktop Only */}
       <div className="responsive-topbar">
         <div className="responsive-container">

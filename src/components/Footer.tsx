@@ -59,11 +59,14 @@ const Footer = () => {
   ];
 
   return (
-    <footer style={{
+    <footer
+      data-nosnippet="true"
+      style={{
       background: '#061F42',
       padding: '48px 0',
       color: '#FFFFFF',
-    }}>
+      }}
+    >
       <style>{`
         .footer-link {
           color: #FFFFFF;

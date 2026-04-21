@@ -113,6 +113,7 @@
   "deptInpatientServices": "Inpatient Services",
   "deptInvestigations": "Investigations",
   "deptSuccessStories": "Success Stories",
+  "deptServicesIntro": "We offer a wide range of services, including:",
   "viewAllDoctors": "View All Doctors",
   "backToDepartments": "Back to Departments",
   "noDoctorsAvailable": "No doctors available for this department.",

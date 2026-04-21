@@ -26,7 +26,7 @@ const MobileNavbar = () => {
   };
 
   return (
-    <header style={{
+    <header data-nosnippet="true" style={{
       position: 'fixed',
       top: 0,
       left: 0,

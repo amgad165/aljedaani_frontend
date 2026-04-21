@@ -74,8 +74,8 @@ export async function unregisterPushToken(authToken?: string): Promise<void> {
   }
 
   try {
-    await fetch(`${API_BASE_URL}/notifications/push-token`, {
-      method: 'DELETE',
+    const response = await fetch(`${API_BASE_URL}/notifications/push-token/unregister`, {
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Accept: 'application/json',
@@ -83,6 +83,14 @@ export async function unregisterPushToken(authToken?: string): Promise<void> {
       },
       body: JSON.stringify({ token: fcmToken }),
     });
+
+    const contentType = response.headers.get('content-type') || '';
+    if (!contentType.includes('application/json')) {
+      console.warn('Unexpected unregister response type:', {
+        status: response.status,
+        contentType,
+      });
+    }
   } catch (error) {
     console.warn('Failed to unregister push token:', error);
   } finally {

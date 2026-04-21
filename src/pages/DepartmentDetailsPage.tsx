@@ -1085,7 +1085,7 @@ const DepartmentDetailsPage: React.FC = () => {
                   width: '100%',
                   animation: 'fadeInUp 0.4s ease-out 0.2s both',
                 }}>
-                  We offer a wide range of services, including:
+                  {t('deptServicesIntro')}
                 </h3>
               )}
 
@@ -1403,7 +1403,7 @@ const DepartmentDetailsPage: React.FC = () => {
                       margin: '0 0 4px 0',
                       textAlign: i18n.language === 'ar' ? 'right' : 'left',
                     }}>
-                      {getTranslatedField(service.title, '')}
+                      {getTranslatedField(service.title, '').replace(/\s*[:\uFF1A]\s*$/, '')}
                     </h4>
                   )}
                   {service.items && service.items.length > 0 && (

@@ -184,7 +184,7 @@ const Navbar = () => {
           }
         `}
       </style>
-      <header className="header">
+      <header className="header" data-nosnippet="true">
       {/* Header Wrapper */}
       <div className="header-wrapper">
         <div className="middle-header bottom-header pb-0">

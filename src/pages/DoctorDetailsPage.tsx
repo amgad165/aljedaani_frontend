@@ -88,7 +88,7 @@ const DoctorDetailsPage: React.FC = () => {
           wordBreak: 'break-word',
           flex: 1,
         }}>
-          {getTranslatedField({ en: service.title_en, ar: service.title_ar }, '')}:
+          {getTranslatedField({ en: service.title_en, ar: service.title_ar }, '')}
         </span>
       </div>
       
