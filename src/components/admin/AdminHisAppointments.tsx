@@ -2,6 +2,12 @@ import React, { useState, useEffect } from 'react';
 import AdminLayout from './AdminLayout';
 import { getHisAppointments, getHisAppointmentsSyncStats, resetHisAppointmentSync } from '../../services/hisAppointmentsService';
 import type { HisAppointment, HisAppointmentsSyncStats } from '../../services/hisAppointmentsService';
+import * as XLSX from 'xlsx';
+
+interface TranslatableField {
+  en: string;
+  ar: string;
+}
 
 const AdminHisAppointments: React.FC = () => {
   const [appointments, setAppointments] = useState<HisAppointment[]>([]);
@@ -17,11 +23,13 @@ const AdminHisAppointments: React.FC = () => {
   const [searchColumn, setSearchColumn] = useState('file_number');
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
+  const [exporting, setExporting] = useState(false);
   const [filters, setFilters] = useState({
     fromDate: '',
     toDate: '',
     status: 'all',
     syncStatus: 'all',
+    source: 'all',
   });
   const [showFilters, setShowFilters] = useState(false);
 
@@ -75,13 +83,14 @@ const AdminHisAppointments: React.FC = () => {
       toDate: '',
       status: 'all',
       syncStatus: 'all',
+      source: 'all',
     });
     setSearchTerm('');
     setCurrentPage(1);
   };
 
   const hasActiveFilters = () => {
-    return filters.fromDate || filters.toDate || filters.status !== 'all' || filters.syncStatus !== 'all' || searchTerm;
+    return filters.fromDate || filters.toDate || filters.status !== 'all' || filters.syncStatus !== 'all' || filters.source !== 'all' || searchTerm;
   };
 
   const formatDate = (dateString: string | null) => {
@@ -107,6 +116,75 @@ const AdminHisAppointments: React.FC = () => {
       hour: '2-digit',
       minute: '2-digit',
     });
+  };
+
+  const getTranslatableName = (name: string | TranslatableField | undefined | null): string => {
+    if (!name) return '';
+    if (typeof name === 'string') return name;
+    return name.en || name.ar || '';
+  };
+
+  const getDoctorName = (appointment: HisAppointment) => {
+    const name = getTranslatableName(appointment.doctor_name);
+    return name || appointment.doctor_code || 'N/A';
+  };
+
+  const getDepartmentName = (appointment: HisAppointment) => {
+    const name = getTranslatableName(appointment.department_name);
+    return name || appointment.department || 'N/A';
+  };
+
+  const getSourceDisplay = (appointment: HisAppointment) => {
+    const source = appointment.added_by || appointment.AddedLogin;
+    if (!source) return 'N/A';
+    if (source === 'WEB_PORTAL') return 'WEB_PORTAL';
+    return 'HIS';
+  };
+
+  const getAppointmentCreatedAt = (appointment: HisAppointment) => {
+    return appointment.added_time || appointment.addedtime || null;
+  };
+
+  const sortedAppointments = [...appointments].sort((a, b) => {
+    const aDate = a.appointment_date ? `${a.appointment_date}T${a.appointment_time || '00:00'}` : '';
+    const bDate = b.appointment_date ? `${b.appointment_date}T${b.appointment_time || '00:00'}` : '';
+    const aTime = aDate ? new Date(aDate).getTime() : 0;
+    const bTime = bDate ? new Date(bDate).getTime() : 0;
+    return bTime - aTime;
+  });
+
+  const exportToExcel = async () => {
+    setExporting(true);
+    try {
+      const data = await getHisAppointments(1, 10000, searchTerm, searchColumn, filters);
+      const exportRows: HisAppointment[] = data.data || [];
+
+      const rows = exportRows.map((appointment) => ({
+        'App Code': appointment.app_code || 'N/A',
+        'File Number': appointment.file_number || 'N/A',
+        'Appointment Date': formatDate(appointment.appointment_date),
+        'Appointment Time': formatTime(appointment.appointment_time),
+        'Created At': formatDateTime(getAppointmentCreatedAt(appointment)),
+        Doctor: getDoctorName(appointment),
+        Department: getDepartmentName(appointment),
+        Status: appointment.status === '9' ? 'Cancelled' : (appointment.status || 'N/A'),
+        'Sync Status': getSyncStatusBadge(appointment).text,
+        Source: getSourceDisplay(appointment),
+        Mobile: appointment.mobile || 'N/A',
+      }));
+
+      const worksheet = XLSX.utils.json_to_sheet(rows);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'HIS Appointments');
+
+      const today = new Date().toISOString().slice(0, 10);
+      XLSX.writeFile(workbook, `his_appointments_${today}.xlsx`);
+    } catch (error) {
+      console.error('Error exporting HIS appointments:', error);
+      alert('Failed to export HIS appointments');
+    } finally {
+      setExporting(false);
+    }
   };
 
   const getSyncStatusBadge = (appointment: HisAppointment) => {
@@ -201,6 +279,22 @@ const AdminHisAppointments: React.FC = () => {
               Synced appointments from Hospital Information System
             </p>
           </div>
+          <button
+            onClick={exportToExcel}
+            disabled={exporting || loading}
+            style={{
+              padding: '10px 18px',
+              borderRadius: '8px',
+              border: 'none',
+              background: exporting || loading ? '#9ca3af' : '#0a4d68',
+              color: '#fff',
+              fontSize: '14px',
+              fontWeight: '600',
+              cursor: exporting || loading ? 'not-allowed' : 'pointer',
+            }}
+          >
+            {exporting ? 'Exporting...' : 'Export to Excel'}
+          </button>
         </div>
 
         {/* Stats Cards */}
@@ -484,6 +578,28 @@ const AdminHisAppointments: React.FC = () => {
                   <option value="pending_any">Any Pending</option>
                 </select>
               </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', color: '#374151', marginBottom: '8px' }}>
+                  Source
+                </label>
+                <select
+                  value={filters.source}
+                  onChange={(e) => setFilters({ ...filters, source: e.target.value })}
+                  style={{
+                    width: '100%',
+                    padding: '10px 12px',
+                    border: '2px solid #e5e7eb',
+                    borderRadius: '6px',
+                    fontSize: '14px',
+                    outline: 'none',
+                    cursor: 'pointer',
+                  }}
+                >
+                  <option value="all">All Sources</option>
+                  <option value="his">HIS (non-WEB_PORTAL)</option>
+                  <option value="web">WEB_PORTAL</option>
+                </select>
+              </div>
             </div>
           )}
         </div>
@@ -516,15 +632,17 @@ const AdminHisAppointments: React.FC = () => {
                       <th style={tableHeaderStyle}>File Number</th>
                       <th style={{ ...tableHeaderStyle, background: '#dbeafe', fontWeight: '700' }}>📅 Date</th>
                       <th style={{ ...tableHeaderStyle, background: '#dbeafe', fontWeight: '700' }}>⏰ Time</th>
+                      <th style={tableHeaderStyle}>Created</th>
                       <th style={tableHeaderStyle}>Doctor</th>
                       <th style={tableHeaderStyle}>Department</th>
                       <th style={tableHeaderStyle}>Status</th>
                       <th style={tableHeaderStyle}>Sync Status</th>
+                      <th style={tableHeaderStyle}>Source</th>
                       <th style={tableHeaderStyle}>Mobile</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {appointments.map((appointment, index) => (
+                    {sortedAppointments.map((appointment, index) => (
                       <tr
                         key={appointment.app_code || index}
                         onClick={() => handleRowClick(appointment)}
@@ -544,8 +662,9 @@ const AdminHisAppointments: React.FC = () => {
                         <td style={{ ...tableCellStyle, background: '#eff6ff', fontWeight: '600', color: '#1e40af' }}>
                           {formatTime(appointment.appointment_time)}
                         </td>
-                        <td style={tableCellStyle}>{appointment.doctor_code || 'N/A'}</td>
-                        <td style={tableCellStyle}>{appointment.department || 'N/A'}</td>
+                        <td style={tableCellStyle}>{formatDateTime(getAppointmentCreatedAt(appointment))}</td>
+                        <td style={tableCellStyle}>{getDoctorName(appointment)}</td>
+                        <td style={tableCellStyle}>{getDepartmentName(appointment)}</td>
                         <td style={tableCellStyle}>
                           <span style={{
                             padding: '4px 12px',
@@ -583,6 +702,7 @@ const AdminHisAppointments: React.FC = () => {
                             );
                           })()}
                         </td>
+                        <td style={tableCellStyle}>{getSourceDisplay(appointment)}</td>
                         <td style={tableCellStyle}>{appointment.mobile || 'N/A'}</td>
                       </tr>
                     ))}
@@ -827,12 +947,14 @@ const AdminHisAppointments: React.FC = () => {
                 <InfoRow label="Waiting" value={selectedAppointment.waiting?.toString()} />
                 <InfoRow label="Status" value={selectedAppointment.status === '9' ? 'Cancelled (9)' : selectedAppointment.status} />
                 <InfoRow label="Station" value={selectedAppointment.station} />
+                <InfoRow label="Created" value={formatDateTime(getAppointmentCreatedAt(selectedAppointment))} />
+                <InfoRow label="Source" value={getSourceDisplay(selectedAppointment)} />
               </Section>
 
               {/* Doctor & Department */}
               <Section title="Doctor & Department">
-                <InfoRow label="Doctor Code" value={selectedAppointment.doctor_code} />
-                <InfoRow label="Department" value={selectedAppointment.department} />
+                <InfoRow label="Doctor" value={getDoctorName(selectedAppointment)} />
+                <InfoRow label="Department" value={getDepartmentName(selectedAppointment)} />
                 <InfoRow label="Shift" value={selectedAppointment.shift} />
               </Section>
 

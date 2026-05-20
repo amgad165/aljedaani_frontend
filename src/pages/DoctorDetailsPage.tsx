@@ -189,6 +189,15 @@ const DoctorDetailsPage: React.FC = () => {
   const statusStyle = getStatusStyle(doctor.status);
   const departmentFilterId = doctor.department?.id ?? doctor.department_id;
 
+  const handleBookNow = () => {
+    const params = new URLSearchParams({
+      doctor_id: doctor.id.toString(),
+      branch_id: doctor.branch?.id?.toString() || '',
+      department_id: doctor.department?.id?.toString() || '',
+    });
+    navigate(`/book-appointment?${params.toString()}`);
+  };
+
   const parseLocalizedText = (value: unknown, fallbackLocale: 'en' | 'ar'): { en: string; ar: string } => {
     if (value == null) {
       return { en: '', ar: '' };
@@ -699,6 +708,7 @@ const DoctorDetailsPage: React.FC = () => {
                 }}>
                   <button
                     disabled={doctor.status === 'busy'}
+                    onClick={handleBookNow}
                     style={{
                       display: 'flex',
                       flexDirection: 'row',
@@ -725,7 +735,7 @@ const DoctorDetailsPage: React.FC = () => {
                       textAlign: 'center',
                       color: doctor.status === 'busy' ? '#9EA2AE' : '#FFFFFF',
                     }}>
-                      Book Now
+                      {t('bookNow')}
                     </span>
                   </button>
                 </div>

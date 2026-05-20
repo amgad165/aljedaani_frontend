@@ -33,6 +33,8 @@ export interface HisAppointment {
   BlockVal: string | null;
   last_synced_at: string | null;
   sync_metadata: Record<string, any> | null;
+  doctor_name?: string | Record<string, string> | null;
+  department_name?: string | Record<string, string> | null;
 
   // New sync tracking fields
   needs_cancel_sync: boolean;
@@ -68,6 +70,8 @@ export interface HisAppointment {
   edit_time: string | null;
   message_id: string | null;
   block_value: string | null;
+  doctor_name?: string | Record<string, string> | null;
+  department_name?: string | Record<string, string> | null;
 }
 
 export interface HisAppointmentsSyncStats {
@@ -98,6 +102,7 @@ export interface AppointmentFilters {
   toDate?: string;
   status?: string;
   syncStatus?: string;
+  source?: string;
 }
 
 /**
@@ -128,6 +133,7 @@ export const getHisAppointments = async (
     if (filters.toDate) params.append('to_date', filters.toDate);
     if (filters.status && filters.status !== 'all') params.append('status', filters.status);
     if (filters.syncStatus && filters.syncStatus !== 'all') params.append('sync_status', filters.syncStatus);
+    if (filters.source && filters.source !== 'all') params.append('source', filters.source);
   }
 
   const response = await fetch(`${API_BASE_URL}/admin/his-appointments?${params}`, {
