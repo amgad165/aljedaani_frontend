@@ -118,6 +118,7 @@ class DoctorsService {
     experience_years: number;
     education: string;
     specialization?: string;
+    appointment_price?: number;
     status: 'available_today' | 'busy' | 'available_soon';
     is_active?: boolean;
   }, token: string): Promise<Doctor> {
@@ -154,6 +155,7 @@ class DoctorsService {
     experience_years?: number;
     education?: string;
     specialization?: string;
+    appointment_price?: number;
     status?: 'available_today' | 'busy' | 'available_soon';
     is_active?: boolean;
   }, token: string): Promise<Doctor> {

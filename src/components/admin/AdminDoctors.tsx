@@ -37,6 +37,7 @@ interface Doctor {
   experience_years: number;
   education: string;
   specialization: string;
+  appointment_price: number;
   status: 'available_today' | 'busy' | 'available_soon';
   is_active: boolean;
   order: number;
@@ -59,6 +60,7 @@ interface FormData {
   education_ar: string;
   specialization_en: string;
   specialization_ar: string;
+  appointment_price: string;
   status: string;
   is_active: boolean;
   order: string;
@@ -81,6 +83,7 @@ const initialFormData: FormData = {
   education_ar: '',
   specialization_en: '',
   specialization_ar: '',
+  appointment_price: '0.00',
   status: 'available_today',
   is_active: true,
   order: '0',
@@ -367,6 +370,7 @@ const AdminDoctors: React.FC = () => {
         education_ar: educationObj.ar || '',
         specialization_en: specializationObj.en || '',
         specialization_ar: specializationObj.ar || '',
+        appointment_price: (doctor.appointment_price ?? 0).toFixed(2),
         status: doctor.status,
         is_active: doctor.is_active,
         order: doctor.order?.toString() || '0',
@@ -551,6 +555,7 @@ const AdminDoctors: React.FC = () => {
       submitData.append('location', JSON.stringify({ en: formData.location_en, ar: formData.location_ar }));
       submitData.append('education', JSON.stringify({ en: formData.education_en, ar: formData.education_ar }));
       submitData.append('specialization', JSON.stringify({ en: formData.specialization_en, ar: formData.specialization_ar }));
+      submitData.append('appointment_price', formData.appointment_price || '0');
       
       submitData.append('email', formData.email);
       submitData.append('phone', formData.phone);
@@ -1266,6 +1271,7 @@ const AdminDoctors: React.FC = () => {
             <th style={styles.th}>Doctor Code</th>
             <th style={styles.th}>Name</th>
             <th style={styles.th}>Department</th>
+            <th style={styles.th}>Price (SAR)</th>
             <th style={styles.th}>Branch</th>
             <th style={styles.th}>Status</th>
             <th style={styles.th}>Active</th>
@@ -1303,6 +1309,9 @@ const AdminDoctors: React.FC = () => {
               </td>
               <td style={styles.td}>
                 {doctor.department?.name ? getTranslatedField(doctor.department.name, '') : <span style={{ color: '#94a3b8' }}>No department</span>}
+              </td>
+              <td style={styles.td}>
+                {doctor.appointment_price != null ? `${doctor.appointment_price.toFixed(2)} SAR` : '0.00 SAR'}
               </td>
               <td style={styles.td}>
                 {doctor.branch ? (
@@ -1723,6 +1732,21 @@ const AdminDoctors: React.FC = () => {
                     style={styles.input}
                     required
                     min="0"
+                  />
+                </div>
+
+                {/* Appointment Price */}
+                <div style={styles.formGroup}>
+                  <label style={styles.label}>Appointment Price (SAR) *</label>
+                  <input
+                    type="number"
+                    name="appointment_price"
+                    value={formData.appointment_price}
+                    onChange={handleInputChange}
+                    style={styles.input}
+                    required
+                    min="0"
+                    step="0.01"
                   />
                 </div>
 

@@ -70,8 +70,6 @@ export interface HisAppointment {
   edit_time: string | null;
   message_id: string | null;
   block_value: string | null;
-  doctor_name?: string | Record<string, string> | null;
-  department_name?: string | Record<string, string> | null;
 }
 
 export interface HisAppointmentsSyncStats {

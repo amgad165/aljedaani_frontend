@@ -107,6 +107,19 @@ const AdminHisAppointments: React.FC = () => {
     return timeString;
   };
 
+  const getStationStartTime = (station: string | null) => {
+    if (!station) return null;
+    const parts = station.split('-');
+    if (!parts.length) return null;
+    return parts[0].trim() || null;
+  };
+
+  const getAppointmentTimeDisplay = (appointment: HisAppointment) => {
+    if (appointment.appointment_time) return formatTime(appointment.appointment_time);
+    const stationTime = getStationStartTime(appointment.station);
+    return stationTime || 'N/A';
+  };
+
   const formatDateTime = (dateTimeString: string | null) => {
     if (!dateTimeString) return 'N/A';
     return new Date(dateTimeString).toLocaleString('en-US', {
@@ -118,10 +131,10 @@ const AdminHisAppointments: React.FC = () => {
     });
   };
 
-  const getTranslatableName = (name: string | TranslatableField | undefined | null): string => {
+  const getTranslatableName = (name: string | TranslatableField | Record<string, string> | undefined | null): string => {
     if (!name) return '';
     if (typeof name === 'string') return name;
-    return name.en || name.ar || '';
+    return name.en || name.ar || Object.values(name)[0] || '';
   };
 
   const getDoctorName = (appointment: HisAppointment) => {
@@ -160,10 +173,9 @@ const AdminHisAppointments: React.FC = () => {
       const exportRows: HisAppointment[] = data.data || [];
 
       const rows = exportRows.map((appointment) => ({
-        'App Code': appointment.app_code || 'N/A',
         'File Number': appointment.file_number || 'N/A',
         'Appointment Date': formatDate(appointment.appointment_date),
-        'Appointment Time': formatTime(appointment.appointment_time),
+        'Appointment Time': getAppointmentTimeDisplay(appointment),
         'Created At': formatDateTime(getAppointmentCreatedAt(appointment)),
         Doctor: getDoctorName(appointment),
         Department: getDepartmentName(appointment),
@@ -660,7 +672,7 @@ const AdminHisAppointments: React.FC = () => {
                           {formatDate(appointment.appointment_date)}
                         </td>
                         <td style={{ ...tableCellStyle, background: '#eff6ff', fontWeight: '600', color: '#1e40af' }}>
-                          {formatTime(appointment.appointment_time)}
+                          {getAppointmentTimeDisplay(appointment)}
                         </td>
                         <td style={tableCellStyle}>{formatDateTime(getAppointmentCreatedAt(appointment))}</td>
                         <td style={tableCellStyle}>{getDoctorName(appointment)}</td>
@@ -942,7 +954,7 @@ const AdminHisAppointments: React.FC = () => {
                 <InfoRow label="App Code" value={selectedAppointment.app_code} />
                 <InfoRow label="File Number" value={selectedAppointment.file_number} />
                 <InfoRow label="Date" value={formatDate(selectedAppointment.appointment_date)} />
-                <InfoRow label="Time" value={formatTime(selectedAppointment.appointment_time)} />
+                <InfoRow label="Time" value={getAppointmentTimeDisplay(selectedAppointment)} />
                 <InfoRow label="Original Time" value={formatTime(selectedAppointment.original_time)} />
                 <InfoRow label="Waiting" value={selectedAppointment.waiting?.toString()} />
                 <InfoRow label="Status" value={selectedAppointment.status === '9' ? 'Cancelled (9)' : selectedAppointment.status} />

@@ -8,6 +8,7 @@ export interface CreateAppointmentData {
   appointment_time: string; // HH:mm:ss
   reason?: string;
   notes?: string;
+  payment_method?: 'hospital' | 'hyperpay';
 }
 
 export interface Appointment {
@@ -26,6 +27,10 @@ export interface Appointment {
   appointment_time: string;
   status: string;
   booking_source: string;
+  payment_method?: 'hospital' | 'hyperpay';
+  payment_status?: 'unpaid' | 'pending' | 'paid' | 'failed';
+  payment_amount?: number;
+  payment_currency?: string;
   reason: string | null;
   notes: string | null;
   created_at: string;
@@ -69,6 +74,7 @@ export interface InitialBookingData {
     branch_id: number;
     department_name: string;
     branch_name: string;
+    appointment_price: number;
   }>;
 }
 
@@ -135,7 +141,94 @@ export const createAppointment = async (
   return result;
 };
 
+export interface HyperpayCheckoutResponse {
+  success: boolean;
+  message: string;
+  data: {
+    checkout_id: string | null;
+    integrity: string | null;
+    brands: string;
+  };
+}
+
+export const prepareHyperpayCheckout = async (appointmentId: number): Promise<HyperpayCheckoutResponse> => {
+  const token = localStorage.getItem('auth_token');
+
+  if (!token) {
+    throw new Error('Authentication required');
+  }
+
+  const response = await fetch(`${API_BASE_URL}/payments/hyperpay/checkout`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ appointment_id: appointmentId }),
+  });
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    throw new Error(result.message || 'Failed to prepare payment');
+  }
+
+  if (!result.success) {
+    throw new Error(result.message || 'Failed to prepare payment');
+  }
+
+  return result;
+};
+
+export interface HyperpayStatusResponse {
+  success: boolean;
+  message: string;
+  data: {
+    payment_status: string;
+    result_code: string | null;
+    result_description: string | null;
+    payment_brand: string | null;
+  };
+}
+
+export const getHyperpayStatus = async (
+  appointmentId: number,
+  resourcePath: string
+): Promise<HyperpayStatusResponse> => {
+  const token = localStorage.getItem('auth_token');
+
+  if (!token) {
+    throw new Error('Authentication required');
+  }
+
+  const url = new URL(`${API_BASE_URL}/payments/hyperpay/status`);
+  url.searchParams.append('appointment_id', String(appointmentId));
+  url.searchParams.append('resourcePath', resourcePath);
+
+  const response = await fetch(url.toString(), {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+  });
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    throw new Error(result.message || 'Failed to fetch payment status');
+  }
+
+  if (!result.success) {
+    throw new Error(result.message || 'Failed to fetch payment status');
+  }
+
+  return result;
+};
+
 export const appointmentsService = {
   getInitialData,
   createAppointment,
+  prepareHyperpayCheckout,
+  getHyperpayStatus,
 };

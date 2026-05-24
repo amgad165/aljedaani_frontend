@@ -84,6 +84,7 @@ export interface Doctor {
   education: string;
   specialization?: string;
   bio?: string;
+  appointment_price?: number;
   status: 'available_today' | 'busy' | 'available_soon';
   is_active: boolean;
   department?: Department;

@@ -30,6 +30,7 @@ interface Doctor {
   branch_id: number;
   department_name: string;
   branch_name: string;
+  appointment_price: number;
 }
 
 // Step types
@@ -267,11 +268,24 @@ const BookAppointmentPage = () => {
   // TEMP UI RULE (easy to revert): hide optional profile fields on signup.
   // Set to true to show Nationality, Marital Status, Religion, and Address again.
   const SHOW_OPTIONAL_PROFILE_FIELDS = false;
+
+  // TEMP PAYMENT RULE (easy to revert): disable online payment option in UI.
+  // Set to true to re-enable Hyperpay in the booking flow.
+  const ENABLE_ONLINE_PAYMENT = false;
   
   // Local loading state for the form submission
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [_submissionError, setSubmissionError] = useState<string | null>(null);
-  const [_appointmentId, setAppointmentId] = useState<number | null>(null);
+  const [appointmentId, setAppointmentId] = useState<number | null>(null);
+
+  // Payment state
+  const [paymentMethod, setPaymentMethod] = useState<'hospital' | 'hyperpay'>('hospital');
+  const [checkoutId, setCheckoutId] = useState<string | null>(null);
+  const [checkoutIntegrity, setCheckoutIntegrity] = useState<string | null>(null);
+  const [paymentBrands, setPaymentBrands] = useState<string>('MADA VISA MASTER');
+  const [paymentStatus, setPaymentStatus] = useState<'idle' | 'pending' | 'success' | 'failed'>('idle');
+  const [paymentError, setPaymentError] = useState<string | null>(null);
+  const [handledPaymentReturn, setHandledPaymentReturn] = useState(false);
   
   const navigate = useNavigate();
   
@@ -409,6 +423,61 @@ const BookAppointmentPage = () => {
     });
   }, [currentStep]);
 
+  // Handle Hyperpay redirect results
+  useEffect(() => {
+    const resourcePath = searchParams.get('resourcePath');
+    const appointmentIdParam = searchParams.get('appointment_id');
+
+    if (!resourcePath || !appointmentIdParam || handledPaymentReturn) {
+      return;
+    }
+
+    const finalizePayment = async () => {
+      setHandledPaymentReturn(true);
+      setPaymentStatus('pending');
+      setPaymentError(null);
+      setCurrentStep(5);
+      setAppointmentId(parseInt(appointmentIdParam, 10));
+
+      try {
+        const response = await appointmentsService.getHyperpayStatus(
+          parseInt(appointmentIdParam, 10),
+          resourcePath
+        );
+
+        setPaymentStatus('success');
+        setCurrentStep(6);
+        success('Payment successful!');
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Failed to verify payment status. Please contact support.';
+        setPaymentStatus('failed');
+        setPaymentError(message);
+        showError(message);
+      }
+    };
+
+    finalizePayment();
+  }, [searchParams, handledPaymentReturn, showError, success]);
+
+  // Load Hyperpay widget script when checkout is ready
+  useEffect(() => {
+    if (!checkoutId) return;
+
+    const widgetBaseUrl = import.meta.env.VITE_HYPERPAY_WIDGET_URL || 'https://eu-test.oppwa.com';
+    const script = document.createElement('script');
+    script.src = `${widgetBaseUrl}/v1/paymentWidgets.js?checkoutId=${checkoutId}`;
+    if (checkoutIntegrity) {
+      script.integrity = checkoutIntegrity;
+      script.crossOrigin = 'anonymous';
+    }
+    script.async = true;
+    document.body.appendChild(script);
+
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, [checkoutId, checkoutIntegrity]);
+
   // Countdown timer effect
   useEffect(() => {
     if (resendCountdown > 0) {
@@ -470,6 +539,22 @@ const BookAppointmentPage = () => {
       setFilteredDoctors(doctors);
     }
   }, [doctorSelection.doctorSearch, doctors]);
+
+  // Ensure online payment is disabled when price is zero
+  useEffect(() => {
+    if (!doctorSelection.doctor) return;
+    const selectedDoctor = doctors.find(d => d.id === parseInt(doctorSelection.doctor));
+    if (selectedDoctor && selectedDoctor.appointment_price <= 0 && paymentMethod === 'hyperpay') {
+      setPaymentMethod('hospital');
+    }
+  }, [doctorSelection.doctor, doctors, paymentMethod]);
+
+  // Force hospital payment when online payment is disabled
+  useEffect(() => {
+    if (!ENABLE_ONLINE_PAYMENT && paymentMethod === 'hyperpay') {
+      setPaymentMethod('hospital');
+    }
+  }, [ENABLE_ONLINE_PAYMENT, paymentMethod]);
 
   // Fetch available slots when doctor is selected
   useEffect(() => {
@@ -888,6 +973,7 @@ const BookAppointmentPage = () => {
         appointment_time: appointmentTime,
         reason: 'Consultation',
         notes: '',
+        payment_method: paymentMethod,
       };
 
       console.log('Appointment data being sent:', appointmentData);
@@ -897,10 +983,19 @@ const BookAppointmentPage = () => {
       console.log('API Response:', response);
 
       if (response.success) {
-        console.log('Appointment created successfully, moving to step 6');
-        setAppointmentId(response.data.appointment.id);
-        setCurrentStep(6);
-        console.log('Current step set to 6');
+        const createdAppointmentId = response.data.appointment.id;
+        setAppointmentId(createdAppointmentId);
+
+        if (paymentMethod === 'hyperpay') {
+          setPaymentStatus('pending');
+          const checkoutResponse = await appointmentsService.prepareHyperpayCheckout(createdAppointmentId);
+          setCheckoutId(checkoutResponse.data.checkout_id);
+          setCheckoutIntegrity(checkoutResponse.data.integrity);
+          setPaymentBrands(checkoutResponse.data.brands || 'MADA VISA MASTER');
+        } else {
+          console.log('Appointment created successfully, moving to step 6');
+          setCurrentStep(6);
+        }
       } else {
         console.error('API returned success: false');
         throw new Error(response.message || 'Failed to create appointment');
@@ -2655,6 +2750,13 @@ const BookAppointmentPage = () => {
       const selectedBranch = branches.find(b => b.id === parseInt(doctorSelection.branch));
       const selectedDepartment = departments.find(d => d.id === parseInt(doctorSelection.specialty));
       const selectedDoctor = doctors.find(d => d.id === parseInt(doctorSelection.doctor));
+      const rawPrice = selectedDoctor?.appointment_price ?? 0;
+      const appointmentPrice = typeof rawPrice === 'number' ? rawPrice : Number(rawPrice);
+      const safePrice = Number.isFinite(appointmentPrice) ? appointmentPrice : 0;
+      const formattedPrice = `${safePrice.toFixed(2)} SAR`;
+      const shopperResultUrl = appointmentId
+        ? `${window.location.origin}/book-appointment?payment=hyperpay&appointment_id=${appointmentId}`
+        : '';
     
     const formatAppointmentDate = (dateStr: string, timeStr: string) => {
       if (!dateStr || !timeStr) return '';
@@ -2771,6 +2873,16 @@ const BookAppointmentPage = () => {
               }}>
                 {t('appointmentScheduledAt')} {getTranslatedField(selectedBranch?.name, '')} - {getTranslatedField(selectedDepartment?.name, '')} - {getTranslatedField(selectedDoctor?.name, '')} - {formatAppointmentDate(doctorSelection.selectedDate, doctorSelection.selectedSlot)}
               </div>
+
+              <div style={{
+                fontFamily: 'Nunito, sans-serif',
+                fontWeight: 700,
+                fontSize: '14px',
+                lineHeight: '19px',
+                color: '#0155CB',
+              }}>
+                Appointment Price: {formattedPrice}
+              </div>
               
               {/* Warning Badge */}
               <div style={{
@@ -2833,6 +2945,109 @@ const BookAppointmentPage = () => {
           </div>
         </div>
         
+        {/* Payment Options */}
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'flex-start',
+          padding: window.innerWidth <= 768 ? '12px' : '16px',
+          gap: '12px',
+          width: '100%',
+          maxWidth: window.innerWidth <= 768 ? '100%' : '612px',
+          background: '#FFFFFF',
+          borderRadius: '12px',
+          border: '1px solid #E5E7EB',
+        }}>
+          <span style={{
+            fontFamily: 'Nunito, sans-serif',
+            fontWeight: 700,
+            fontSize: '16px',
+            lineHeight: '24px',
+            color: '#061F42',
+          }}>
+            Payment Method
+          </span>
+
+          <label style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            fontFamily: 'Nunito, sans-serif',
+            fontWeight: 600,
+            fontSize: '14px',
+            color: '#061F42',
+          }}>
+            <input
+              type="radio"
+              name="payment_method"
+              value="hospital"
+              checked={paymentMethod === 'hospital'}
+              onChange={() => {
+                setPaymentMethod('hospital');
+                setCheckoutId(null);
+                setCheckoutIntegrity(null);
+                setPaymentStatus('idle');
+                setPaymentError(null);
+              }}
+            />
+            Pay at hospital
+          </label>
+
+          {ENABLE_ONLINE_PAYMENT && (
+            <label style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+              fontFamily: 'Nunito, sans-serif',
+              fontWeight: 600,
+              fontSize: '14px',
+              color: appointmentPrice > 0 ? '#061F42' : '#9CA3AF',
+            }}>
+              <input
+                type="radio"
+                name="payment_method"
+                value="hyperpay"
+                checked={paymentMethod === 'hyperpay'}
+                disabled={appointmentPrice <= 0}
+                onChange={() => {
+                  setPaymentMethod('hyperpay');
+                  setPaymentError(null);
+                }}
+              />
+              Pay online (MADA / VISA / MasterCard)
+            </label>
+          )}
+
+
+          {paymentMethod === 'hyperpay' && checkoutId && (
+            <div style={{
+              width: '100%',
+              padding: '12px',
+              background: '#F9FAFB',
+              borderRadius: '10px',
+              border: '1px solid #E5E7EB',
+            }}>
+              <form action={shopperResultUrl} className="paymentWidgets" data-brands={paymentBrands} />
+            </div>
+          )}
+
+          {paymentStatus === 'failed' && paymentError && (
+            <div style={{
+              width: '100%',
+              padding: '10px 12px',
+              background: '#FEF2F2',
+              borderRadius: '8px',
+              border: '1px solid #FECACA',
+              fontFamily: 'Nunito, sans-serif',
+              fontWeight: 600,
+              fontSize: '12px',
+              color: '#B91C1C',
+            }}>
+              {paymentError}
+            </div>
+          )}
+        </div>
+
         {/* Action Buttons */}
         <div style={{
           boxSizing: 'border-box',
@@ -2878,7 +3093,7 @@ const BookAppointmentPage = () => {
           
           <button
             onClick={handleConfirmAppointment}
-            disabled={isSubmitting}
+            disabled={isSubmitting || (paymentMethod === 'hyperpay' && !!checkoutId)}
             style={{
               display: 'flex',
               flexDirection: 'row',
@@ -2888,7 +3103,7 @@ const BookAppointmentPage = () => {
               background: isSubmitting ? '#6B7280' : '#061F42',
               borderRadius: '8px',
               border: 'none',
-              cursor: isSubmitting ? 'not-allowed' : 'pointer',
+              cursor: isSubmitting || (paymentMethod === 'hyperpay' && !!checkoutId) ? 'not-allowed' : 'pointer',
               opacity: isSubmitting ? 0.7 : 1,
             }}
           >
@@ -2899,7 +3114,11 @@ const BookAppointmentPage = () => {
               lineHeight: '16px',
               color: '#FFFFFF',
             }}>
-              {isSubmitting ? t('confirming') : t('confirm')}
+              {isSubmitting
+                ? t('confirming')
+                : paymentMethod === 'hyperpay'
+                  ? (checkoutId ? 'Payment Ready' : 'Proceed to Payment')
+                  : t('confirm')}
             </span>
           </button>
         </div>
