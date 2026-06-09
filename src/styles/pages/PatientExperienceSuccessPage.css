@@ -1,0 +1,116 @@
+.patient-experience-success {
+  padding: 80px 20px;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.patient-experience-success .container {
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.success-content {
+  background: white;
+  padding: 50px 30px;
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+  text-align: center;
+}
+
+.success-icon {
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, #00abda 0%, #0155cb 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+}
+
+.success-icon svg {
+  width: 40px;
+  height: 40px;
+  color: white;
+}
+
+.success-content h1 {
+  font-size: 28px;
+  font-weight: 700;
+  color: #061f42;
+  margin-bottom: 15px;
+  font-family: 'Nunito', sans-serif;
+}
+
+.success-content p {
+  font-size: 16px;
+  color: #666;
+  line-height: 1.6;
+  margin-bottom: 30px;
+}
+
+.success-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.btn {
+  padding: 12px 24px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'Nunito', sans-serif;
+  border: none;
+  display: inline-block;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #0155cb 0%, #00abda 100%);
+  color: white;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(1, 85, 203, 0.3);
+}
+
+.btn-secondary {
+  background: white;
+  color: #0155cb;
+  border: 2px solid #0155cb;
+}
+
+.btn-secondary:hover {
+  background: #f0f8ff;
+}
+
+@media (max-width: 768px) {
+  .patient-experience-success {
+    padding: 40px 15px;
+  }
+
+  .success-content {
+    padding: 30px 20px;
+  }
+
+  .success-content h1 {
+    font-size: 24px;
+  }
+
+  .success-icon {
+    width: 60px;
+    height: 60px;
+  }
+
+  .success-icon svg {
+    width: 30px;
+    height: 30px;
+  }
+}

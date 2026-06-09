@@ -440,7 +440,7 @@ const BookAppointmentPage = () => {
       setAppointmentId(parseInt(appointmentIdParam, 10));
 
       try {
-        const response = await appointmentsService.getHyperpayStatus(
+        await appointmentsService.getHyperpayStatus(
           parseInt(appointmentIdParam, 10),
           resourcePath
         );
@@ -2135,6 +2135,7 @@ const BookAppointmentPage = () => {
                   onChange={(value) => setDoctorSelection(prev => ({ ...prev, branch: value, specialty: '', doctor: '', selectedDate: '', selectedSlot: '' }))}
                   options={branches.map(b => ({ value: b.id.toString(), label: b.name }))}
                   searchable={false}
+                  size="large"
                 />
               </div>
               
@@ -2146,6 +2147,7 @@ const BookAppointmentPage = () => {
                   onChange={(value) => setDoctorSelection(prev => ({ ...prev, specialty: value, doctor: '', selectedDate: '', selectedSlot: '' }))}
                   options={filteredDepartments.map(dept => ({ value: dept.id.toString(), label: dept.name }))}
                   searchable={false}
+                  size="large"
                 />
               </div>
               
@@ -2171,6 +2173,7 @@ const BookAppointmentPage = () => {
                   }}
                   options={filteredDoctors.map(d => ({ value: d.id.toString(), label: d.name }))}
                   searchable={false}
+                  size="large"
                 />
               </div>
             </div>
@@ -2874,15 +2877,17 @@ const BookAppointmentPage = () => {
                 {t('appointmentScheduledAt')} {getTranslatedField(selectedBranch?.name, '')} - {getTranslatedField(selectedDepartment?.name, '')} - {getTranslatedField(selectedDoctor?.name, '')} - {formatAppointmentDate(doctorSelection.selectedDate, doctorSelection.selectedSlot)}
               </div>
 
-              <div style={{
-                fontFamily: 'Nunito, sans-serif',
-                fontWeight: 700,
-                fontSize: '14px',
-                lineHeight: '19px',
-                color: '#0155CB',
-              }}>
-                Appointment Price: {formattedPrice}
-              </div>
+              {safePrice > 0 && (
+                <div style={{
+                  fontFamily: 'Nunito, sans-serif',
+                  fontWeight: 700,
+                  fontSize: '14px',
+                  lineHeight: '19px',
+                  color: '#0155CB',
+                }}>
+                  Appointment Price: {formattedPrice}
+                </div>
+              )}
               
               {/* Warning Badge */}
               <div style={{

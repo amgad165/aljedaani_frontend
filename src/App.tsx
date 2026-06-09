@@ -25,6 +25,11 @@ import NewsDetailsPage from './pages/NewsDetailsPage';
 import CareersPage from './pages/CareersPage';
 import CareerDetailsPage from './pages/CareerDetailsPage';
 import CareerApplicationSuccessPage from './pages/CareerApplicationSuccessPage';
+import PatientExperiencePage from './pages/PatientExperiencePage';
+import PatientExperienceDetailPage from './pages/PatientExperienceDetailPage';
+import PatientExperienceSuccessPage from './pages/PatientExperienceSuccessPage';
+import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
+import AccountDeletionPage from './pages/AccountDeletionPage';
 // Admin Pages
 import AdminLogin from './components/admin/AdminLogin';
 import AdminDashboard from './components/admin/AdminDashboard';
@@ -58,6 +63,7 @@ import AdminContactSubmissions from './components/admin/AdminContactSubmissions'
 import AdminArticles from './components/admin/AdminArticles';
 import AdminNews from './components/admin/AdminNews';
 import AdminCareers from './components/admin/AdminCareers';
+import AdminPatientExperiences from './components/admin/AdminPatientExperiences';
 import ProtectedRoute from './components/admin/ProtectedRoute';
 import './App.css';
 
@@ -139,6 +145,26 @@ const ROUTE_SEO: Record<SupportedLang, Record<string, SeoEntry>> = {
       title: 'Application Submitted | Aljedaani Hospitals',
       description: 'Your career application has been submitted successfully.',
     },
+    '/patient-experiences': {
+      title: 'Patient Experience | Aljedaani Hospitals',
+      description: 'Share your patient experience and feedback with Aljedaani Hospitals.',
+    },
+    '/patient-experiences/:id': {
+      title: 'Patient Experience Survey | Aljedaani Hospitals',
+      description: 'Share your patient experience and feedback with Aljedaani Hospitals.',
+    },
+    '/patient-experiences/:id/success': {
+      title: 'Submission Successful | Aljedaani Hospitals',
+      description: 'Your patient experience feedback has been submitted successfully.',
+    },
+    '/privacy-policy': {
+      title: 'Privacy Policy | Aljedaani Hospitals',
+      description: 'Learn how Aljedaani Hospitals collects, uses, and protects your information.',
+    },
+    '/account-deletion': {
+      title: 'Account Deletion Request | Aljedaani Hospitals',
+      description: 'Learn how to request deletion of your Aljedaani Hospitals mobile app account.',
+    },
     default: {
       title: 'Aljedaani Hospitals',
       description: 'Aljedaani Group of Hospitals - trusted healthcare services in Jeddah.',
@@ -211,6 +237,14 @@ const ROUTE_SEO: Record<SupportedLang, Record<string, SeoEntry>> = {
       title: 'تم إرسال طلب التوظيف | مستشفيات الجدعاني',
       description: 'تم إرسال طلب التوظيف بنجاح.',
     },
+    '/privacy-policy': {
+      title: 'سياسة الخصوصية | مستشفيات الجدعاني',
+      description: 'تعرف على كيفية جمع واستخدام وحماية معلوماتك في مستشفيات الجدعاني.',
+    },
+    '/account-deletion': {
+      title: 'طلب حذف الحساب | مستشفيات الجدعاني',
+      description: 'تعرف على طريقة طلب حذف حساب تطبيق مستشفيات الجدعاني.',
+    },
     default: {
       title: 'مستشفيات الجدعاني',
       description: 'مستشفيات الجدعاني - رعاية صحية موثوقة في جدة.',
@@ -245,11 +279,13 @@ const buildRoutePath = (prefix: string, routePath: string): string => {
 
 const getSeoRouteKey = (pathname: string): string => {
   if (/^\/careers\/[^/]+\/success$/.test(pathname)) return '/careers/:id/success';
+  if (/^\/patient-experiences\/[^/]+\/success$/.test(pathname)) return '/patient-experiences/:id/success';
   if (pathname.startsWith('/doctors/')) return '/doctors/:id';
   if (pathname.startsWith('/departments/')) return '/departments/:id';
   if (pathname.startsWith('/articles/')) return '/articles/:id';
   if (pathname.startsWith('/news/')) return '/news/:id';
   if (pathname.startsWith('/careers/')) return '/careers/:id';
+  if (pathname.startsWith('/patient-experiences/')) return '/patient-experiences/:id';
   return pathname;
 };
 
@@ -356,6 +392,11 @@ function AppRouter() {
     { path: '/careers', element: <CareersPage /> },
     { path: '/careers/:id', element: <CareerDetailsPage /> },
     { path: '/careers/:id/success', element: <CareerApplicationSuccessPage /> },
+    { path: '/patient-experiences', element: <PatientExperiencePage /> },
+    { path: '/patient-experiences/:id', element: <PatientExperienceDetailPage /> },
+    { path: '/patient-experiences/:id/success', element: <PatientExperienceSuccessPage /> },
+    { path: '/privacy-policy', element: <PrivacyPolicyPage /> },
+    { path: '/account-deletion', element: <AccountDeletionPage /> },
   ];
 
   return (
@@ -427,6 +468,11 @@ function AppRouter() {
         <Route path="/admin/careers" element={
           <ProtectedRoute>
             <AdminCareers />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/patient-experiences" element={
+          <ProtectedRoute>
+            <AdminPatientExperiences />
           </ProtectedRoute>
         } />
         <Route path="/admin/otp-logs" element={

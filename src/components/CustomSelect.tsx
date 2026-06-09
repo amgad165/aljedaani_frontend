@@ -17,6 +17,7 @@ interface CustomSelectProps {
   label?: string;
   width?: string;
   error?: string;
+  size?: 'default' | 'large';
 }
 
 const CustomSelect: React.FC<CustomSelectProps> = ({
@@ -30,6 +31,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
   label,
   width = '100%',
   error,
+  size = 'default',
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -43,6 +45,8 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
   };
 
   const selectedOption = options.find(opt => opt.value === value);
+  const isMobile = window.innerWidth <= 768;
+  const isLargeMobile = isMobile && size === 'large';
 
   const filteredOptions = options.filter(opt =>
     getLabel(opt.label).toLowerCase().includes(searchTerm.toLowerCase())
@@ -123,8 +127,8 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
             display: 'flex',
             flexDirection: 'row',
             alignItems: 'center',
-            padding: '10px 14px',
-            minHeight: '44px',
+            padding: isLargeMobile ? '14px 16px' : '10px 14px',
+            minHeight: isLargeMobile ? '52px' : '44px',
             background: disabled ? '#F9FAFB' : '#FFFFFF',
             border: error 
               ? '2px solid #EF4444' 
@@ -156,7 +160,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
           <div style={{ flex: 1, overflow: 'hidden' }}>
             <span style={{
               fontFamily: 'Nunito, sans-serif',
-              fontSize: '14px',
+              fontSize: isLargeMobile ? '16px' : '14px',
               fontWeight: selectedOption ? 600 : 400,
               color: selectedOption ? '#061F42' : '#9CA3AF',
               whiteSpace: 'nowrap',

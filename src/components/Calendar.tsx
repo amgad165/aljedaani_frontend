@@ -142,6 +142,20 @@ const Calendar: React.FC<CalendarProps> = ({
         </div>
       );
     }
+
+    // Pad trailing empty cells so the last week aligns to correct weekdays
+    const remainingSlots = days.length % 7;
+    if (remainingSlots !== 0) {
+      const trailingCount = 7 - remainingSlots;
+      for (let i = 0; i < trailingCount; i++) {
+        days.push(
+          <div
+            key={`empty-trailing-${i}`}
+            style={{ width: '24px', height: '24px' }}
+          />
+        );
+      }
+    }
     
     // Group days into weeks
     const weeks: React.JSX.Element[] = [];
@@ -152,7 +166,7 @@ const Calendar: React.FC<CalendarProps> = ({
           style={{
             display: 'flex',
             flexDirection: 'row',
-            justifyContent: 'center',
+            justifyContent: 'flex-start',
             alignItems: 'flex-start',
             padding: window.innerWidth <= 768 ? '0px 8px' : '0px 24px',
             gap: window.innerWidth <= 768 ? '10px' : '14px',

@@ -15,6 +15,7 @@ const MobileNavbar = () => {
     { label: t('departments'), href: '/departments' },
     { label: t('doctors'), href: '/doctors' },
     { label: t('careers'), href: '/careers' },
+    { label: t('patientExperience'), href: '/patient-experiences' },
     { label: t('contact'), href: '/contact' },
     { label: `${t('media')} - Articles`, href: '/articles' },
     { label: `${t('media')} - News`, href: '/news' },

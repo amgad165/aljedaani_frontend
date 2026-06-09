@@ -370,7 +370,7 @@ const AdminDoctors: React.FC = () => {
         education_ar: educationObj.ar || '',
         specialization_en: specializationObj.en || '',
         specialization_ar: specializationObj.ar || '',
-        appointment_price: (doctor.appointment_price ?? 0).toFixed(2),
+        appointment_price: Number(doctor.appointment_price ?? 0).toFixed(2),
         status: doctor.status,
         is_active: doctor.is_active,
         order: doctor.order?.toString() || '0',
@@ -1311,7 +1311,9 @@ const AdminDoctors: React.FC = () => {
                 {doctor.department?.name ? getTranslatedField(doctor.department.name, '') : <span style={{ color: '#94a3b8' }}>No department</span>}
               </td>
               <td style={styles.td}>
-                {doctor.appointment_price != null ? `${doctor.appointment_price.toFixed(2)} SAR` : '0.00 SAR'}
+                {doctor.appointment_price != null
+                  ? `${Number(doctor.appointment_price).toFixed(2)} SAR`
+                  : '0.00 SAR'}
               </td>
               <td style={styles.td}>
                 {doctor.branch ? (

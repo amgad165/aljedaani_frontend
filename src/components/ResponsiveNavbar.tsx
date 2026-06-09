@@ -45,7 +45,7 @@ const ResponsiveNavbar = () => {
     { label: 'Pharmacies', href: '#' },
     { label: 'Departments', href: '/departments', hasDropdown: true },
     { label: 'Doctors', href: '/doctors' },
-    { label: 'Patient experience', href: '#', hasDropdown: true },
+    { label: 'Patient experience', href: '/patient-experiences', hasDropdown: true },
     { label: 'Media', href: '#', hasDropdown: true },
     { label: 'More', href: '#', hasDropdown: true },
   ];

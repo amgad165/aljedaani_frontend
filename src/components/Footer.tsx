@@ -44,8 +44,8 @@ const Footer = () => {
   const categoryLinks = [
     { label: t('findADoctor'), href: '/doctors' },
     { label: t('submitComplaint'), href: '/profile?tab=complaints' },
-    { label: t('patientExperience'), href: '/#patient-experience' },
-    { label: t('privacyPolicy'), href: '/#privacy-policy' }
+    { label: t('patientExperience'), href: '/patient-experiences' },
+    { label: t('privacyPolicy'), href: '/privacy-policy' }
   ];
 
   const mainLinks = [
@@ -280,7 +280,7 @@ const Footer = () => {
                 <img src="/assets/images/footer/chat-lines.svg" width="16" height="16" alt="WhatsApp" />
                 {t('whatsapp')}
               </a>
-              <a href="mailto:contact@jedaani.com" className="footer-button" style={{
+              <a href="mailto:contact@jedaanihospitals.com" className="footer-button" style={{
                 background: '#00ABDA',
                 borderColor: '#00ABDA',
               }}>

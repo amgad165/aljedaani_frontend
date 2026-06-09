@@ -109,7 +109,7 @@ const Navbar = () => {
     { label: t('departments'), href: '/departments' },
     { label: t('doctors'), href: '/doctors' },
     { label: t('pharmacies'), href: '#' },
-    { label: t('patientExperience'), href: '#' },
+    { label: t('patientExperience'), href: '/patient-experiences' },
     { label: t('media'), href: '#', hasDropdown: true, isMediaDropdown: true },
     { label: t('careers'), href: '/careers'},
     { label: t('contact'), href: '/contact'},
