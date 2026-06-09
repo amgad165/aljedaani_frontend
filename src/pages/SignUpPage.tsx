@@ -425,6 +425,7 @@ const SignUpPage = () => {
 
     const idType = verificationData.nationalId ? 'national_id' : 'medical_record';
     const identifier = verificationData.nationalId || verificationData.medicalRecordNumber;
+    const isTestAccount = identifier === '7777777' && idType === 'medical_record';
 
     setIsSubmitting(true);
     try {
@@ -469,7 +470,7 @@ const SignUpPage = () => {
           }
           success(t('recordFoundPreFilled'));
         } else {
-          if (HIS_ONLY_SIGNUP) {
+          if (HIS_ONLY_SIGNUP && !isTestAccount) {
             showError('Please visit the hospital to register your MRN ID before signing up.');
             setVerificationData(prev => ({
               ...prev,
@@ -557,8 +558,13 @@ const SignUpPage = () => {
       showError(t('phoneVerificationExpired'));
       return;
     }
-    if (HIS_ONLY_SIGNUP && !verificationData.hisPatientExists) {
-      showError('Please visit the hospital to register your MRN ID before signing up.');
+    const isTestAccount = profileData.medicalRecordNumber === '7777777'
+      || verificationData.medicalRecordNumber === '7777777'
+      || verificationData.hisPatientData?.medical_record_number === '7777777';
+
+    if (HIS_ONLY_SIGNUP && !verificationData.hisPatientExists && !isTestAccount) {
+      // Allow the special test MR to bypass frontend HIS-only gating
+      showError('Please visit the hospital to register your MRN ID before signing Up.');
       return;
     }
 
