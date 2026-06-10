@@ -583,5 +583,12 @@
   "failedToRescheduleAppointment": "فشلت إعادة جدولة الموعد",
   "loadingAppointments": "جاري تحميل المواعيد...",
   "errorLoadingAppointments": "حدث خطأ في تحميل المواعيد",
-  "close": "إغلاق"
+  "close": "إغلاق",
+  "patientEducation": "تثقيف المرضى",
+  "viewPdf": "عرض PDF",
+  "downloadPdf": "تنزيل PDF",
+   "selectOption": "اختر خياراً",
+   "backToExperiences": "العودة إلى التجارب",
+   "submissionSuccessful": "تم إرسال التقرير بنجاح",
+   "submissionSuccessMessage": "شكراً لك! تم إرسال تقريرك بنجاح."
 }

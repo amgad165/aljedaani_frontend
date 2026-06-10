@@ -1,24 +1,39 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { patientExperienceService, type PatientExperience } from '../services/patientExperienceService';
+import {
+  patientExperienceService,
+  type PatientExperience,
+  type PatientExperienceQuestion,
+} from '../services/patientExperienceService';
+import FloatingContactButtons from '../components/FloatingContactButtons';
+import { useResponsiveNavbar } from '../hooks/useResponsiveNavbar';
+import { useAuth } from '../context/AuthContext';
 import '../styles/pages/PatientExperienceDetailPage.css';
 
 export default function PatientExperienceDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { t } = useTranslation('pages');
-  const { i18n } = useTranslation();
+
+  const ResponsiveNavbar = useResponsiveNavbar();
+  const { isAuthenticated, user, isLoading: authLoading } = useAuth();
+  const showContactForm = authLoading ? true : !user;
 
   const [experience, setExperience] = useState<PatientExperience | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    full_name: string;
+    email: string;
+    phone: string;
+    answers: Record<string, string | string[]>;
+  }>({
     full_name: '',
     email: '',
     phone: '',
-    answers: {} as Record<string, any>,
+    answers: {},
   });
 
   useEffect(() => {
@@ -28,12 +43,25 @@ export default function PatientExperienceDetailPage() {
         setLoading(true);
         const data = await patientExperienceService.getExperience(Number(id));
         setExperience(data);
-        // Initialize answers object
-        const answers: Record<string, any> = {};
-        data.questions?.forEach((q: any) => {
-          answers[q.field_name] = '';
+
+        const questions = data?.questions ?? [];
+        const answers: Record<string, string | string[]> = {};
+        questions.forEach((q: PatientExperienceQuestion) => {
+          // Default to string for required validation; checkbox/radio will be handled by handlers
+          answers[q.field_name] = q.question_type === 'checkbox' ? [] : '';
         });
-        setFormData((prev) => ({ ...prev, answers }));
+
+        setFormData((prev) => ({
+          ...prev,
+          answers,
+          ...(showContactForm
+            ? {}
+            : {
+                full_name: user?.name ?? prev.full_name,
+                email: user?.email ?? prev.email,
+                phone: user?.phone ?? prev.phone,
+              }),
+        }));
       } catch (err) {
         console.error('Failed to fetch experience:', err);
         setError(t('errorLoadingData'));
@@ -43,20 +71,30 @@ export default function PatientExperienceDetailPage() {
     };
 
     fetchExperience();
-  }, [id, t]);
+  }, [id, t, user, showContactForm]);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
-    const { name, value } = e.target as HTMLInputElement;
+    const { name, value } = e.target;
 
-    if (name in formData && name !== 'answers') {
+    // Contact fields
+    if (name === 'full_name' || name === 'email' || name === 'phone') {
       setFormData((prev) => ({
         ...prev,
         [name]: value,
       }));
-    } else if (name.startsWith('question_')) {
+      return;
+    }
+
+    // Experience question fields (non-checkbox)
+    if (name.startsWith('question_')) {
       const fieldName = name.replace('question_', '');
+      const input = e.target as HTMLInputElement;
+
+      // Don't overwrite checkbox answers; they use handleCheckboxChange
+      if (input.type === 'checkbox') return;
+
       setFormData((prev) => ({
         ...prev,
         answers: {
@@ -69,19 +107,17 @@ export default function PatientExperienceDetailPage() {
 
   const handleCheckboxChange = (fieldName: string, value: string, checked: boolean) => {
     setFormData((prev) => {
-      const currentValue = prev.answers[fieldName] || [];
-      if (Array.isArray(currentValue)) {
-        return {
-          ...prev,
-          answers: {
-            ...prev.answers,
-            [fieldName]: checked
-              ? [...currentValue, value]
-              : currentValue.filter((v: string) => v !== value),
-          },
-        };
-      }
-      return prev;
+      const currentValue = prev.answers[fieldName];
+      const currentArray = Array.isArray(currentValue) ? currentValue : [];
+      return {
+        ...prev,
+        answers: {
+          ...prev.answers,
+          [fieldName]: checked
+            ? [...currentArray, value]
+            : currentArray.filter((v) => v !== value),
+        },
+      };
     });
   };
 
@@ -90,16 +126,23 @@ export default function PatientExperienceDetailPage() {
 
     if (!experience || !id) return;
 
-    // Validate required fields
+    // Validate required fields (only when showing contact form)
     let isValid = true;
-    if (!formData.full_name.trim()) {
+    if (showContactForm && !formData.full_name.trim()) {
       setError(t('fullNameRequired'));
       isValid = false;
     }
 
     if (experience.questions) {
       for (const question of experience.questions) {
-        if (question.is_required && !formData.answers[question.field_name]) {
+        const value = formData.answers[question.field_name];
+
+        const isEmpty =
+          question.question_type === 'checkbox'
+            ? !Array.isArray(value) || value.length === 0
+            : typeof value !== 'string' || value.trim() === '';
+
+        if (question.is_required && isEmpty) {
           setError(`${patientExperienceService.getField(question.question)} ${t('required')}`);
           isValid = false;
           break;
@@ -123,10 +166,14 @@ export default function PatientExperienceDetailPage() {
 
   if (loading) {
     return (
-      <div className="patient-experience-detail">
-        <div className="container">
-          <div className="skeleton-header"></div>
-          <div className="skeleton-form"></div>
+      <div>
+        {!isAuthenticated && <FloatingContactButtons />}
+        {ResponsiveNavbar}
+        <div className="patient-experience-detail">
+          <div className="container">
+            <div className="skeleton-header"></div>
+            <div className="skeleton-form"></div>
+          </div>
         </div>
       </div>
     );
@@ -134,70 +181,80 @@ export default function PatientExperienceDetailPage() {
 
   if (!experience) {
     return (
-      <div className="patient-experience-detail">
-        <div className="container">
-          <div className="error-message">{t('experienceNotFound')}</div>
+      <div>
+        {!isAuthenticated && <FloatingContactButtons />}
+        {ResponsiveNavbar}
+        <div className="patient-experience-detail">
+          <div className="container">
+            <div className="error-message">{t('experienceNotFound')}</div>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="patient-experience-detail">
-      <div className="container">
-        <div className="detail-header">
-          <h1>{patientExperienceService.getField(experience.title)}</h1>
-          {experience.description && (
-            <p className="description">
-              {patientExperienceService.getField(experience.description)}
-            </p>
-          )}
-        </div>
+    <div>
+      {!isAuthenticated && <FloatingContactButtons />}
+      {ResponsiveNavbar}
+      <div className="patient-experience-detail">
+        <div className="container">
+          <div className="detail-header">
+            <h1>{patientExperienceService.getField(experience.title)}</h1>
+            {experience.description && (
+              <p className="description">
+                {patientExperienceService.getField(experience.description)}
+              </p>
+            )}
+          </div>
 
         <form onSubmit={handleSubmit} className="experience-form">
           {error && <div className="error-message">{error}</div>}
 
-          <div className="form-section">
-            <h2>{t('contactInformation')}</h2>
-            <div className="form-group">
-              <label htmlFor="full_name" className="required">
-                {t('fullName')}
-              </label>
-              <input
-                type="text"
-                id="full_name"
-                name="full_name"
-                value={formData.full_name}
-                onChange={handleInputChange}
-                placeholder={t('enterFullName')}
-                required
-              />
-            </div>
 
-            <div className="form-group">
-              <label htmlFor="email">{t('email')}</label>
-              <input
-                type="email"
-                id="email"
-                name="email"
-                value={formData.email}
-                onChange={handleInputChange}
-                placeholder={t('enterEmail')}
-              />
-            </div>
+          {showContactForm && (
+            <div className="form-section">
+              <h2>{t('contactInformation')}</h2>
+              <div className="form-group">
+                <label htmlFor="full_name" className="required">
+                  {t('fullName')}
+                </label>
+                <input
+                  type="text"
+                  id="full_name"
+                  name="full_name"
+                  value={formData.full_name}
+                  onChange={handleInputChange}
+                  placeholder={t('enterFullName')}
+                  required
+                />
+              </div>
 
-            <div className="form-group">
-              <label htmlFor="phone">{t('phone')}</label>
-              <input
-                type="tel"
-                id="phone"
-                name="phone"
-                value={formData.phone}
-                onChange={handleInputChange}
-                placeholder={t('enterPhone')}
-              />
+              <div className="form-group">
+                <label htmlFor="email">{t('email')}</label>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  placeholder={t('enterEmail')}
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="phone">{t('phone')}</label>
+                <input
+                  type="tel"
+                  id="phone"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleInputChange}
+                  placeholder={t('enterPhone')}
+                />
+              </div>
             </div>
-          </div>
+          )}
 
           {experience.questions && experience.questions.length > 0 && (
             <div className="form-section">
@@ -215,7 +272,16 @@ export default function PatientExperienceDetailPage() {
                       id={`question_${question.field_name}`}
                       name={`question_${question.field_name}`}
                       value={formData.answers[question.field_name] || ''}
-                      onChange={handleInputChange}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setFormData((prev) => ({
+                          ...prev,
+                          answers: {
+                            ...prev.answers,
+                            [question.field_name]: value,
+                          },
+                        }));
+                      }}
                       placeholder={patientExperienceService.getField(question.placeholder)}
                       required={question.is_required}
                     />
@@ -227,7 +293,16 @@ export default function PatientExperienceDetailPage() {
                       id={`question_${question.field_name}`}
                       name={`question_${question.field_name}`}
                       value={formData.answers[question.field_name] || ''}
-                      onChange={handleInputChange}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setFormData((prev) => ({
+                          ...prev,
+                          answers: {
+                            ...prev.answers,
+                            [question.field_name]: value,
+                          },
+                        }));
+                      }}
                       placeholder={patientExperienceService.getField(question.placeholder)}
                       required={question.is_required}
                     />
@@ -239,7 +314,16 @@ export default function PatientExperienceDetailPage() {
                       id={`question_${question.field_name}`}
                       name={`question_${question.field_name}`}
                       value={formData.answers[question.field_name] || ''}
-                      onChange={handleInputChange}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setFormData((prev) => ({
+                          ...prev,
+                          answers: {
+                            ...prev.answers,
+                            [question.field_name]: value,
+                          },
+                        }));
+                      }}
                       placeholder={patientExperienceService.getField(question.placeholder)}
                       required={question.is_required}
                     />
@@ -251,7 +335,16 @@ export default function PatientExperienceDetailPage() {
                       id={`question_${question.field_name}`}
                       name={`question_${question.field_name}`}
                       value={formData.answers[question.field_name] || ''}
-                      onChange={handleInputChange}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setFormData((prev) => ({
+                          ...prev,
+                          answers: {
+                            ...prev.answers,
+                            [question.field_name]: value,
+                          },
+                        }));
+                      }}
                       placeholder={patientExperienceService.getField(question.placeholder)}
                       required={question.is_required}
                     />
@@ -263,7 +356,16 @@ export default function PatientExperienceDetailPage() {
                       id={`question_${question.field_name}`}
                       name={`question_${question.field_name}`}
                       value={formData.answers[question.field_name] || ''}
-                      onChange={handleInputChange}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setFormData((prev) => ({
+                          ...prev,
+                          answers: {
+                            ...prev.answers,
+                            [question.field_name]: value,
+                          },
+                        }));
+                      }}
                       required={question.is_required}
                     />
                   )}
@@ -273,7 +375,16 @@ export default function PatientExperienceDetailPage() {
                       id={`question_${question.field_name}`}
                       name={`question_${question.field_name}`}
                       value={formData.answers[question.field_name] || ''}
-                      onChange={handleInputChange}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setFormData((prev) => ({
+                          ...prev,
+                          answers: {
+                            ...prev.answers,
+                            [question.field_name]: value,
+                          },
+                        }));
+                      }}
                       placeholder={patientExperienceService.getField(question.placeholder)}
                       rows={4}
                       required={question.is_required}
@@ -285,63 +396,102 @@ export default function PatientExperienceDetailPage() {
                       id={`question_${question.field_name}`}
                       name={`question_${question.field_name}`}
                       value={formData.answers[question.field_name] || ''}
-                      onChange={handleInputChange}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setFormData((prev) => ({
+                          ...prev,
+                          answers: {
+                            ...prev.answers,
+                            [question.field_name]: value,
+                          },
+                        }));
+                      }}
                       required={question.is_required}
                     >
                       <option value="">{t('selectOption')}</option>
-                      {question.options?.map((option: any, index: number) => (
-                        <option key={index} value={typeof option === 'string' ? option : option.value || ''}>
-                          {typeof option === 'string' ? option : option[i18n.language] || option.en || ''}
-                        </option>
-                      ))}
+                      {(question.options ?? []).map((option: unknown, index: number) => {
+                        const optionValue =
+                          typeof option === 'string' ? option : (option as Record<string, string>).value ?? '';
+                        const optionLabel =
+                          typeof option === 'string' ? option : patientExperienceService.getField(option as Record<string, string>);
+                        return (
+                          <option key={index} value={optionValue}>
+                            {optionLabel}
+                          </option>
+                        );
+                      })}
                     </select>
                   )}
 
                   {question.question_type === 'radio' && (
                     <div className="radio-group">
-                      {question.options?.map((option: any, index: number) => (
-                        <div key={index} className="radio-item">
-                          <input
-                            type="radio"
-                            id={`question_${question.field_name}_${index}`}
-                            name={`question_${question.field_name}`}
-                            value={typeof option === 'string' ? option : option.value || ''}
-                            checked={formData.answers[question.field_name] === (typeof option === 'string' ? option : option.value || '')}
-                            onChange={handleInputChange}
-                            required={question.is_required}
-                          />
-                          <label htmlFor={`question_${question.field_name}_${index}`}>
-                            {typeof option === 'string' ? option : option[i18n.language] || option.en || ''}
-                          </label>
-                        </div>
-                      ))}
+                      {(question.options ?? []).map((option: unknown, index: number) => {
+                        const optionValue =
+                          typeof option === 'string'
+                            ? option
+                            : (option as Record<string, string>).value ?? '';
+
+                        const optionLabel =
+                          typeof option === 'string'
+                            ? option
+                            : patientExperienceService.getField(option as Record<string, string>);
+
+                        return (
+                          <div key={index} className="radio-item">
+                            <input
+                              type="radio"
+                              id={`question_${question.field_name}_${index}`}
+                              name={`question_${question.field_name}`}
+                              value={optionValue}
+                              checked={formData.answers[question.field_name] === optionValue}
+                              onChange={() => {
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  answers: {
+                                    ...prev.answers,
+                                    [question.field_name]: optionValue,
+                                  },
+                                }));
+                              }}
+                              required={question.is_required}
+                            />
+                            <label htmlFor={`question_${question.field_name}_${index}`}>{optionLabel}</label>
+                          </div>
+                        );
+                      })}
                     </div>
                   )}
 
                   {question.question_type === 'checkbox' && (
                     <div className="checkbox-group">
-                      {question.options?.map((option: any, index: number) => (
-                        <div key={index} className="checkbox-item">
-                          <input
-                            type="checkbox"
-                            id={`question_${question.field_name}_${index}`}
-                            value={typeof option === 'string' ? option : option.value || ''}
-                            checked={(formData.answers[question.field_name] || []).includes(
-                              typeof option === 'string' ? option : option.value || ''
-                            )}
-                            onChange={(e) =>
-                              handleCheckboxChange(
-                                question.field_name,
-                                typeof option === 'string' ? option : option.value || '',
-                                e.target.checked
-                              )
-                            }
-                          />
-                          <label htmlFor={`question_${question.field_name}_${index}`}>
-                            {typeof option === 'string' ? option : option[i18n.language] || option.en || ''}
-                          </label>
-                        </div>
-                      ))}
+                      {(question.options ?? []).map((option: unknown, index: number) => {
+                        const optionValue =
+                          typeof option === 'string'
+                            ? option
+                            : (option as Record<string, string>).value ?? '';
+
+                        const optionLabel =
+                          typeof option === 'string'
+                            ? option
+                            : patientExperienceService.getField(option as Record<string, string>);
+
+                        const checkedValues = Array.isArray(formData.answers[question.field_name])
+                          ? (formData.answers[question.field_name] as string[])
+                          : [];
+
+                        return (
+                          <div key={index} className="checkbox-item">
+                            <input
+                              type="checkbox"
+                              id={`question_${question.field_name}_${index}`}
+                              value={optionValue}
+                              checked={checkedValues.includes(optionValue)}
+                              onChange={(e) => handleCheckboxChange(question.field_name, optionValue, e.target.checked)}
+                            />
+                            <label htmlFor={`question_${question.field_name}_${index}`}>{optionLabel}</label>
+                          </div>
+                        );
+                      })}
                     </div>
                   )}
                 </div>
@@ -354,7 +504,8 @@ export default function PatientExperienceDetailPage() {
               {submitting ? t('submitting') : t('submit')}
             </button>
           </div>
-        </form>
+          </form>
+        </div>
       </div>
     </div>
   );

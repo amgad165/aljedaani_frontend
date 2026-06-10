@@ -30,6 +30,7 @@ import PatientExperienceDetailPage from './pages/PatientExperienceDetailPage';
 import PatientExperienceSuccessPage from './pages/PatientExperienceSuccessPage';
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
 import AccountDeletionPage from './pages/AccountDeletionPage';
+import PatientEducationPage from './pages/PatientEducationPage';
 // Admin Pages
 import AdminLogin from './components/admin/AdminLogin';
 import AdminDashboard from './components/admin/AdminDashboard';
@@ -64,6 +65,7 @@ import AdminArticles from './components/admin/AdminArticles';
 import AdminNews from './components/admin/AdminNews';
 import AdminCareers from './components/admin/AdminCareers';
 import AdminPatientExperiences from './components/admin/AdminPatientExperiences';
+import AdminPatientEducations from './components/admin/AdminPatientEducations';
 import ProtectedRoute from './components/admin/ProtectedRoute';
 import './App.css';
 
@@ -395,6 +397,7 @@ function AppRouter() {
     { path: '/patient-experiences', element: <PatientExperiencePage /> },
     { path: '/patient-experiences/:id', element: <PatientExperienceDetailPage /> },
     { path: '/patient-experiences/:id/success', element: <PatientExperienceSuccessPage /> },
+    { path: '/patient-education', element: <PatientEducationPage /> },
     { path: '/privacy-policy', element: <PrivacyPolicyPage /> },
     { path: '/account-deletion', element: <AccountDeletionPage /> },
   ];
@@ -473,6 +476,11 @@ function AppRouter() {
         <Route path="/admin/patient-experiences" element={
           <ProtectedRoute>
             <AdminPatientExperiences />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/patient-educations" element={
+          <ProtectedRoute>
+            <AdminPatientEducations />
           </ProtectedRoute>
         } />
         <Route path="/admin/otp-logs" element={

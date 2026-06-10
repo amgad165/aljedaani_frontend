@@ -26,9 +26,11 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const { user, logout } = useAuth();
 
   // Keep HIS menu expanded when on HIS pages
+  // (Avoid setState synchronously inside effect body; eslint warns for this pattern.)
   useEffect(() => {
     if (location.pathname.startsWith('/admin/his')) {
-      setExpandedMenu('HIS');
+      // schedule state update to avoid cascading renders warning
+      queueMicrotask(() => setExpandedMenu('HIS'));
     }
   }, [location.pathname]);
 
@@ -74,6 +76,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
     { path: '/admin/news', label: 'News', icon: 'articles' },
     { path: '/admin/careers', label: 'Careers', icon: 'careers' },
     { path: '/admin/patient-experiences', label: 'Patient Experiences', icon: 'careers' },
+    { path: '/admin/patient-educations', label: 'Patient Educations', icon: 'careers' },
     { path: '/admin/contact-submissions', label: 'Contact Submissions', icon: 'contact' },
   ];
 

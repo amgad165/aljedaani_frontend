@@ -1,5 +1,5 @@
 .patient-experience-detail {
-  padding: 40px 20px;
+  padding: 128px 20px;
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
   min-height: 100vh;
 }
@@ -103,8 +103,23 @@
 .radio-group,
 .checkbox-group {
   display: flex;
-  flex-direction: column;
   gap: 10px;
+}
+
+/* Force checkbox row alignment (override any global flex-direction column) */
+.checkbox-item {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 10px !important;
+}
+
+.checkbox-item label {
+  display: inline-block !important;
+  margin: 0 !important;
+  font-weight: 500;
+  cursor: pointer;
 }
 
 .radio-item,
@@ -125,6 +140,10 @@
   margin-bottom: 0;
   cursor: pointer;
   font-weight: 500;
+  display: inline-block;
+}
+.checkbox-item {
+  justify-content: flex-start;
 }
 
 .form-actions {
@@ -192,7 +211,7 @@
 
 @media (max-width: 768px) {
   .patient-experience-detail {
-    padding: 20px 10px;
+    padding: 90px 10px;
   }
 
   .experience-form {

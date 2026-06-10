@@ -19,6 +19,7 @@ export default function AdminPatientExperiences() {
   const [selectedExperience, setSelectedExperience] = useState<PatientExperience | null>(null);
   const [questions, setQuestions] = useState<PatientExperienceQuestion[]>([]);
   const [submissions, setSubmissions] = useState<PatientExperienceSubmission[]>([]);
+  const [selectedSubmission, setSelectedSubmission] = useState<PatientExperienceSubmission | null>(null);
   const [loading, setLoading] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [showForm, setShowForm] = useState(false);
@@ -77,7 +78,7 @@ export default function AdminPatientExperiences() {
       if (data.length > 0 && !selectedExperience) {
         setSelectedExperience(data[0]);
       }
-    } catch (err) {
+    } catch {
       setError(t('errorLoadingData'));
     } finally {
       setLoading(false);
@@ -89,7 +90,7 @@ export default function AdminPatientExperiences() {
     try {
       const data = await patientExperienceService.getQuestions(selectedExperience.id);
       setQuestions(data);
-    } catch (err) {
+    } catch {
       setError(t('errorLoadingData'));
     }
   };
@@ -99,7 +100,7 @@ export default function AdminPatientExperiences() {
     try {
       const data = await patientExperienceService.getSubmissions(selectedExperience.id);
       setSubmissions(data);
-    } catch (err) {
+    } catch {
       setError(t('errorLoadingData'));
     }
   };
@@ -123,7 +124,7 @@ export default function AdminPatientExperiences() {
         sort_order: 0,
       });
       fetchExperiences();
-    } catch (err) {
+    } catch {
       setError(t('errorSavingData'));
     } finally {
       setLoading(false);
@@ -136,7 +137,7 @@ export default function AdminPatientExperiences() {
       await patientExperienceService.deleteExperience(id);
       setSuccess(t('deletedSuccessfully'));
       fetchExperiences();
-    } catch (err) {
+    } catch {
       setError(t('errorDeletingData'));
     }
   };
@@ -182,7 +183,7 @@ export default function AdminPatientExperiences() {
         is_active: true,
       });
       fetchQuestions();
-    } catch (err) {
+    } catch {
       setError(t('errorSavingData'));
     } finally {
       setLoading(false);
@@ -195,9 +196,13 @@ export default function AdminPatientExperiences() {
       await patientExperienceService.deleteQuestion(selectedExperience.id, questionId);
       setSuccess(t('deletedSuccessfully'));
       fetchQuestions();
-    } catch (err) {
+    } catch {
       setError(t('errorDeletingData'));
     }
+  };
+
+  const handleViewSubmission = (submission: PatientExperienceSubmission) => {
+    setSelectedSubmission(submission);
   };
 
   const handleUpdateSubmissionStatus = async (submissionId: number, newStatus: string) => {
@@ -206,7 +211,7 @@ export default function AdminPatientExperiences() {
       await patientExperienceService.updateSubmission(selectedExperience.id, submissionId, { status: newStatus });
       setSuccess(t('updatedSuccessfully'));
       fetchSubmissions();
-    } catch (err) {
+    } catch {
       setError(t('errorUpdatingData'));
     }
   };
@@ -666,6 +671,70 @@ export default function AdminPatientExperiences() {
             </h2>
           </div>
 
+          {selectedSubmission && (
+            <div className="submission-view-modal">
+              <div className="submission-view-modal__content">
+                <div className="submission-view-modal__header">
+                  <h3>{t('submissionDetails') ?? 'Submission details'}</h3>
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-secondary"
+                    onClick={() => setSelectedSubmission(null)}
+                  >
+                    {t('close') ?? 'Close'}
+                  </button>
+                </div>
+
+                <div className="submission-view-modal__body">
+                  <div className="submission-view-meta">
+                    <div><strong>{t('name')}: </strong>{selectedSubmission.full_name}</div>
+                    <div><strong>{t('email')}: </strong>{selectedSubmission.email || '-'}</div>
+                    <div><strong>{t('phone')}: </strong>{selectedSubmission.phone || '-'}</div>
+                    <div><strong>{t('status')}: </strong>{selectedSubmission.status}</div>
+                    <div><strong>{t('date')}: </strong>{new Date(selectedSubmission.created_at).toLocaleDateString()}</div>
+                  </div>
+
+                  <div className="submission-view-answers">
+                    <h4>{t('answers') ?? 'Answers'}</h4>
+
+                    {selectedSubmission.answers && Object.keys(selectedSubmission.answers).length > 0 ? (
+                      <div className="submission-answers-grid">
+                        {(() => {
+                          const fieldNameToLabel: Record<string, string> = {};
+                          questions.forEach((q) => {
+                            fieldNameToLabel[q.field_name] = patientExperienceService.getField(q.question);
+                          });
+
+                          return Object.entries(selectedSubmission.answers).map(([fieldName, value]) => {
+                            const matchedQuestion = questions.find((q) => q.field_name === fieldName);
+
+                            // Prefer the exact question text returned by backend question object
+                            const questionText =
+                              matchedQuestion?.question?.en ??
+                              matchedQuestion?.question?.ar ??
+                              fieldNameToLabel[fieldName] ??
+                              fieldName;
+
+                            return (
+                              <div key={fieldName} className="submission-answer-item">
+                                <div className="submission-answer-key">{questionText}</div>
+                                <div className="submission-answer-value">
+                                  {Array.isArray(value) ? value.join(', ') : String(value ?? '')}
+                                </div>
+                              </div>
+                            );
+                          });
+                        })()}
+                      </div>
+                    ) : (
+                      <div className="submission-answer-empty">-</div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="data-table">
             <table>
               <thead>
@@ -698,7 +767,13 @@ export default function AdminPatientExperiences() {
                     </td>
                     <td>{new Date(submission.created_at).toLocaleDateString()}</td>
                     <td>
-                      <button className="btn btn-sm btn-info">{t('view')}</button>
+                      <button
+                        className="btn btn-sm btn-info"
+                        type="button"
+                        onClick={() => handleViewSubmission(submission)}
+                      >
+                        {t('view')}
+                      </button>
                     </td>
                   </tr>
                 ))}

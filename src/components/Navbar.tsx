@@ -12,6 +12,7 @@ interface NavItem {
   hasDropdown?: boolean;
   isBranchesDropdown?: boolean;
   isMediaDropdown?: boolean;
+  isPatientExperienceDropdown?: boolean;
   submenu?: { label: string; href: string }[];
 }
 
@@ -23,10 +24,12 @@ const Navbar = () => {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isBranchesDropdownOpen, setIsBranchesDropdownOpen] = useState(false);
   const [isMediaDropdownOpen, setIsMediaDropdownOpen] = useState(false);
+  const [isPatientExperienceDropdownOpen, setIsPatientExperienceDropdownOpen] = useState(false);
   const [branches, setBranches] = useState<Branch[]>([]);
   const [loadingBranches, setLoadingBranches] = useState(false);
   const branchesDropdownRef = useRef<HTMLLIElement>(null);
   const mediaDropdownRef = useRef<HTMLLIElement>(null);
+  const patientExperienceDropdownRef = useRef<HTMLLIElement>(null);
   const userMenuTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { isAuthenticated, user, logout } = useAuth();
 
@@ -56,6 +59,9 @@ const Navbar = () => {
       }
       if (mediaDropdownRef.current && !mediaDropdownRef.current.contains(event.target as Node)) {
         setIsMediaDropdownOpen(false);
+      }
+      if (patientExperienceDropdownRef.current && !patientExperienceDropdownRef.current.contains(event.target as Node)) {
+        setIsPatientExperienceDropdownOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -88,6 +94,10 @@ const Navbar = () => {
       return matchesAnyPath(['/articles', '/article', '/news', '/media']);
     }
 
+    if (item.isPatientExperienceDropdown) {
+      return matchesAnyPath(['/patient-experiences', '/patient-experience', '/patient-education']);
+    }
+
     if (item.href === '/departments') {
       return matchesAnyPath(['/departments', '/department']);
     }
@@ -109,7 +119,7 @@ const Navbar = () => {
     { label: t('departments'), href: '/departments' },
     { label: t('doctors'), href: '/doctors' },
     { label: t('pharmacies'), href: '#' },
-    { label: t('patientExperience'), href: '/patient-experiences' },
+    { label: t('patientExperience'), href: '#', hasDropdown: true, isPatientExperienceDropdown: true },
     { label: t('media'), href: '#', hasDropdown: true, isMediaDropdown: true },
     { label: t('careers'), href: '/careers'},
     { label: t('contact'), href: '/contact'},
@@ -810,12 +820,167 @@ const Navbar = () => {
                         </div>
                       </div>
                     </>
+                  ) : item.isPatientExperienceDropdown ? (
+                    // Patient Experience with dropdown
+                    <>
+                      <a
+                        href="#"
+                        className="menu-link-trigger"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setIsPatientExperienceDropdownOpen(!isPatientExperienceDropdownOpen);
+                        }}
+                      >
+                        {item.label}
+                      </a>
+                      <img
+                        src="/assets/img/icons/dropdown.svg"
+                        className="d-block"
+                        width="10"
+                        height="18"
+                        alt="Dropdown Icon"
+                        style={{
+                          transition: 'transform 0.3s ease',
+                          transform: isPatientExperienceDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                          cursor: 'pointer',
+                        }}
+                        onClick={() => setIsPatientExperienceDropdownOpen(!isPatientExperienceDropdownOpen)}
+                      />
+
+                      {/* Patient Experience Dropdown Menu */}
+                      <div style={{
+                        position: 'absolute',
+                        top: '100%',
+                        left: '50%',
+                        transform: 'translateX(-50%)',
+                        marginTop: '12px',
+                        background: '#FFFFFF',
+                        borderRadius: '16px',
+                        boxShadow: '0 10px 40px rgba(0, 0, 0, 0.15)',
+                        border: '1px solid #E5E7EB',
+                        minWidth: '280px',
+                        zIndex: 1000,
+                        overflow: 'hidden',
+                        opacity: isPatientExperienceDropdownOpen ? 1 : 0,
+                        visibility: isPatientExperienceDropdownOpen ? 'visible' : 'hidden',
+                        pointerEvents: isPatientExperienceDropdownOpen ? 'auto' : 'none',
+                        transformOrigin: 'top center',
+                        transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+                      }}>
+                        {/* Arrow pointer */}
+                        <div style={{
+                          position: 'absolute',
+                          top: '-8px',
+                          left: '50%',
+                          transform: 'translateX(-50%) rotate(45deg)',
+                          width: '16px',
+                          height: '16px',
+                          background: '#FFFFFF',
+                          borderLeft: '1px solid #E5E7EB',
+                          borderTop: '1px solid #E5E7EB',
+                        }} />
+
+                        {/* Header */}
+                        <div style={{
+                          padding: '16px 20px 12px',
+                          borderBottom: '1px solid #F3F4F6',
+                          background: 'linear-gradient(135deg, #E0F7FA 0%, #FFFFFF 100%)',
+                        }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z" fill="#00ABDA"/>
+                            </svg>
+                            <span style={{
+                              fontFamily: 'Nunito, sans-serif',
+                              fontWeight: 700,
+                              fontSize: '14px',
+                              color: '#061F42',
+                              textTransform: 'uppercase',
+                              letterSpacing: '0.5px',
+                            }}>
+                              Patient Services
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Items */}
+                        <div style={{ padding: '8px' }}>
+                          <Link
+                            to="/patient-experiences"
+                            onClick={() => setIsPatientExperienceDropdownOpen(false)}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '12px',
+                              padding: '12px 16px',
+                              borderRadius: '10px',
+                              fontFamily: 'Nunito, sans-serif',
+                              fontWeight: 600,
+                              fontSize: '14px',
+                              color: '#061F42',
+                              textDecoration: 'none',
+                              transition: 'background 0.2s ease',
+                            }}
+                            onMouseEnter={(e) => { e.currentTarget.style.background = '#F0FDFF'; }}
+                            onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+                          >
+                            <div style={{
+                              width: '36px', height: '36px', borderRadius: '8px',
+                              background: 'linear-gradient(135deg, #00ABDA 0%, #0088B0 100%)',
+                              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                            }}>
+                              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z" fill="white"/>
+                              </svg>
+                            </div>
+                            {t('patientExperience')}
+                            <svg style={{ marginInlineStart: 'auto' }} width="16" height="16" viewBox="0 0 16 16" fill="none">
+                              <path d="M6 12L10 8L6 4" stroke="#9CA3AF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                          </Link>
+
+                          <Link
+                            to="/patient-education"
+                            onClick={() => setIsPatientExperienceDropdownOpen(false)}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '12px',
+                              padding: '12px 16px',
+                              borderRadius: '10px',
+                              fontFamily: 'Nunito, sans-serif',
+                              fontWeight: 600,
+                              fontSize: '14px',
+                              color: '#061F42',
+                              textDecoration: 'none',
+                              transition: 'background 0.2s ease',
+                            }}
+                            onMouseEnter={(e) => { e.currentTarget.style.background = '#F0FDFF'; }}
+                            onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+                          >
+                            <div style={{
+                              width: '36px', height: '36px', borderRadius: '8px',
+                              background: 'linear-gradient(135deg, #0155CB 0%, #00ABDA 100%)',
+                              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                            }}>
+                              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z" fill="white"/>
+                              </svg>
+                            </div>
+                            Patient Education
+                            <svg style={{ marginInlineStart: 'auto' }} width="16" height="16" viewBox="0 0 16 16" fill="none">
+                              <path d="M6 12L10 8L6 4" stroke="#9CA3AF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                          </Link>
+                        </div>
+                      </div>
+                    </>
                   ) : item.href.startsWith('/') ? (
                     <Link to={item.href} className="menu-link-trigger">{item.label}</Link>
                   ) : (
                     <a href={item.href} className="menu-link-trigger">{item.label}</a>
                   )}
-                  {item.hasDropdown && !item.isBranchesDropdown && !item.isMediaDropdown && (
+                  {item.hasDropdown && !item.isBranchesDropdown && !item.isMediaDropdown && !item.isPatientExperienceDropdown && (
                     <img src="/assets/img/icons/dropdown.svg" className="d-block" width="10" height="18" alt="Dropdown Icon" />
                   )}
                 </li>

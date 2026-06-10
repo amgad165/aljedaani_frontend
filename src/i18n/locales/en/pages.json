@@ -582,5 +582,14 @@
   "failedToRescheduleAppointment": "Failed to reschedule appointment",
   "loadingAppointments": "Loading appointments...",
   "errorLoadingAppointments": "Error loading appointments",
-  "close": "Close"
+  "close": "Close",
+  "patientEducation": "Patient Education",
+  "viewPdf": "View PDF",
+  "downloadPdf": "Download PDF",
+    "patientExperiences": "Patient Experience",
+    "selectOption": "Select Option",
+    "backToExperiences": "Back to Experiences",
+    "submissionSuccessful": "Submission Successful",
+    "submissionSuccessMessage": "Thank you! Your report has been submitted successfully."
+
 }
