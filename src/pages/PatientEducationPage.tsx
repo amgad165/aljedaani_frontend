@@ -11,6 +11,7 @@ export default function PatientEducationPage() {
   const [educations, setEducations] = useState<PatientEducation[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const isMobile = window.innerWidth <= 768;
 
   useEffect(() => {
     const fetchEducations = async () => {
@@ -46,7 +47,7 @@ export default function PatientEducationPage() {
             display: 'flex',
             alignItems: 'flex-start',
             justifyContent: 'center',
-            marginTop: '124px',
+        marginTop: isMobile ? '90px' : '122px',
           }}
         >
           <div
@@ -206,7 +207,7 @@ export default function PatientEducationPage() {
           display: 'flex',
           alignItems: 'flex-start',
           justifyContent: 'center',
-          marginTop: '124px',
+          marginTop: isMobile ? '90px' : '124px' ,
         }}
       >
         <div
@@ -236,7 +237,7 @@ export default function PatientEducationPage() {
               style={{
                 fontFamily: 'Nunito, sans-serif',
                 fontWeight: 600,
-                fontSize: 44,
+                fontSize: isMobile ? 28 : 44,
                 lineHeight: '50px',
                 color: '#061F42',
                 margin: 0,
@@ -263,13 +264,14 @@ export default function PatientEducationPage() {
               {t('noDataAvailable') || 'No data available'}
             </div>
           ) : (
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(3, 1fr)',
-                gap: 24,
-              }}
-            >
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)',
+          gap: 24,
+        }}
+      >
+              
               {educations
                 .slice()
                 .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))

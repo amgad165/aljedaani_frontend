@@ -275,7 +275,7 @@ const BookAppointmentPage = () => {
   
   // Local loading state for the form submission
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [_submissionError, setSubmissionError] = useState<string | null>(null);
+  const [_, setSubmissionError] = useState<string | null>(null);
   const [appointmentId, setAppointmentId] = useState<number | null>(null);
 
   // Payment state
@@ -428,12 +428,23 @@ const BookAppointmentPage = () => {
     const resourcePath = searchParams.get('resourcePath');
     const appointmentIdParam = searchParams.get('appointment_id');
 
-    if (!resourcePath || !appointmentIdParam || handledPaymentReturn) {
+    if (!resourcePath || !appointmentIdParam) {
+      return;
+    }
+
+    // Prevent duplicate status calls (component remounts / re-renders can reset in-memory state)
+    const storageKey = `hyperpay_status_handled:${appointmentIdParam}:${resourcePath}`;
+    const alreadyHandled = sessionStorage.getItem(storageKey) === '1';
+
+    if (handledPaymentReturn || alreadyHandled) {
       return;
     }
 
     const finalizePayment = async () => {
+      // Mark handled immediately to block a second call while the request is in-flight
+      sessionStorage.setItem(storageKey, '1');
       setHandledPaymentReturn(true);
+
       setPaymentStatus('pending');
       setPaymentError(null);
       setCurrentStep(5);
@@ -929,7 +940,7 @@ const BookAppointmentPage = () => {
 
     try {
       // Parse time slot (format could be "08:15 AM - 08:30 AM" or "08:15 AM" or "08:15")
-      let timeSlot = doctorSelection.selectedSlot.split(' - ')[0].trim();
+      const timeSlot = doctorSelection.selectedSlot.split(' - ')[0].trim();
       
       console.log('Selected slot:', doctorSelection.selectedSlot);
       console.log('Parsed time slot:', timeSlot);
@@ -1000,7 +1011,7 @@ const BookAppointmentPage = () => {
         console.error('API returned success: false');
         throw new Error(response.message || 'Failed to create appointment');
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error creating appointment:', error);
       const errorMessage = error.message || 'Failed to create appointment. Please try again.';
       setSubmissionError(errorMessage);

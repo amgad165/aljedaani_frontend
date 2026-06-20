@@ -528,8 +528,8 @@ background: linear-gradient(180deg, #8FF5F7 0%, #14C8F9 100%);
     font-size: 18px !important;
   }
   .main-sec .banner-sec {
-    transform: translateY(0);
-    margin-bottom: clamp(60px, 10vw, 120px);
+    transform: translateY(60px);
+    margin-bottom: clamp(0px, 3vw, 40px);
   }
   .main-sec .banner-sec .banner-wrapper {
     flex-direction: column-reverse;

@@ -208,7 +208,7 @@ const AppBannerSection = () => {
               }}
             >
               <a 
-                href="#"
+                href="https://play.google.com/store/apps/details?id=com.jedaani.jedaanihospitals"
                 style={{
                   ...getAnimationStyle(sectionVisible, 0.25),
                   display: 'inline-block'
@@ -217,7 +217,7 @@ const AppBannerSection = () => {
                 <img src="/assets/img/playstore.webp" width="120" height="40" alt="Playstore" />
               </a>
               <a 
-                href="#"
+                href="https://apps.apple.com/us/app/jedaani-hospitals/id6778514136`"
                 style={{
                   ...getAnimationStyle(sectionVisible, 0.35),
                   display: 'inline-block'
