@@ -271,11 +271,11 @@ const BookAppointmentPage = () => {
 
   // TEMP PAYMENT RULE (easy to revert): disable online payment option in UI.
   // Set to true to re-enable Hyperpay in the booking flow.
-  const ENABLE_ONLINE_PAYMENT = false;
+  const ENABLE_ONLINE_PAYMENT = true;
   
   // Local loading state for the form submission
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [_, setSubmissionError] = useState<string | null>(null);
+  const [, setSubmissionError] = useState<string | null>(null);
   const [appointmentId, setAppointmentId] = useState<number | null>(null);
 
   // Payment state
@@ -1011,9 +1011,14 @@ const BookAppointmentPage = () => {
         console.error('API returned success: false');
         throw new Error(response.message || 'Failed to create appointment');
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error creating appointment:', error);
-      const errorMessage = error.message || 'Failed to create appointment. Please try again.';
+
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : 'Failed to create appointment. Please try again.';
+
       setSubmissionError(errorMessage);
       showError(errorMessage);
     } finally {

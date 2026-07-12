@@ -31,6 +31,7 @@ import PatientExperienceSuccessPage from './pages/PatientExperienceSuccessPage';
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
 import AccountDeletionPage from './pages/AccountDeletionPage';
 import PatientEducationPage from './pages/PatientEducationPage';
+import MobileAppPage from './pages/MobileAppPage';
 // Admin Pages
 import AdminLogin from './components/admin/AdminLogin';
 import AdminDashboard from './components/admin/AdminDashboard';
@@ -167,6 +168,10 @@ const ROUTE_SEO: Record<SupportedLang, Record<string, SeoEntry>> = {
       title: 'Account Deletion Request | Aljedaani Hospitals',
       description: 'Learn how to request deletion of your Aljedaani Hospitals mobile app account.',
     },
+    '/mobile-app': {
+      title: 'Download Mobile App | Aljedaani Hospitals',
+      description: 'Download the Aljedaani Hospitals mobile app for a more personalised experience.',
+    },
     default: {
       title: 'Aljedaani Hospitals',
       description: 'Aljedaani Group of Hospitals - trusted healthcare services in Jeddah.',
@@ -246,6 +251,10 @@ const ROUTE_SEO: Record<SupportedLang, Record<string, SeoEntry>> = {
     '/account-deletion': {
       title: 'طلب حذف الحساب | مستشفيات الجدعاني',
       description: 'تعرف على طريقة طلب حذف حساب تطبيق مستشفيات الجدعاني.',
+    },
+    '/mobile-app': {
+      title: 'تحميل تطبيق مستشفيات الجدعاني',
+      description: 'قم بتنزيل تطبيق مستشفيات الجدعاني للحصول على تجربة أكثر تخصيصاً.',
     },
     default: {
       title: 'مستشفيات الجدعاني',
@@ -400,6 +409,7 @@ function AppRouter() {
     { path: '/patient-education', element: <PatientEducationPage /> },
     { path: '/privacy-policy', element: <PrivacyPolicyPage /> },
     { path: '/account-deletion', element: <AccountDeletionPage /> },
+    { path: '/mobile-app', element: <MobileAppPage /> },
   ];
 
   return (

@@ -1,10 +1,11 @@
 import { useScrollAnimation, getAnimationStyle } from '../hooks/useScrollAnimation';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 
 const AppBannerSection = () => {
   const { ref: sectionRef, isVisible: sectionVisible } = useScrollAnimation();
   const { t } = useTranslation('pages');
-  
+
   return (
     <>
       <style>{`
@@ -136,97 +137,100 @@ const AppBannerSection = () => {
       `}</style>
       <section ref={sectionRef} className="banner-sec pb-0">
         <div className="container">
-          <div 
-            style={{ 
-              backgroundImage: "url('/assets/img/banner2.png')",
-              backgroundPosition: 'center center',
-              backgroundSize: 'cover'
-            }} 
-            className="banner-wrapper"
-          >
-            <div 
-              className="content-wrapper"
+          <Link to="/mobile-app" style={{ textDecoration: 'none', display: 'block' }}>
+            <div
               style={{
-                ...getAnimationStyle(sectionVisible, 0)
+                backgroundImage: "url('/assets/img/banner2.png')",
+                backgroundPosition: 'center center',
+                backgroundSize: 'cover',
               }}
+              className="banner-wrapper"
             >
-              <h2 
-                className="banner-title"
+              <div
+                className="content-wrapper"
                 style={{
-                  fontFamily: 'Nunito, sans-serif',
-                  fontWeight: 800,
-                  fontSize: '62px',
-                  lineHeight: '50px',
-                  color: '#061F42',
-                  marginBottom: '8px',
-                  textAlign: 'center'
+                  ...getAnimationStyle(sectionVisible, 0),
                 }}
               >
-                {t('downloadMobileApp')}
-              </h2>
-              <h3 
-                className="banner-subtitle"
-                style={{
-                  fontFamily: 'Nunito, sans-serif',
-                  fontWeight: 600,
-                  fontSize: '27px',
-                  color: '#061F42',
-                  marginBottom: '16px',
-                   textAlign: 'center'
+                <h2
+                  className="banner-title"
+                  style={{
+                    fontFamily: 'Nunito, sans-serif',
+                    fontWeight: 800,
+                    fontSize: '62px',
+                    lineHeight: '50px',
+                    color: '#061F42',
+                    marginBottom: '8px',
+                    textAlign: 'center',
+                  }}
+                >
+                  {t('downloadMobileApp')}
+                </h2>
+                <h3
+                  className="banner-subtitle"
+                  style={{
+                    fontFamily: 'Nunito, sans-serif',
+                    fontWeight: 600,
+                    fontSize: '27px',
+                    color: '#061F42',
+                    marginBottom: '16px',
+                    textAlign: 'center',
+                  }}
+                >
+                  {t('mobileAppSubtitle')}
+                </h3>
+              </div>
 
-                }}
-              >
-                {t('mobileAppSubtitle')}
-              </h3>
-            </div>
-            <div 
-              className="image-wrapper"
-              style={{
-                ...getAnimationStyle(sectionVisible, 0.15)
-              }}
-            >
-              <img 
-                style={{ 
-                  maxWidth: '215px',
-                  filter: 'drop-shadow(0 10px 25px rgba(0, 0, 0, 0.15))'
-                }} 
-                src="/assets/img/mobile-img.webp" 
-                className="img-fluid d-block"
-                width="115" 
-                height="454" 
-                alt="Mobile Image" 
-              />
-            </div>
-            <div 
-              className="d-flex align-center flex-wrap gap-3 store" 
-              style={{ 
-                position: 'absolute', 
-                bottom: '30px', 
-                left: '50%', 
-                transform: 'translateX(-50%)',
-                zIndex: 10
-              }}
-            >
-              <a 
-                href="https://play.google.com/store/apps/details?id=com.jedaani.jedaanihospitals"
+              <div
+                className="image-wrapper"
                 style={{
-                  ...getAnimationStyle(sectionVisible, 0.25),
-                  display: 'inline-block'
+                  ...getAnimationStyle(sectionVisible, 0.15),
                 }}
               >
-                <img src="/assets/img/playstore.webp" width="120" height="40" alt="Playstore" />
-              </a>
-              <a 
-                href="https://apps.apple.com/us/app/jedaani-hospitals/id6778514136`"
+                <img
+                  style={{
+                    maxWidth: '215px',
+                    filter: 'drop-shadow(0 10px 25px rgba(0, 0, 0, 0.15))',
+                  }}
+                  src="/assets/img/mobile-img.webp"
+                  className="img-fluid d-block"
+                  width="115"
+                  height="454"
+                  alt="Mobile Image"
+                />
+              </div>
+
+              <div
+                className="d-flex align-center flex-wrap gap-3 store"
                 style={{
-                  ...getAnimationStyle(sectionVisible, 0.35),
-                  display: 'inline-block'
+                  position: 'absolute',
+                  bottom: '30px',
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  zIndex: 10,
                 }}
               >
-                <img src="/assets/img/applestore.webp" width="120" height="40" alt="Applestore" />
-              </a>
+                <a
+                  href="https://play.google.com/store/apps/details?id=com.jedaani.jedaanihospitals"
+                  style={{
+                    ...getAnimationStyle(sectionVisible, 0.25),
+                    display: 'inline-block',
+                  }}
+                >
+                  <img src="/assets/img/playstore.webp" width="120" height="40" alt="Playstore" />
+                </a>
+                <a
+                  href="https://apps.apple.com/us/app/jedaani-hospitals/id6778514136"
+                  style={{
+                    ...getAnimationStyle(sectionVisible, 0.35),
+                    display: 'inline-block',
+                  }}
+                >
+                  <img src="/assets/img/applestore.webp" width="120" height="40" alt="Applestore" />
+                </a>
+              </div>
             </div>
-          </div>
+          </Link>
         </div>
       </section>
     </>
