@@ -20,12 +20,12 @@ export default function MobileAppPage() {
     () => [
       {
         href: APPLE_STORE_URL,
-        imgSrc: '/assets/img/applestore.webp',
+        imgSrc: '/assets/img/applestore.png',
         alt: 'Applestore',
       },
       {
         href: GOOGLE_PLAY_URL,
-        imgSrc: '/assets/img/playstore.webp',
+        imgSrc: '/assets/img/playstore.png',
         alt: 'Playstore',
       },
     ],
@@ -47,111 +47,173 @@ export default function MobileAppPage() {
       >
         <div
           style={{
-            maxWidth: 1100,
+            maxWidth: 1200,
             margin: '0 auto',
-            padding: '0 16px',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 18,
+            padding: '33px 36px',
           }}
         >
-          {/* Phone thumbnail (focal point) */}
           <div
             style={{
-              width: '100%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              paddingTop: 8,
+              background: 'rgba(255,255,255,0.4)',
+              border: '1px solid rgba(6,31,66,0.08)',
+              borderRadius: 20,
+              padding: '28px 42px',
+              backdropFilter: 'blur(6px)',
+              boxShadow: '0 10px 30px rgba(0,0,0,0.06)',
             }}
           >
-            <img
-              src="/assets/img/mobile-img.webp"
-              alt="Mobile App"
+            {/* Desktop: two columns. Mobile: single column with good visual hierarchy */}
+            <div
               style={{
-                width: 'min(330px, 82vw)',
-                height: 'auto',
-                objectFit: 'contain',
-                imageRendering: 'auto',
-                filter: 'drop-shadow(0 12px 30px rgba(0, 0, 0, 0.15))',
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr',
+                gap: 26,
+                alignItems: 'center',
+                direction: isRTL ? 'rtl' : 'ltr',
               }}
-            />
-          </div>
-
-          {/* Optional heading + subtext (reusing existing copy) */}
-          <div
-            style={{
-              width: '100%',
-              textAlign: isRTL ? 'right' : 'left',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: isRTL ? 'flex-end' : 'flex-start',
-              gap: 6,
-              padding: '0 6px',
-              marginTop: -8,
-            }}
-          >
-            <h1
-              style={{
-                fontFamily: 'Nunito, sans-serif',
-                fontWeight: 800,
-                fontSize: 44,
-                lineHeight: '48px',
-                color: '#061F42',
-                margin: 0,
-              }}
+              className="mobile-app-layout"
             >
-              {t('downloadMobileApp')}
-            </h1>
-
-            <h2
-              style={{
-                fontFamily: 'Nunito, sans-serif',
-                fontWeight: 600,
-                fontSize: 26,
-                lineHeight: '32px',
-                color: '#061F42',
-                margin: 0,
-              }}
-            >
-              {t('mobileAppSubtitle')}
-            </h2>
-          </div>
-
-          {/* Store badges in exact order: App Store first, Google Play second */}
-          <div
-            style={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              gap: 12,
-              alignItems: 'center',
-              justifyContent: isRTL ? 'flex-start' : 'flex-start',
-              paddingTop: 6,
-              paddingBottom: 8,
-            }}
-          >
-            {storeBadges.map((badge) => (
-              <a
-                key={badge.href}
-                href={badge.href}
-                target="_blank"
-                rel="noreferrer"
+              {/* Left column: text + badges (stacked vertically) */}
+              <div
                 style={{
-                  display: 'inline-block',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: isRTL ? 'flex-end' : 'flex-start',
+                  gap: 14,
+                  padding: '8px 6px',
+                }}
+              >
+                <h1
+                  style={{
+                    fontFamily: 'Nunito, sans-serif',
+                    fontWeight: 900,
+                    fontSize: 44,
+                    lineHeight: '50px',
+                    color: '#061F42',
+                    margin: 0,
+                    textAlign: isRTL ? 'right' : 'left',
+                  }}
+                >
+                  {t('downloadMobileApp')}
+                </h1>
+
+                <h2
+                  style={{
+                    fontFamily: 'Nunito, sans-serif',
+                    fontWeight: 600,
+                    fontSize: 26,
+                    lineHeight: '32px',
+                    color: '#061F42',
+                    margin: 0,
+                    textAlign: isRTL ? 'right' : 'left',
+                  }}
+                >
+                  {t('mobileAppSubtitle')}
+                </h2>
+
+                {/* Badges stacked: Apple on top, Play under it */}
+                <div
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 14,
+                    alignItems: isRTL ? 'flex-end' : 'flex-start',
+                    paddingTop: 6,
+                  }}
+                >
+                  {storeBadges.map((badge) => (
+                    <a
+                      key={badge.href}
+                      href={badge.href}
+                      target="_blank"
+                      rel="noreferrer"
+                      style={{
+                        display: 'block',
+                        textDecoration: 'none',
+                        borderRadius: 14,
+                        overflow: 'hidden',
+                        boxShadow: '0 12px 28px rgba(0,0,0,2%)',
+                        transform: 'translateZ(0)',
+                        transition: 'transform 160ms ease',
+                      }}
+                      onMouseEnter={(e) => {
+                        (e.currentTarget as HTMLAnchorElement).style.transform = 'translateY(-2px)';
+                      }}
+                      onMouseLeave={(e) => {
+                        (e.currentTarget as HTMLAnchorElement).style.transform = 'translateY(0px)';
+                      }}
+                    >
+                      <img
+                        src={badge.imgSrc}
+                        alt={badge.alt}
+                        style={{
+                          width: 'min(270px, 44vw)',
+                          height: 'auto',
+                          display: 'block',
+                        }}
+                      />
+                    </a>
+                  ))}
+                </div>
+              </div>
+
+              {/* Right column: Phone mockup */}
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: isRTL ? 'flex-start' : 'flex-end',
+                  padding: '10px 6px',
                 }}
               >
                 <img
-                  src={badge.imgSrc}
-                  alt={badge.alt}
+                  src="/assets/img/mobile-img.webp"
+                  alt="Mobile App"
                   style={{
-                    width: 160,
+                    width: 'min(350px, 48vw)',
                     height: 'auto',
+                    objectFit: 'contain',
+                    imageRendering: 'auto',
+                    filter: 'drop-shadow(0 18px 45px rgba(0, 0, 0, 0.18))',
                   }}
                 />
-              </a>
-            ))}
+              </div>
+            </div>
+
+            {/* Mobile styles */}
+            <style>{`
+              @media (max-width: 860px) {
+                /* Mobile: phone first (top), badges under it for clean eye flow */
+                .mobile-app-layout {
+                  grid-template-columns: 1fr !important;
+                  gap: 18px !important;
+                  align-items: center !important;
+                }
+
+                /* Phone should be first */
+                .mobile-app-layout > :last-child {
+                  order: 1 !important;
+                }
+
+                /* Badges/text should be second */
+                .mobile-app-layout > :first-child {
+                  order: 2 !important;
+                }
+
+                /* Adjust badge size on mobile (more eye-friendly sizing) */
+                .mobile-app-layout img[src*="applestore"] {
+                  width: min(240px, 64vw) !important;
+                }
+                .mobile-app-layout img[src*="playstore"] {
+                  width: min(240px, 64vw) !important;
+                }
+
+                /* Hide mobile image (phone mockup) in mobile view */
+                .mobile-app-layout img[alt="Mobile App"] {
+                  display: none !important;
+                }
+              }
+            `}</style>
           </div>
         </div>
       </div>

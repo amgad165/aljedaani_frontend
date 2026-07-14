@@ -474,7 +474,7 @@ const BookAppointmentPage = () => {
   useEffect(() => {
     if (!checkoutId) return;
 
-    const widgetBaseUrl = import.meta.env.VITE_HYPERPAY_WIDGET_URL || 'https://eu-test.oppwa.com';
+    const widgetBaseUrl = import.meta.env.VITE_HYPERPAY_WIDGET_URL || 'https://eu-prod.oppwa.com';
     const script = document.createElement('script');
     script.src = `${widgetBaseUrl}/v1/paymentWidgets.js?checkoutId=${checkoutId}`;
     if (checkoutIntegrity) {
