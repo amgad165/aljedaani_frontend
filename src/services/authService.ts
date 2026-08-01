@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api';
+import apiClient from './apiClient';
 
 export interface LoginData {
   email: string;
@@ -64,94 +64,51 @@ export const authService = {
    * Register a new user
    */
   async register(data: RegisterData): Promise<AuthResponse> {
-    try {
-      // Use FormData to support file uploads
-      const formData = new FormData();
-      
-      // Add all fields to FormData
-      formData.append('email', data.email);
-      formData.append('password', data.password);
-      formData.append('password_confirmation', data.password_confirmation);
-      formData.append('first_name', data.first_name);
-      if (data.middle_name) formData.append('middle_name', data.middle_name);
-      formData.append('last_name', data.last_name);
-      formData.append('gender', data.gender);
-      formData.append('date_of_birth', data.date_of_birth);
-      if (data.marital_status) formData.append('marital_status', data.marital_status);
-      formData.append('nationality', data.nationality);
-      if (data.religion) formData.append('religion', data.religion);
-      if (data.medical_record_number) formData.append('medical_record_number', data.medical_record_number);
-      if (data.national_id) formData.append('national_id', data.national_id);
-      if (data.address) formData.append('address', data.address);
-      formData.append('phone', data.phone);
-      
-      // Add verification_token if provided (required for secure registration)
-      if (data.verification_token) {
-        formData.append('verification_token', data.verification_token);
-      }
-      
-      if (data.profile_photo && data.profile_photo instanceof File) {
-        formData.append('profile_photo', data.profile_photo, data.profile_photo.name);
-      }
-
-      const response = await fetch(`${API_BASE_URL}/auth/register/secure`, {
-        method: 'POST',
-        headers: {
-          'Accept': 'application/json',
-          // Don't set Content-Type for FormData - browser will set it with boundary
-        },
-        body: formData,
-      });
-
-      if (!response.ok) {
-        const error = await response.json() as ApiError;
-        throw error;
-      }
-
-      return await response.json();
-    } catch (error) {
-      throw error;
+    // Use FormData to support file uploads
+    const formData = new FormData();
+    
+    // Add all fields to FormData
+    formData.append('email', data.email);
+    formData.append('password', data.password);
+    formData.append('password_confirmation', data.password_confirmation);
+    formData.append('first_name', data.first_name);
+    if (data.middle_name) formData.append('middle_name', data.middle_name);
+    formData.append('last_name', data.last_name);
+    formData.append('gender', data.gender);
+    formData.append('date_of_birth', data.date_of_birth);
+    if (data.marital_status) formData.append('marital_status', data.marital_status);
+    formData.append('nationality', data.nationality);
+    if (data.religion) formData.append('religion', data.religion);
+    if (data.medical_record_number) formData.append('medical_record_number', data.medical_record_number);
+    if (data.national_id) formData.append('national_id', data.national_id);
+    if (data.address) formData.append('address', data.address);
+    formData.append('phone', data.phone);
+    
+    // Add verification_token if provided (required for secure registration)
+    if (data.verification_token) {
+      formData.append('verification_token', data.verification_token);
     }
+    
+    if (data.profile_photo && data.profile_photo instanceof File) {
+      formData.append('profile_photo', data.profile_photo, data.profile_photo.name);
+    }
+
+    return apiClient.upload<AuthResponse>('/auth/register/secure', formData, 'POST');
   },
 
   /**
    * Login user
    */
   async login(data: LoginData): Promise<AuthResponse> {
-    try {
-      const response = await fetch(`${API_BASE_URL}/auth/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
-
-      if (!response.ok) {
-        const error = await response.json() as ApiError;
-        throw error;
-      }
-
-      return await response.json();
-    } catch (error) {
-      throw error;
-    }
+    return apiClient.post<AuthResponse>('/auth/login', data);
   },
 
   /**
    * Logout user
    */
-  async logout(token: string): Promise<void> {
+  async logout(): Promise<void> {
     try {
-      await fetch(`${API_BASE_URL}/auth/logout`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-      });
+      await apiClient.post('/auth/logout');
     } catch (error) {
       console.error('Logout error:', error);
     }
@@ -160,80 +117,27 @@ export const authService = {
   /**
    * Get current user
    */
-  async getCurrentUser(token: string) {
-    try {
-      const response = await fetch(`${API_BASE_URL}/user`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch user');
-      }
-
-      return await response.json();
-    } catch (error) {
-      throw error;
-    }
+  async getCurrentUser() {
+    return apiClient.get('/user');
   },
 
   /**
    * Send OTP for registration (OLD - deprecated, use sendPhoneVerificationOtp)
    */
   async sendRegistrationOtp(phone: string): Promise<{ message: string }> {
-    try {
-      const response = await fetch(`${API_BASE_URL}/auth/register/otp/send`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        body: JSON.stringify({ phone }),
-      });
-
-      if (!response.ok) {
-        const error = await response.json() as ApiError;
-        throw error;
-      }
-
-      return await response.json();
-    } catch (error) {
-      throw error;
-    }
+    return apiClient.post<{ message: string }>('/auth/register/otp/send', { phone });
   },
 
   /**
    * Verify OTP for registration (OLD - deprecated, use verifyPhoneOtp)
    */
   async verifyRegistrationOtp(phone: string, otp: string): Promise<{ message: string; verified: boolean; verification_token?: string }> {
-    try {
-      const response = await fetch(`${API_BASE_URL}/auth/register/otp/verify`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        body: JSON.stringify({ phone, otp }),
-      });
-
-      if (!response.ok) {
-        const error = await response.json() as ApiError;
-        throw error;
-      }
-
-      const data = await response.json();
-      // Backend returns 'success', frontend expects 'verified'
-      return {
-        ...data,
-        verified: data.success,
-      };
-    } catch (error) {
-      throw error;
-    }
+    const data = await apiClient.post<{ message: string; success: boolean; verification_token?: string }>('/auth/register/otp/verify', { phone, otp });
+    // Backend returns 'success', frontend expects 'verified'
+    return {
+      ...data,
+      verified: data.success,
+    };
   },
 
   /**
@@ -254,25 +158,7 @@ export const authService = {
     otp?: string;
     debug?: boolean;
   }> {
-    try {
-      const response = await fetch(`${API_BASE_URL}/auth/phone/verify/send-otp`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        body: JSON.stringify({ phone, purpose }),
-      });
-
-      if (!response.ok) {
-        const error = await response.json() as ApiError;
-        throw error;
-      }
-
-      return await response.json();
-    } catch (error) {
-      throw error;
-    }
+    return apiClient.post('/auth/phone/verify/send-otp', { phone, purpose });
   },
 
   /**
@@ -286,29 +172,11 @@ export const authService = {
     expires_in: number;
     expires_at: string;
   }> {
-    try {
-      const response = await fetch(`${API_BASE_URL}/auth/phone/verify/otp`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        body: JSON.stringify({
-          phone,
-          otp_code: otpCode,
-          verification_id: verificationId,
-        }),
-      });
-
-      if (!response.ok) {
-        const error = await response.json() as ApiError;
-        throw error;
-      }
-
-      return await response.json();
-    } catch (error) {
-      throw error;
-    }
+    return apiClient.post('/auth/phone/verify/otp', {
+      phone,
+      otp_code: otpCode,
+      verification_id: verificationId,
+    });
   },
 
   /**
@@ -335,85 +203,49 @@ export const authService = {
     his_phone_masked?: string;
     verified_phone_masked?: string;
   }> {
-    try {
-      const response = await fetch(`${API_BASE_URL}/auth/check-his-patient-with-phone`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        body: JSON.stringify({
-          id_type: idType,
-          identifier,
-          phone,
-          verification_token: verificationToken,
-        }),
-      });
-
-      if (!response.ok) {
-        const error = await response.json() as ApiError;
-        throw error;
-      }
-
-      return await response.json();
-    } catch (error) {
-      throw error;
-    }
+    return apiClient.post('/auth/check-his-patient-with-phone', {
+      id_type: idType,
+      identifier,
+      phone,
+      verification_token: verificationToken,
+    });
   },
 
   /**
    * Step 4: Secure registration with verification token (NEW SECURE)
    */
   async secureRegister(data: RegisterData, verificationToken: string): Promise<AuthResponse> {
-    try {
-      // Use FormData to support file uploads
-      const formData = new FormData();
-      
-      // Add all fields to FormData - send medical_record_number and national_id directly
-      formData.append('phone', data.phone);
-      formData.append('verification_token', verificationToken);
-      formData.append('email', data.email);
-      formData.append('password', data.password);
-      formData.append('password_confirmation', data.password_confirmation);
-      formData.append('first_name', data.first_name);
-      if (data.middle_name) formData.append('middle_name', data.middle_name);
-      formData.append('last_name', data.last_name);
-      formData.append('gender', data.gender);
-      formData.append('date_of_birth', data.date_of_birth);
-      if (data.marital_status) formData.append('marital_status', data.marital_status);
-      formData.append('nationality', data.nationality);
-      if (data.religion) formData.append('religion', data.religion);
-      if (data.address) formData.append('address', data.address);
-      
-      // Send both medical_record_number and national_id if provided
-      if (data.medical_record_number) {
-        formData.append('medical_record_number', data.medical_record_number);
-      }
-      if (data.national_id) {
-        formData.append('national_id', data.national_id);
-      }
-      
-      if (data.profile_photo && data.profile_photo instanceof File) {
-        formData.append('profile_photo', data.profile_photo, data.profile_photo.name);
-      }
-
-      const response = await fetch(`${API_BASE_URL}/auth/register/secure`, {
-        method: 'POST',
-        headers: {
-          'Accept': 'application/json',
-          // Don't set Content-Type for FormData - browser will set it with boundary
-        },
-        body: formData,
-      });
-
-      if (!response.ok) {
-        const error = await response.json() as ApiError;
-        throw error;
-      }
-
-      return await response.json();
-    } catch (error) {
-      throw error;
+    // Use FormData to support file uploads
+    const formData = new FormData();
+    
+    // Add all fields to FormData - send medical_record_number and national_id directly
+    formData.append('phone', data.phone);
+    formData.append('verification_token', verificationToken);
+    formData.append('email', data.email);
+    formData.append('password', data.password);
+    formData.append('password_confirmation', data.password_confirmation);
+    formData.append('first_name', data.first_name);
+    if (data.middle_name) formData.append('middle_name', data.middle_name);
+    formData.append('last_name', data.last_name);
+    formData.append('gender', data.gender);
+    formData.append('date_of_birth', data.date_of_birth);
+    if (data.marital_status) formData.append('marital_status', data.marital_status);
+    formData.append('nationality', data.nationality);
+    if (data.religion) formData.append('religion', data.religion);
+    if (data.address) formData.append('address', data.address);
+    
+    // Send both medical_record_number and national_id if provided
+    if (data.medical_record_number) {
+      formData.append('medical_record_number', data.medical_record_number);
     }
+    if (data.national_id) {
+      formData.append('national_id', data.national_id);
+    }
+    
+    if (data.profile_photo && data.profile_photo instanceof File) {
+      formData.append('profile_photo', data.profile_photo, data.profile_photo.name);
+    }
+
+    return apiClient.upload<AuthResponse>('/auth/register/secure', formData, 'POST');
   },
 };

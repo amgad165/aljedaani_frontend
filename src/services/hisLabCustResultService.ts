@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
+import apiClient from './apiClient';
 
 export interface HisLabCustResult {
   id: number;
@@ -11,7 +11,7 @@ export interface HisLabCustResult {
   NormalValue: string | null;
   Result: string | null;
   last_synced_at: string | null;
-  sync_metadata: Record<string, any> | null;
+  sync_metadata: Record<string, unknown> | null;
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
@@ -64,55 +64,27 @@ export const getHisLabCustResults = async (
     to_date?: string;
   }
 ): Promise<PaginatedResponse<HisLabCustResult>> => {
-  const token = localStorage.getItem('auth_token');
-
-  const params = new URLSearchParams({
-    page: page.toString(),
-    per_page: perPage.toString(),
-  });
+  const params: Record<string, string | number | boolean | undefined | null> = {
+    page,
+    per_page: perPage,
+  };
 
   if (filters) {
     Object.entries(filters).forEach(([key, value]) => {
       if (value !== undefined && value !== null && value !== '') {
-        params.append(key, value.toString());
+        params[key] = value;
       }
     });
   }
 
-  const response = await fetch(`${API_BASE_URL}/admin/his-lab-cust-results?${params.toString()}`, {
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error('Failed to fetch HIS lab custom results');
-  }
-
-  return await response.json();
+  return apiClient.get<PaginatedResponse<HisLabCustResult>>('/admin/his-lab-cust-results', params);
 };
 
 /**
  * Get HIS lab custom results statistics
  */
 export const getHisLabCustResultStats = async (): Promise<HisLabCustResultStats> => {
-  const token = localStorage.getItem('auth_token');
-
-  const response = await fetch(`${API_BASE_URL}/his-lab-cust-results/stats`, {
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error('Failed to fetch HIS lab custom result statistics');
-  }
-
-  const result = await response.json();
+  const result = await apiClient.get<{ data: HisLabCustResultStats }>('/his-lab-cust-results/stats');
   return result.data;
 };
 
@@ -120,21 +92,7 @@ export const getHisLabCustResultStats = async (): Promise<HisLabCustResultStats>
  * Get single HIS lab custom result by ID
  */
 export const getHisLabCustResult = async (id: number): Promise<HisLabCustResult> => {
-  const token = localStorage.getItem('auth_token');
-
-  const response = await fetch(`${API_BASE_URL}/his-lab-cust-results/${id}`, {
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error('Failed to fetch HIS lab custom result');
-  }
-
-  const result = await response.json();
+  const result = await apiClient.get<{ data: HisLabCustResult }>(`/his-lab-cust-results/${id}`);
   return result.data;
 };
 
@@ -142,20 +100,6 @@ export const getHisLabCustResult = async (id: number): Promise<HisLabCustResult>
  * Get custom results by SlNo
  */
 export const getHisLabCustResultsBySlNo = async (slno: string): Promise<HisLabCustResult[]> => {
-  const token = localStorage.getItem('auth_token');
-
-  const response = await fetch(`${API_BASE_URL}/his-lab-cust-results/slno/${slno}`, {
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error('Failed to fetch HIS lab custom results by SlNo');
-  }
-
-  const result = await response.json();
+  const result = await apiClient.get<{ data: HisLabCustResult[] }>(`/his-lab-cust-results/slno/${slno}`);
   return result.data;
 };

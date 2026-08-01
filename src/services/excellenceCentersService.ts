@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
+import apiClient from './apiClient';
 
 export interface ExcellenceCenter {
   id: number;
@@ -27,34 +27,12 @@ interface ApiResponse<T> {
   message: string;
 }
 
-const getAuthHeaders = (isFormData: boolean = false) => {
-  const token = localStorage.getItem('auth_token');
-  const headers: Record<string, string> = {
-    'Accept': 'application/json',
-  };
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
-  }
-  if (!isFormData) {
-    headers['Content-Type'] = 'application/json';
-  }
-  return headers;
-};
-
 export const excellenceCentersService = {
   async getAll(activeOnly: boolean = false): Promise<ExcellenceCenter[]> {
-    const url = new URL(`${API_BASE_URL}/excellence-centers`);
-    if (activeOnly) {
-      url.searchParams.append('active', 'true');
-    }
+    const params: Record<string, string | number | boolean | undefined | null> = {};
+    if (activeOnly) params.active = 'true';
     
-    const response = await fetch(url.toString());
-    
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    
-    const result: ApiResponse<ExcellenceCenter[]> = await response.json();
+    const result = await apiClient.get<ApiResponse<ExcellenceCenter[]>>('/excellence-centers', params);
     
     if (!result.success) {
       throw new Error(result.message || 'Failed to fetch excellence centers');
@@ -64,13 +42,7 @@ export const excellenceCentersService = {
   },
 
   async getById(id: number): Promise<ExcellenceCenter> {
-    const response = await fetch(`${API_BASE_URL}/excellence-centers/${id}`);
-    
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    
-    const result: ApiResponse<ExcellenceCenter> = await response.json();
+    const result = await apiClient.get<ApiResponse<ExcellenceCenter>>(`/excellence-centers/${id}`);
     
     if (!result.success) {
       throw new Error(result.message || 'Failed to fetch excellence center');
@@ -88,17 +60,7 @@ export const excellenceCentersService = {
     if (data.sort_order !== undefined) formData.append('sort_order', data.sort_order.toString());
     if (data.is_active !== undefined) formData.append('is_active', data.is_active ? '1' : '0');
 
-    const response = await fetch(`${API_BASE_URL}/excellence-centers`, {
-      method: 'POST',
-      headers: getAuthHeaders(true),
-      body: formData,
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const result: ApiResponse<ExcellenceCenter> = await response.json();
+    const result = await apiClient.upload<ApiResponse<ExcellenceCenter>>('/excellence-centers', formData, 'POST');
     
     if (!result.success) {
       throw new Error(result.message || 'Failed to create excellence center');
@@ -117,17 +79,7 @@ export const excellenceCentersService = {
     if (data.sort_order !== undefined) formData.append('sort_order', data.sort_order.toString());
     if (data.is_active !== undefined) formData.append('is_active', data.is_active ? '1' : '0');
 
-    const response = await fetch(`${API_BASE_URL}/excellence-centers/${id}`, {
-      method: 'POST',
-      headers: getAuthHeaders(true),
-      body: formData,
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const result: ApiResponse<ExcellenceCenter> = await response.json();
+    const result = await apiClient.upload<ApiResponse<ExcellenceCenter>>(`/excellence-centers/${id}`, formData, 'POST');
     
     if (!result.success) {
       throw new Error(result.message || 'Failed to update excellence center');
@@ -137,16 +89,7 @@ export const excellenceCentersService = {
   },
 
   async delete(id: number): Promise<void> {
-    const response = await fetch(`${API_BASE_URL}/excellence-centers/${id}`, {
-      method: 'DELETE',
-      headers: getAuthHeaders(),
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const result: ApiResponse<null> = await response.json();
+    const result = await apiClient.delete<ApiResponse<null>>(`/excellence-centers/${id}`);
     
     if (!result.success) {
       throw new Error(result.message || 'Failed to delete excellence center');

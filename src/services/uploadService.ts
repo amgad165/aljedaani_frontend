@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
+import apiClient from './apiClient';
 
 interface UploadResponse {
   success: boolean;
@@ -22,10 +22,6 @@ interface MultiUploadResponse {
   errors?: Record<string, string[]>;
 }
 
-const getAuthToken = (): string | null => {
-  return localStorage.getItem('auth_token');
-};
-
 /**
  * Upload a single image to S3
  * @param file The file to upload
@@ -36,31 +32,14 @@ export const uploadImage = async (
   file: File,
   folder: 'doctors' | 'testimonials' | 'departments' | 'general' = 'general'
 ): Promise<UploadResponse> => {
-  const token = getAuthToken();
-  
-  if (!token) {
-    return {
-      success: false,
-      message: 'Authentication required'
-    };
-  }
-
   const formData = new FormData();
   formData.append('image', file);
   formData.append('folder', folder);
 
   try {
-    const response = await fetch(`${API_BASE_URL}/images/upload`, {
-      method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: formData
+    return await apiClient.post<UploadResponse>('/images/upload', formData, {
+      'Content-Type': 'multipart/form-data',
     });
-
-    const result = await response.json();
-    return result;
   } catch (error) {
     console.error('Upload error:', error);
     return {
@@ -80,15 +59,6 @@ export const uploadMultipleImages = async (
   files: File[],
   folder: 'doctors' | 'testimonials' | 'departments' | 'general' = 'general'
 ): Promise<MultiUploadResponse> => {
-  const token = getAuthToken();
-  
-  if (!token) {
-    return {
-      success: false,
-      message: 'Authentication required'
-    };
-  }
-
   const formData = new FormData();
   files.forEach((file) => {
     formData.append('images[]', file);
@@ -96,17 +66,9 @@ export const uploadMultipleImages = async (
   formData.append('folder', folder);
 
   try {
-    const response = await fetch(`${API_BASE_URL}/images/upload-multiple`, {
-      method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: formData
+    return await apiClient.post<MultiUploadResponse>('/images/upload-multiple', formData, {
+      'Content-Type': 'multipart/form-data',
     });
-
-    const result = await response.json();
-    return result;
   } catch (error) {
     console.error('Upload error:', error);
     return {
@@ -122,28 +84,10 @@ export const uploadMultipleImages = async (
  * @returns The delete response
  */
 export const deleteImage = async (path: string): Promise<{ success: boolean; message?: string }> => {
-  const token = getAuthToken();
-  
-  if (!token) {
-    return {
-      success: false,
-      message: 'Authentication required'
-    };
-  }
-
   try {
-    const response = await fetch(`${API_BASE_URL}/images/delete`, {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify({ path })
+    return await apiClient.delete<{ success: boolean; message?: string }>('/images/delete', {
+      path,
     });
-
-    const result = await response.json();
-    return result;
   } catch (error) {
     console.error('Delete error:', error);
     return {

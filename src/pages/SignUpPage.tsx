@@ -526,7 +526,7 @@ const SignUpPage = () => {
     }
 
     // Validate required fields
-    if (!profileData.firstName || !profileData.lastName || !profileData.email || !profileData.password) {
+    if (!profileData.firstName ||  !profileData.email || !profileData.password) {
       warning(t('pleaseFieldInAllRequiredFields'));
       return;
     }
@@ -1483,7 +1483,7 @@ const SignUpPage = () => {
               placeholder={t('typeLastName')}
               value={profileData.lastName}
               onChange={(value) => handleInputChange('lastName', value)}
-              required
+              
               disabled={!!verificationData.hisPatientData?.last_name}
             />
             {SHOW_OPTIONAL_PROFILE_FIELDS && (

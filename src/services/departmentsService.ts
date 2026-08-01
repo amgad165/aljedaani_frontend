@@ -1,3 +1,6 @@
+import apiClient from './apiClient';
+import type { Testimonial } from './testimonialsService';
+
 export interface Department {
   id: number;
   name: string;
@@ -63,8 +66,8 @@ export interface DepartmentTabContent {
   main_description?: string;
   quote_text?: string;
   sub_sections?: SubSection[];
-  service_list?: ServiceListItem[];  // Used for Overview tab
-  sidebar_items?: SidebarItem[];     // Changed from string[] to SidebarItem[]
+  service_list?: ServiceListItem[];
+  sidebar_items?: SidebarItem[];
   is_active: boolean;
   sort_order: number;
   created_at: string;
@@ -101,13 +104,14 @@ export interface ApiResponse<T> {
   message: string;
 }
 
+export interface DepartmentsResponse {
+  success: boolean;
+  data: Department[];
+  branches?: { id: number; name: string }[];
+  message: string;
+}
+
 class DepartmentsService {
-  private baseUrl: string;
-
-  constructor() {
-    this.baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
-  }
-
   async getDepartments(params?: {
     active?: boolean;
     with_doctors_count?: boolean;
@@ -115,35 +119,7 @@ class DepartmentsService {
     branch_id?: number;
     with_branches?: boolean;
   }): Promise<{ departments: Department[]; branches?: { id: number; name: string }[] }> {
-    const url = new URL(`${this.baseUrl}/departments`);
-    
-    if (params?.active !== undefined) {
-      url.searchParams.append('active', String(params.active));
-    }
-    
-    if (params?.with_doctors_count) {
-      url.searchParams.append('with_doctors_count', 'true');
-    }
-    
-    if (params?.with_doctors) {
-      url.searchParams.append('with_doctors', 'true');
-    }
-    
-    if (params?.branch_id !== undefined) {
-      url.searchParams.append('branch_id', String(params.branch_id));
-    }
-    
-    if (params?.with_branches) {
-      url.searchParams.append('with_branches', 'true');
-    }
-
-    const response = await fetch(url.toString());
-    
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    
-    const result = await response.json();
+    const result = await apiClient.get<DepartmentsResponse>('/departments', params as Record<string, string | number | boolean | undefined | null>);
     
     if (!result.success) {
       throw new Error(result.message || 'Failed to fetch departments');
@@ -158,19 +134,7 @@ class DepartmentsService {
   async getDepartment(id: number, params?: {
     with_doctors?: boolean;
   }): Promise<Department> {
-    const url = new URL(`${this.baseUrl}/departments/${id}`);
-    
-    if (params?.with_doctors) {
-      url.searchParams.append('with_doctors', 'true');
-    }
-
-    const response = await fetch(url.toString());
-    
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    
-    const result: ApiResponse<Department> = await response.json();
+    const result = await apiClient.get<ApiResponse<Department>>(`/departments/${id}`, params as Record<string, string | number | boolean | undefined | null>);
     
     if (!result.success) {
       throw new Error(result.message || 'Failed to fetch department');
@@ -184,22 +148,8 @@ class DepartmentsService {
     icon?: string;
     description?: string;
     is_active?: boolean;
-  }, token: string): Promise<Department> {
-    const response = await fetch(`${this.baseUrl}/departments`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-        'Accept': 'application/json',
-      },
-      body: JSON.stringify(data),
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const result: ApiResponse<Department> = await response.json();
+  }): Promise<Department> {
+    const result = await apiClient.post<ApiResponse<Department>>('/departments', data);
     
     if (!result.success) {
       throw new Error(result.message || 'Failed to create department');
@@ -213,22 +163,8 @@ class DepartmentsService {
     icon?: string;
     description?: string;
     is_active?: boolean;
-  }, token: string): Promise<Department> {
-    const response = await fetch(`${this.baseUrl}/departments/${id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-        'Accept': 'application/json',
-      },
-      body: JSON.stringify(data),
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const result: ApiResponse<Department> = await response.json();
+  }): Promise<Department> {
+    const result = await apiClient.put<ApiResponse<Department>>(`/departments/${id}`, data);
     
     if (!result.success) {
       throw new Error(result.message || 'Failed to update department');
@@ -237,20 +173,8 @@ class DepartmentsService {
     return result.data;
   }
 
-  async deleteDepartment(id: number, token: string): Promise<void> {
-    const response = await fetch(`${this.baseUrl}/departments/${id}`, {
-      method: 'DELETE',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Accept': 'application/json',
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const result: ApiResponse<null> = await response.json();
+  async deleteDepartment(id: number): Promise<void> {
+    const result = await apiClient.delete<ApiResponse<null>>(`/departments/${id}`);
     
     if (!result.success) {
       throw new Error(result.message || 'Failed to delete department');
@@ -259,13 +183,7 @@ class DepartmentsService {
 
   // Get department with all tab contents
   async getDepartmentWithTabs(id: number): Promise<Department> {
-    const response = await fetch(`${this.baseUrl}/departments/${id}/details`);
-    
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    
-    const result: ApiResponse<Department> = await response.json();
+    const result = await apiClient.get<ApiResponse<Department>>(`/departments/${id}/details`);
     
     if (!result.success) {
       throw new Error(result.message || 'Failed to fetch department with tabs');
@@ -279,23 +197,7 @@ class DepartmentsService {
     active?: boolean;
     tab_type?: string;
   }): Promise<DepartmentTabContent[]> {
-    const url = new URL(`${this.baseUrl}/departments/${departmentId}/tabs`);
-    
-    if (params?.active !== undefined) {
-      url.searchParams.append('active', String(params.active));
-    }
-    
-    if (params?.tab_type) {
-      url.searchParams.append('tab_type', params.tab_type);
-    }
-
-    const response = await fetch(url.toString());
-    
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    
-    const result: ApiResponse<DepartmentTabContent[]> = await response.json();
+    const result = await apiClient.get<ApiResponse<DepartmentTabContent[]>>(`/departments/${departmentId}/tabs`, params as Record<string, string | number | boolean | undefined | null>);
     
     if (!result.success) {
       throw new Error(result.message || 'Failed to fetch department tabs');
@@ -306,13 +208,7 @@ class DepartmentsService {
 
   // Get specific tab content
   async getDepartmentTabContent(departmentId: number, tabType: string): Promise<DepartmentTabContent> {
-    const response = await fetch(`${this.baseUrl}/departments/${departmentId}/tabs/${tabType}`);
-    
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    
-    const result: ApiResponse<DepartmentTabContent> = await response.json();
+    const result = await apiClient.get<ApiResponse<DepartmentTabContent>>(`/departments/${departmentId}/tabs/${tabType}`);
     
     if (!result.success) {
       throw new Error(result.message || 'Failed to fetch tab content');
@@ -332,22 +228,8 @@ class DepartmentsService {
     sidebar_items?: string[];
     is_active?: boolean;
     sort_order?: number;
-  }, token: string): Promise<DepartmentTabContent> {
-    const response = await fetch(`${this.baseUrl}/departments/${departmentId}/tabs`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-        'Accept': 'application/json',
-      },
-      body: JSON.stringify(data),
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const result: ApiResponse<DepartmentTabContent> = await response.json();
+  }): Promise<DepartmentTabContent> {
+    const result = await apiClient.post<ApiResponse<DepartmentTabContent>>(`/departments/${departmentId}/tabs`, data);
     
     if (!result.success) {
       throw new Error(result.message || 'Failed to save tab content');
@@ -366,22 +248,8 @@ class DepartmentsService {
     sidebar_items?: string[];
     is_active?: boolean;
     sort_order?: number;
-  }, token: string): Promise<DepartmentTabContent> {
-    const response = await fetch(`${this.baseUrl}/departments/${departmentId}/tabs/${tabContentId}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-        'Accept': 'application/json',
-      },
-      body: JSON.stringify(data),
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const result: ApiResponse<DepartmentTabContent> = await response.json();
+  }): Promise<DepartmentTabContent> {
+    const result = await apiClient.put<ApiResponse<DepartmentTabContent>>(`/departments/${departmentId}/tabs/${tabContentId}`, data);
     
     if (!result.success) {
       throw new Error(result.message || 'Failed to update tab content');
@@ -391,20 +259,8 @@ class DepartmentsService {
   }
 
   // Delete tab content
-  async deleteTabContent(departmentId: number, tabContentId: number, token: string): Promise<void> {
-    const response = await fetch(`${this.baseUrl}/departments/${departmentId}/tabs/${tabContentId}`, {
-      method: 'DELETE',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Accept': 'application/json',
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const result: ApiResponse<null> = await response.json();
+  async deleteTabContent(departmentId: number, tabContentId: number): Promise<void> {
+    const result = await apiClient.delete<ApiResponse<null>>(`/departments/${departmentId}/tabs/${tabContentId}`);
     
     if (!result.success) {
       throw new Error(result.message || 'Failed to delete tab content');
@@ -413,13 +269,7 @@ class DepartmentsService {
 
   // Get available tab types
   async getTabTypes(): Promise<{ types: string[]; labels: Record<string, string> }> {
-    const response = await fetch(`${this.baseUrl}/department-tab-types`);
-    
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    
-    const result: ApiResponse<{ types: string[]; labels: Record<string, string> }> = await response.json();
+    const result = await apiClient.get<ApiResponse<{ types: string[]; labels: Record<string, string> }>>('/department-tab-types');
     
     if (!result.success) {
       throw new Error(result.message || 'Failed to fetch tab types');
@@ -428,20 +278,16 @@ class DepartmentsService {
     return result.data;
   }
 
-  // Get testimonials for a specific department (testimonials from doctors in that department)
-  async getDepartmentTestimonials(departmentId: number): Promise<any[]> {
-    const response = await fetch(`${this.baseUrl}/departments/${departmentId}/testimonials`);
-    
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    
-    const result = await response.json();
-    
-    if (result.status !== 'success') {
+  // Get testimonials for a specific department
+  async getDepartmentTestimonials(departmentId: number): Promise<Testimonial[]> {
+    const result = await apiClient.get<{ success: boolean; data: Testimonial[]; message: string }>(
+      `/departments/${departmentId}/testimonials`
+    );
+
+    if (!result.success) {
       throw new Error(result.message || 'Failed to fetch department testimonials');
     }
-    
+
     return result.data;
   }
 }

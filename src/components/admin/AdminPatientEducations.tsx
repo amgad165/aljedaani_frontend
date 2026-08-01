@@ -19,18 +19,26 @@ export default function AdminPatientEducations() {
 
   const [formData, setFormData] = useState<{
     name: string;
+    name_ar: string;
     description: string;
+    description_ar: string;
     sort_order: number;
     is_active: boolean;
     published_at: string; // datetime-local value (yyyy-MM-ddTHH:mm) or ''
+    photo: File | null;
     pdf: File | null;
+    arabic_pdf: File | null;
   }>({
     name: '',
+    name_ar: '',
     description: '',
+    description_ar: '',
     sort_order: 0,
     is_active: true,
     published_at: '',
+    photo: null,
     pdf: null,
+    arabic_pdf: null,
   });
 
   const [error, setError] = useState<string | null>(null);
@@ -70,11 +78,15 @@ export default function AdminPatientEducations() {
     setShowForm(false);
     setFormData({
       name: '',
+      name_ar: '',
       description: '',
+      description_ar: '',
       sort_order: 0,
       is_active: true,
       published_at: '',
+      photo: null,
       pdf: null,
+      arabic_pdf: null,
     });
   };
 
@@ -83,11 +95,15 @@ export default function AdminPatientEducations() {
     setShowForm(true);
     setFormData({
       name: '',
+      name_ar: '',
       description: '',
+      description_ar: '',
       sort_order: 0,
       is_active: true,
       published_at: '',
+      photo: null,
       pdf: null,
+      arabic_pdf: null,
     });
   };
 
@@ -96,11 +112,15 @@ export default function AdminPatientEducations() {
     setShowForm(true);
     setFormData({
       name: edu.name ?? '',
+      name_ar: edu.name_ar ?? '',
       description: typeof edu.description === 'string' ? edu.description : '',
+      description_ar: typeof edu.description_ar === 'string' ? edu.description_ar : '',
       sort_order: edu.sort_order ?? 0,
       is_active: edu.is_active ?? true,
       published_at: edu.published_at ? toDateTimeLocalValue(edu.published_at) : '',
+      photo: null,
       pdf: null,
+      arabic_pdf: null,
     });
   };
 
@@ -112,34 +132,50 @@ export default function AdminPatientEducations() {
 
       if (!formData.name.trim()) throw new Error(t('validationRequired') ?? 'Name is required');
 
-      // Backend requires pdf on create; on update it can be omitted.
+      // Backend requires photo+pdf+arabic_pdf on create; on update they can be omitted.
+      if (!editingId && !formData.photo) {
+        throw new Error(t('validationRequired') ?? 'Photo is required');
+      }
       if (!editingId && !formData.pdf) {
         throw new Error(t('validationRequiredPdf') ?? 'PDF is required');
       }
+      if (!editingId && !formData.arabic_pdf) {
+        throw new Error(t('validationRequired') ?? 'Arabic PDF is required');
+      }
 
       const name = formData.name.trim();
+      const name_ar = formData.name_ar.trim() ? formData.name_ar.trim() : null;
       const description = formData.description.trim() ? formData.description.trim() : null;
+      const description_ar = formData.description_ar.trim() ? formData.description_ar.trim() : null;
       const publishedAtIso =
         formData.published_at && formData.published_at.trim() ? new Date(formData.published_at).toISOString() : null;
 
       if (editingId) {
         await patientEducationService.updateEducation(editingId, {
           name,
+          name_ar,
           description,
+          description_ar,
           sort_order: formData.sort_order,
           is_active: formData.is_active,
           published_at: publishedAtIso,
+          photo: formData.photo ?? undefined,
           pdf: formData.pdf ?? undefined,
+          arabic_pdf: formData.arabic_pdf ?? undefined,
         });
         setSuccess(t('updatedSuccessfully'));
       } else {
         await patientEducationService.createEducation({
           name,
+          name_ar,
           description,
+          description_ar,
           sort_order: formData.sort_order,
           is_active: formData.is_active,
           published_at: publishedAtIso,
+          photo: formData.photo as File,
           pdf: formData.pdf as File,
+          arabic_pdf: formData.arabic_pdf as File,
         });
         setSuccess(t('createdSuccessfully'));
       }
@@ -210,12 +246,34 @@ export default function AdminPatientEducations() {
               </div>
 
               <div className="form-group">
+                <label>{t('nameAr') ?? 'Name (Arabic)'}</label>
+                <input
+                  type="text"
+                  value={formData.name_ar}
+                  onChange={(e) => setFormData({ ...formData, name_ar: e.target.value })}
+                  placeholder={t('enterText') ?? 'Enter name in Arabic'}
+                  dir="rtl"
+                />
+              </div>
+
+              <div className="form-group">
                 <label>{t('description') ?? 'Description'}</label>
                 <textarea
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   placeholder={t('enterText') ?? 'Enter description'}
                   rows={3}
+                />
+              </div>
+
+              <div className="form-group">
+                <label>{t('descriptionAr') ?? 'Description (Arabic)'}</label>
+                <textarea
+                  value={formData.description_ar}
+                  onChange={(e) => setFormData({ ...formData, description_ar: e.target.value })}
+                  placeholder={t('enterText') ?? 'Enter description in Arabic'}
+                  rows={3}
+                  dir="rtl"
                 />
               </div>
 
@@ -248,6 +306,20 @@ export default function AdminPatientEducations() {
               </div>
 
               <div className="form-group">
+                <label>{t('photo') ?? 'Photo'}</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setFormData({ ...formData, photo: e.target.files?.[0] ?? null })}
+                />
+                {editingId && (
+                  <div style={{ marginTop: 8, fontSize: 12, color: '#6b7280' }}>
+                    {t('leaveEmptyToKeepOldPdf') ?? 'Leave empty to keep the current file.'}
+                  </div>
+                )}
+              </div>
+
+              <div className="form-group">
                 <label>{t('pdf') ?? 'PDF File'}</label>
                 <input
                   type="file"
@@ -257,6 +329,20 @@ export default function AdminPatientEducations() {
                 {editingId && (
                   <div style={{ marginTop: 8, fontSize: 12, color: '#6b7280' }}>
                     {t('leaveEmptyToKeepOldPdf') ?? 'Leave empty to keep the current PDF.'}
+                  </div>
+                )}
+              </div>
+
+              <div className="form-group">
+                <label>{t('arabicPdf') ?? 'Arabic PDF'}</label>
+                <input
+                  type="file"
+                  accept="application/pdf"
+                  onChange={(e) => setFormData({ ...formData, arabic_pdf: e.target.files?.[0] ?? null })}
+                />
+                {editingId && (
+                  <div style={{ marginTop: 8, fontSize: 12, color: '#6b7280' }}>
+                    {t('leaveEmptyToKeepOldPdf') ?? 'Leave empty to keep the current Arabic PDF.'}
                   </div>
                 )}
               </div>
@@ -278,7 +364,9 @@ export default function AdminPatientEducations() {
                 <tr>
                   <th>{t('name') ?? 'Name'}</th>
                   <th>{t('status') ?? 'Status'}</th>
+                  <th>{t('photo') ?? 'Photo'}</th>
                   <th>{t('pdf') ?? 'PDF'}</th>
+                  <th>{t('arabicPdf') ?? 'Arabic PDF'}</th>
                   <th>{t('actions')}</th>
                 </tr>
               </thead>
@@ -287,7 +375,9 @@ export default function AdminPatientEducations() {
                   <tr key={edu.id}>
                     <td>{edu.name}</td>
                     <td>{statusBadge(edu.is_active)}</td>
+                    <td>{edu.photo_path ? t('available') ?? 'Available' : '-'}</td>
                     <td>{edu.pdf_path ? t('available') ?? 'Available' : '-'}</td>
+                    <td>{edu.arabic_pdf_path ? t('available') ?? 'Available' : '-'}</td>
                     <td>
                       <button onClick={() => startEdit(edu)} className="btn btn-sm btn-primary">
                         {t('edit')}

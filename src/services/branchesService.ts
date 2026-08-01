@@ -1,3 +1,7 @@
+import apiClient from './apiClient';
+import type { Doctor } from './doctorsService';
+import type { Department } from './departmentsService';
+
 export interface Gallery {
   id: number;
   branch_id: number;
@@ -37,43 +41,13 @@ export interface ApiResponse<T> {
 }
 
 class BranchesService {
-  private baseUrl: string;
-
-  constructor() {
-    this.baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
-  }
-
   async getBranches(params?: {
     active?: boolean;
     with_doctors_count?: boolean;
     with_doctors?: boolean;
     with_galleries?: boolean;
   }): Promise<Branch[]> {
-    const url = new URL(`${this.baseUrl}/branches`);
-    
-    if (params?.active !== undefined) {
-      url.searchParams.append('active', String(params.active));
-    }
-    
-    if (params?.with_doctors_count) {
-      url.searchParams.append('with_doctors_count', 'true');
-    }
-    
-    if (params?.with_doctors) {
-      url.searchParams.append('with_doctors', 'true');
-    }
-    
-    if (params?.with_galleries) {
-      url.searchParams.append('with_galleries', 'true');
-    }
-
-    const response = await fetch(url.toString());
-    
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    
-    const result: ApiResponse<Branch[]> = await response.json();
+    const result = await apiClient.get<ApiResponse<Branch[]>>('/branches', params as Record<string, string | number | boolean | undefined | null>);
     
     if (!result.success) {
       throw new Error(result.message || 'Failed to fetch branches');
@@ -86,23 +60,7 @@ class BranchesService {
     with_doctors?: boolean;
     with_galleries?: boolean;
   }): Promise<Branch> {
-    const url = new URL(`${this.baseUrl}/branches/${id}`);
-
-    if (params?.with_doctors) {
-      url.searchParams.append('with_doctors', 'true');
-    }
-
-    if (params?.with_galleries) {
-      url.searchParams.append('with_galleries', 'true');
-    }
-
-    const response = await fetch(url.toString());
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const result: ApiResponse<Branch> = await response.json();
+    const result = await apiClient.get<ApiResponse<Branch>>(`/branches/${id}`, params as Record<string, string | number | boolean | undefined | null>);
 
     if (!result.success) {
       throw new Error(result.message || 'Failed to fetch branch');
@@ -113,22 +71,14 @@ class BranchesService {
 
   async getBranchDetails(id: number): Promise<{
     branch: Branch;
-    doctors: any[];
-    departments: any[];
+    doctors: Doctor[];
+    departments: Department[];
   }> {
-    const url = new URL(`${this.baseUrl}/branches/${id}/details`);
-
-    const response = await fetch(url.toString());
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const result: ApiResponse<{
+    const result = await apiClient.get<ApiResponse<{
       branch: Branch;
-      doctors: any[];
-      departments: any[];
-    }> = await response.json();
+      doctors: Doctor[];
+      departments: Department[];
+    }>>(`/branches/${id}/details`);
 
     if (!result.success) {
       throw new Error(result.message || 'Failed to fetch branch details');

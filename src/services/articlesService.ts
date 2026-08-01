@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
+import apiClient from './apiClient';
 
 export interface ArticleTranslation {
   en: string;
@@ -39,48 +39,34 @@ class ArticlesService {
   }
 
   async getArticles(params: { active?: string } = {}): Promise<Article[]> {
-    const qs = new URLSearchParams();
-    if (params.active !== undefined) qs.set('active', params.active);
-    const res = await fetch(`${API_BASE_URL}/articles?${qs}`);
-    const data = await res.json();
-    return data.success ? data.data : [];
+    const result = await apiClient.get<{ success: boolean; data: Article[] }>('/articles', params as Record<string, string | number | boolean | undefined | null>);
+    return result.success ? result.data : [];
   }
 
   async getArticle(id: number | string): Promise<Article | null> {
-    const res = await fetch(`${API_BASE_URL}/articles/${id}`);
-    const data = await res.json();
-    return data.success ? data.data : null;
+    const result = await apiClient.get<{ success: boolean; data: Article }>(`/articles/${id}`);
+    return result.success ? result.data : null;
   }
 
-  async createArticle(formData: FormData, token: string): Promise<Article> {
-    const res = await fetch(`${API_BASE_URL}/articles`, {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${token}` },
-      body: formData,
+  async createArticle(formData: FormData): Promise<Article> {
+    const data = await apiClient.post<{ success: boolean; data: Article; message: string }>('/articles', formData, {
+      'Content-Type': 'multipart/form-data',
     });
-    const data = await res.json();
     if (!data.success) throw new Error(data.message || 'Failed to create article');
     return data.data;
   }
 
-  async updateArticle(id: number, formData: FormData, token: string): Promise<Article> {
+  async updateArticle(id: number, formData: FormData): Promise<Article> {
     formData.append('_method', 'PUT');
-    const res = await fetch(`${API_BASE_URL}/articles/${id}`, {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${token}` },
-      body: formData,
+    const data = await apiClient.post<{ success: boolean; data: Article; message: string }>(`/articles/${id}`, formData, {
+      'Content-Type': 'multipart/form-data',
     });
-    const data = await res.json();
     if (!data.success) throw new Error(data.message || 'Failed to update article');
     return data.data;
   }
 
-  async deleteArticle(id: number, token: string): Promise<void> {
-    const res = await fetch(`${API_BASE_URL}/articles/${id}`, {
-      method: 'DELETE',
-      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-    });
-    const data = await res.json();
+  async deleteArticle(id: number): Promise<void> {
+    const data = await apiClient.delete<{ success: boolean; message: string }>(`/articles/${id}`);
     if (!data.success) throw new Error(data.message || 'Failed to delete article');
   }
 }

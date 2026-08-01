@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api';
+import apiClient from './apiClient';
 
 export interface HisAppointment {
   // ID field
@@ -113,39 +113,28 @@ export const getHisAppointments = async (
   searchColumn: string = 'file_number',
   filters?: AppointmentFilters
 ): Promise<PaginatedResponse<HisAppointment>> => {
-  const token = localStorage.getItem('auth_token');
-  
-  const params = new URLSearchParams({
-    page: page.toString(),
-    per_page: perPage.toString(),
-  });
-  
+  const params: Record<string, string | number | boolean | undefined | null> = {
+    page,
+    per_page: perPage,
+  };
+
   if (search) {
-    params.append('search', search);
-    params.append('search_column', searchColumn);
+    params.search = search;
+    params.search_column = searchColumn;
   }
 
-  // Add filter parameters
   if (filters) {
-    if (filters.fromDate) params.append('from_date', filters.fromDate);
-    if (filters.toDate) params.append('to_date', filters.toDate);
-    if (filters.status && filters.status !== 'all') params.append('status', filters.status);
-    if (filters.syncStatus && filters.syncStatus !== 'all') params.append('sync_status', filters.syncStatus);
-    if (filters.source && filters.source !== 'all') params.append('source', filters.source);
+    if (filters.fromDate) params.from_date = filters.fromDate;
+    if (filters.toDate) params.to_date = filters.toDate;
+    if (filters.status && filters.status !== 'all') params.status = filters.status;
+    if (filters.syncStatus && filters.syncStatus !== 'all') params.sync_status = filters.syncStatus;
+    if (filters.source && filters.source !== 'all') params.source = filters.source;
   }
 
-  const response = await fetch(`${API_BASE_URL}/admin/his-appointments?${params}`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error('Failed to fetch HIS appointments');
-  }
-
-  const result = await response.json();
+  const result = await apiClient.get<{ data: PaginatedResponse<HisAppointment> }>(
+    '/admin/his-appointments',
+    params,
+  );
   return result.data;
 };
 
@@ -153,20 +142,7 @@ export const getHisAppointments = async (
  * Get HIS appointments sync statistics
  */
 export const getHisAppointmentsSyncStats = async (): Promise<HisAppointmentsSyncStats> => {
-  const token = localStorage.getItem('auth_token');
-
-  const response = await fetch(`${API_BASE_URL}/admin/his-appointments-sync-stats`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error('Failed to fetch HIS appointments sync stats');
-  }
-
-  const result = await response.json();
+  const result = await apiClient.get<{ data: HisAppointmentsSyncStats }>('/admin/his-appointments-sync-stats');
   return result.data;
 };
 
@@ -175,21 +151,5 @@ export const getHisAppointmentsSyncStats = async (): Promise<HisAppointmentsSync
  * This allows testing by resetting cancelled/rescheduled status
  */
 export const resetHisAppointmentSync = async (appointmentId: number): Promise<void> => {
-  const token = localStorage.getItem('auth_token');
-
-  const response = await fetch(`${API_BASE_URL}/admin/his-appointments/${appointmentId}/reset-sync`, {
-    method: 'PUT',
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-  });
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || 'Failed to reset appointment sync');
-  }
-
-  const result = await response.json();
-  return result.data;
+  await apiClient.put(`/admin/his-appointments/${appointmentId}/reset-sync`);
 };

@@ -1,18 +1,4 @@
-const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
-
-const getAuthHeaders = (isFormData: boolean = false) => {
-  const token = localStorage.getItem('auth_token');
-  const headers: Record<string, string> = {
-    'Accept': 'application/json',
-  };
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
-  }
-  if (!isFormData) {
-    headers['Content-Type'] = 'application/json';
-  }
-  return headers;
-};
+import apiClient from './apiClient';
 
 export interface Offer {
   id: number;
@@ -38,27 +24,23 @@ export interface OfferInput {
   is_active?: boolean;
 }
 
+interface ApiResponse<T> {
+  success: boolean;
+  data: T;
+  message: string;
+}
+
 export const offersService = {
   async getAll(activeOnly: boolean = false): Promise<Offer[]> {
-    const url = activeOnly ? `${API_URL}/offers?active=true` : `${API_URL}/offers`;
-    const response = await fetch(url);
+    const params: Record<string, string | number | boolean | undefined | null> = {};
+    if (activeOnly) params.active = 'true';
     
-    if (!response.ok) {
-      throw new Error('Failed to fetch offers');
-    }
-    
-    const result = await response.json();
+    const result = await apiClient.get<ApiResponse<Offer[]>>('/offers', params);
     return result.data || [];
   },
 
   async getById(id: number): Promise<Offer> {
-    const response = await fetch(`${API_URL}/offers/${id}`);
-    
-    if (!response.ok) {
-      throw new Error('Failed to fetch offer');
-    }
-    
-    const result = await response.json();
+    const result = await apiClient.get<ApiResponse<Offer>>(`/offers/${id}`);
     return result.data;
   },
 
@@ -72,18 +54,7 @@ export const offersService = {
     if (offerData.sort_order !== undefined) formData.append('sort_order', offerData.sort_order.toString());
     if (offerData.is_active !== undefined) formData.append('is_active', offerData.is_active ? '1' : '0');
 
-    const response = await fetch(`${API_URL}/offers`, {
-      method: 'POST',
-      headers: getAuthHeaders(true),
-      body: formData,
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Failed to create offer');
-    }
-
-    const result = await response.json();
+    const result = await apiClient.upload<ApiResponse<Offer>>('/offers', formData, 'POST');
     return result.data;
   },
 
@@ -99,30 +70,11 @@ export const offersService = {
     if (offerData.sort_order !== undefined) formData.append('sort_order', offerData.sort_order.toString());
     if (offerData.is_active !== undefined) formData.append('is_active', offerData.is_active ? '1' : '0');
 
-    const response = await fetch(`${API_URL}/offers/${id}`, {
-      method: 'POST',
-      headers: getAuthHeaders(true),
-      body: formData,
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Failed to update offer');
-    }
-
-    const result = await response.json();
+    const result = await apiClient.upload<ApiResponse<Offer>>(`/offers/${id}`, formData, 'POST');
     return result.data;
   },
 
   async delete(id: number): Promise<void> {
-    const response = await fetch(`${API_URL}/offers/${id}`, {
-      method: 'DELETE',
-      headers: getAuthHeaders(),
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Failed to delete offer');
-    }
+    await apiClient.delete<ApiResponse<null>>(`/offers/${id}`);
   },
 };

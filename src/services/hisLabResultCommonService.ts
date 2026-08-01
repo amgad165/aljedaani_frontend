@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
+import apiClient from './apiClient';
 
 export interface HisLabResultCommon {
   id: number;
@@ -36,7 +36,7 @@ export interface HisLabResultCommon {
   FLD29: string | null;
   FLD30: string | null;
   last_synced_at: string | null;
-  sync_metadata: Record<string, any> | null;
+  sync_metadata: Record<string, unknown> | null;
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
@@ -88,55 +88,27 @@ export const getHisLabResultCommons = async (
     to_date?: string;
   }
 ): Promise<PaginatedResponse<HisLabResultCommon>> => {
-  const token = localStorage.getItem('auth_token');
-
-  const params = new URLSearchParams({
-    page: page.toString(),
-    per_page: perPage.toString(),
-  });
+  const params: Record<string, string | number | boolean | undefined | null> = {
+    page,
+    per_page: perPage,
+  };
 
   if (filters) {
     Object.entries(filters).forEach(([key, value]) => {
       if (value !== undefined && value !== null && value !== '') {
-        params.append(key, value.toString());
+        params[key] = value;
       }
     });
   }
 
-  const response = await fetch(`${API_BASE_URL}/admin/his-lab-result-commons?${params.toString()}`, {
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error('Failed to fetch HIS lab result commons');
-  }
-
-  return await response.json();
+  return apiClient.get<PaginatedResponse<HisLabResultCommon>>('/admin/his-lab-result-commons', params);
 };
 
 /**
  * Get HIS lab result commons statistics
  */
 export const getHisLabResultCommonStats = async (): Promise<HisLabResultCommonStats> => {
-  const token = localStorage.getItem('auth_token');
-
-  const response = await fetch(`${API_BASE_URL}/his-lab-result-commons/stats`, {
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error('Failed to fetch HIS lab result common statistics');
-  }
-
-  const result = await response.json();
+  const result = await apiClient.get<{ data: HisLabResultCommonStats }>('/his-lab-result-commons/stats');
   return result.data;
 };
 
@@ -144,21 +116,7 @@ export const getHisLabResultCommonStats = async (): Promise<HisLabResultCommonSt
  * Get single HIS lab result common by ID
  */
 export const getHisLabResultCommon = async (id: number): Promise<HisLabResultCommon> => {
-  const token = localStorage.getItem('auth_token');
-
-  const response = await fetch(`${API_BASE_URL}/his-lab-result-commons/${id}`, {
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error('Failed to fetch HIS lab result common');
-  }
-
-  const result = await response.json();
+  const result = await apiClient.get<{ data: HisLabResultCommon }>(`/his-lab-result-commons/${id}`);
   return result.data;
 };
 
@@ -166,20 +124,6 @@ export const getHisLabResultCommon = async (id: number): Promise<HisLabResultCom
  * Get result common by SlNo
  */
 export const getHisLabResultCommonBySlNo = async (slno: string): Promise<HisLabResultCommon> => {
-  const token = localStorage.getItem('auth_token');
-
-  const response = await fetch(`${API_BASE_URL}/his-lab-result-commons/slno/${slno}`, {
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error('Failed to fetch HIS lab result common by SlNo');
-  }
-
-  const result = await response.json();
+  const result = await apiClient.get<{ data: HisLabResultCommon }>(`/his-lab-result-commons/slno/${slno}`);
   return result.data;
 };

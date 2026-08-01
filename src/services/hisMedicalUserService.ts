@@ -1,13 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api';
-
-// Helper to get auth headers
-const getAuthHeaders = () => {
-  const token = localStorage.getItem('auth_token');
-  return {
-    'Content-Type': 'application/json',
-    'Authorization': token ? `Bearer ${token}` : '',
-  };
-};
+import apiClient from './apiClient';
 
 export interface HisMedicalReport {
   slno: string;
@@ -47,36 +38,25 @@ export const getUserHisMedicalReports = async (
   perPage: number = 4,
   filters: HisMedicalFilters = {}
 ): Promise<HisMedicalReportsResponse> => {
-  const params = new URLSearchParams({
-    page: page.toString(),
-    per_page: perPage.toString(),
-  });
+  const params: Record<string, string | number | boolean | undefined | null> = {
+    page,
+    per_page: perPage,
+  };
 
-  // Add filters if provided
-  if (filters.report_type) params.append('report_type', filters.report_type);
-  if (filters.doctor_code) params.append('doctor_code', filters.doctor_code);
-  if (filters.from_date) params.append('from_date', filters.from_date);
-  if (filters.to_date) params.append('to_date', filters.to_date);
-  if (filters.search) params.append('search', filters.search);
+  if (filters.report_type) params.report_type = filters.report_type;
+  if (filters.doctor_code) params.doctor_code = filters.doctor_code;
+  if (filters.from_date) params.from_date = filters.from_date;
+  if (filters.to_date) params.to_date = filters.to_date;
+  if (filters.search) params.search = filters.search;
 
-  const response = await fetch(`${API_BASE_URL}/patient/his-medical-reports?${params.toString()}`, {
-    headers: getAuthHeaders(),
-  });
-  const data = await response.json();
-  return data;
+  return apiClient.get<HisMedicalReportsResponse>('/patient/his-medical-reports', params);
 };
 
 /**
  * Download a HIS medical report PDF
  */
 export const downloadHisMedicalReportPdf = async (code: string): Promise<void> => {
-  const response = await fetch(`${API_BASE_URL}/patient/his-medical-reports/${code}/pdf?download=1`, {
-    headers: getAuthHeaders(),
-  });
-
-  if (!response.ok) throw new Error('Failed to download PDF');
-
-  const blob = await response.blob();
+  const blob = await apiClient.getBlob(`/patient/his-medical-reports/${code}/pdf`, { download: '1' });
   const url = window.URL.createObjectURL(new Blob([blob]));
   const link = document.createElement('a');
   link.href = url;
@@ -91,13 +71,7 @@ export const downloadHisMedicalReportPdf = async (code: string): Promise<void> =
  * View a HIS medical report PDF in new tab
  */
 export const viewHisMedicalReportPdf = async (code: string): Promise<void> => {
-  const response = await fetch(`${API_BASE_URL}/patient/his-medical-reports/${code}/pdf`, {
-    headers: getAuthHeaders(),
-  });
-
-  if (!response.ok) throw new Error('Failed to view PDF');
-
-  const blob = await response.blob();
+  const blob = await apiClient.getBlob(`/patient/his-medical-reports/${code}/pdf`);
   const url = window.URL.createObjectURL(new Blob([blob], { type: 'application/pdf' }));
   window.open(url, '_blank');
 };
@@ -134,7 +108,6 @@ export const formatPatientName = (name: string | null): string => {
 export const formatReportType = (type: string | null): string => {
   if (!type) return 'Medical Report';
   
-  // Map numeric types to readable labels if needed
   const typeMap: Record<string, string> = {
     '1': 'Sick Leave',
     '2': 'Medical Certificate',

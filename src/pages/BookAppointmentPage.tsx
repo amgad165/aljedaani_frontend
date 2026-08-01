@@ -499,46 +499,62 @@ const BookAppointmentPage = () => {
 
   // Filter departments when branch changes
   useEffect(() => {
+    // Avoid clearing selections while initial lists are still loading on slower mobile devices
+    if (loadingInitialData) return;
+
     if (doctorSelection.branch) {
       // Filter departments based on doctors in this branch
       const doctorsInBranch = doctors.filter(d => d.branch_id === parseInt(doctorSelection.branch));
       const deptIds = new Set(doctorsInBranch.map(d => d.department_id));
       const filtered = departments.filter(dept => deptIds.has(dept.id));
       setFilteredDepartments(filtered);
-      
+
       // Reset department selection if not in filtered list (but not during initialization)
-      if (!isInitializing && doctorSelection.specialty && !filtered.find(d => d.id === parseInt(doctorSelection.specialty))) {
+      if (
+        !isInitializing &&
+        doctorSelection.specialty &&
+        departments.length > 0 &&
+        !filtered.find(d => d.id === parseInt(doctorSelection.specialty))
+      ) {
         setDoctorSelection(prev => ({ ...prev, specialty: '', doctor: '' }));
       }
     } else {
       setFilteredDepartments(departments);
     }
-  }, [doctorSelection.branch, departments, doctors, isInitializing]);
+  }, [doctorSelection.branch, departments, doctors, isInitializing, loadingInitialData]);
 
   // Filter doctors when branch or department changes
   useEffect(() => {
+    // Avoid clearing selections while initial lists are still loading on slower mobile devices
+    if (loadingInitialData) return;
+
     if (doctorSelection.branch || doctorSelection.specialty) {
       // Filter doctors based on selected branch and/or department
       let filtered = doctors;
-      
+
       if (doctorSelection.branch) {
         filtered = filtered.filter(d => d.branch_id === parseInt(doctorSelection.branch));
       }
-      
+
       if (doctorSelection.specialty) {
         filtered = filtered.filter(d => d.department_id === parseInt(doctorSelection.specialty));
       }
-      
+
       setFilteredDoctors(filtered);
-      
+
       // Reset doctor selection if not in new list (but not during initialization)
-      if (!isInitializing && doctorSelection.doctor && !filtered.find(d => d.id === parseInt(doctorSelection.doctor))) {
+      if (
+        !isInitializing &&
+        doctorSelection.doctor &&
+        doctors.length > 0 &&
+        !filtered.find(d => d.id === parseInt(doctorSelection.doctor))
+      ) {
         setDoctorSelection(prev => ({ ...prev, doctor: '', selectedDate: '', selectedSlot: '' }));
       }
     } else {
       setFilteredDoctors(doctors);
     }
-  }, [doctorSelection.branch, doctorSelection.specialty, doctors, isInitializing]);
+  }, [doctorSelection.branch, doctorSelection.specialty, doctors, isInitializing, loadingInitialData]);
 
   // Filter doctors by search term
   useEffect(() => {
@@ -942,8 +958,7 @@ const BookAppointmentPage = () => {
       // Parse time slot (format could be "08:15 AM - 08:30 AM" or "08:15 AM" or "08:15")
       const timeSlot = doctorSelection.selectedSlot.split(' - ')[0].trim();
       
-      console.log('Selected slot:', doctorSelection.selectedSlot);
-      console.log('Parsed time slot:', timeSlot);
+ 
       
       // Convert 12-hour format to 24-hour format
       let appointmentTime: string;
@@ -974,7 +989,6 @@ const BookAppointmentPage = () => {
         }
       }
 
-      console.log('Converted to 24-hour format:', appointmentTime);
 
       const appointmentData = {
         doctor_id: parseInt(doctorSelection.doctor),
@@ -987,11 +1001,9 @@ const BookAppointmentPage = () => {
         payment_method: paymentMethod,
       };
 
-      console.log('Appointment data being sent:', appointmentData);
 
       const response = await appointmentsService.createAppointment(appointmentData);
 
-      console.log('API Response:', response);
 
       if (response.success) {
         const createdAppointmentId = response.data.appointment.id;
@@ -1004,7 +1016,6 @@ const BookAppointmentPage = () => {
           setCheckoutIntegrity(checkoutResponse.data.integrity);
           setPaymentBrands(checkoutResponse.data.brands || 'MADA VISA MASTER');
         } else {
-          console.log('Appointment created successfully, moving to step 6');
           setCurrentStep(6);
         }
       } else {
@@ -1031,6 +1042,17 @@ const BookAppointmentPage = () => {
       ...prev,
       [field]: value,
     }));
+  };
+
+  const formatAppointmentDate = (dateStr: string, timeStr: string) => {
+    if (!dateStr || !timeStr) return '';
+    const date = new Date(dateStr);
+    const formattedDate = date.toLocaleDateString('en-US', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    });
+    return `${formattedDate} - ${timeStr}`;
   };
 
   // Progress Bar - rendered inline to avoid component recreation
@@ -1132,7 +1154,6 @@ const BookAppointmentPage = () => {
 
   // Render current step content directly (not as components to prevent re-mounting)
   const renderStep = () => {
-    console.log('Rendering step:', currentStep);
     
     if (currentStep === 1) {
       // Step 1: Verification
@@ -2776,17 +2797,6 @@ const BookAppointmentPage = () => {
       const shopperResultUrl = appointmentId
         ? `${window.location.origin}/book-appointment?payment=hyperpay&appointment_id=${appointmentId}`
         : '';
-    
-    const formatAppointmentDate = (dateStr: string, timeStr: string) => {
-      if (!dateStr || !timeStr) return '';
-      const date = new Date(dateStr);
-      const formattedDate = date.toLocaleDateString('en-US', { 
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric'
-      });
-      return `${formattedDate} - ${timeStr}`;
-    };
     
     return (
       <div style={{

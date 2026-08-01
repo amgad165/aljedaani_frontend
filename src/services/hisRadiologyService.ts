@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api';
+import apiClient from './apiClient';
 
 export interface HisRadiologyReport {
   id: number;
@@ -86,33 +86,20 @@ export const getHisRadiologyReports = async (
     inspection_code?: string;
   }
 ): Promise<PaginatedResponse<HisRadiologyReport>> => {
-  const token = localStorage.getItem('auth_token');
-  
-  const params = new URLSearchParams({
-    page: page.toString(),
-    per_page: perPage.toString(),
-  });
+  const params: Record<string, string | number | boolean | undefined | null> = {
+    page,
+    per_page: perPage,
+  };
   
   if (filters) {
     Object.entries(filters).forEach(([key, value]) => {
       if (value !== undefined && value !== null && value !== '') {
-        params.append(key, value.toString());
+        (params as any)[key] = value;
       }
     });
   }
 
-  const response = await fetch(`${API_BASE_URL}/admin/his-radiology?${params}`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error('Failed to fetch HIS radiology reports');
-  }
-
-  const result = await response.json();
+  const result = await apiClient.get<{ data: HisRadiologyReport[]; pagination: PaginatedResponse<HisRadiologyReport>['pagination'] }>('/admin/his-radiology', params);
   return {
     data: result.data,
     pagination: result.pagination,
@@ -123,19 +110,6 @@ export const getHisRadiologyReports = async (
  * Get HIS radiology sync statistics
  */
 export const getHisRadiologyStats = async (): Promise<HisRadiologyStats> => {
-  const token = localStorage.getItem('auth_token');
-
-  const response = await fetch(`${API_BASE_URL}/his-radiology/stats`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error('Failed to fetch HIS radiology stats');
-  }
-
-  const result = await response.json();
+  const result = await apiClient.get<{ data: HisRadiologyStats }>('/his-radiology/stats');
   return result.data;
 };

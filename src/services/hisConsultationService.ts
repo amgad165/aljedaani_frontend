@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
+import apiClient from './apiClient';
 
 export interface HisConsultation {
   id: number;
@@ -148,55 +148,29 @@ export const getHisConsultations = async (
     to_date?: string;
   }
 ): Promise<PaginatedResponse<HisConsultation>> => {
-  const token = localStorage.getItem('auth_token');
+  const params: Record<string, string | number | boolean | undefined | null> = {
+    page,
+    per_page: perPage,
+  };
 
-  const params = new URLSearchParams({
-    page: page.toString(),
-    per_page: perPage.toString(),
-  });
+  if (filters?.search) params.search = filters.search;
+  if (filters?.patient_code) params.patient_code = filters.patient_code;
+  if (filters?.user_id) params.user_id = filters.user_id;
+  if (filters?.dept_code) params.dept_code = filters.dept_code;
+  if (filters?.doctor_code) params.doctor_code = filters.doctor_code;
+  if (filters?.with_admissions) params.with_admissions = '1';
+  if (filters?.with_sick_leave) params.with_sick_leave = '1';
+  if (filters?.with_allergies) params.with_allergies = '1';
+  if (filters?.from_date) params.from_date = filters.from_date;
+  if (filters?.to_date) params.to_date = filters.to_date;
 
-  if (filters?.search) params.append('search', filters.search);
-  if (filters?.patient_code) params.append('patient_code', filters.patient_code);
-  if (filters?.user_id) params.append('user_id', filters.user_id.toString());
-  if (filters?.dept_code) params.append('dept_code', filters.dept_code.toString());
-  if (filters?.doctor_code) params.append('doctor_code', filters.doctor_code.toString());
-  if (filters?.with_admissions) params.append('with_admissions', '1');
-  if (filters?.with_sick_leave) params.append('with_sick_leave', '1');
-  if (filters?.with_allergies) params.append('with_allergies', '1');
-  if (filters?.from_date) params.append('from_date', filters.from_date);
-  if (filters?.to_date) params.append('to_date', filters.to_date);
-
-  const response = await fetch(`${API_BASE_URL}/admin/his-consultations?${params}`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error('Failed to fetch HIS consultations');
-  }
-
-  return response.json();
+  return apiClient.get<PaginatedResponse<HisConsultation>>('/admin/his-consultations', params);
 };
 
 /**
  * Get HIS consultation sync statistics
  */
 export const getHisConsultationStats = async (): Promise<HisConsultationStats> => {
-  const token = localStorage.getItem('auth_token');
-
-  const response = await fetch(`${API_BASE_URL}/his-consultations/stats`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error('Failed to fetch HIS consultation stats');
-  }
-
-  const result = await response.json();
+  const result = await apiClient.get<{ data: HisConsultationStats }>('/his-consultations/stats');
   return result.data;
 };

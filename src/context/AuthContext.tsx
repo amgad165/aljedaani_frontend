@@ -2,6 +2,7 @@ import { createContext, useState, useEffect, useContext } from 'react';
 import type { ReactNode } from 'react';
 import { authService } from '../services/authService';
 import type { LoginData, RegisterData } from '../services/authService';
+import { apiClient } from '../services/apiClient';
 
 interface User {
   id: number;
@@ -73,6 +74,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     initializeAuth();
   }, []);
 
+  // Register the auto-logout callback with the API client
+  // When any API call gets a 401 "Unauthenticated" response, this will be triggered
+  useEffect(() => {
+    const handleAutoLogout = () => {
+      setUser(null);
+      setToken(null);
+      // Redirect to login page
+      const lang = document.documentElement.lang || 'en';
+      window.location.href = `/${lang}/login`;
+    };
+
+    apiClient.onUnauthorized(handleAutoLogout);
+
+    return () => {
+      apiClient.clearUnauthorizedCallback();
+    };
+  }, []);
+
   const login = async (data: LoginData) => {
     setIsLoading(true);
     setError(null);
@@ -124,9 +143,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setError(null);
     
     try {
-      if (token) {
-        await authService.logout(token);
-      }
+      await authService.logout();
       
       setUser(null);
       setToken(null);
@@ -147,20 +164,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (!token) return;
     
     try {
-      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
-      const response = await fetch(`${API_BASE_URL}/user`, {
-        headers: {
-          'Accept': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        const updatedUser = data.user || data;
-        setUser(updatedUser);
-        localStorage.setItem('auth_user', JSON.stringify(updatedUser));
-      }
+      const data = await apiClient.get('/user');
+      const updatedUser = data.user || data;
+      setUser(updatedUser);
+      localStorage.setItem('auth_user', JSON.stringify(updatedUser));
     } catch (err) {
       console.error('Error refreshing user:', err);
     }

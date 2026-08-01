@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api';
+import apiClient from './apiClient';
 
 // Type definitions
 export type HisPatient = {
@@ -78,71 +78,29 @@ export const getHisPatients = async (
   search?: string,
   searchColumn: string = 'FileNumber'
 ): Promise<PaginatedResponse<HisPatient>> => {
-  const token = localStorage.getItem('auth_token');
-  
-  const queryParams = new URLSearchParams({
-    page: page.toString(),
-    per_page: perPage.toString(),
-  });
+  const params: Record<string, string | number | boolean | undefined | null> = {
+    page,
+    per_page: perPage,
+  };
 
   if (search) {
-    queryParams.append('search', search);
-    queryParams.append('search_column', searchColumn);
+    params.search = search;
+    params.search_column = searchColumn;
   }
 
-  const response = await fetch(
-    `${API_BASE_URL}/admin/his-patients?${queryParams}`,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-    }
-  );
-
-  if (!response.ok) {
-    throw new Error('Failed to fetch HIS patients');
-  }
-
-  const result = await response.json();
+  const result = await apiClient.get<{ data: PaginatedResponse<HisPatient> }>('/admin/his-patients', params);
   return result.data;
 };
 
 // Get HIS sync statistics (admin only)
 export const getHisSyncStats = async (): Promise<HisSyncStats> => {
-  const token = localStorage.getItem('auth_token');
-
-  const response = await fetch(`${API_BASE_URL}/admin/his-sync-stats`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error('Failed to fetch HIS sync stats');
-  }
-
-  const result = await response.json();
+  const result = await apiClient.get<{ data: HisSyncStats }>('/admin/his-sync-stats');
   return result.data;
 };
 
 // Get single HIS patient details (admin only)
 export const getHisPatient = async (id: number): Promise<HisPatient> => {
-  const token = localStorage.getItem('auth_token');
-
-  const response = await fetch(`${API_BASE_URL}/admin/his-patients/${id}`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error('Failed to fetch HIS patient details');
-  }
-
-  const result = await response.json();
+  const result = await apiClient.get<{ data: HisPatient }>(`/admin/his-patients/${id}`);
   return result.data;
 };
 
@@ -151,22 +109,6 @@ export const updateHisPatientMobile = async (
   id: number,
   mobile: string
 ): Promise<HisPatient> => {
-  const token = localStorage.getItem('auth_token');
-
-  const response = await fetch(`${API_BASE_URL}/admin/his-patients/${id}/mobile`, {
-    method: 'PUT',
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ mobile }),
-  });
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || 'Failed to update mobile phone');
-  }
-
-  const result = await response.json();
+  const result = await apiClient.put<{ data: HisPatient }>(`/admin/his-patients/${id}/mobile`, { mobile });
   return result.data;
 };

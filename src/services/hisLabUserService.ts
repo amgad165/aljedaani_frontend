@@ -1,13 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api';
-
-// Helper to get auth headers
-const getAuthHeaders = () => {
-  const token = localStorage.getItem('auth_token');
-  return {
-    'Content-Type': 'application/json',
-    'Authorization': token ? `Bearer ${token}` : '',
-  };
-};
+import apiClient from './apiClient';
 
 export interface HisLabReport {
   slno: string;
@@ -60,58 +51,31 @@ export const getUserHisLabReports = async (
     department?: string;
   }
 ): Promise<HisLabReportsResponse> => {
-  const params = new URLSearchParams({
-    page: page.toString(),
-    per_page: perPage.toString(),
-  });
+  const params: Record<string, string | number | boolean | undefined | null> = {
+    page,
+    per_page: perPage,
+  };
 
-  if (filters?.search) params.append('search', filters.search);
-  if (filters?.from_date) params.append('from_date', filters.from_date);
-  if (filters?.to_date) params.append('to_date', filters.to_date);
-  if (filters?.category) params.append('category', filters.category);
-  if (filters?.department) params.append('department', filters.department);
+  if (filters?.search) params.search = filters.search;
+  if (filters?.from_date) params.from_date = filters.from_date;
+  if (filters?.to_date) params.to_date = filters.to_date;
+  if (filters?.category) params.category = filters.category;
+  if (filters?.department) params.department = filters.department;
 
-  const response = await fetch(
-    `${API_BASE_URL}/patient/his-lab-reports?${params.toString()}`,
-    { headers: getAuthHeaders() }
-  );
-  
-  if (!response.ok) {
-    throw new Error('Failed to fetch HIS lab reports');
-  }
-  
-  return await response.json();
+  return apiClient.get<HisLabReportsResponse>('/patient/his-lab-reports', params);
 };
 
 // Get single HIS lab report
 export const getHisLabReportDetail = async (
   slno: string
 ): Promise<HisLabReportDetailResponse> => {
-  const response = await fetch(
-    `${API_BASE_URL}/patient/his-lab-reports/${slno}`,
-    { headers: getAuthHeaders() }
-  );
-  
-  if (!response.ok) {
-    throw new Error('Failed to fetch HIS lab report detail');
-  }
-  
-  return await response.json();
+  return apiClient.get<HisLabReportDetailResponse>(`/patient/his-lab-reports/${slno}`);
 };
 
 // Download PDF
 export const downloadHisLabReportPdf = async (slno: string): Promise<void> => {
   try {
-    const response = await fetch(
-      `${API_BASE_URL}/patient/his-lab-reports/${slno}/pdf?download=true`,
-      { headers: getAuthHeaders() }
-    );
-    
-    if (!response.ok) {
-      throw new Error('Failed to download PDF');
-    }
-    
-    const blob = await response.blob();
+    const blob = await apiClient.getBlob(`/patient/his-lab-reports/${slno}/pdf`, { download: 'true' });
 
     // Create blob link to download
     const url = window.URL.createObjectURL(blob);
@@ -131,16 +95,7 @@ export const downloadHisLabReportPdf = async (slno: string): Promise<void> => {
 // View PDF in new tab
 export const viewHisLabReportPdf = async (slno: string): Promise<void> => {
   try {
-    const response = await fetch(
-      `${API_BASE_URL}/patient/his-lab-reports/${slno}/pdf`,
-      { headers: getAuthHeaders() }
-    );
-    
-    if (!response.ok) {
-      throw new Error('Failed to view PDF');
-    }
-    
-    const blob = await response.blob();
+    const blob = await apiClient.getBlob(`/patient/his-lab-reports/${slno}/pdf`);
     const url = window.URL.createObjectURL(blob);
     window.open(url, '_blank');
   } catch (error) {

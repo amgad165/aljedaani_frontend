@@ -1,4 +1,4 @@
-﻿const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
+﻿import apiClient from './apiClient';
 
 export interface NewsTranslation {
   en: string;
@@ -23,6 +23,12 @@ export interface NewsItem {
 
 type TranslatableField = NewsTranslation | string | null;
 
+interface ApiResponse<T> {
+  success: boolean;
+  data: T;
+  message: string;
+}
+
 class NewsService {
   getField(field: TranslatableField, locale: 'en' | 'ar' = 'en'): string {
     if (!field) return '';
@@ -38,48 +44,30 @@ class NewsService {
   }
 
   async getNews(params: { active?: string } = {}): Promise<NewsItem[]> {
-    const qs = new URLSearchParams();
-    if (params.active !== undefined) qs.set('active', params.active);
-    const res = await fetch(`${API_BASE_URL}/news?${qs}`);
-    const data = await res.json();
-    return data.success ? data.data : [];
+    const result = await apiClient.get<ApiResponse<NewsItem[]>>('/news', params as Record<string, string | number | boolean | undefined | null>);
+    return result.success ? result.data : [];
   }
 
   async getNewsItem(id: number | string): Promise<NewsItem | null> {
-    const res = await fetch(`${API_BASE_URL}/news/${id}`);
-    const data = await res.json();
-    return data.success ? data.data : null;
+    const result = await apiClient.get<ApiResponse<NewsItem>>(`/news/${id}`);
+    return result.success ? result.data : null;
   }
 
-  async createNews(formData: FormData, token: string): Promise<NewsItem> {
-    const res = await fetch(`${API_BASE_URL}/news`, {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${token}` },
-      body: formData,
-    });
-    const data = await res.json();
+  async createNews(formData: FormData): Promise<NewsItem> {
+    const data = await apiClient.upload<ApiResponse<NewsItem>>('/news', formData, 'POST');
     if (!data.success) throw new Error(data.message || 'Failed to create news');
     return data.data;
   }
 
-  async updateNews(id: number, formData: FormData, token: string): Promise<NewsItem> {
+  async updateNews(id: number, formData: FormData): Promise<NewsItem> {
     formData.append('_method', 'PUT');
-    const res = await fetch(`${API_BASE_URL}/news/${id}`, {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${token}` },
-      body: formData,
-    });
-    const data = await res.json();
+    const data = await apiClient.upload<ApiResponse<NewsItem>>(`/news/${id}`, formData, 'POST');
     if (!data.success) throw new Error(data.message || 'Failed to update news');
     return data.data;
   }
 
-  async deleteNews(id: number, token: string): Promise<void> {
-    const res = await fetch(`${API_BASE_URL}/news/${id}`, {
-      method: 'DELETE',
-      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-    });
-    const data = await res.json();
+  async deleteNews(id: number): Promise<void> {
+    const data = await apiClient.delete<ApiResponse<null>>(`/news/${id}`);
     if (!data.success) throw new Error(data.message || 'Failed to delete news');
   }
 }

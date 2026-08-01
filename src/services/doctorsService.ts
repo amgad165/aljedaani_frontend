@@ -1,3 +1,4 @@
+import apiClient from './apiClient';
 import type { Doctor } from './departmentsService';
 
 export interface PaginatedResponse<T> {
@@ -27,12 +28,6 @@ export interface ApiResponse<T> {
 }
 
 class DoctorsService {
-  private baseUrl: string;
-
-  constructor() {
-    this.baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
-  }
-
   async getDoctors(params?: {
     active?: boolean;
     department_id?: number;
@@ -43,47 +38,7 @@ class DoctorsService {
     per_page?: number;
     page?: number;
   }): Promise<PaginatedResponse<Doctor>> {
-    const url = new URL(`${this.baseUrl}/doctors`);
-    
-    if (params?.active !== undefined) {
-      url.searchParams.append('active', String(params.active));
-    }
-    
-    if (params?.department_id) {
-      url.searchParams.append('department_id', String(params.department_id));
-    }
-    
-    if (params?.branch_id) {
-      url.searchParams.append('branch_id', String(params.branch_id));
-    }
-    
-    if (params?.status) {
-      url.searchParams.append('status', params.status);
-    }
-    
-    if (params?.location) {
-      url.searchParams.append('location', params.location);
-    }
-    
-    if (params?.search) {
-      url.searchParams.append('search', params.search);
-    }
-    
-    if (params?.per_page) {
-      url.searchParams.append('per_page', String(params.per_page));
-    }
-    
-    if (params?.page) {
-      url.searchParams.append('page', String(params.page));
-    }
-
-    const response = await fetch(url.toString());
-    
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    
-    const result: ApiResponse<PaginatedResponse<Doctor>> = await response.json();
+    const result = await apiClient.get<ApiResponse<PaginatedResponse<Doctor>>>('/doctors', params as Record<string, string | number | boolean | undefined | null>);
     
     if (!result.success) {
       throw new Error(result.message || 'Failed to fetch doctors');
@@ -93,13 +48,7 @@ class DoctorsService {
   }
 
   async getDoctor(id: number): Promise<Doctor> {
-    const response = await fetch(`${this.baseUrl}/doctors/${id}`);
-    
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    
-    const result: ApiResponse<Doctor> = await response.json();
+    const result = await apiClient.get<ApiResponse<Doctor>>(`/doctors/${id}`);
     
     if (!result.success) {
       throw new Error(result.message || 'Failed to fetch doctor');
@@ -121,22 +70,8 @@ class DoctorsService {
     appointment_price?: number;
     status: 'available_today' | 'busy' | 'available_soon';
     is_active?: boolean;
-  }, token: string): Promise<Doctor> {
-    const response = await fetch(`${this.baseUrl}/doctors`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-        'Accept': 'application/json',
-      },
-      body: JSON.stringify(data),
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const result: ApiResponse<Doctor> = await response.json();
+  }): Promise<Doctor> {
+    const result = await apiClient.post<ApiResponse<Doctor>>('/doctors', data);
     
     if (!result.success) {
       throw new Error(result.message || 'Failed to create doctor');
@@ -158,22 +93,8 @@ class DoctorsService {
     appointment_price?: number;
     status?: 'available_today' | 'busy' | 'available_soon';
     is_active?: boolean;
-  }, token: string): Promise<Doctor> {
-    const response = await fetch(`${this.baseUrl}/doctors/${id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-        'Accept': 'application/json',
-      },
-      body: JSON.stringify(data),
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const result: ApiResponse<Doctor> = await response.json();
+  }): Promise<Doctor> {
+    const result = await apiClient.put<ApiResponse<Doctor>>(`/doctors/${id}`, data);
     
     if (!result.success) {
       throw new Error(result.message || 'Failed to update doctor');
@@ -182,20 +103,8 @@ class DoctorsService {
     return result.data;
   }
 
-  async deleteDoctor(id: number, token: string): Promise<void> {
-    const response = await fetch(`${this.baseUrl}/doctors/${id}`, {
-      method: 'DELETE',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Accept': 'application/json',
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const result: ApiResponse<null> = await response.json();
+  async deleteDoctor(id: number): Promise<void> {
+    const result = await apiClient.delete<ApiResponse<null>>(`/doctors/${id}`);
     
     if (!result.success) {
       throw new Error(result.message || 'Failed to delete doctor');

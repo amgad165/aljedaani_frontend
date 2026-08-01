@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
+import apiClient from './apiClient';
 
 export type EmploymentType = 'full_time' | 'part_time' | 'contract' | 'internship' | 'temporary';
 export type QuestionType = 'text' | 'textarea' | 'email' | 'phone' | 'number' | 'select' | 'radio' | 'checkbox' | 'date' | 'file';
@@ -61,6 +61,12 @@ export interface CareerApplication {
   updated_at: string;
 }
 
+interface ApiResponse<T> {
+  success: boolean;
+  data: T;
+  message: string;
+}
+
 class CareersService {
   getField(field: TranslationField | string | null, locale: 'en' | 'ar' = 'en'): string {
     if (!field) return '';
@@ -87,61 +93,37 @@ class CareersService {
   }
 
   async getCareers(params: { active?: string } = {}): Promise<Career[]> {
-    const qs = new URLSearchParams();
-    if (params.active !== undefined) qs.set('active', params.active);
-    const res = await fetch(`${API_BASE_URL}/careers?${qs}`);
-    const data = await res.json();
-    return data.success ? data.data : [];
+    const result = await apiClient.get<ApiResponse<Career[]>>('/careers', params as Record<string, string | number | boolean | undefined | null>);
+    return result.success ? result.data : [];
   }
 
   async getCareer(id: number | string): Promise<Career | null> {
-    const res = await fetch(`${API_BASE_URL}/careers/${id}`);
-    const data = await res.json();
-    return data.success ? data.data : null;
+    const result = await apiClient.get<ApiResponse<Career>>(`/careers/${id}`);
+    return result.success ? result.data : null;
   }
 
-  async getQuestions(careerId: number, token: string): Promise<CareerQuestion[]> {
-    const res = await fetch(`${API_BASE_URL}/careers/${careerId}/questions`, {
-      headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
-    });
-    const data = await res.json();
-    return data.success ? data.data : [];
+  async getQuestions(careerId: number): Promise<CareerQuestion[]> {
+    const result = await apiClient.get<ApiResponse<CareerQuestion[]>>(`/careers/${careerId}/questions`);
+    return result.success ? result.data : [];
   }
 
   async submitApplication(careerId: number, formData: FormData): Promise<CareerApplication> {
-    const res = await fetch(`${API_BASE_URL}/careers/${careerId}/apply`, {
-      method: 'POST',
-      body: formData,
-    });
-    const data = await res.json();
+    const data = await apiClient.upload<ApiResponse<CareerApplication>>(`/careers/${careerId}/apply`, formData, 'POST');
     if (!data.success) throw new Error(data.message || 'Failed to submit application');
     return data.data;
   }
 
-  async getApplications(careerId: number, token: string): Promise<CareerApplication[]> {
-    const res = await fetch(`${API_BASE_URL}/careers/${careerId}/applications`, {
-      headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
-    });
-    const data = await res.json();
-    return data.success ? data.data : [];
+  async getApplications(careerId: number): Promise<CareerApplication[]> {
+    const result = await apiClient.get<ApiResponse<CareerApplication[]>>(`/careers/${careerId}/applications`);
+    return result.success ? result.data : [];
   }
 
   async updateApplication(
     careerId: number,
     applicationId: number,
     payload: { status?: CareerApplication['status']; admin_notes?: string | null },
-    token: string,
   ): Promise<CareerApplication> {
-    const res = await fetch(`${API_BASE_URL}/careers/${careerId}/applications/${applicationId}`, {
-      method: 'PUT',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload),
-    });
-    const data = await res.json();
+    const data = await apiClient.put<ApiResponse<CareerApplication>>(`/careers/${careerId}/applications/${applicationId}`, payload);
     if (!data.success) throw new Error(data.message || 'Failed to update application');
     return data.data;
   }

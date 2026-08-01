@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
+import apiClient from './apiClient';
 
 export interface HisMedicalReport {
   id: number;
@@ -73,53 +73,27 @@ export const getHisMedicalReports = async (
     to_date?: string;
   }
 ): Promise<PaginatedResponse<HisMedicalReport>> => {
-  const token = localStorage.getItem('auth_token');
+  const params: Record<string, string | number | boolean | undefined | null> = {
+    page,
+    per_page: perPage,
+  };
 
-  const params = new URLSearchParams({
-    page: page.toString(),
-    per_page: perPage.toString(),
-  });
+  if (filters?.search) params.search = filters.search;
+  if (filters?.search_column) params.search_column = filters.search_column;
+  if (filters?.file_number) params.file_number = filters.file_number;
+  if (filters?.report_type) params.report_type = filters.report_type;
+  if (filters?.doctor_code) params.doctor_code = filters.doctor_code;
+  if (filters?.inspection_code) params.inspection_code = filters.inspection_code;
+  if (filters?.from_date) params.from_date = filters.from_date;
+  if (filters?.to_date) params.to_date = filters.to_date;
 
-  if (filters?.search) params.append('search', filters.search);
-  if (filters?.search_column) params.append('search_column', filters.search_column);
-  if (filters?.file_number) params.append('file_number', filters.file_number);
-  if (filters?.report_type) params.append('report_type', filters.report_type);
-  if (filters?.doctor_code) params.append('doctor_code', filters.doctor_code);
-  if (filters?.inspection_code) params.append('inspection_code', filters.inspection_code);
-  if (filters?.from_date) params.append('from_date', filters.from_date);
-  if (filters?.to_date) params.append('to_date', filters.to_date);
-
-  const response = await fetch(`${API_BASE_URL}/admin/his-medical?${params}`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error('Failed to fetch HIS medical reports');
-  }
-
-  return response.json();
+  return apiClient.get<PaginatedResponse<HisMedicalReport>>('/admin/his-medical', params);
 };
 
 /**
  * Get HIS medical sync statistics
  */
 export const getHisMedicalStats = async (): Promise<HisMedicalStats> => {
-  const token = localStorage.getItem('auth_token');
-
-  const response = await fetch(`${API_BASE_URL}/his-medical/stats`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error('Failed to fetch HIS medical stats');
-  }
-
-  const result = await response.json();
+  const result = await apiClient.get<{ data: HisMedicalStats }>('/his-medical/stats');
   return result.data;
 };

@@ -41,8 +41,7 @@ const ExcellenceCentersSection = () => {
 
   const centers: ExcellenceCenter[] = data?.excellence_centers || [];
 
-  console.log('ExcellenceCentersSection - data:', data);
-  console.log('ExcellenceCentersSection - centers:', centers);
+
 
   const updateScrollButtons = () => {
     const container = scrollContainerRef.current;

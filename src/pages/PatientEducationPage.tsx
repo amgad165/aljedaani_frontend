@@ -6,11 +6,12 @@ import { patientEducationService, type PatientEducation } from '../services/pati
 
 export default function PatientEducationPage() {
   const ResponsiveNavbar = useResponsiveNavbar();
-  const { t } = useTranslation('pages');
+  const { t, i18n } = useTranslation('pages');
 
   const [educations, setEducations] = useState<PatientEducation[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'general' | 'disease'>('general');
   const isMobile = window.innerWidth <= 768;
 
   useEffect(() => {
@@ -47,7 +48,7 @@ export default function PatientEducationPage() {
             display: 'flex',
             alignItems: 'flex-start',
             justifyContent: 'center',
-        marginTop: isMobile ? '90px' : '122px',
+            marginTop: isMobile ? '90px' : '122px',
           }}
         >
           <div
@@ -207,7 +208,7 @@ export default function PatientEducationPage() {
           display: 'flex',
           alignItems: 'flex-start',
           justifyContent: 'center',
-          marginTop: isMobile ? '90px' : '124px' ,
+          marginTop: isMobile ? '90px' : '124px',
         }}
       >
         <div
@@ -230,7 +231,7 @@ export default function PatientEducationPage() {
               display: 'flex',
               alignItems: 'center',
               padding: '0 24px',
-              marginBottom: '24px',
+              marginBottom: '16px',
             }}
           >
             <h1
@@ -243,12 +244,80 @@ export default function PatientEducationPage() {
                 margin: 0,
               }}
             >
-              {/* Try existing i18n key; fallback to plain text */}
               {t('patientEducation') || 'Patient Education'}
             </h1>
           </div>
 
-          {educations.length === 0 ? (
+          {/* Tabs: General / Disease Education */}
+          <div
+            style={{
+              display: 'flex',
+              gap: 8,
+              marginBottom: '24px',
+              background: '#FFFFFF',
+              borderRadius: '15px',
+              padding: '6px',
+              boxShadow: '0 2px 8px rgba(0, 171, 218, 0.08)',
+            }}
+          >
+            <button
+              type="button"
+              onClick={() => setActiveTab('general')}
+              style={{
+                flex: 1,
+                cursor: 'pointer',
+                fontFamily: 'Nunito, sans-serif',
+                fontWeight: 700,
+                fontSize: isMobile ? 13 : 15,
+                color: activeTab === 'general' ? '#061F42' : '#6A6A6A',
+                background: activeTab === 'general' ? '#00ABDA' : 'transparent',
+                border: 'none',
+                borderRadius: '10px',
+                padding: '10px 18px',
+                transition: 'all 0.3s ease',
+              }}
+            >
+              {t('patientEducationGeneral') || 'General'}
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab('disease')}
+              style={{
+                flex: 1,
+                cursor: 'pointer',
+                fontFamily: 'Nunito, sans-serif',
+                fontWeight: 700,
+                fontSize: isMobile ? 13 : 15,
+                color: activeTab === 'disease' ? '#061F42' : '#6A6A6A',
+                background: activeTab === 'disease' ? '#00ABDA' : 'transparent',
+                border: 'none',
+                borderRadius: '10px',
+                padding: '10px 18px',
+                transition: 'all 0.3s ease',
+              }}
+            >
+              {t('patientEducationDisease') || 'Education by Diagnosis'}
+            </button>
+          </div>
+
+          {activeTab === 'disease' ? (
+            /* Placeholder for disease-specific patient education PDFs (functionality coming later) */
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                width: '100%',
+                height: '200px',
+                fontFamily: 'Nunito, sans-serif',
+                fontSize: '18px',
+                color: '#6A6A6A',
+              }}
+            >
+              {t('patientEducationDiseasePlaceholder') ||
+                'Disease education content is coming soon.'}
+            </div>
+          ) : educations.length === 0 ? (
             <div
               style={{
                 display: 'flex',
@@ -264,157 +333,233 @@ export default function PatientEducationPage() {
               {t('noDataAvailable') || 'No data available'}
             </div>
           ) : (
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)',
-          gap: 24,
-        }}
-      >
-              
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)',
+                gap: 24,
+              }}
+            >
               {educations
                 .slice()
                 .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
-                .map((education) => (
-                  <div
-                    key={education.id}
-                    style={{
-                      boxSizing: 'border-box',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'flex-start',
-                      padding: 24,
-                      gap: 14,
-                      background: 'linear-gradient(135deg, #FFFFFF 0%, #F8FCFF 100%)',
-                      border: '1px solid #E5F4FF',
-                      borderRadius: '16px',
-                      cursor: 'default',
-                      transition: 'all 0.4s ease',
-                      boxShadow: '0 2px 8px rgba(0, 171, 218, 0.08)',
-                      minHeight: 140,
-                      position: 'relative',
-                      overflow: 'hidden',
-                    }}
-                    onMouseEnter={(e) => {
-                      const el = e.currentTarget as HTMLDivElement;
-                      el.style.background = 'linear-gradient(135deg, #FFFFFF 0%, #E8F8FF 100%)';
-                      el.style.transform = 'translateY(-6px)';
-                      el.style.boxShadow = '0 12px 24px rgba(0, 171, 218, 0.18)';
-                      el.style.borderColor = '#00ABDA';
-                    }}
-                    onMouseLeave={(e) => {
-                      const el = e.currentTarget as HTMLDivElement;
-                      el.style.background = 'linear-gradient(135deg, #FFFFFF 0%, #F8FCFF 100%)';
-                      el.style.transform = 'translateY(0)';
-                      el.style.boxShadow = '0 2px 8px rgba(0, 171, 218, 0.08)';
-                      el.style.borderColor = '#E5F4FF';
-                    }}
-                  >
-                    <h3
+                .map((education) => {
+                  const pdfUrl = education.pdf_url
+                    ? education.pdf_url
+                    : education.pdf_path?.startsWith('http')
+                      ? education.pdf_path
+                      : null;
+
+                  const arabicPdfUrl = education.arabic_pdf_url
+                    ? education.arabic_pdf_url
+                    : education.arabic_pdf_path?.startsWith('http')
+                      ? education.arabic_pdf_path
+                      : null;
+
+                  // Language-aware PDF selection:
+                  // Arabic site users get the Arabic PDF; everyone else gets the English/main PDF.
+                  // Falls back to the English PDF if the Arabic PDF is not available.
+                  const isArabic = (i18n.language ?? '').toLowerCase().startsWith('ar');
+                  const displayName = isArabic ? (education.name_ar || education.name) : education.name;
+                  const displayDescription = isArabic
+                    ? (education.description_ar || education.description)
+                    : education.description;
+                  const viewUrl = isArabic && arabicPdfUrl ? arabicPdfUrl : pdfUrl;
+                  const downloadUrlPath =
+                    isArabic && arabicPdfUrl
+                      ? patientEducationService.getDownloadArabicPdfUrl(education.id)
+                      : patientEducationService.getDownloadPdfUrl(education.id);
+
+                  return (
+                    <div
+                      key={education.id}
                       style={{
-                        fontFamily: 'Nunito, sans-serif',
-                        fontWeight: 700,
-                        fontSize: 20,
-                        lineHeight: '26px',
-                        color: '#061F42',
-                        margin: 0,
+                        boxSizing: 'border-box',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'stretch',
+                        padding: 24,
+                        gap: 14,
+                        background: 'linear-gradient(135deg, #FFFFFF 0%, #F8FCFF 100%)',
+                        border: '1px solid #E5F4FF',
+                        borderRadius: '16px',
+                        cursor: 'default',
+                        transition: 'all 0.4s ease',
+                        boxShadow: '0 2px 8px rgba(0, 171, 218, 0.08)',
+                        minHeight: 140,
+                        position: 'relative',
+                        overflow: 'hidden',
+                      }}
+                      onMouseEnter={(e) => {
+                        const el = e.currentTarget as HTMLDivElement;
+                        el.style.background = 'linear-gradient(135deg, #FFFFFF 0%, #E8F8FF 100%)';
+                        el.style.transform = 'translateY(-6px)';
+                        el.style.boxShadow = '0 12px 24px rgba(0, 171, 218, 0.18)';
+                        el.style.borderColor = '#00ABDA';
+                      }}
+                      onMouseLeave={(e) => {
+                        const el = e.currentTarget as HTMLDivElement;
+                        el.style.background = 'linear-gradient(135deg, #FFFFFF 0%, #F8FCFF 100%)';
+                        el.style.transform = 'translateY(0)';
+                        el.style.boxShadow = '0 2px 8px rgba(0, 171, 218, 0.08)';
+                        el.style.borderColor = '#E5F4FF';
                       }}
                     >
-                      {education.name}
-                    </h3>
-
-                    {education.description ? (
-                      <p
-                        style={{
-                          fontFamily: 'Nunito, sans-serif',
-                          fontSize: 14,
-                          lineHeight: '22px',
-                          color: '#6A6A6A',
-                          margin: 0,
-                        }}
-                      >
-                        {education.description}
-                      </p>
-                    ) : (
+                      {/* Image on the left, ALL other elements on the right */}
                       <div
                         style={{
-                          height: 22,
-                          width: '70%',
-                          borderRadius: 10,
-                          background: 'rgba(0, 0, 0, 0.03)',
+                          width: '100%',
+                          display: 'flex',
+                          flexDirection: isMobile ? 'column' : 'row',
+                          gap: 16,
+                          alignItems: 'stretch',
                         }}
-                      />
-                    )}
-
-                    {/* PDF view/download */}
-                    <div style={{ marginTop: 'auto', display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-                      {(() => {
-                        const pdfUrl = education.pdf_url
-                          ? education.pdf_url
-                          : education.pdf_path?.startsWith('http')
-                            ? education.pdf_path
-                            : null;
-
-                        if (!pdfUrl) {
-                          return (
+                      >
+                        {/* Photo (left) */}
+                        <div
+                          style={{
+                            width: isMobile ? '100%' : 180,
+                            height: isMobile ? 170 : 140,
+                            borderRadius: 14,
+                            overflow: 'hidden',
+                            border: '1px solid rgba(0, 171, 218, 0.25)',
+                            background: 'rgba(0, 0, 0, 0.03)',
+                            flex: '0 0 auto',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                          }}
+                        >
+                          {education.photo_url ? (
+                            <img
+                              src={education.photo_url}
+                              alt={displayName ?? 'Patient education photo'}
+                              style={{
+                                width: '100%',
+                                height: '100%',
+                                objectFit: 'cover',
+                                display: 'block',
+                              }}
+                            />
+                          ) : (
                             <span
                               style={{
                                 fontFamily: 'Nunito, sans-serif',
                                 fontSize: 13,
-                                fontWeight: 600,
+                                fontWeight: 700,
                                 color: '#6A6A6A',
+                                padding: 12,
+                                textAlign: 'center',
                               }}
                             >
-                              PDF not available
+                              {t('noImage') || 'No image'}
                             </span>
-                          );
-                        }
+                          )}
+                        </div>
 
-                        return (
-                          <>
-                            <a
-                              href={pdfUrl}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="btn"
+                        {/* Right side: title, description, PDF controls */}
+                        <div
+                          style={{
+                            flex: 1,
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: 10,
+                          }}
+                        >
+                          <h3
+                            style={{
+                              fontFamily: 'Nunito, sans-serif',
+                              fontWeight: 700,
+                              fontSize: 20,
+                              lineHeight: '26px',
+                              color: '#061F42',
+                              margin: 0,
+                            }}
+                          >
+                            {displayName}
+                          </h3>
+
+                          {displayDescription ? (
+                            <p
                               style={{
-                                textDecoration: 'none',
-                                background: '#00ABDA',
-                                color: '#fff',
-                                padding: '10px 14px',
-                                borderRadius: 12,
-                                fontSize: 13,
-                                fontWeight: 700,
-                                display: 'inline-flex',
-                                alignItems: 'center',
+                                fontFamily: 'Nunito, sans-serif',
+                                fontSize: 14,
+                                lineHeight: '22px',
+                                color: '#6A6A6A',
+                                margin: 0,
                               }}
                             >
-                              {t('viewPdf') ?? 'View PDF'}
-                            </a>
-                            <a
-                              href={patientEducationService.getDownloadPdfUrl(education.id)}
-                              className="btn"
-                              style={{
-                                textDecoration: 'none',
-                                background: 'rgba(0, 171, 218, 0.08)',
-                                color: '#00ABDA',
-                                padding: '10px 14px',
-                                borderRadius: 12,
-                                fontSize: 13,
-                                fontWeight: 700,
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                border: '1px solid rgba(0, 171, 218, 0.35)',
-                              }}
-                            >
-                              {t('downloadPdf') ?? 'Download'}
-                            </a>
-                          </>
-                        );
-                      })()}
+                              {displayDescription}
+                            </p>
+                          ) : null}
+
+                          {/* PDF view/download */}
+                          <div
+                            style={{
+                              display: 'flex',
+                              gap: 12,
+                              flexWrap: 'nowrap',
+                              marginTop: 'auto',
+                            }}
+                          >
+                            {viewUrl ? (
+                              <>
+                                <a
+                                  href={viewUrl}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="btn"
+                                  style={{
+                                    textDecoration: 'none',
+                                    background: '#00ABDA',
+                                    color: '#fff',
+                                    padding: '10px 14px',
+                                    borderRadius: 12,
+                                    fontSize: 13,
+                                    fontWeight: 700,
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                  }}
+                                >
+                                  {t('viewPdf') ?? 'View PDF'}
+                                </a>
+                                <a
+                                  href={downloadUrlPath}
+                                  className="btn"
+                                  style={{
+                                    textDecoration: 'none',
+                                    background: 'rgba(0, 171, 218, 0.08)',
+                                    color: '#00ABDA',
+                                    padding: '10px 14px',
+                                    borderRadius: 12,
+                                    fontSize: 13,
+                                    fontWeight: 700,
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    border: '1px solid rgba(0, 171, 218, 0.35)',
+                                  }}
+                                >
+                                  {t('downloadPdf') ?? 'Download'}
+                                </a>
+                              </>
+                            ) : (
+                              <span
+                                style={{
+                                  fontFamily: 'Nunito, sans-serif',
+                                  fontSize: 13,
+                                  fontWeight: 600,
+                                  color: '#6A6A6A',
+                                }}
+                              >
+                                {t('pdfNotAvailable') || 'PDF not available'}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
             </div>
           )}
         </div>

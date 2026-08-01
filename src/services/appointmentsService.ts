@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
+import apiClient from './apiClient';
 
 export interface CreateAppointmentData {
   doctor_id: number;
@@ -84,63 +84,6 @@ export interface InitialDataResponse {
   data: InitialBookingData;
 }
 
-/**
- * Get initial data for appointment booking (branches, departments, doctors)
- */
-export const getInitialData = async (): Promise<InitialDataResponse> => {
-  const token = localStorage.getItem('auth_token');
-
-  if (!token) {
-    throw new Error('Authentication required');
-  }
-
-  const response = await fetch(`${API_BASE_URL}/appointments/initial-data`, {
-    method: 'GET',
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-  });
-
-  const result = await response.json();
-
-  if (!response.ok) {
-    throw new Error(result.message || 'Failed to fetch initial data');
-  }
-
-  return result;
-};
-
-/**
- * Create a new appointment
- */
-export const createAppointment = async (
-  data: CreateAppointmentData
-): Promise<CreateAppointmentResponse> => {
-  const token = localStorage.getItem('auth_token');
-
-  if (!token) {
-    throw new Error('Authentication required');
-  }
-
-  const response = await fetch(`${API_BASE_URL}/appointments`, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(data),
-  });
-
-  const result = await response.json();
-
-  if (!response.ok) {
-    throw new Error(result.message || 'Failed to create appointment');
-  }
-
-  return result;
-};
-
 export interface HyperpayCheckoutResponse {
   success: boolean;
   message: string;
@@ -150,35 +93,6 @@ export interface HyperpayCheckoutResponse {
     brands: string;
   };
 }
-
-export const prepareHyperpayCheckout = async (appointmentId: number): Promise<HyperpayCheckoutResponse> => {
-  const token = localStorage.getItem('auth_token');
-
-  if (!token) {
-    throw new Error('Authentication required');
-  }
-
-  const response = await fetch(`${API_BASE_URL}/payments/hyperpay/checkout`, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ appointment_id: appointmentId }),
-  });
-
-  const result = await response.json();
-
-  if (!response.ok) {
-    throw new Error(result.message || 'Failed to prepare payment');
-  }
-
-  if (!result.success) {
-    throw new Error(result.message || 'Failed to prepare payment');
-  }
-
-  return result;
-};
 
 export interface HyperpayStatusResponse {
   success: boolean;
@@ -191,44 +105,50 @@ export interface HyperpayStatusResponse {
   };
 }
 
+/**
+ * Get initial data for appointment booking (branches, departments, doctors)
+ */
+export const getInitialData = async (): Promise<InitialDataResponse> => {
+  return apiClient.get<InitialDataResponse>('/appointments/initial-data');
+};
+
+/**
+ * Create a new appointment
+ */
+export const createAppointment = async (
+  data: CreateAppointmentData
+): Promise<CreateAppointmentResponse> => {
+  return apiClient.post<CreateAppointmentResponse>('/appointments', data);
+};
+
+/**
+ * Prepare Hyperpay checkout for an appointment
+ */
+export const prepareHyperpayCheckout = async (
+  appointmentId: number
+): Promise<HyperpayCheckoutResponse> => {
+  return apiClient.post<HyperpayCheckoutResponse>(`/appointments/${appointmentId}/hyperpay/checkout`);
+};
+
+/**
+ * Get Hyperpay payment status
+ */
 export const getHyperpayStatus = async (
   appointmentId: number,
   resourcePath: string
 ): Promise<HyperpayStatusResponse> => {
-  const token = localStorage.getItem('auth_token');
-
-  if (!token) {
-    throw new Error('Authentication required');
-  }
-
-  const url = new URL(`${API_BASE_URL}/payments/hyperpay/status`);
-  url.searchParams.append('appointment_id', String(appointmentId));
-  url.searchParams.append('resourcePath', resourcePath);
-
-  const response = await fetch(url.toString(), {
-    method: 'GET',
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
+  return apiClient.post<HyperpayStatusResponse>(`/appointments/${appointmentId}/hyperpay/status`, {
+    resourcePath,
   });
-
-  const result = await response.json();
-
-  if (!response.ok) {
-    throw new Error(result.message || 'Failed to fetch payment status');
-  }
-
-  if (!result.success) {
-    throw new Error(result.message || 'Failed to fetch payment status');
-  }
-
-  return result;
 };
 
+/**
+ * Appointments service object for use with named import { appointmentsService }
+ */
 export const appointmentsService = {
   getInitialData,
   createAppointment,
   prepareHyperpayCheckout,
   getHyperpayStatus,
 };
+

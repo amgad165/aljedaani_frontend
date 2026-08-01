@@ -1,4 +1,4 @@
-const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
+import apiClient from './apiClient';
 
 export interface NotificationItem {
   id: number;
@@ -28,74 +28,28 @@ export interface NotificationListResponse {
   total: number;
 }
 
-function authHeaders(): HeadersInit {
-  const token = localStorage.getItem('auth_token');
-
-  if (!token) {
-    throw new Error('Auth token not found');
-  }
-
-  return {
-    Accept: 'application/json',
-    'Content-Type': 'application/json',
-    Authorization: `Bearer ${token}`,
-  };
-}
-
 export const notificationsService = {
   async list(unreadOnly = false, page = 1, perPage = 20): Promise<NotificationListResponse> {
-    const params = new URLSearchParams({
-      page: String(page),
-      per_page: String(perPage),
-    });
-
+    const params: Record<string, string | number | boolean | undefined | null> = {
+      page,
+      per_page: perPage,
+    };
     if (unreadOnly) {
-      params.set('unread_only', '1');
+      params.unread_only = '1';
     }
-
-    const response = await fetch(`${API_URL}/notifications?${params.toString()}`, {
-      headers: authHeaders(),
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to fetch notifications');
-    }
-
-    return response.json();
+    return apiClient.get<NotificationListResponse>('/notifications', params);
   },
 
   async unreadCount(): Promise<number> {
-    const response = await fetch(`${API_URL}/notifications/unread-count`, {
-      headers: authHeaders(),
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to fetch unread notification count');
-    }
-
-    const result = await response.json() as { unread_count: number };
+    const result = await apiClient.get<{ unread_count: number }>('/notifications/unread-count');
     return result.unread_count;
   },
 
   async markAsRead(recipientId: number): Promise<void> {
-    const response = await fetch(`${API_URL}/notifications/${recipientId}/read`, {
-      method: 'POST',
-      headers: authHeaders(),
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to mark notification as read');
-    }
+    await apiClient.post(`/notifications/${recipientId}/read`);
   },
 
   async markAllAsRead(): Promise<void> {
-    const response = await fetch(`${API_URL}/notifications/read-all`, {
-      method: 'POST',
-      headers: authHeaders(),
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to mark all notifications as read');
-    }
+    await apiClient.post('/notifications/read-all');
   },
 };

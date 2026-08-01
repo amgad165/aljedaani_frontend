@@ -1,7 +1,6 @@
 import { initializeApp, getApps } from 'firebase/app';
 import { getMessaging, getToken, isSupported, onMessage } from 'firebase/messaging';
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api';
+import apiClient from './apiClient';
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -48,19 +47,11 @@ async function registerServiceWorker(): Promise<ServiceWorkerRegistration> {
   return navigator.serviceWorker.register(swUrl.toString());
 }
 
-async function saveTokenOnBackend(authToken: string, fcmToken: string): Promise<void> {
-  await fetch(`${API_BASE_URL}/notifications/push-token`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-      Authorization: `Bearer ${authToken}`,
-    },
-    body: JSON.stringify({
-      token: fcmToken,
-      platform: 'web',
-      device_id: navigator.userAgent,
-    }),
+async function saveTokenOnBackend(fcmToken: string): Promise<void> {
+  await apiClient.post<{ success: boolean }>('/notifications/push-token', {
+    token: fcmToken,
+    platform: 'web',
+    device_id: navigator.userAgent,
   });
 }
 
@@ -74,23 +65,9 @@ export async function unregisterPushToken(authToken?: string): Promise<void> {
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/notifications/push-token/unregister`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ token: fcmToken }),
+    await apiClient.post<{ success: boolean }>('/notifications/push-token/unregister', {
+      token: fcmToken,
     });
-
-    const contentType = response.headers.get('content-type') || '';
-    if (!contentType.includes('application/json')) {
-      console.warn('Unexpected unregister response type:', {
-        status: response.status,
-        contentType,
-      });
-    }
   } catch (error) {
     console.warn('Failed to unregister push token:', error);
   } finally {
@@ -137,7 +114,7 @@ export async function initializePushNotifications(authToken?: string): Promise<v
 
   const cachedToken = localStorage.getItem(FCM_TOKEN_STORAGE_KEY);
   if (cachedToken !== currentToken) {
-    await saveTokenOnBackend(token, currentToken);
+    await saveTokenOnBackend(currentToken);
     localStorage.setItem(FCM_TOKEN_STORAGE_KEY, currentToken);
   }
 

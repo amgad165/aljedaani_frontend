@@ -1,13 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api';
-
-// Helper to get auth headers
-const getAuthHeaders = () => {
-  const token = localStorage.getItem('auth_token');
-  return {
-    'Content-Type': 'application/json',
-    'Authorization': token ? `Bearer ${token}` : '',
-  };
-};
+import apiClient from './apiClient';
 
 // Types
 export interface VitalReading {
@@ -171,59 +162,26 @@ export const labReportsService = {
     user_id?: number;
     status?: string;
   }): Promise<PaginatedResponse<LabReport>> => {
-    const queryParams = new URLSearchParams();
-    if (params?.page) queryParams.append('page', params.page.toString());
-    if (params?.per_page) queryParams.append('per_page', params.per_page.toString());
-    if (params?.search) queryParams.append('search', params.search);
-    if (params?.user_id) queryParams.append('user_id', params.user_id.toString());
-    if (params?.status) queryParams.append('status', params.status);
-
-    const response = await fetch(`${API_BASE_URL}/admin/lab-reports?${queryParams}`, {
-      headers: getAuthHeaders(),
-    });
-    return response.json();
+    return apiClient.get<PaginatedResponse<LabReport>>('/admin/lab-reports', params as Record<string, string | number | boolean | undefined | null>);
   },
 
   // Create lab report
   create: async (data: FormData): Promise<{ success: boolean; data: LabReport }> => {
-    const token = localStorage.getItem('auth_token');
-    const response = await fetch(`${API_BASE_URL}/admin/lab-reports`, {
-      method: 'POST',
-      headers: {
-        'Authorization': token ? `Bearer ${token}` : '',
-      },
-      body: data,
+    return apiClient.post<{ success: boolean; data: LabReport }>('/admin/lab-reports', data, {
+      'Content-Type': 'multipart/form-data',
     });
-    
-    const result = await response.json();
-    
-    if (!response.ok) {
-      throw new Error(result.message || `Failed to create lab report: ${response.status}`);
-    }
-    
-    return result;
   },
 
   // Update lab report
   update: async (id: number, data: FormData): Promise<{ success: boolean; data: LabReport }> => {
-    const token = localStorage.getItem('auth_token');
-    const response = await fetch(`${API_BASE_URL}/admin/lab-reports/${id}`, {
-      method: 'POST',
-      headers: {
-        'Authorization': token ? `Bearer ${token}` : '',
-      },
-      body: data,
+    return apiClient.post<{ success: boolean; data: LabReport }>(`/admin/lab-reports/${id}`, data, {
+      'Content-Type': 'multipart/form-data',
     });
-    return response.json();
   },
 
   // Delete lab report
   delete: async (id: number): Promise<{ success: boolean; message: string }> => {
-    const response = await fetch(`${API_BASE_URL}/admin/lab-reports/${id}`, {
-      method: 'DELETE',
-      headers: getAuthHeaders(),
-    });
-    return response.json();
+    return apiClient.delete<{ success: boolean; message: string }>(`/admin/lab-reports/${id}`);
   },
 
   // Get patient's own lab reports
@@ -232,32 +190,18 @@ export const labReportsService = {
     per_page?: number;
     status?: string;
   }): Promise<PaginatedResponse<LabReport>> => {
-    const queryParams = new URLSearchParams();
-    if (params?.page) queryParams.append('page', params.page.toString());
-    if (params?.per_page) queryParams.append('per_page', params.per_page.toString());
-    if (params?.status) queryParams.append('status', params.status);
-
-    const response = await fetch(`${API_BASE_URL}/patient/lab-reports?${queryParams}`, {
-      headers: getAuthHeaders(),
-    });
-    return response.json();
+    return apiClient.get<PaginatedResponse<LabReport>>('/patient/lab-reports', params as Record<string, string | number | boolean | undefined | null>);
   },
 
   // Get single lab report
   getById: async (id: number): Promise<{ success: boolean; data: LabReport }> => {
-    const response = await fetch(`${API_BASE_URL}/patient/lab-reports/${id}`, {
-      headers: getAuthHeaders(),
-    });
-    return response.json();
+    return apiClient.get<{ success: boolean; data: LabReport }>(`/patient/lab-reports/${id}`);
   },
 
   // Get lab reports statistics
   getStatistics: async (): Promise<LabReportStatistics> => {
-    const response = await fetch(`${API_BASE_URL}/patient/lab-reports-stats`, {
-      headers: getAuthHeaders(),
-    });
-    const data = await response.json();
-    return data.data;
+    const result = await apiClient.get<{ data: LabReportStatistics }>('/patient/lab-reports-stats');
+    return result.data;
   },
 };
 
@@ -272,60 +216,26 @@ export const radiologyReportsService = {
     status?: string;
     modality?: string;
   }): Promise<PaginatedResponse<RadiologyReport>> => {
-    const queryParams = new URLSearchParams();
-    if (params?.page) queryParams.append('page', params.page.toString());
-    if (params?.per_page) queryParams.append('per_page', params.per_page.toString());
-    if (params?.search) queryParams.append('search', params.search);
-    if (params?.user_id) queryParams.append('user_id', params.user_id.toString());
-    if (params?.status) queryParams.append('status', params.status);
-    if (params?.modality) queryParams.append('modality', params.modality);
-
-    const response = await fetch(`${API_BASE_URL}/admin/radiology-reports?${queryParams}`, {
-      headers: getAuthHeaders(),
-    });
-    return response.json();
+    return apiClient.get<PaginatedResponse<RadiologyReport>>('/admin/radiology-reports', params as Record<string, string | number | boolean | undefined | null>);
   },
 
   // Create radiology report
   create: async (data: FormData): Promise<{ success: boolean; data: RadiologyReport }> => {
-    const token = localStorage.getItem('auth_token');
-    const response = await fetch(`${API_BASE_URL}/admin/radiology-reports`, {
-      method: 'POST',
-      headers: {
-        'Authorization': token ? `Bearer ${token}` : '',
-      },
-      body: data,
+    return apiClient.post<{ success: boolean; data: RadiologyReport }>('/admin/radiology-reports', data, {
+      'Content-Type': 'multipart/form-data',
     });
-    
-    const result = await response.json();
-    
-    if (!response.ok) {
-      throw new Error(result.message || `Failed to create radiology report: ${response.status}`);
-    }
-    
-    return result;
   },
 
   // Update radiology report
   update: async (id: number, data: FormData): Promise<{ success: boolean; data: RadiologyReport }> => {
-    const token = localStorage.getItem('auth_token');
-    const response = await fetch(`${API_BASE_URL}/admin/radiology-reports/${id}`, {
-      method: 'POST',
-      headers: {
-        'Authorization': token ? `Bearer ${token}` : '',
-      },
-      body: data,
+    return apiClient.post<{ success: boolean; data: RadiologyReport }>(`/admin/radiology-reports/${id}`, data, {
+      'Content-Type': 'multipart/form-data',
     });
-    return response.json();
   },
 
   // Delete radiology report
   delete: async (id: number): Promise<{ success: boolean; message: string }> => {
-    const response = await fetch(`${API_BASE_URL}/admin/radiology-reports/${id}`, {
-      method: 'DELETE',
-      headers: getAuthHeaders(),
-    });
-    return response.json();
+    return apiClient.delete<{ success: boolean; message: string }>(`/admin/radiology-reports/${id}`);
   },
 
   // Get patient's own radiology reports
@@ -335,33 +245,18 @@ export const radiologyReportsService = {
     status?: string;
     modality?: string;
   }): Promise<PaginatedResponse<RadiologyReport>> => {
-    const queryParams = new URLSearchParams();
-    if (params?.page) queryParams.append('page', params.page.toString());
-    if (params?.per_page) queryParams.append('per_page', params.per_page.toString());
-    if (params?.status) queryParams.append('status', params.status);
-    if (params?.modality) queryParams.append('modality', params.modality);
-
-    const response = await fetch(`${API_BASE_URL}/patient/radiology-reports?${queryParams}`, {
-      headers: getAuthHeaders(),
-    });
-    return response.json();
+    return apiClient.get<PaginatedResponse<RadiologyReport>>('/patient/radiology-reports', params as Record<string, string | number | boolean | undefined | null>);
   },
 
   // Get single radiology report
   getById: async (id: number): Promise<{ success: boolean; data: RadiologyReport }> => {
-    const response = await fetch(`${API_BASE_URL}/patient/radiology-reports/${id}`, {
-      headers: getAuthHeaders(),
-    });
-    return response.json();
+    return apiClient.get<{ success: boolean; data: RadiologyReport }>(`/patient/radiology-reports/${id}`);
   },
 
   // Get radiology reports statistics
   getStatistics: async (): Promise<RadiologyReportStatistics> => {
-    const response = await fetch(`${API_BASE_URL}/patient/radiology-reports-stats`, {
-      headers: getAuthHeaders(),
-    });
-    const data = await response.json();
-    return data.data;
+    const result = await apiClient.get<{ data: RadiologyReportStatistics }>('/patient/radiology-reports-stats');
+    return result.data;
   },
 };
 
@@ -375,59 +270,26 @@ export const medicalReportsService = {
     user_id?: number;
     report_type?: string;
   }): Promise<PaginatedResponse<MedicalReport>> => {
-    const queryParams = new URLSearchParams();
-    if (params?.page) queryParams.append('page', params.page.toString());
-    if (params?.per_page) queryParams.append('per_page', params.per_page.toString());
-    if (params?.search) queryParams.append('search', params.search);
-    if (params?.user_id) queryParams.append('user_id', params.user_id.toString());
-    if (params?.report_type) queryParams.append('report_type', params.report_type);
-
-    const response = await fetch(`${API_BASE_URL}/admin/medical-reports?${queryParams}`, {
-      headers: getAuthHeaders(),
-    });
-    return response.json();
+    return apiClient.get<PaginatedResponse<MedicalReport>>('/admin/medical-reports', params as Record<string, string | number | boolean | undefined | null>);
   },
 
   // Create medical report
   create: async (data: FormData): Promise<{ success: boolean; data: MedicalReport }> => {
-    const token = localStorage.getItem('auth_token');
-    const response = await fetch(`${API_BASE_URL}/admin/medical-reports`, {
-      method: 'POST',
-      headers: {
-        'Authorization': token ? `Bearer ${token}` : '',
-      },
-      body: data,
+    return apiClient.post<{ success: boolean; data: MedicalReport }>('/admin/medical-reports', data, {
+      'Content-Type': 'multipart/form-data',
     });
-    
-    const result = await response.json();
-    
-    if (!response.ok) {
-      throw new Error(result.message || `Failed to create medical report: ${response.status}`);
-    }
-    
-    return result;
   },
 
   // Update medical report
   update: async (id: number, data: FormData): Promise<{ success: boolean; data: MedicalReport }> => {
-    const token = localStorage.getItem('auth_token');
-    const response = await fetch(`${API_BASE_URL}/admin/medical-reports/${id}`, {
-      method: 'POST',
-      headers: {
-        'Authorization': token ? `Bearer ${token}` : '',
-      },
-      body: data,
+    return apiClient.post<{ success: boolean; data: MedicalReport }>(`/admin/medical-reports/${id}`, data, {
+      'Content-Type': 'multipart/form-data',
     });
-    return response.json();
   },
 
   // Delete medical report
   delete: async (id: number): Promise<{ success: boolean; message: string }> => {
-    const response = await fetch(`${API_BASE_URL}/admin/medical-reports/${id}`, {
-      method: 'DELETE',
-      headers: getAuthHeaders(),
-    });
-    return response.json();
+    return apiClient.delete<{ success: boolean; message: string }>(`/admin/medical-reports/${id}`);
   },
 
   // Get patient's own medical reports
@@ -436,32 +298,18 @@ export const medicalReportsService = {
     per_page?: number;
     report_type?: string;
   }): Promise<PaginatedResponse<MedicalReport>> => {
-    const queryParams = new URLSearchParams();
-    if (params?.page) queryParams.append('page', params.page.toString());
-    if (params?.per_page) queryParams.append('per_page', params.per_page.toString());
-    if (params?.report_type) queryParams.append('report_type', params.report_type);
-
-    const response = await fetch(`${API_BASE_URL}/patient/medical-reports?${queryParams}`, {
-      headers: getAuthHeaders(),
-    });
-    return response.json();
+    return apiClient.get<PaginatedResponse<MedicalReport>>('/patient/medical-reports', params as Record<string, string | number | boolean | undefined | null>);
   },
 
   // Get single medical report
   getById: async (id: number): Promise<{ success: boolean; data: MedicalReport }> => {
-    const response = await fetch(`${API_BASE_URL}/patient/medical-reports/${id}`, {
-      headers: getAuthHeaders(),
-    });
-    return response.json();
+    return apiClient.get<{ success: boolean; data: MedicalReport }>(`/patient/medical-reports/${id}`);
   },
 
   // Get medical reports statistics
   getStatistics: async (): Promise<MedicalReportStatistics> => {
-    const response = await fetch(`${API_BASE_URL}/patient/medical-reports-stats`, {
-      headers: getAuthHeaders(),
-    });
-    const data = await response.json();
-    return data.data;
+    const result = await apiClient.get<{ data: MedicalReportStatistics }>('/patient/medical-reports-stats');
+    return result.data;
   },
 };
 
@@ -481,10 +329,7 @@ export const patientService = {
       };
     };
   }> => {
-    const response = await fetch(`${API_BASE_URL}/patient/vitals/latest`, {
-      headers: getAuthHeaders(),
-    });
-    return response.json();
+    return apiClient.get('/patient/vitals/latest');
   },
 
   // Get latest consultation with chief complaint
@@ -499,10 +344,7 @@ export const patientService = {
       chief_complaint: string;
     };
   }> => {
-    const response = await fetch(`${API_BASE_URL}/patient/consultation/latest`, {
-      headers: getAuthHeaders(),
-    });
-    return response.json();
+    return apiClient.get('/patient/consultation/latest');
   },
 
   // Get consultation history
@@ -527,10 +369,7 @@ export const patientService = {
       revisit_after_unit: string | null;
     }>;
   }> => {
-    const response = await fetch(`${API_BASE_URL}/patient/consultation/history`, {
-      headers: getAuthHeaders(),
-    });
-    return response.json();
+    return apiClient.get('/patient/consultation/history');
   },
 };
 
@@ -544,24 +383,11 @@ export const usersService = {
     role?: string;
     gender?: string;
   }): Promise<PaginatedResponse<User>> => {
-    const queryParams = new URLSearchParams();
-    if (params?.page) queryParams.append('page', params.page.toString());
-    if (params?.per_page) queryParams.append('per_page', params.per_page.toString());
-    if (params?.search) queryParams.append('search', params.search);
-    if (params?.role) queryParams.append('role', params.role);
-    if (params?.gender) queryParams.append('gender', params.gender);
-
-    const response = await fetch(`${API_BASE_URL}/admin/users?${queryParams}`, {
-      headers: getAuthHeaders(),
-    });
-    return response.json();
+    return apiClient.get<PaginatedResponse<User>>('/admin/users', params as Record<string, string | number | boolean | undefined | null>);
   },
 
   // Get single user by ID
   getById: async (id: number): Promise<{ success: boolean; data: User }> => {
-    const response = await fetch(`${API_BASE_URL}/admin/users/${id}`, {
-      headers: getAuthHeaders(),
-    });
-    return response.json();
+    return apiClient.get<{ success: boolean; data: User }>(`/admin/users/${id}`);
   },
 };

@@ -1,21 +1,4 @@
-const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
-
-const getAuthHeaders = (isFormData = false) => {
-  const token = localStorage.getItem('auth_token');
-  const headers: Record<string, string> = {
-    Accept: 'application/json',
-  };
-
-  if (token) {
-    headers.Authorization = `Bearer ${token}`;
-  }
-
-  if (!isFormData) {
-    headers['Content-Type'] = 'application/json';
-  }
-
-  return headers;
-};
+import apiClient from './apiClient';
 
 export interface HeroSlider {
   id: number;
@@ -42,16 +25,18 @@ interface HeroSliderInput {
   is_active?: boolean;
 }
 
+interface ApiResponse<T> {
+  success: boolean;
+  data: T;
+  message: string;
+}
+
 export const heroSlidersService = {
   async getAll(activeOnly = false): Promise<HeroSlider[]> {
-    const endpoint = activeOnly ? `${API_URL}/hero-sliders?active=true` : `${API_URL}/hero-sliders`;
-    const response = await fetch(endpoint);
-
-    if (!response.ok) {
-      throw new Error('Failed to fetch hero sliders');
-    }
-
-    const result = await response.json();
+    const params: Record<string, string | number | boolean | undefined | null> = {};
+    if (activeOnly) params.active = 'true';
+    
+    const result = await apiClient.get<ApiResponse<HeroSlider[]>>('/hero-sliders', params);
     return result.data || [];
   },
 
@@ -67,18 +52,7 @@ export const heroSlidersService = {
     if (input.sort_order !== undefined) formData.append('sort_order', input.sort_order.toString());
     if (input.is_active !== undefined) formData.append('is_active', input.is_active ? '1' : '0');
 
-    const response = await fetch(`${API_URL}/hero-sliders`, {
-      method: 'POST',
-      headers: getAuthHeaders(true),
-      body: formData,
-    });
-
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({}));
-      throw new Error(error.message || 'Failed to create hero slider');
-    }
-
-    const result = await response.json();
+    const result = await apiClient.upload<ApiResponse<HeroSlider>>('/hero-sliders', formData, 'POST');
     return result.data;
   },
 
@@ -95,30 +69,11 @@ export const heroSlidersService = {
     if (input.sort_order !== undefined) formData.append('sort_order', input.sort_order.toString());
     if (input.is_active !== undefined) formData.append('is_active', input.is_active ? '1' : '0');
 
-    const response = await fetch(`${API_URL}/hero-sliders/${id}`, {
-      method: 'POST',
-      headers: getAuthHeaders(true),
-      body: formData,
-    });
-
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({}));
-      throw new Error(error.message || 'Failed to update hero slider');
-    }
-
-    const result = await response.json();
+    const result = await apiClient.upload<ApiResponse<HeroSlider>>(`/hero-sliders/${id}`, formData, 'POST');
     return result.data;
   },
 
   async delete(id: number): Promise<void> {
-    const response = await fetch(`${API_URL}/hero-sliders/${id}`, {
-      method: 'DELETE',
-      headers: getAuthHeaders(),
-    });
-
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({}));
-      throw new Error(error.message || 'Failed to delete hero slider');
-    }
+    await apiClient.delete<ApiResponse<null>>(`/hero-sliders/${id}`);
   },
 };

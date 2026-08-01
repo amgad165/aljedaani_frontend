@@ -293,7 +293,7 @@ const AdminCareers: React.FC = () => {
     setQuestionError(null);
     setQuestionLoading(true);
     try {
-      const data = await careersService.getQuestions(career.id, token);
+      const data = await careersService.getQuestions(career.id);
       setQuestions(data);
     } catch {
       setError('Failed to load questions');
@@ -377,7 +377,7 @@ const AdminCareers: React.FC = () => {
         return;
       }
 
-      const refreshed = await careersService.getQuestions(selectedCareer.id, token);
+      const refreshed = await careersService.getQuestions(selectedCareer.id);
       setQuestions(refreshed);
       setQuestionForm(EMPTY_QUESTION);
       setEditingQuestionId(null);
@@ -403,7 +403,7 @@ const AdminCareers: React.FC = () => {
       });
       const data = await res.json();
       if (data.success) {
-        const refreshed = await careersService.getQuestions(selectedCareer.id, token);
+        const refreshed = await careersService.getQuestions(selectedCareer.id);
         setQuestions(refreshed);
         fetchCareers();
       } else {
@@ -421,8 +421,8 @@ const AdminCareers: React.FC = () => {
     setError(null);
     try {
       const [data, questionsData] = await Promise.all([
-        careersService.getApplications(career.id, token),
-        careersService.getQuestions(career.id, token),
+        careersService.getApplications(career.id),
+        careersService.getQuestions(career.id),
       ]);
       setApplications(data);
       setApplicationQuestions(questionsData);
@@ -453,7 +453,6 @@ const AdminCareers: React.FC = () => {
           status: draft.status,
           admin_notes: draft.admin_notes.trim() || null,
         },
-        token,
       );
 
       setApplications((prev) => prev.map((app) => (app.id === updated.id ? updated : app)));

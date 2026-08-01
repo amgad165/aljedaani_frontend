@@ -1,13 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api';
-
-// Helper to get auth headers
-const getAuthHeaders = () => {
-  const token = localStorage.getItem('auth_token');
-  return {
-    'Content-Type': 'application/json',
-    'Authorization': token ? `Bearer ${token}` : '',
-  };
-};
+import apiClient from './apiClient';
 
 export interface HisLabPendingReport {
   id: number;
@@ -47,40 +38,22 @@ export const getUserHisLabPendingReports = async (
     status?: string;
   }
 ): Promise<HisLabPendingReportsResponse> => {
-  const params = new URLSearchParams({
-    page: page.toString(),
-    per_page: perPage.toString(),
-  });
+  const params: Record<string, string | number | boolean | undefined | null> = {
+    page,
+    per_page: perPage,
+  };
 
-  if (filters?.search) params.append('search', filters.search);
-  if (filters?.from_date) params.append('from_date', filters.from_date);
-  if (filters?.to_date) params.append('to_date', filters.to_date);
-  if (filters?.status) params.append('status', filters.status);
+  if (filters?.search) params.search = filters.search;
+  if (filters?.from_date) params.from_date = filters.from_date;
+  if (filters?.to_date) params.to_date = filters.to_date;
+  if (filters?.status) params.status = filters.status;
 
-  const response = await fetch(
-    `${API_BASE_URL}/patient/his-lab-pending?${params.toString()}`,
-    { headers: getAuthHeaders() }
-  );
-  
-  if (!response.ok) {
-    throw new Error('Failed to fetch HIS lab pending reports');
-  }
-  
-  return await response.json();
+  return apiClient.get<HisLabPendingReportsResponse>('/patient/his-lab-pending', params);
 };
 
 // View HIS lab pending report PDF
 export const viewHisLabPendingReportPdf = async (id: number): Promise<void> => {
-  const response = await fetch(
-    `${API_BASE_URL}/patient/his-lab-pending/${id}/view`,
-    { headers: getAuthHeaders() }
-  );
-  
-  if (!response.ok) {
-    throw new Error('Failed to view lab pending report PDF');
-  }
-  
-  const blob = await response.blob();
+  const blob = await apiClient.getBlob(`/patient/his-lab-pending/${id}/view`);
   const url = window.URL.createObjectURL(blob);
   window.open(url, '_blank');
   setTimeout(() => window.URL.revokeObjectURL(url), 100);
@@ -88,16 +61,7 @@ export const viewHisLabPendingReportPdf = async (id: number): Promise<void> => {
 
 // Download HIS lab pending report PDF
 export const downloadHisLabPendingReportPdf = async (id: number): Promise<void> => {
-  const response = await fetch(
-    `${API_BASE_URL}/patient/his-lab-pending/${id}/download`,
-    { headers: getAuthHeaders() }
-  );
-  
-  if (!response.ok) {
-    throw new Error('Failed to download lab pending report PDF');
-  }
-  
-  const blob = await response.blob();
+  const blob = await apiClient.getBlob(`/patient/his-lab-pending/${id}/download`);
   const url = window.URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;

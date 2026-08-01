@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
+import apiClient from './apiClient';
 
 export type QuestionType = 'text' | 'textarea' | 'email' | 'phone' | 'number' | 'select' | 'radio' | 'checkbox' | 'date';
 
@@ -37,7 +37,7 @@ export interface PatientExperienceSubmission {
   full_name: string;
   email?: string;
   phone?: string;
-  answers: Record<string, any>;
+  answers: Record<string, unknown>;
   status: string;
   reviewed_at?: string;
   admin_notes?: string;
@@ -45,23 +45,25 @@ export interface PatientExperienceSubmission {
   updated_at: string;
 }
 
+interface ApiResponse<T> {
+  success: boolean;
+  data: T;
+  message: string;
+}
+
 class PatientExperienceService {
   // Public endpoints
   async getExperiences(filters?: { active?: boolean }) {
-    const params = new URLSearchParams();
-    if (filters?.active !== undefined) {
-      params.append('active', String(filters.active));
-    }
+    const params: Record<string, string | number | boolean | undefined | null> = {};
+    if (filters?.active !== undefined) params.active = String(filters.active);
 
-    const res = await fetch(`${API_BASE_URL}/patient-experiences?${params}`);
-    const data = await res.json();
-    return data.success ? data.data : [];
+    const result = await apiClient.get<ApiResponse<PatientExperience[]>>('/patient-experiences', params);
+    return result.success ? result.data : [];
   }
 
   async getExperience(id: number) {
-    const res = await fetch(`${API_BASE_URL}/patient-experiences/${id}`);
-    const data = await res.json();
-    return data.success ? data.data : null;
+    const result = await apiClient.get<ApiResponse<PatientExperience>>(`/patient-experiences/${id}`);
+    return result.success ? result.data : null;
   }
 
   async submitExperience(
@@ -70,18 +72,10 @@ class PatientExperienceService {
       full_name: string;
       email?: string;
       phone?: string;
-      answers: Record<string, any>;
+      answers: Record<string, unknown>;
     }
   ) {
-    const res = await fetch(`${API_BASE_URL}/patient-experiences/${id}/submit`, {
-      method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload),
-    });
-    const data = await res.json();
+    const data = await apiClient.post<ApiResponse<unknown>>(`/patient-experiences/${id}/submit`, payload);
     if (!data.success) throw new Error(data.message || 'Failed to submit experience');
     return data;
   }
@@ -94,17 +88,7 @@ class PatientExperienceService {
     is_active?: boolean;
     published_at?: string;
   }) {
-    const token = localStorage.getItem('auth_token');
-    const res = await fetch(`${API_BASE_URL}/patient-experiences`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload),
-    });
-    const data = await res.json();
+    const data = await apiClient.post<ApiResponse<PatientExperience>>('/patient-experiences', payload);
     if (!data.success) throw new Error(data.message || 'Failed to create experience');
     return data.data;
   }
@@ -119,45 +103,20 @@ class PatientExperienceService {
       published_at?: string;
     }>
   ) {
-    const token = localStorage.getItem('auth_token');
-    const res = await fetch(`${API_BASE_URL}/patient-experiences/${id}`, {
-      method: 'PUT',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload),
-    });
-    const data = await res.json();
+    const data = await apiClient.put<ApiResponse<PatientExperience>>(`/patient-experiences/${id}`, payload);
     if (!data.success) throw new Error(data.message || 'Failed to update experience');
     return data.data;
   }
 
   async deleteExperience(id: number) {
-    const token = localStorage.getItem('auth_token');
-    const res = await fetch(`${API_BASE_URL}/patient-experiences/${id}`, {
-      method: 'DELETE',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: 'application/json',
-      },
-    });
-    const data = await res.json();
+    const data = await apiClient.delete<ApiResponse<null>>(`/patient-experiences/${id}`);
     if (!data.success) throw new Error(data.message || 'Failed to delete experience');
     return data;
   }
 
   async getQuestions(experienceId: number) {
-    const token = localStorage.getItem('auth_token');
-    const res = await fetch(`${API_BASE_URL}/patient-experiences/${experienceId}/questions`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: 'application/json',
-      },
-    });
-    const data = await res.json();
-    return data.success ? data.data : [];
+    const result = await apiClient.get<ApiResponse<PatientExperienceQuestion[]>>(`/patient-experiences/${experienceId}/questions`);
+    return result.success ? result.data : [];
   }
 
   async createQuestion(
@@ -166,24 +125,14 @@ class PatientExperienceService {
       question: Record<string, string>;
       field_name?: string;
       question_type: QuestionType;
-      options?: any;
+      options?: unknown;
       placeholder?: Record<string, string>;
       is_required?: boolean;
       sort_order?: number;
       is_active?: boolean;
     }
   ) {
-    const token = localStorage.getItem('auth_token');
-    const res = await fetch(`${API_BASE_URL}/patient-experiences/${experienceId}/questions`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload),
-    });
-    const data = await res.json();
+    const data = await apiClient.post<ApiResponse<PatientExperienceQuestion>>(`/patient-experiences/${experienceId}/questions`, payload);
     if (!data.success) throw new Error(data.message || 'Failed to create question');
     return data.data;
   }
@@ -195,58 +144,30 @@ class PatientExperienceService {
       question: Record<string, string>;
       field_name: string;
       question_type: QuestionType;
-      options?: any;
+      options?: unknown;
       placeholder?: Record<string, string>;
       is_required: boolean;
       sort_order: number;
       is_active: boolean;
     }>
   ) {
-    const token = localStorage.getItem('auth_token');
-    const res = await fetch(
-      `${API_BASE_URL}/patient-experiences/${experienceId}/questions/${questionId}`,
-      {
-        method: 'PUT',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      }
+    const data = await apiClient.put<ApiResponse<PatientExperienceQuestion>>(
+      `/patient-experiences/${experienceId}/questions/${questionId}`,
+      payload
     );
-    const data = await res.json();
     if (!data.success) throw new Error(data.message || 'Failed to update question');
     return data.data;
   }
 
   async deleteQuestion(experienceId: number, questionId: number) {
-    const token = localStorage.getItem('auth_token');
-    const res = await fetch(
-      `${API_BASE_URL}/patient-experiences/${experienceId}/questions/${questionId}`,
-      {
-        method: 'DELETE',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: 'application/json',
-        },
-      }
-    );
-    const data = await res.json();
+    const data = await apiClient.delete<ApiResponse<null>>(`/patient-experiences/${experienceId}/questions/${questionId}`);
     if (!data.success) throw new Error(data.message || 'Failed to delete question');
     return data;
   }
 
   async getSubmissions(experienceId: number) {
-    const token = localStorage.getItem('auth_token');
-    const res = await fetch(`${API_BASE_URL}/patient-experiences/${experienceId}/submissions`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: 'application/json',
-      },
-    });
-    const data = await res.json();
-    return data.success ? data.data : [];
+    const result = await apiClient.get<ApiResponse<PatientExperienceSubmission[]>>(`/patient-experiences/${experienceId}/submissions`);
+    return result.success ? result.data : [];
   }
 
   async updateSubmission(
@@ -257,20 +178,10 @@ class PatientExperienceService {
       admin_notes?: string;
     }
   ) {
-    const token = localStorage.getItem('auth_token');
-    const res = await fetch(
-      `${API_BASE_URL}/patient-experiences/${experienceId}/submissions/${submissionId}`,
-      {
-        method: 'PUT',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      }
+    const data = await apiClient.put<ApiResponse<PatientExperienceSubmission>>(
+      `/patient-experiences/${experienceId}/submissions/${submissionId}`,
+      payload
     );
-    const data = await res.json();
     if (!data.success) throw new Error(data.message || 'Failed to update submission');
     return data.data;
   }

@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
+import apiClient from './apiClient';
 
 export interface HisLabReport {
   id: number;
@@ -91,53 +91,27 @@ export const getHisLabReports = async (
     to_date?: string;
   }
 ): Promise<PaginatedResponse<HisLabReport>> => {
-  const token = localStorage.getItem('auth_token');
+  const params: Record<string, string | number | boolean | undefined | null> = {
+    page,
+    per_page: perPage,
+  };
 
-  const params = new URLSearchParams({
-    page: page.toString(),
-    per_page: perPage.toString(),
-  });
+  if (filters?.search) params.search = filters.search;
+  if (filters?.search_column) params.search_column = filters.search_column;
+  if (filters?.file_number) params.file_number = filters.file_number;
+  if (filters?.category) params.category = filters.category;
+  if (filters?.department) params.department = filters.department;
+  if (filters?.panic_only) params.panic_only = '1';
+  if (filters?.from_date) params.from_date = filters.from_date;
+  if (filters?.to_date) params.to_date = filters.to_date;
 
-  if (filters?.search) params.append('search', filters.search);
-  if (filters?.search_column) params.append('search_column', filters.search_column);
-  if (filters?.file_number) params.append('file_number', filters.file_number);
-  if (filters?.category) params.append('category', filters.category);
-  if (filters?.department) params.append('department', filters.department);
-  if (filters?.panic_only) params.append('panic_only', '1');
-  if (filters?.from_date) params.append('from_date', filters.from_date);
-  if (filters?.to_date) params.append('to_date', filters.to_date);
-
-  const response = await fetch(`${API_BASE_URL}/admin/his-lab?${params}`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error('Failed to fetch HIS lab reports');
-  }
-
-  return response.json();
+  return apiClient.get<PaginatedResponse<HisLabReport>>('/admin/his-lab', params);
 };
 
 /**
  * Get HIS lab sync statistics
  */
 export const getHisLabStats = async (): Promise<HisLabStats> => {
-  const token = localStorage.getItem('auth_token');
-
-  const response = await fetch(`${API_BASE_URL}/his-lab/stats`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error('Failed to fetch HIS lab stats');
-  }
-
-  const result = await response.json();
+  const result = await apiClient.get<{ data: HisLabStats }>('/his-lab/stats');
   return result.data;
 };

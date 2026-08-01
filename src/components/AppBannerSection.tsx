@@ -1,10 +1,10 @@
 import { useScrollAnimation, getAnimationStyle } from '../hooks/useScrollAnimation';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
-
+import {  useNavigate } from 'react-router-dom';
 const AppBannerSection = () => {
   const { ref: sectionRef, isVisible: sectionVisible } = useScrollAnimation();
   const { t } = useTranslation('pages');
+  const navigate = useNavigate();
 
   return (
     <>
@@ -137,7 +137,10 @@ const AppBannerSection = () => {
       `}</style>
       <section ref={sectionRef} className="banner-sec pb-0">
         <div className="container">
-          <Link to="/mobile-app" style={{ textDecoration: 'none', display: 'block' }}>
+          <div
+  onClick={() => navigate('/mobile-app')}
+  style={{ textDecoration: 'none', display: 'block', cursor: 'pointer' }}
+>
             <div
               style={{
                 backgroundImage: "url('/assets/img/banner2.png')",
@@ -210,27 +213,43 @@ const AppBannerSection = () => {
                   zIndex: 10,
                 }}
               >
-                <a
-                  href="https://play.google.com/store/apps/details?id=com.jedaani.jedaanihospitals"
-                  style={{
-                    ...getAnimationStyle(sectionVisible, 0.25),
-                    display: 'inline-block',
-                  }}
-                >
-                  <img src="/assets/img/playstore.webp" width="120" height="40" alt="Playstore" />
-                </a>
-                <a
-                  href="https://apps.apple.com/us/app/jedaani-hospitals/id6778514136"
-                  style={{
-                    ...getAnimationStyle(sectionVisible, 0.35),
-                    display: 'inline-block',
-                  }}
-                >
-                  <img src="/assets/img/applestore.webp" width="120" height="40" alt="Applestore" />
-                </a>
+          <a
+            href="https://play.google.com/store/apps/details?id=com.jedaani.jedaanihospitals"
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              ...getAnimationStyle(sectionVisible, 0.25),
+              display: 'inline-block',
+            }}
+          >
+            <img
+              src="/assets/img/playstore.webp"
+              width="120"
+              height="40"
+              alt="Playstore"
+            />
+          </a>
+          <a
+            href="https://apps.apple.com/us/app/jedaani-hospitals/id6778514136"
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              ...getAnimationStyle(sectionVisible, 0.35),
+              display: 'inline-block',
+            }}
+          >
+            <img
+              src="/assets/img/applestore.webp"
+              width="120"
+              height="40"
+              alt="Applestore"
+            />
+          </a>
               </div>
             </div>
-          </Link>
+          </div>
         </div>
       </section>
     </>
