@@ -4,6 +4,26 @@ import FloatingContactButtons from '../components/FloatingContactButtons';
 import { useResponsiveNavbar } from '../hooks/useResponsiveNavbar';
 import { patientEducationService, type PatientEducation } from '../services/patientEducationService';
 
+/**
+ * Page-scoped critical styles to keep the fixed desktop navbar styled from the very
+ * first paint on this page. The theme's header.css is injected asynchronously, so
+ * without these, a white strip can appear above the navbar on refresh while the
+ * skeleton is active.
+ */
+const patientEducationLayoutStyles = `
+  .patient-education-layout .header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+  }
+
+  .patient-education-layout .header .header-wrapper {
+    background-color: #061F42;
+  }
+`;
+
 export default function PatientEducationPage() {
   const ResponsiveNavbar = useResponsiveNavbar();
   const { t, i18n } = useTranslation('pages');
@@ -35,12 +55,15 @@ export default function PatientEducationPage() {
   if (loading) {
     return (
       <div
+        className="patient-education-layout"
         style={{
           minHeight: '100vh',
           background: '#C9F3FF',
-          paddingTop: '0px',
+          display: 'flex',
+          flexDirection: 'column',
         }}
       >
+        <style>{patientEducationLayoutStyles}</style>
         {ResponsiveNavbar}
         <div
           style={{
@@ -166,12 +189,15 @@ export default function PatientEducationPage() {
   if (error) {
     return (
       <div
+        className="patient-education-layout"
         style={{
           minHeight: '100vh',
           background: '#C9F3FF',
-          paddingTop: '0px',
+          display: 'flex',
+          flexDirection: 'column',
         }}
       >
+        <style>{patientEducationLayoutStyles}</style>
         {ResponsiveNavbar}
         <div
           style={{
@@ -179,6 +205,7 @@ export default function PatientEducationPage() {
             justifyContent: 'center',
             alignItems: 'center',
             minHeight: '400px',
+            marginTop: isMobile ? '90px' : '122px',
             fontFamily: 'Nunito, sans-serif',
             fontSize: '18px',
             color: '#EE443F',
@@ -192,6 +219,7 @@ export default function PatientEducationPage() {
 
   return (
     <div
+      className="patient-education-layout"
       style={{
         minHeight: '100vh',
         background: '#C9F3FF',
@@ -199,6 +227,7 @@ export default function PatientEducationPage() {
         flexDirection: 'column',
       }}
     >
+      <style>{patientEducationLayoutStyles}</style>
       <FloatingContactButtons />
       {ResponsiveNavbar}
 
