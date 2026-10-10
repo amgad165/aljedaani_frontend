@@ -29,7 +29,10 @@ export const HomepageProvider: React.FC<{ children: ReactNode }> = ({ children }
       setLoading(true);
       try {
         const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
-        const response = await fetch(`${apiUrl}/homepage`);
+        const token = localStorage.getItem('auth_token');
+        const response = await fetch(`${apiUrl}/homepage`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        });
         const result = await response.json();
         
         if (result.status === 'success') {

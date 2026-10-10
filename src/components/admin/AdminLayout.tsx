@@ -71,6 +71,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
     { path: '/admin/testimonials', label: 'Testimonials', icon: 'testimonial' },
     { path: '/admin/excellence-centers', label: 'Excellence Centers', icon: 'excellence' },
     { path: '/admin/offers', label: 'Offers', icon: 'offers' },
+    { path: '/admin/offer-claims', label: 'Offer Claims', icon: 'offers' },
     { path: '/admin/hero-sliders', label: 'Hero Sliders', icon: 'slider' },
     { path: '/admin/articles', label: 'Articles', icon: 'articles' },
     { path: '/admin/news', label: 'News', icon: 'articles' },

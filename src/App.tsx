@@ -41,6 +41,7 @@ import AdminDoctors from './components/admin/AdminDoctors';
 import AdminTestimonials from './components/admin/AdminTestimonials';
 import AdminExcellenceCenters from './components/admin/AdminExcellenceCenters';
 import AdminOffers from './components/admin/AdminOffers';
+import AdminOfferClaims from './components/admin/AdminOfferClaims';
 import AdminHeroSliders from './components/admin/AdminHeroSliders';
 import AdminDepartmentTabs from './components/admin/AdminDepartmentTabs';
 import AdminOtpLogs from './components/admin/AdminOtpLogs';
@@ -461,6 +462,11 @@ function AppRouter() {
         <Route path="/admin/offers" element={
           <ProtectedRoute>
             <AdminOffers />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/offer-claims" element={
+          <ProtectedRoute>
+            <AdminOfferClaims />
           </ProtectedRoute>
         } />
         <Route path="/admin/hero-sliders" element={

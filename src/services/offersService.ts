@@ -9,6 +9,7 @@ export interface Offer {
   image_url: string;
   sort_order: number;
   is_active: boolean;
+  has_claimed?: boolean;
   created_at?: string;
   updated_at?: string;
 }

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import HeroSection from './HeroSection';
 import LocationCards from './LocationCards';
-// import OffersSection from './OffersSection';
+import OffersSection from './OffersSection';
 import AppBannerSection from './AppBannerSection';
 import StatisticsSection from './StatisticsSection';
 import TestimonialSection from './TestimonialSection';
@@ -82,8 +82,7 @@ const HomePageContent = () => {
         <section className="main-sec">
           <LocationCards />
 
-          {/* hidden offers section for now don't delete */}
-          {/* <OffersSection /> */}
+          <OffersSection />
           <AppBannerSection />
           <StatisticsSection />
         </section>

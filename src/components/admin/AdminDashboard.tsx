@@ -7,11 +7,12 @@ interface Stats {
   doctors: number;
   testimonials: number;
   users: number;
+  offerClaims: number;
   newUsersThisMonth: number;
 }
 
 const AdminDashboard: React.FC = () => {
-  const [stats, setStats] = useState<Stats>({ departments: 0, doctors: 0, testimonials: 0, users: 0, newUsersThisMonth: 0 });
+  const [stats, setStats] = useState<Stats>({ departments: 0, doctors: 0, testimonials: 0, users: 0, offerClaims: 0, newUsersThisMonth: 0 });
   const [loading, setLoading] = useState(true);
 
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
@@ -28,6 +29,7 @@ const AdminDashboard: React.FC = () => {
           doctors: data.data.doctors || 0,
           testimonials: data.data.testimonials || 0,
           users: data.data.users || 0,
+          offerClaims: data.data.offerClaims || 0,
           newUsersThisMonth: data.data.newUsersThisMonth || 0,
         });
       }
@@ -228,6 +230,14 @@ const AdminDashboard: React.FC = () => {
       gradient: 'linear-gradient(242.76deg, #A78BFA 2.79%, #8B5CF6 98.27%)',
       iconColor: '#A78BFA'
     },
+    { 
+      title: 'Claimed Offers', 
+      value: stats.offerClaims, 
+      icon: 'offers',
+      link: '/admin/offer-claims',
+      gradient: 'linear-gradient(242.76deg, #22D3EE 2.79%, #0891B2 98.27%)',
+      iconColor: '#A5F3FC'
+    },
   ];
 
   const getIcon = (icon: string, white = false, accentColor?: string) => {
@@ -275,6 +285,13 @@ const AdminDashboard: React.FC = () => {
             <circle cx="9" cy="7" r="4"/>
             <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
             <path d="M14 11h6M17 8v6" stroke={color} strokeWidth="2.5"/>
+          </svg>
+        );
+      case 'offers':
+        return (
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2">
+            <path d="M12 2L2 7l10 5 10-5-10-5z" />
+            <path d="M2 17l10 5 10-5M2 12l10 5 10-5" />
           </svg>
         );
       default:
