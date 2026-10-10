@@ -590,9 +590,6 @@ const BookAppointmentPage = () => {
     const fetchAvailableSlots = async () => {
       setLoadingSlots(true);
       try {
-        const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
-        const token = localStorage.getItem('auth_token') || '';
-        
         // Calculate date range using local timezone (Saudi Arabia time)
         const today = new Date();
         // Format date as YYYY-MM-DD using local time (not UTC)
@@ -601,16 +598,11 @@ const BookAppointmentPage = () => {
         endDate.setDate(endDate.getDate() + parseInt(dateRange));
         const endDateStr = `${endDate.getFullYear()}-${String(endDate.getMonth() + 1).padStart(2, '0')}-${String(endDate.getDate()).padStart(2, '0')}`;
 
-        const response = await fetch(
-          `${API_BASE_URL}/appointments/available-slots/range?doctor_id=${doctorSelection.doctor}&start_date=${startDate}&end_date=${endDateStr}`,
-          {
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json',
-            },
-          }
+        const data = await appointmentsService.getAvailableSlotsRange(
+          parseInt(doctorSelection.doctor),
+          startDate,
+          endDateStr
         );
-        const data = await response.json();
         
         if (data.success) {
           setAvailableSlots(data.data.schedule || []);

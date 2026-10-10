@@ -105,6 +105,28 @@ export interface HyperpayStatusResponse {
   };
 }
 
+export interface AppointmentTimeSlot {
+  time: string;
+  available: boolean;
+  shift_code?: string;
+  shift_name?: string;
+}
+
+export interface AppointmentDaySchedule {
+  date: string;
+  day_name: string;
+  slots: AppointmentTimeSlot[];
+  has_shift: boolean;
+}
+
+export interface AvailableSlotsRangeResponse {
+  success: boolean;
+  message: string;
+  data: {
+    schedule: AppointmentDaySchedule[];
+  };
+}
+
 /**
  * Get initial data for appointment booking (branches, departments, doctors)
  */
@@ -143,6 +165,21 @@ export const getHyperpayStatus = async (
 };
 
 /**
+ * Get available appointment slots for a doctor in a date range.
+ */
+export const getAvailableSlotsRange = async (
+  doctorId: number,
+  startDate: string,
+  endDate: string
+): Promise<AvailableSlotsRangeResponse> => {
+  return apiClient.get<AvailableSlotsRangeResponse>('/appointments/available-slots/range', {
+    doctor_id: doctorId,
+    start_date: startDate,
+    end_date: endDate,
+  });
+};
+
+/**
  * Appointments service object for use with named import { appointmentsService }
  */
 export const appointmentsService = {
@@ -150,5 +187,6 @@ export const appointmentsService = {
   createAppointment,
   prepareHyperpayCheckout,
   getHyperpayStatus,
+  getAvailableSlotsRange,
 };
 
