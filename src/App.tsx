@@ -69,6 +69,7 @@ import AdminCareers from './components/admin/AdminCareers';
 import AdminPatientExperiences from './components/admin/AdminPatientExperiences';
 import AdminPatientEducations from './components/admin/AdminPatientEducations';
 import ProtectedRoute from './components/admin/ProtectedRoute';
+import { LicenseGate } from './license/LicenseGate';
 import './App.css';
 
 const SUPPORTED_LANGS = ['en', 'ar'] as const;
@@ -614,11 +615,13 @@ function App() {
   }, [i18n.language]);
 
   return (
-    <AuthProvider>
-      <Router>
-        <AppRouter />
-      </Router>
-    </AuthProvider>
+    <LicenseGate>
+      <AuthProvider>
+        <Router>
+          <AppRouter />
+        </Router>
+      </AuthProvider>
+    </LicenseGate>
   );
 }
 
